@@ -1,6 +1,6 @@
 Bots for the [twenty one pilots Discord Server](http://discord.gg/twentyonepilots).
 
-#Bots
+# Bots
 
 ### Nico
 Main bot - `app.js`. Command files stored in `Commands` and functions in `Functions`.

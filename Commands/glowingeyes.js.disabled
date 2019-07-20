@@ -1,0 +1,26 @@
+module.exports = {
+    execute: async function (msg) {
+        try {
+            if (msg.author.id !== poot) return;
+            var Faced = require('faced');
+            var faced = new Faced();
+    
+            faced.detect('image.jpg', function (faces, image, file) {
+                if (!faces) return console.log("No faces found!");
+                var face = faces[0];
+               console.log(face.getEyeLeft(), face.getEyeRight(), /EYES/)
+            });
+        } catch (e) {
+            console.log("FACED ERROR")
+        }
+        
+    }
+    ,
+    info: {
+        aliases: false,
+        example: "!glowingeyes [Image upload or URL]",
+        minarg: "2",
+        description: "uhhhhhhhhh",
+        category: "Fun",
+    }
+}

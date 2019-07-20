@@ -674,6 +674,7 @@ function registerCommands() {
 
     }
     fs.readdirSync("./Commands").forEach(file => {
+        if (file.endsWith("disabled")) return;
         let commandName = file.split(".")[0]
         let info = require("./Commands/" + file).info
         if (!info) console.log(chalk.red("No info for " + commandName));

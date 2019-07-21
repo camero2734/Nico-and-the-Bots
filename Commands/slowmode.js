@@ -8,7 +8,7 @@ module.exports = {
             let slowChans = []
             for (let chan of chans) {
                 if (chan.type === 'text') {
-                    let slowTime = await chan.getSlowmode()
+                    let slowTime = await chan.rateLimitPerUser;
                     if (!isNaN(slowTime) && slowTime > 0) slowChans.push(chan.name)
                 }
             }
@@ -21,15 +21,15 @@ module.exports = {
         }
         else if (msg.args && !isNaN(msg.args[1])) {
             if (msg.args[1] > 21600) return msg.channel.embed(`Slowmode must be between 1 and 21600 seconds (6 hours).`)
-            msg.channel.setSlowmode(msg.args[1]);
+            msg.channel.setRateLimitPerUser(msg.args[1]);
             msg.channel.embed(`Turned on ${msg.args[1]} second slowmode.`)
         } else {
-            let currentRate = await msg.channel.getSlowmode();
+            let currentRate = await msg.channel.rateLimitPerUser;
             if (currentRate > 0) {
-                msg.channel.setSlowmode(0);
+                msg.channel.setRateLimitPerUser(0);
                 msg.channel.embed("Turned off slowmode!")
             } else {
-                msg.channel.setSlowmode(30)
+                msg.channel.setRateLimitPerUser(30)
                 msg.channel.embed("Turned on 30 second slowmode.")
             }
         }

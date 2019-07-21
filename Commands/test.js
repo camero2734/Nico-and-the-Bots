@@ -1,8 +1,14 @@
 module.exports = {
     execute: async function (msg) {
         if (msg.author.id !== poot) return;
-        let m = await msg.channel.fetchMessage("601005226358603777");
-        let oldEmbed;
+        let string = "U2FsdGVkX19kHCv4brnzxEQ1grYZ4XYVsHRyaHqaZbMqAacJ5uTNZZDU0GAodM408Op8rahRM0LjJlcmVzl7XSmdsZl3tiTNcgIW17ZNVSMWNkQROwJbhhioCLW9ZQPRUgYQJShigfALYF9dAgW0M/t3kkQHJQ3Y/FHDS5BogX6hXp9Gkf0czTcSv8E7I8sca8BIazqqBWqRKPpuYzWS8VnOJJOZqV9E3wet1SlITudcxiFxpNzPZ9OwR5JUeaqcPrY7v6VnEsrR6TPl1p245cnDnVPKYBHUA2TF1LbHzh7qNrxGkUDkVPmOrn7ZkJiwiOjMDUg841dnjkw7b33XAXn/IhOsJHRhnZP4hWaf68r2X2EtpKXuRu8czuuoFefnxhS5q4Dl0djG9ve+auB/3p7CJKKaPts6lJRlJWkmLh6IQ+kC0NiLrw==";
+
+        let embed = new Discord.RichEmbed().setColor("FF0000");
+        embed.setAuthor("UNKNOWN", "http://moziru.com/images/unknown-clipart-8.jpg");
+        embed.addField("TRANSMISSION RECEIVED", string);
+        embed.addField("PASSWORD", "BOT.USER.ID", true);
+        embed.addField("ENCRYPTION", "ARCFOUR", true);
+        msg.guild.channels.get("600063173424578561").send(embed);
     },
     info: {
         aliases: false,

@@ -30,7 +30,7 @@ const morse = require('morse-node').create("ITU");
 const color = require('color');
 const pm2 = require('pm2');
 const SocialMedia = require("node-social-media").setAuth({
-    sessionid: process.env.SESSION,
+    sessionid: process.env.SESSIONID,
     consumer: process.env.CONSUMER,
     consumer_secret: process.env.CONSUMER_S,
     access: process.env.ACCESS,
@@ -43,7 +43,7 @@ function requireFunction(name) {return require(`./Functions/${name}.js`)};
 function wrap(t) {return ('```' + t + '```')};
 async function chooseKey() {let keys = chans.keys;let found = false;for (let key of keys) {console.log(key);await new Promise(next => {let currentKey = nsfai.app._config.apiKey;if (!found) {nsfai = new NSFAI(key);nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg").then(() => {found = true; next()}).catch(e => {console.log(e.data);next()});} else next();})}if (!found) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out.");console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey));}
 function setGame(game1, type) {bot.user.setPresence({ game: { name: game1, type: type } })};
-function runFunctions(guild) {doStuff(guild, sql);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord)};
+function runFunctions(guild) {Discord.chans = chans;doStuff(guild, sql);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord)};
 function logMemberFlow(member, type) {sql.run("INSERT INTO memberflow (type, timestamp, name, userid) VALUES (?, ?, ?, ?)", [type, Date.now(), member.displayName, member.user.id]);}
 Number.prototype.map = function (in_min, in_max, out_min, out_max) {return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;}
 function consoleLog(s) {/*console.log(s)*/};
@@ -74,6 +74,7 @@ const checkReq = requireFunction('deRequirements');
 const checkDE = requireFunction('checkDE');
 const songDiscussion = requireFunction('songDiscussion');
 const updateConcerts = requireFunction('updateConcerts');
+const checkEvents = requireFunction('checkEvents');
 const logMain = requireFunction("logMain");
 const hog = requireFunction("houseofgold");
 const wordCount = requireFunction("wordCount");

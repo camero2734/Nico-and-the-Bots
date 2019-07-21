@@ -25,7 +25,6 @@ module.exports = {
                 myTeam = team;
                 teamNum = i + 1;
             }
-            console.log(team);
             for (let member of team.team) {
                 if (member === msg.author.id) {
                     myTeam = team;

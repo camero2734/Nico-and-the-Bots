@@ -30,7 +30,7 @@ const checkforsite = require("./Functions/checkforsite.js")
 
 let verbose = true;
 let SocialMedia = require("node-social-media").setAuth({
-    sessionid: process.env.SESSION,
+    sessionid: process.env.SESSIONID,
     consumer: process.env.CONSUMER,
     consumer_secret: process.env.CONSUMER_S,
     access: process.env.ACCESS,

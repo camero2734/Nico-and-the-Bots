@@ -34,7 +34,7 @@ bot.on('ready', () => {
         reddit();
         setInterval(() => {reddit()}, 10 * 60 * 1000)
         setShops(guild)
-        websiteDay(); updateDay();
+        //websiteDay(); updateDay();
         console.log('I wish I had two faces!')
         //reddit
         
@@ -55,7 +55,7 @@ function reddit() {
         let json = JSON.parse(r.body).data.children;
         for (let i = json.length - 1; i >= 0; i--) {
             post = json[i].data;
-            let embed = new Discord.RichEmbed().setAuthor(post.author, "https://www.androidpolice.com/wp-content/uploads/2016/01/nexus2cee_reddit.png", "https://www.reddit.com" + post.permalink).setTitle(post.title.substring(0,255)).setDescription(post.selftext)
+            let embed = new Discord.RichEmbed().setAuthor(post.author, "https://www.androidpolice.com/wp-content/uploads/2016/01/nexus2cee_reddit.png", "https://www.reddit.com" + post.permalink).setTitle(post.title.substring(0,255)).setDescription(post.selftext.substring(0,2000));
             function isImage(url) {return (url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".mp4"))}
             if (post.url !== "https://www.reddit.com" + post.permalink) {
                 if (isImage(post.url)) {
@@ -71,7 +71,8 @@ function reddit() {
     })
 }
 
-function setShops(guild) {
+async function setShops(guild) {
+    if (!guild) guild = bot.guilds.get("269657133673349120");
     let shop = guild.channels.get(chans.shop);
     shop.bulkDelete(20);
     let embed = new Discord.RichEmbed();

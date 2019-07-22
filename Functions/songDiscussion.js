@@ -56,19 +56,19 @@ module.exports = async function (guild) {
             if (this.player1 === -1 && this.player2 === -1) {
                 let minWins = 10000;
                 for (let player of this.players) {
-                    if (!player.eliminated) minWins = Math.min(player.wins, minWins);
+                    if (!player.eliminated && player.wins < minWins) minWins = player.wins;
                 }
                 
-                function shuffleArr(array) {
-                    var currentIndex = array.length, temporaryValue, randomIndex;
-                    while (0 !== currentIndex) {
-                        randomIndex = Math.floor(Math.random() * currentIndex);
-                        currentIndex -= 1;
-                        temporaryValue = array[currentIndex];
-                        array[currentIndex] = array[randomIndex];
-                        array[randomIndex] = temporaryValue;
+
+                function shuffleArr(a) {
+                    var j, x, i;
+                    for (i = a.length - 1; i > 0; i--) {
+                        j = Math.floor(Math.random() * (i + 1));
+                        x = a[i];
+                        a[i] = a[j];
+                        a[j] = x;
                     }
-                    return array;
+                    return a;
                 }
 
                 this.players = shuffleArr(this.players);
@@ -225,7 +225,7 @@ module.exports = async function (guild) {
                             await m.edit(newEmbed);
                         }
                     }
-                    await m.clearReactions();
+                    //await m.clearReactions();
                     
                 }
             } catch(e) {
@@ -360,7 +360,6 @@ module.exports = async function (guild) {
                     resolve("");
                 }
                 else {
-                    console.log(searchResults)
                     resolve(searchResults.items[0].link);
                 }
             });

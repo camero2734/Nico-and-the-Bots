@@ -1,6 +1,7 @@
 geoGame = false;
 //applyde
 let openApps = {};
+let logCount = 0;
 //Quiet game
 parsing = false;
 interval = null;
@@ -43,7 +44,7 @@ function requireFunction(name) {return require(`./Functions/${name}.js`)};
 function wrap(t) {return ('```' + t + '```')};
 async function chooseKey() {let keys = chans.keys;let found = false;for (let key of keys) {console.log(key);await new Promise(next => {let currentKey = nsfai.app._config.apiKey;if (!found) {nsfai = new NSFAI(key);nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg").then(() => {found = true; next()}).catch(e => {console.log(e.data);next()});} else next();})}if (!found) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out.");console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey));}
 function setGame(game1, type) {bot.user.setPresence({ game: { name: game1, type: type } })};
-function runFunctions(guild) {Discord.chans = chans;doStuff(guild, sql);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord)};
+function runFunctions(guild) {Discord.chans = chans;logMessageQueue();doStuff(guild, sql);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord)};
 function logMemberFlow(member, type) {sql.run("INSERT INTO memberflow (type, timestamp, name, userid) VALUES (?, ?, ?, ?)", [type, Date.now(), member.displayName, member.user.id]);}
 Number.prototype.map = function (in_min, in_max, out_min, out_max) {return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;}
 function consoleLog(s) {/*console.log(s)*/};
@@ -130,6 +131,7 @@ var asked = [];
 let commands = [];
 var muted = [];
 let numberGames = [];
+let logQueue = [];
 
 //Command that runs commands within global scope
 Discord.Message.prototype.runCommand = function(name) {
@@ -172,26 +174,27 @@ bot.on('ready', async () => {
     }, 1000 * 1000);
 });
 
-// bot.on('debug', (err) => {
-//     console.log(err, /DEBUG/);
-//     try {
-//         if (err.toString().indexOf("READY gateway") !== -1) {
-//             setTimeout(() => {
-//                 let channel = bot.guilds.get("269657133673349120").channels.get("470406597860917249");
-//                 channel.send(err).then((msg) => {
-//                     msg.runCommand("test");
-//                     setTimeout(() => {
-//                         if (!sent) pm2.restart("app");
-//                     }, 2000)
-//                 });
-//             }, 5000);
-            
-//         }
-//     } catch(e) {
-//         console.log(e, /CATCHE/)
-//     }
-    
-// })
+async function logMessageQueue(log) {
+    return;
+    if (log) console.log(chalk.red(logQueue.length + " message(s) in log queue"));
+    if (logQueue.length === 0) {
+        if (logCount++ === 20) logCount = 0, await writeJsonFile("./json/msgcount.json", msgcountJSON);
+        setTimeout(() => {
+            logMessageQueue(true);
+        }, 1000);
+    } else {
+        let {message, timeNow} = logQueue.shift();
+        if (!msgcountJSON[message.author.id]) msgcountJSON[message.author.id] = {};
+        if (!msgcountJSON[message.author.id][timeNow]) msgcountJSON[message.author.id][timeNow] = 0;
+        msgcountJSON[message.author.id][timeNow]++;
+        let cleanArray = {};
+        for (let key in msgcountJSON[message.author.id]) {
+            if (timeNow - key <= 168) cleanArray[key] = msgcountJSON[message.author.id][key];
+        }
+        msgcountJSON[message.author.id] = cleanArray;
+        logMessageQueue();
+    }
+}
 
 bot.on('error', (err) => {
     console.log(err, /err/);
@@ -317,16 +320,8 @@ bot.on("message", async message => {
    
 
     // //LOG MESSAGE COUNT
-    let timeNow = Math.floor(parseInt(Date.now().toString().substring(0,10)) / 3600)
-    if (!msgcountJSON[message.author.id]) msgcountJSON[message.author.id] = {};
-    if (!msgcountJSON[message.author.id][timeNow]) msgcountJSON[message.author.id][timeNow] = 0;
-    msgcountJSON[message.author.id][timeNow]++;
-    let cleanArray = {};
-    for (let key in msgcountJSON[message.author.id]) {
-        if (timeNow - key <= 168) cleanArray[key] = msgcountJSON[message.author.id][key];
-    }
-    msgcountJSON[message.author.id] = cleanArray;
-    if (Math.random() < 0.1) await writeJsonFile("./json/msgcount.json", msgcountJSON) //Only write every 20 messages or so
+    let timeNow = Math.floor(parseInt(Date.now().toString().substring(0,10)) / 3600);
+    logQueue.push({message, timeNow});
     
     //XP AND LT
     let response = await givePoints(message, xpdelay, sql, leveltokens);
@@ -412,6 +407,7 @@ bot.on("guildMemberRemove", member => {
 
 //Message event
 bot.on('message', async msg => {
+    let d = Date.now() + msg.author.id;
     if (msg.channel.id === chans.houseofgold) return hog(msg, Discord, sql);
     msg.commandName = msg.content.split(" ")[0].substring(1);
     let rip = msg.content.toLowerCase();
@@ -421,7 +417,7 @@ bot.on('message', async msg => {
     if (msg.author.id === "349728613521817600" && msg.channel.id === "470337593746259989" && msg.content.toLowerCase() === "ok") {
         msg.channel.send("ok jenn")
     }
-
+    
     if ((msg.channel.type === "dm" && msg.content.endsWith("?")) || msg.channel.id === chans.submittedsuggestions) askQuestion(msg, Discord);
     if (msg.channel.id === "554046505128951833") {
         bot.Discord = Discord;
@@ -434,7 +430,7 @@ bot.on('message', async msg => {
     if (sfw === "error") await chooseKey();
     if (!sfw) return
     logMessage(msg) //For server-wide recap!
-
+    
     //slowmode
     loadJsonFile('slowraid.json').then(slowraid => {
         if (slowraid["slowChans"].indexOf(msg.channel.id) !== -1 && !msg.author.bot && !msg.member.roles.get('283272728084086784')) {
@@ -453,10 +449,10 @@ bot.on('message', async msg => {
     
     //Delete any !suggest messages in #suggestions
     if (msg.channel.id === chans.suggestions && msg.content.startsWith(prefix) && !msg.content.toLowerCase().startsWith(prefix + 'suggest') && msg.author.id !== poot) return msg.delete();
-
+    
     //daily recap
     if (msg && msg.member && msg.member.roles.get('402948433301733378')) {
-        let d = new Date(); let n = d.getDate();
+        let dat = new Date(); let n = dat.getDate();
         if (typeof recap[msg.author.id] !== 'undefined' && recap[msg.author.id].day !== n) resetrecap(msg, recap).then(async (new_recap) => {
             if (new_recap && typeof new_recap === 'object') {
                 recap = new_recap; 
@@ -466,9 +462,11 @@ bot.on('message', async msg => {
         if (typeof recap[msg.author.id] === 'undefined' || typeof recap[msg.author.id].day === 'undefined') recap[msg.author.id] = { day: n };
         if (typeof recap[msg.author.id][msg.channel.id] === 'undefined') recap[msg.author.id][msg.channel.id] = 0;
         recap[msg.author.id][msg.channel.id]++;
-        await writeJsonFile('recap.json', recap);
+        
+        if (logCount >= 19) console.log(chalk.red("Writing recap")), await writeJsonFile('recap.json', recap);
+        
     }
-
+    
     //emoji reactor 3.0
     let finalemojis = []
     if (!msg.author.bot && (msg.content.indexOf('---') !== -1 || msg.channel.id === chans.polls || msg.channel.id === '470796768720846858')) {
@@ -484,14 +482,14 @@ bot.on('message', async msg => {
             }
         })()
     }
-
+    
     //collections creations like
     if (msg.channel.id === chans.collections || msg.channel.id === chans.creations) {
         if (msg.attachments.array().length !== 0) {
             msg.react('%E2%9D%A4')
         }
     }
-
+    
     //Hall of Fame upvote/ downvote
     if (msg.channel.id === chans.halloffame || msg.channel.id === chans.hiatusmemes || msg.channel.id === chans.theorylist) {
         if (msg.attachments.array().length === 0 && (msg.channel.id === chans.halloffame || msg.channel.id === chans.hiatusmemes)) msg.delete()
@@ -501,7 +499,7 @@ bot.on('message', async msg => {
             })
         }
     }
-
+    
     //Handle messages differently if it's a dm
     if (msg.channel.type === "dm") {
         if (msg.content.toLowerCase() === prefix + "endbreak") msg.runCommand("endbreak");
@@ -515,7 +513,7 @@ bot.on('message', async msg => {
         }
         return;
     }
-
+    
     //Umm
     if (rip.indexOf('poot hates the gays') !== -1) {
         let gRole = "492903807282577408"
@@ -528,7 +526,6 @@ bot.on('message', async msg => {
             msg.member.addRole(gRole)
         }
     }
-
     //Some filters
     if ((rip.indexOf('welcome') !== -1) && (rip.indexOf('to') !== -1) && (rip.indexOf('hell') !== -1)) msg.delete();
 
@@ -578,7 +575,7 @@ bot.on('message', async msg => {
             return msg.channel.embed("Please use commands in <#" + chans.commands + ">").then((m) => m.delete(5000))
         }
     }
-
+    
     //Command use logger for badges
     ;(async function () {
         let commandsused = await loadJsonFile('commandsused.json')
@@ -606,7 +603,7 @@ bot.on('message', async msg => {
             await writeJsonFile("earnedbadges.json", earned)
         }
     })();
-    
+
     //Actually find and use the command (Commands are stored in /Commands/)
     let cP = msg.content.split(' ');
     let com = cP[0].toLowerCase().replace(prefix, "");

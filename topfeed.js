@@ -218,9 +218,11 @@ async function controller() {
         console.log(chalk.green("FINISHED GITHUB COMMITS"));
     }
     
-    if (state !== 1) setTimeout(() => {controller().catch(e => {
-        handleErr(e);
-    })}, 5000);
+    if (state !== 1) setTimeout(() => {
+        controller().catch(err => {
+            handleErr(err);
+        });
+    }, 5000);
 }
 
 async function enablePing(mention) {
@@ -598,7 +600,7 @@ function handleErr(e) {
         console.log(e, /TRYCATCHAHNDLEERR/)
     }
     console.log(e, /E-1/);
-    setTimeout(() => {controller().catch(e2 => {handleErr(e2)});}, 10000)
+    setTimeout(() => {process.exit(0)}, 10000)
 }
 
 

@@ -1,7 +1,7 @@
 geoGame = false;
 //applyde
 let openApps = {};
-let logCount = 0;
+let pings = [];
 //Quiet game
 parsing = false;
 interval = null;
@@ -44,7 +44,7 @@ function requireFunction(name) {return require(`./Functions/${name}.js`)};
 function wrap(t) {return ('```' + t + '```')};
 async function chooseKey() {let keys = chans.keys;let found = false;for (let key of keys) {console.log(key);await new Promise(next => {let currentKey = nsfai.app._config.apiKey;if (!found) {nsfai = new NSFAI(key);nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg").then(() => {found = true; next()}).catch(e => {console.log(e.data);next()});} else next();})}if (!found) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out.");console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey));}
 function setGame(game1, type) {bot.user.setPresence({ game: { name: game1, type: type } })};
-function runFunctions(guild) {Discord.chans = chans;logMessageQueue();doStuff(guild, sql);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord)};
+function runFunctions(guild) {Discord.chans = chans;doStuff(guild, sql);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord)};
 function logMemberFlow(member, type) {sql.run("INSERT INTO memberflow (type, timestamp, name, userid) VALUES (?, ?, ?, ?)", [type, Date.now(), member.displayName, member.user.id]);}
 Number.prototype.map = function (in_min, in_max, out_min, out_max) {return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;}
 function consoleLog(s) {/*console.log(s)*/};
@@ -108,6 +108,7 @@ let tags = loadJsonFile.sync('tags.json');
 let leveltokens = loadJsonFile.sync("leveltokens.json");
 let recap = loadJsonFile.sync("recap.json");
 let msgcountJSON = loadJsonFile.sync("./json/msgcount.json");
+let serverMsgCountJSON = loadJsonFile.sync("msgcount.json");
 let boostEmojiJSON = loadJsonFile.sync("./json/boostemoji.json");
 
 //Class instantiation/initiation
@@ -119,6 +120,7 @@ sql.open('./daily.sqlite', { cached: true });
 const prefix = "!"
 let poot = '221465443297263618'
 var fairlycankick = false
+let closingProcess = false;
 
 //Arrays
 const swearWords = chans.swearWords;
@@ -174,27 +176,25 @@ bot.on('ready', async () => {
     }, 1000 * 1000);
 });
 
-async function logMessageQueue(log) {
-    return;
-    if (log) console.log(chalk.red(logQueue.length + " message(s) in log queue"));
-    if (logQueue.length === 0) {
-        if (logCount++ === 20) logCount = 0, await writeJsonFile("./json/msgcount.json", msgcountJSON);
-        setTimeout(() => {
-            logMessageQueue(true);
-        }, 1000);
-    } else {
-        let {message, timeNow} = logQueue.shift();
-        if (!msgcountJSON[message.author.id]) msgcountJSON[message.author.id] = {};
-        if (!msgcountJSON[message.author.id][timeNow]) msgcountJSON[message.author.id][timeNow] = 0;
-        msgcountJSON[message.author.id][timeNow]++;
-        let cleanArray = {};
-        for (let key in msgcountJSON[message.author.id]) {
-            if (timeNow - key <= 168) cleanArray[key] = msgcountJSON[message.author.id][key];
-        }
-        msgcountJSON[message.author.id] = cleanArray;
-        logMessageQueue();
+fs.writeFileAsync = async function(path, data) {
+    if (closingProcess) return;
+    if (typeof data === "object") data = JSON.stringify(data);
+    return await fs.promises.writeFile(path, data);
+}
+
+fs.readFileAsync = async function(path) {
+    if (closingProcess) return;
+    try {
+        let data = await fs.promises.readFile(path);
+        data = JSON.parse(data);
+        return data;
+    } catch(e) {
+        await bot.guilds.get("269657133673349120").channels.get(chans.bottest).send("<@221465443297263618> error in " + path + ", overwriting...");
+        await fs.writeFileAsync(path, {});
+        return {};
     }
 }
+
 
 bot.on('error', (err) => {
     console.log(err, /err/);
@@ -314,14 +314,22 @@ bot.on("message", async message => {
     if (message.channel.type !== "text") return;
     //await wordCount(message, {write: writeJsonFile, load: loadJsonFile, file: "./json/wordcount.json"});
     if (message.channel.id === chans.lyrics) return;
-    let leveltokens = await loadJsonFile("leveltokens.json");
+
     // logMain(message);
 
    
 
     // //LOG MESSAGE COUNT
     let timeNow = Math.floor(parseInt(Date.now().toString().substring(0,10)) / 3600);
-    logQueue.push({message, timeNow});
+    if (!msgcountJSON[message.author.id]) msgcountJSON[message.author.id] = {};
+    if (!msgcountJSON[message.author.id][timeNow]) msgcountJSON[message.author.id][timeNow] = 0;
+    msgcountJSON[message.author.id][timeNow]++;
+    let cleanArray = {};
+    for (let key in msgcountJSON[message.author.id]) {
+        if (timeNow - key <= 168) cleanArray[key] = msgcountJSON[message.author.id][key];
+    }
+    msgcountJSON[message.author.id] = cleanArray;
+    await fs.writeFileAsync("./json/msgcount.json", msgcountJSON);
     
     //XP AND LT
     let response = await givePoints(message, xpdelay, sql, leveltokens);
@@ -333,10 +341,10 @@ bot.on("message", async message => {
     let oldTK = JSON.stringify(leveltokens[message.author.id]);
     let newTK = JSON.stringify(response.tokens[message.author.id]);
 
-    if (!xpdelay[message.author.id] || curXP !== newXP) await writeJsonFile('roasted.json', response.delay);
-    if (!leveltokens[message.author.id] || oldTK !== newTK) await writeJsonFile("leveltokens.json", response.tokens);
-    xpdelay = (response && response.delay) ? response.delay : xpdelay;
-    leveltokens = (response && response.tokens) ? response.tokens : leveltokens;
+    await fs.writeFileAsync('roasted.json', response.delay);
+    await fs.writeFileAsync("leveltokens.json", response.tokens);
+    xpdelay[message.author.id] = (response && response.delay && response.delay[message.author.id]) ? response.delay[message.author.id] : xpdelay[message.author.id];
+    leveltokens[message.author.id] = (response && response.tokens && response.tokens[message.author.id]) ? response.tokens[message.author.id] : leveltokens[message.author.id];
 });
 
 //Deleted Messages logger
@@ -423,6 +431,8 @@ bot.on('message', async msg => {
         bot.Discord = Discord;
         return quietGame(msg, bot, sql, Canvas);
     }
+
+    
     if (msg.content.startsWith("$image")) return msg.runCommand("image");
     //NSFW CHECKER
     let sfw = true;
@@ -456,17 +466,15 @@ bot.on('message', async msg => {
         if (typeof recap[msg.author.id] !== 'undefined' && recap[msg.author.id].day !== n) resetrecap(msg, recap).then(async (new_recap) => {
             if (new_recap && typeof new_recap === 'object') {
                 recap = new_recap; 
-                await writeJsonFile('recap.json', new_recap);
+                await fs.writeFileAsync('recap.json', new_recap);
             }
         })
         if (typeof recap[msg.author.id] === 'undefined' || typeof recap[msg.author.id].day === 'undefined') recap[msg.author.id] = { day: n };
         if (typeof recap[msg.author.id][msg.channel.id] === 'undefined') recap[msg.author.id][msg.channel.id] = 0;
         recap[msg.author.id][msg.channel.id]++;
-        
-        if (logCount >= 19) console.log(chalk.red("Writing recap")), await writeJsonFile('recap.json', recap);
+        fs.writeFileAsync('recap.json', recap);
         
     }
-    
     //emoji reactor 3.0
     let finalemojis = []
     if (!msg.author.bot && (msg.content.indexOf('---') !== -1 || msg.channel.id === chans.polls || msg.channel.id === '470796768720846858')) {
@@ -578,32 +586,31 @@ bot.on('message', async msg => {
     
     //Command use logger for badges
     ;(async function () {
-        let commandsused = await loadJsonFile('commandsused.json')
-        if (!commandsused[msg.author.id]) commandsused[msg.author.id] = 0
-        commandsused[msg.author.id]++
-        await writeJsonFile("commandsused.json", commandsused)
-        let earned = await loadJsonFile('earnedbadges.json')
-        if (!earned[msg.author.id]) earned[msg.author.id] = {}
+        let commandsused = await fs.readFileAsync('commandsused.json');
+        if (!commandsused[msg.author.id]) commandsused[msg.author.id] = 0;
+        commandsused[msg.author.id]++;
+        await fs.writeFileAsync("commandsused.json", commandsused);
+        let earned = await fs.readFileAsync('earnedbadges.json');
+        if (!earned[msg.author.id]) earned[msg.author.id] = {};
         if (commandsused[msg.author.id] >= 25 && !earned[msg.author.id]['commandsused25']) {
-            dm(msg, 'You earned the `25 commands used badge!`', './badges/25_cmd.png')
-            if (!earned[msg.author.id]) earned[msg.author.id] = {}
-            earned[msg.author.id]['commandsused25'] = true
-            await writeJsonFile("earnedbadges.json", earned)
+            dm(msg, 'You earned the `25 commands used badge!`', './badges/25_cmd.png');
+            if (!earned[msg.author.id]) earned[msg.author.id] = {};
+            earned[msg.author.id]['commandsused25'] = true;
+            await fs.writeFileAsync("earnedbadges.json", earned);
         }
         if (commandsused[msg.author.id] >= 50 && !earned[msg.author.id]['commandsused50']) {
-            dm(msg, 'You earned the `50 commands used badge!`', './badges/50_cmd.png')
-            if (!earned[msg.author.id]) earned[msg.author.id] = {}
-            earned[msg.author.id]['commandsused50'] = true
-            await writeJsonFile("earnedbadges.json", earned)
+            dm(msg, 'You earned the `50 commands used badge!`', './badges/50_cmd.png');
+            if (!earned[msg.author.id]) earned[msg.author.id] = {};
+            earned[msg.author.id]['commandsused50'] = true;
+            await fs.writeFileAsync("earnedbadges.json", earned);
         }
         if (commandsused[msg.author.id] >= 100 && !earned[msg.author.id]['commandsused100']) {
-            dm(msg, 'You earned the `100 commands used badge!`', './badges/100_cmd.png')
-            if (!earned[msg.author.id]) earned[msg.author.id] = {}
-            earned[msg.author.id]['commandsused100'] = true
-            await writeJsonFile("earnedbadges.json", earned)
+            dm(msg, 'You earned the `100 commands used badge!`', './badges/100_cmd.png');
+            if (!earned[msg.author.id]) earned[msg.author.id] = {};
+            earned[msg.author.id]['commandsused100'] = true;
+            await fs.writeFileAsync("earnedbadges.json", earned);
         }
     })();
-
     //Actually find and use the command (Commands are stored in /Commands/)
     let cP = msg.content.split(' ');
     let com = cP[0].toLowerCase().replace(prefix, "");
@@ -792,7 +799,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             if (!golds[reaction.message.author.id] || golds[reaction.message.author.id] <= 0 || typeof golds[reaction.message.author.id] === 'undefined' || golds[reaction.message.author.id] === 'null') golds[reaction.message.author.id] = 0
             golds[reaction.message.author.id]++;
             let num = golds[reaction.message.author.id];
-            await writeJsonFile("golds.json", golds);
+            await fs.writeFileAsync("golds.json", golds);
             let earned = loadJsonFile.sync("./earnedbadges.json", "utf8");
             let finalNum = null;
             if (num === 5 || num === 10 || num == 25) finalNum = num;
@@ -800,7 +807,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 dm(reaction.message, 'You earned the `' + finalNum + ' Golds` badge!', './badges/gold' + finalNum + '.png')
                 if (!earned[reaction.message.author.id]) earned[reaction.message.author.id] = {};
                 earned[reaction.message.author.id]['gold' + finalNum] = true;
-                await writeJsonFile('earnedbadges.json', earned);
+                await fs.writeFileAsync('earnedbadges.json', earned);
             }
             const gold = bot.emojis.get("389216023141941249");
             (embed.embed) ? embed.embed.setFooter('x' + num + ' | ' + reaction.message.author.username + '\'s total golds', 'https://i.imgur.com/QTzrs2Y.png') : embed.setFooter('x' + num + ' | ' + reaction.message.author.username + '\'s total golds', 'https://i.imgur.com/QTzrs2Y.png')
@@ -813,7 +820,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             reaction.message.author.createDM().then(DMCHannel => DMCHannel.send('You were given gold by ' + reaction.message.guild.members.get(user.id).user.username + ' for your message:\n```' + reaction.message.content + '```\n Your message is in `#house-of-gold`! You received one day of the Gold role, which lets you into #in-the-dark!'))
             reaction.message.member.addRole('386969744709910530');
             goldtimes[msg.author.id] = Date.now() + 1000 * 60 * 60 * 24;
-            await writeJsonFile("goldtimes.json", goldtimes);
+            await fs.writeFileAsync("goldtimes.json", goldtimes);
         }
     })
 })
@@ -936,13 +943,9 @@ function findClosestCommand(msg) {
 //Log channel of message for a global recap
 async function logMessage(msg) {
     if (msg.author.bot) return;
-    if (!fs.existsSync('msgcount.json')) {
-        await writeJsonFile('msgcount.json', {});
-    }
-    let content = await loadJsonFile('msgcount.json');
-    if (!content[msg.channel.id]) content[msg.channel.id] = 0;
-    content[msg.channel.id]++;
-    await writeJsonFile('msgcount.json', content);
+    if (!serverMsgCountJSON[msg.channel.id]) serverMsgCountJSON[msg.channel.id] = 0;
+    serverMsgCountJSON[msg.channel.id]++;
+    if (Math.random() < 0.1) await fs.writeFileAsync('msgcount.json', serverMsgCountJSON);
 }
 
 //THREE STRIKES YOU'RE OUT!!!
@@ -961,11 +964,20 @@ function handleStrike(msg, strikes) {
         dm.send({embed: new Discord.RichEmbed({description: descriptions[strikes]}).setColor("RANDOM")});
         if (times[strikes] !== 0) {
             msg.channel.overwritePermissions(msg.author, {SEND_MESSAGES: false}, "Channel ban started")
-            let strikeJSON = await loadJsonFile("strikes.json")
+            let strikeJSON = await fs.readFileAsync("strikes.json")
             if (!strikeJSON[msg.author.id]) strikeJSON[msg.author.id] = {}
             if (!strikeJSON[msg.author.id][msg.channel.id]) strikeJSON[msg.author.id][msg.channel.id] = {count: 1, time: 0}
             strikeJSON[msg.author.id][msg.channel.id].time = times[strikes] < 0 ? -10 : Date.now() + times[strikes]
-            await writeJsonFile("strikes.json", strikeJSON)
+            await fs.writeFileAsync("strikes.json", strikeJSON)
         }
     })
 }
+
+process.on('SIGINT', function () {
+    console.log("\nGracefully shutting down from SIGINT (Ctrl-C), waiting 5 seconds...");
+    bot.destroy();
+    closingProcess = true;
+    setTimeout(() => {
+        process.exit();
+    }, 5000);
+})

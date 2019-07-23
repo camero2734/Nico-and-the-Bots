@@ -10,6 +10,12 @@ module.exports = async function(msg, xpdelay, sql, leveltokens) {
         let delay = 10;
         let xptogive = 2;
 
+        if (msg.content.toLowerCase() === "!updatelt") {
+            let row = await sql.get(`SELECT * FROM scores2 WHERE userId ="${msg.author.id}"`);
+            if (row) levelTokens = updateTokens(row.level, msg, false);
+        }
+
+
         let noxpchans = [chans.lyrics, chans.commands, chans.venting, chans.incallmusic, chans.incall, chans.incallmemes];
 
         //INITIALIZE THAT STUFF

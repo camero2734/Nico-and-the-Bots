@@ -108,8 +108,10 @@ let tags = loadJsonFile.sync('tags.json');
 let leveltokens = loadJsonFile.sync("leveltokens.json");
 let recap = loadJsonFile.sync("recap.json");
 let msgcountJSON = loadJsonFile.sync("./json/msgcount.json");
+let commandsused = loadJsonFile.sync('commandsused.json');
 let serverMsgCountJSON = loadJsonFile.sync("msgcount.json");
 let boostEmojiJSON = loadJsonFile.sync("./json/boostemoji.json");
+let earned = loadJsonFile.sync('earnedbadges.json');
 
 //Class instantiation/initiation
 const bot = new Discord.Client({ autoReconnect: true, max_message_cache: 0, fetchAllMembers: true });
@@ -586,11 +588,10 @@ bot.on('message', async msg => {
     
     //Command use logger for badges
     ;(async function () {
-        let commandsused = await fs.readFileAsync('commandsused.json');
         if (!commandsused[msg.author.id]) commandsused[msg.author.id] = 0;
         commandsused[msg.author.id]++;
         await fs.writeFileAsync("commandsused.json", commandsused);
-        let earned = await fs.readFileAsync('earnedbadges.json');
+
         if (!earned[msg.author.id]) earned[msg.author.id] = {};
         if (commandsused[msg.author.id] >= 25 && !earned[msg.author.id]['commandsused25']) {
             dm(msg, 'You earned the `25 commands used badge!`', './badges/25_cmd.png');
@@ -800,7 +801,6 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             golds[reaction.message.author.id]++;
             let num = golds[reaction.message.author.id];
             await fs.writeFileAsync("golds.json", golds);
-            let earned = loadJsonFile.sync("./earnedbadges.json", "utf8");
             let finalNum = null;
             if (num === 5 || num === 10 || num == 25) finalNum = num;
             if (finalNum) {

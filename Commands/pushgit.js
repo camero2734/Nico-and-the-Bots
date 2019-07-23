@@ -3,6 +3,7 @@ module.exports = {
         if (msg.author.id !== poot) return;
         const git = require('simple-git')();
         try {
+            console.log("here")
             await git.add(".");
             await git.commit(removeCommand(msg.content) || "Bug fixes");
             git.diffSummary((err, diff) => {

@@ -114,7 +114,7 @@ module.exports = async function(msg, xpdelay, sql, leveltokens) {
             }
         }
         if (gained >= 1) {
-            msg.channel.send(`You gained ${gained} LT!`)
+            msg.channel.send(`You gained ${gained} LT!`);
         } else {
             if (!nosay) {
                 msg.channel.send('You don\'t have any tokens to claim, but you earn LT every 5 levels!')

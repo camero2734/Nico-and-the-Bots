@@ -440,7 +440,7 @@ bot.on('message', async msg => {
     let sfw = true;
     if (msg && msg.member && !msg.content.startsWith(prefix + "nsfw") && !msg.author.bot && msg.author.id !== bot.user.id && msg.author.id !== poot) sfw = await checkNSFW(msg, false, nsfai)
     if (sfw === "error") await chooseKey();
-    if (!sfw) return
+    if (!sfw) return;
     logMessage(msg); //For server-wide recap!
     
     //slowmode

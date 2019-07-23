@@ -6,7 +6,7 @@ module.exports = {
             await git.add(".");
             await git.commit(removeCommand(msg.content) || "Bug fixes");
             git.diff((err, diff) => {
-                if (diff) console.log(diff);
+                if (err) console.log(err);
             });
            //await git.push('origin', 'master');
             await msg.channel.embed("Pushed successfully!");

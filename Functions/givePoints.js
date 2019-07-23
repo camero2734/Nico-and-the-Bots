@@ -29,7 +29,7 @@ module.exports = async function(msg, xpdelay, sql, leveltokens) {
         }
 
         //Set time has passed, give exp
-        if (xpdelay[msg.author.id].time <= Date.now() && noxpchans.indexOf(msg.channel.id) === -1) {
+        if ((xpdelay[msg.author.id].time <= Date.now() || msg.content.toLowerCase() === "!score") && noxpchans.indexOf(msg.channel.id) === -1) {
             if (xpdelay[msg.author.id].num) {
                 if (xpdelay[msg.author.id].num <= 50) xptogive = xpdelay[msg.author.id].num //xpdelay[msg.author.id].num = number of msgs sent during period
                 if (xpdelay[msg.author.id].num > 50) xptogive = ~~(((-1) * (0.05 * xpdelay[msg.author.id].num - 2.5) * (0.05 * xpdelay[msg.author.id].num - 2.5)) + 50)
@@ -117,7 +117,7 @@ module.exports = async function(msg, xpdelay, sql, leveltokens) {
             msg.channel.send(`You gained ${gained} LT!`)
         } else {
             if (!nosay) {
-                msg.channel.send('You don\'t have any tokens to claim! Earn more by leveling up.')
+                msg.channel.send('You don\'t have any tokens to claim, but you earn LT every 5 levels!')
             }
         }
         return leveltokens;

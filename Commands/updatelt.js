@@ -2,9 +2,9 @@ module.exports = {
     execute: function (msg) { },
     info: {
         aliases: false,
-        example: "!play clear twenty one pilots",
+        example: "!updatelt",
         minarg: 0,
-        description: "Plays a song from YouTube via Lane Bot",
-        category: "Music",
+        description: "Updates your LT if the bot somehow missed it last time you levelled up",
+        category: "Other",
     }
 }

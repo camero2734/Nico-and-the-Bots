@@ -99,17 +99,17 @@ Discord.Message.prototype.getEmojis = requireFunction('getEmojis');
 //JSON files
 let chans = loadJsonFile.sync("channels.json");
 let cookie = loadJsonFile.sync("cookies.json");
-let xpdelay = loadJsonFile.sync("roasted.json");
+let xpdelay = loadJsonFile.sync("xpdelay.json"); //TODO:
 var variables = loadJsonFile.sync("variables.json");
 let profiles = loadJsonFile.sync("profiles.json");
 let golds = loadJsonFile.sync("golds.json");
 let goldtimes = loadJsonFile.sync("goldtimes.json");
 let tags = loadJsonFile.sync('tags.json');
-let leveltokens = loadJsonFile.sync("leveltokens.json");
-let recap = loadJsonFile.sync("recap.json");
-let msgcountJSON = loadJsonFile.sync("./json/msgcount.json");
+let leveltokens = loadJsonFile.sync("leveltokens.json"); //TODO:
+let recap = loadJsonFile.sync("recap.json"); //TODO:
+let msgcountJSON = loadJsonFile.sync("./json/msgcount.json"); //TODO:
 let commandsused = loadJsonFile.sync('commandsused.json');
-let serverMsgCountJSON = loadJsonFile.sync("msgcount.json");
+let serverMsgCountJSON = loadJsonFile.sync("msgcount.json"); //TODO:
 let boostEmojiJSON = loadJsonFile.sync("./json/boostemoji.json");
 let earned = loadJsonFile.sync('earnedbadges.json');
 
@@ -176,12 +176,24 @@ bot.on('ready', async () => {
             }
         }
     }, 1000 * 1000);
+    writeJSONFiles();
 });
 
-fs.writeFileAsync = async function(path, data) {
+async function writeJSONFiles() {
+    if (!fs.queue) fs.queue = [];
+    if (fs.queue.length > 0) {
+        let {path, data} = fs.queue.shift();
+        console.log(chalk.red(`WRITING ${path} [${fs.queue.length}]`));
+        await fs.promises.writeFile(path, data);
+    } else await delay(100);
+    return writeJSONFiles();
+}
+
+fs.writeFileQueued = async function(path, data) {
+    if (!fs.queue) fs.queue = [];
     if (closingProcess) return;
     if (typeof data === "object") data = JSON.stringify(data);
-    return await fs.promises.writeFile(path, data);
+    fs.queue.push({path, data});
 }
 
 fs.readFileAsync = async function(path) {
@@ -192,7 +204,7 @@ fs.readFileAsync = async function(path) {
         return data;
     } catch(e) {
         await bot.guilds.get("269657133673349120").channels.get(chans.bottest).send("<@221465443297263618> error in " + path + ", overwriting...");
-        await fs.writeFileAsync(path, {});
+        fs.writeFileQueued(path, {});
         return {};
     }
 }
@@ -331,20 +343,13 @@ bot.on("message", async message => {
         if (timeNow - key <= 168) cleanArray[key] = msgcountJSON[message.author.id][key];
     }
     msgcountJSON[message.author.id] = cleanArray;
-    await fs.writeFileAsync("./json/msgcount.json", msgcountJSON);
+    fs.writeFileQueued("./json/msgcount.json", msgcountJSON);
     
     //XP AND LT
     let response = await givePoints(message, xpdelay, sql, leveltokens);
 
-    let d = message.author.id;
-
-    let curXP = JSON.stringify(xpdelay[message.author.id]);
-    let newXP = JSON.stringify(response.delay[message.author.id]);
-    let oldTK = JSON.stringify(leveltokens[message.author.id]);
-    let newTK = JSON.stringify(response.tokens[message.author.id]);
-
-    await fs.writeFileAsync('roasted.json', response.delay);
-    await fs.writeFileAsync("leveltokens.json", response.tokens);
+    fs.writeFileQueued('xpdelay.json', response.delay);
+    fs.writeFileQueued("leveltokens.json", response.tokens);
     xpdelay[message.author.id] = (response && response.delay && response.delay[message.author.id]) ? response.delay[message.author.id] : xpdelay[message.author.id];
     leveltokens[message.author.id] = (response && response.tokens && response.tokens[message.author.id]) ? response.tokens[message.author.id] : leveltokens[message.author.id];
 });
@@ -468,13 +473,13 @@ bot.on('message', async msg => {
         if (typeof recap[msg.author.id] !== 'undefined' && recap[msg.author.id].day !== n) resetrecap(msg, recap).then(async (new_recap) => {
             if (new_recap && typeof new_recap === 'object') {
                 recap = new_recap; 
-                await fs.writeFileAsync('recap.json', new_recap);
+                fs.writeFileQueued('recap.json', new_recap);
             }
         })
         if (typeof recap[msg.author.id] === 'undefined' || typeof recap[msg.author.id].day === 'undefined') recap[msg.author.id] = { day: n };
         if (typeof recap[msg.author.id][msg.channel.id] === 'undefined') recap[msg.author.id][msg.channel.id] = 0;
         recap[msg.author.id][msg.channel.id]++;
-        fs.writeFileAsync('recap.json', recap);
+        fs.writeFileQueued('recap.json', recap);
         
     }
     //emoji reactor 3.0
@@ -590,26 +595,26 @@ bot.on('message', async msg => {
     ;(async function () {
         if (!commandsused[msg.author.id]) commandsused[msg.author.id] = 0;
         commandsused[msg.author.id]++;
-        await fs.writeFileAsync("commandsused.json", commandsused);
+        fs.writeFileQueued("commandsused.json", commandsused);
 
         if (!earned[msg.author.id]) earned[msg.author.id] = {};
         if (commandsused[msg.author.id] >= 25 && !earned[msg.author.id]['commandsused25']) {
             dm(msg, 'You earned the `25 commands used badge!`', './badges/25_cmd.png');
             if (!earned[msg.author.id]) earned[msg.author.id] = {};
             earned[msg.author.id]['commandsused25'] = true;
-            await fs.writeFileAsync("earnedbadges.json", earned);
+            fs.writeFileQueued("earnedbadges.json", earned);
         }
         if (commandsused[msg.author.id] >= 50 && !earned[msg.author.id]['commandsused50']) {
             dm(msg, 'You earned the `50 commands used badge!`', './badges/50_cmd.png');
             if (!earned[msg.author.id]) earned[msg.author.id] = {};
             earned[msg.author.id]['commandsused50'] = true;
-            await fs.writeFileAsync("earnedbadges.json", earned);
+            fs.writeFileQueued("earnedbadges.json", earned);
         }
         if (commandsused[msg.author.id] >= 100 && !earned[msg.author.id]['commandsused100']) {
             dm(msg, 'You earned the `100 commands used badge!`', './badges/100_cmd.png');
             if (!earned[msg.author.id]) earned[msg.author.id] = {};
             earned[msg.author.id]['commandsused100'] = true;
-            await fs.writeFileAsync("earnedbadges.json", earned);
+            fs.writeFileQueued("earnedbadges.json", earned);
         }
     })();
     //Actually find and use the command (Commands are stored in /Commands/)
@@ -800,14 +805,14 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             if (!golds[reaction.message.author.id] || golds[reaction.message.author.id] <= 0 || typeof golds[reaction.message.author.id] === 'undefined' || golds[reaction.message.author.id] === 'null') golds[reaction.message.author.id] = 0
             golds[reaction.message.author.id]++;
             let num = golds[reaction.message.author.id];
-            await fs.writeFileAsync("golds.json", golds);
+            fs.writeFileQueued("golds.json", golds);
             let finalNum = null;
             if (num === 5 || num === 10 || num == 25) finalNum = num;
             if (finalNum) {
                 dm(reaction.message, 'You earned the `' + finalNum + ' Golds` badge!', './badges/gold' + finalNum + '.png')
                 if (!earned[reaction.message.author.id]) earned[reaction.message.author.id] = {};
                 earned[reaction.message.author.id]['gold' + finalNum] = true;
-                await fs.writeFileAsync('earnedbadges.json', earned);
+                fs.writeFileQueued('earnedbadges.json', earned);
             }
             const gold = bot.emojis.get("389216023141941249");
             (embed.embed) ? embed.embed.setFooter('x' + num + ' | ' + reaction.message.author.username + '\'s total golds', 'https://i.imgur.com/QTzrs2Y.png') : embed.setFooter('x' + num + ' | ' + reaction.message.author.username + '\'s total golds', 'https://i.imgur.com/QTzrs2Y.png')
@@ -820,7 +825,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             reaction.message.author.createDM().then(DMCHannel => DMCHannel.send('You were given gold by ' + reaction.message.guild.members.get(user.id).user.username + ' for your message:\n```' + reaction.message.content + '```\n Your message is in `#house-of-gold`! You received one day of the Gold role, which lets you into #in-the-dark!'))
             reaction.message.member.addRole('386969744709910530');
             goldtimes[msg.author.id] = Date.now() + 1000 * 60 * 60 * 24;
-            await fs.writeFileAsync("goldtimes.json", goldtimes);
+            fs.writeFileQueued("goldtimes.json", goldtimes);
         }
     })
 })
@@ -945,7 +950,7 @@ async function logMessage(msg) {
     if (msg.author.bot) return;
     if (!serverMsgCountJSON[msg.channel.id]) serverMsgCountJSON[msg.channel.id] = 0;
     serverMsgCountJSON[msg.channel.id]++;
-    if (Math.random() < 0.1) await fs.writeFileAsync('msgcount.json', serverMsgCountJSON);
+    if (Math.random() < 0.1) fs.writeFileQueued('msgcount.json', serverMsgCountJSON);
 }
 
 //THREE STRIKES YOU'RE OUT!!!
@@ -968,16 +973,20 @@ function handleStrike(msg, strikes) {
             if (!strikeJSON[msg.author.id]) strikeJSON[msg.author.id] = {}
             if (!strikeJSON[msg.author.id][msg.channel.id]) strikeJSON[msg.author.id][msg.channel.id] = {count: 1, time: 0}
             strikeJSON[msg.author.id][msg.channel.id].time = times[strikes] < 0 ? -10 : Date.now() + times[strikes]
-            await fs.writeFileAsync("strikes.json", strikeJSON)
+            fs.writeFileQueued("strikes.json", strikeJSON);
         }
     })
 }
 
-process.on('SIGINT', function () {
+process.on('SIGINT', async function () {
     console.log("\nGracefully shutting down from SIGINT (Ctrl-C), waiting 5 seconds...");
-    bot.destroy();
     closingProcess = true;
-    setTimeout(() => {
-        process.exit();
-    }, 5000);
+    await bot.destroy();
+    let count = 0;
+    let interval = setInterval(() => {
+        if (fs.queue.length === 0 || count++ === 50) { //Wait for files to be written or wait 5 seconds
+            clearInterval(interval);
+            process.exit();
+        }
+    }, 100)
 })

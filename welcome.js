@@ -43,7 +43,7 @@ bot.login(process.env.SACARVER_TOKEN)
 function sendWelcome(member, welcomeChan) {
   let mins = 120
   sendWelcomeImage(member,welcomeChan).then(() => {
-    welcomeChan.send(`Welcome <@` + member.user.id + `>  to the twenty one pilots Discord server!\n**__A few channels you might wanna check out:__**\n<:trenchlogo:466653201077370880> <#${chans.hometown}> - The main chat channel- talk with other members here!\n<:nedtea:562152080383541259> <#${chans.commands}> - Use bot commands! For a quick guide to some commands, say \`!guide\` in the channel.\n<:LEAK:404458877393043466> <#${chans.tyler}> <#${chans.tyler}> <#${chans.band}> -  Social media posts from the band show up here!\n\nTo be notified if the band posts on social media or dmaorg.info updates, say !topfeed in #commands!`)
+    welcomeChan.send(`Welcome <@` + member.user.id + `>  to the twenty one pilots Discord server!\n**__A few channels you might wanna check out:__**\n<:trenchlogo:466653201077370880> <#${chans.hometown}> - The main chat channel- talk with other members here!\n<:nedtea:562152080383541259> <#${chans.commands}> - Use bot commands! For a quick guide to some commands, say \`!guide\` in the channel.\n<:LEAK:404458877393043466> <#${chans.tyler}> <#${chans.josh}> <#${chans.band}> -  Social media posts from the band show up here!\n<:TylerBanger:562764855124295690> <#${chans.rules}> - A list of the rules and guidelines for our server.\n\nTo be notified if the band posts on social media or dmaorg.info updates, say !topfeed in #commands!`)
   })
   
   member.user.createDM().then((ch) => {

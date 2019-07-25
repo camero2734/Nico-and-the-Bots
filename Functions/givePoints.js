@@ -19,7 +19,7 @@ module.exports = async function(msg, xpdelay, sql, leveltokens) {
         let noxpchans = [chans.lyrics, chans.commands, chans.venting, chans.incallmusic, chans.incall, chans.incallmemes];
 
         //INITIALIZE THAT STUFF
-        if (!xpdelay[msg.author.id]) {xpdelay[msg.author.id] = {time: 0, num: 0}; await writeJsonFile('roasted.json', xpdelay)}
+        if (!xpdelay[msg.author.id]) {xpdelay[msg.author.id] = {time: 0, num: 0};}
         if (!xpdelay[msg.author.id].time) xpdelay[msg.author.id].time = 0
 
         //If it's not time to dispense exp yet
@@ -58,7 +58,7 @@ module.exports = async function(msg, xpdelay, sql, leveltokens) {
             if (curLevel > row.level) {
                 let perkrow = await sql.get(`SELECT * FROM perks WHERE userId ="${msg.author.id}"`)
                 if (perkrow && perkrow['lvlcred'] && parseInt(perkrow['lvlcred']) === 1) {
-                    let randomReward = ~~(Math.random() * 1500) + 201
+                    let randomReward = ~~(Math.random() * 1500) + 201;
                     msg.channel.send(`**Perk Bonus:** You gained ${randomReward} points for leveling up!`)
                     let temprow = await sql.get(`SELECT * FROM daily WHERE userId ="${msg.author.id}"`)
                     if (temprow && temprow.xp) await sql.run(`UPDATE daily SET xp ="${temprow.xp + randomReward}" WHERE userId ="${msg.author.id}"`)

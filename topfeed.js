@@ -27,6 +27,9 @@ let Canvas = require('canvas');
 let cheerio = require("cheerio");
 const diff = require('fast-diff');
 const checkforsite = require("./Functions/checkforsite.js")
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
 
 let verbose = true;
 let SocialMedia = require("node-social-media").setAuth({
@@ -205,6 +208,17 @@ async function controller() {
         console.log(chalk.yellow("FINISHED DMAORG"));
     }
 
+    if (checkNum % 5 === 0) {
+        await checkIGLikesComments();
+        console.log(chalk.red("IG COMMENTS CHECK DONE"));
+    }
+
+    if (checkNum % 10 === 0) {
+        console.log(chalk.green("CHECKING GITHUB COMMITS"));
+        await wrapGithub();
+        console.log(chalk.green("FINISHED GITHUB COMMITS"));
+    }
+
     if (checkNum % 20 === 0) {
         console.log(chalk.blue("CHECKING YOUTUBE"));
         await wrapYoutube();
@@ -212,11 +226,7 @@ async function controller() {
         console.log(chalk.blue("FINISHED YOUTUBE"));
     }
 
-    if (checkNum % 3 === 0) {
-        console.log(chalk.green("CHECKING GITHUB COMMITS"));
-        wrapGithub();
-        console.log(chalk.green("FINISHED GITHUB COMMITS"));
-    }
+    
     
     if (state !== 1) setTimeout(() => {
         controller().catch(err => {
@@ -241,7 +251,63 @@ async function disablePing(mention) {
     await role.setMentionable(false);
 }
 
+async function checkIGLikesComments() {
+    const STORY_TYPES = {LIKE: 60, COMMENT: 12, FOLLOWING: 101};
+    const USER_IDS = {tylerrjoseph: "22486465", joshuadun: "4607161", twentyonepilots: "21649484"};
+    let idShortcode = function(id) {
+        id = BigInt(id);
+        let map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+        let base = BigInt(map.length);
+        let code = "";
+        while (id > 0) {
+            let mod = id % base;
+            id = (id - mod) / base;
+            code = map[mod] + code;
+        }
+        return code;
+    }
 
+    try {
+        if (fs.existsSync("./php/results.json")) { //DELETE JSON FIRST
+            await fs.promises.unlink("./php/results.json");
+        }
+        //RUN PHP SCRIPT
+        console.log(chalk.red("Running Comments PHP script"));
+        const { stdout, stderr } = await exec('cd php; php test.php');
+        console.log(chalk.red(stdout));
+
+        if (fs.existsSync("./php/results.json")) { //CHECK IF JSON EXISTS
+            let json = JSON.parse(await fs.promises.readFile("./php/results.json"));
+            if (!json || json.status !== "ok") throw new Error("JSON not ok");
+            let stories = json.stories;
+            for (let s of stories) {
+                if (s.story_type === STORY_TYPES.LIKE) {
+                    //disable for now
+                } else if (s.story_type === STORY_TYPES.COMMENT) {
+                    let text = s.args.text.split(":")[1].trim(); // X left a comment on Y's post: comment here
+                    let info = s.args.media[0];
+                    let postID = idShortcode(info.id.split("_")[0]);
+                    if (Object.keys(USER_IDS).some(k => USER_IDS[k] === s.args.profile_id)) {
+                        console.log(chalk.red("USERID EXISTS"));
+                        let twitterName = Object.keys(USER_IDS).find(k => USER_IDS[k] === s.args.profile_id);
+                        let url = `https://www.instagram.com/p/${postID}/?comment=${s.args.comment_id}`;
+                        let comment_user = Users.find(u => { return u.twitterName ===  twitterName});
+                        if (!comment_user) throw new Error("Invalid user: " + twitterName);
+                        let embed = new Discord.RichEmbed().setColor(comment_user.details.color);
+                        embed.setAuthor(s.args.text.split(":")[0], s.args.profile_image);
+                        embed.setDescription(text.substring(0, 2047));
+                        embed.addField("Post Link", `[Click Here](${url})`);
+                        let toPost = [{ link: url, toPost: [embed]}];
+                        await checkLinks(toPost, "InstagramComment", comment_user);
+                    }
+                }
+            }
+        } else throw new Error("JSON not exist");
+    } catch(e) {
+        console.log(e);
+        await bot.guilds.get("269657133673349120").channels.get(chans.bottest).send(e.message + " <@&554785502591451137>");
+    }
+}
 
 async function setUsers() {
     Users = [
@@ -336,7 +402,7 @@ async function delay(ms) {
     })
 }
 
-
+//let toPost = [{ link: url, toPost: [embed]}];
 async function checkLinks(links, platform, user) {
     for (let link of links) {
         //CHECK LOCAL LINKS FIRST
@@ -359,6 +425,8 @@ async function checkLinks(links, platform, user) {
             } else if (platform === "Youtube") {
                 toPost = link.toPost;
             } else if (platform === "Github") {
+                toPost = link.toPost;
+            } else if (platform === "InstagramComment") {
                 toPost = link.toPost;
             }
             if (toPost.length > 0) {

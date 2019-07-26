@@ -6,6 +6,7 @@ let pings = [];
 parsing = false;
 interval = null;
 sent = false;
+closingProcess = false;
 //Module imports
 let myFunctions = require('./functions.js');
 let nodechart = require('./nodechart.js');
@@ -99,17 +100,17 @@ Discord.Message.prototype.getEmojis = requireFunction('getEmojis');
 //JSON files
 let chans = loadJsonFile.sync("channels.json");
 let cookie = loadJsonFile.sync("cookies.json");
-let xpdelay = loadJsonFile.sync("xpdelay.json"); //TODO:
+let xpdelay = loadJsonFile.sync("xpdelay.json"); 
 var variables = loadJsonFile.sync("variables.json");
 let profiles = loadJsonFile.sync("profiles.json");
 let golds = loadJsonFile.sync("golds.json");
 let goldtimes = loadJsonFile.sync("goldtimes.json");
 let tags = loadJsonFile.sync('tags.json');
-let leveltokens = loadJsonFile.sync("leveltokens.json"); //TODO:
-let recap = loadJsonFile.sync("recap.json"); //TODO:
-let msgcountJSON = loadJsonFile.sync("./json/msgcount.json"); //TODO:
+let leveltokens = loadJsonFile.sync("leveltokens.json"); 
+let recap = loadJsonFile.sync("recap.json"); 
+let msgcountJSON = loadJsonFile.sync("./json/msgcount.json"); 
 let commandsused = loadJsonFile.sync('commandsused.json');
-let serverMsgCountJSON = loadJsonFile.sync("msgcount.json"); //TODO:
+let serverMsgCountJSON = loadJsonFile.sync("msgcount.json"); 
 let boostEmojiJSON = loadJsonFile.sync("./json/boostemoji.json");
 let earned = loadJsonFile.sync('earnedbadges.json');
 
@@ -122,7 +123,6 @@ sql.open('./daily.sqlite', { cached: true });
 const prefix = "!"
 let poot = '221465443297263618'
 var fairlycankick = false
-let closingProcess = false;
 
 //Arrays
 const swearWords = chans.swearWords;
@@ -193,6 +193,9 @@ fs.writeFileQueued = async function(path, data) {
     if (!fs.queue) fs.queue = [];
     if (closingProcess) return;
     if (typeof data === "object") data = JSON.stringify(data);
+    for (let i = 0; i < fs.queue.length; i++) {
+        if (fs.queue[i].path === path) return fs.queue[i].data = data; //Just write updated file instead
+    }
     fs.queue.push({path, data});
 }
 
@@ -984,7 +987,7 @@ process.on('SIGINT', async function () {
     await bot.destroy();
     let count = 0;
     let interval = setInterval(() => {
-        if (fs.queue.length === 0 || count++ === 50) { //Wait for files to be written or wait 5 seconds
+        if (!fs  || !fs.queue || fs.queue.length === 0 || count++ === 50) { //Wait for files to be written or wait 5 seconds
             clearInterval(interval);
             process.exit();
         }

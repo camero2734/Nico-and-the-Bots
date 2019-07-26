@@ -1,12 +1,13 @@
 module.exports = {
     execute: async function (msg) {
         if (msg.author.id !== poot) return;
-        let m = await msg.channel.fetchMessage("602635979408408587");
-        let newEmbed = new Discord.RichEmbed(m.embeds[0]);
-        newEmbed.setThumbnail("attachment://albums.png");
-        newEmbed.fields[0].name = "Song 1";
-        newEmbed.fields[2].name = "Song 2";
-        await m.edit(newEmbed);
+        if (msg.content.indexOf("closeprocess") !== -1) {
+            closingProcess = !closingProcess;
+            msg.channel.embed(closingProcess ? "Files no longer being written" : "File write enabled");
+        }
+        else {
+
+        }
     },
     info: {
         aliases: false,
@@ -17,6 +18,14 @@ module.exports = {
     }
 }
 
+
+// if (msg.author.id !== poot) return;
+        // let m = await msg.channel.fetchMessage("602635979408408587");
+        // let newEmbed = new Discord.RichEmbed(m.embeds[0]);
+        // newEmbed.setThumbnail("attachment://albums.png");
+        // newEmbed.fields[0].name = "Song 1";
+        // newEmbed.fields[2].name = "Song 2";
+        // await m.edit(newEmbed);
 
         // let bgURL = "https://i.imgur.com/SglNgFH.png";
         // let fgURL = await messageToImage(msg, 1200, 400);

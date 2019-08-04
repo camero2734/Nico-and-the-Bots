@@ -68,10 +68,13 @@ module.exports = {
         async function getCells(auth) {
             const sheets = google.sheets({ version: 'v4', auth });
             sheets.spreadsheets.values.get({
-                spreadsheetId: '1T06O94XrBJVvmfm4N4rLL3mm2kIx9DbWtEdNVswiDFc',
+                spreadsheetId: '1GwAzY8qmPu5J_IW35_p0LYWqhnf1_e3NmBY85bv2L-4',
                 range: 'A:R',
             }, async (err, res) => {
-                if (err) return console.log('The API returned an error: ' + err);
+                if (err) {
+                    msg.channel.embed("Error");
+                    return console.log('The API returned an error: ' + err);
+                }
                 const apps = res.data.values;
                 let input = msg.removeCommand();
                 if (/\d{18}/.test(input)) {
@@ -112,7 +115,7 @@ module.exports = {
         }
     },
     info: {
-        aliases: ["viewapps", "va", "modapp"],
+        aliases: ["viewapps", "va", "modapp", "viewapp"],
         example: "!viewapps (app # or mention or username)",
         minarg: 0,
         description: "Sends mod app with # provided",

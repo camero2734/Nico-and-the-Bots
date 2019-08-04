@@ -1,19 +1,18 @@
 module.exports = {
-    execute: function (msg) {
-        if (!canKick(msg)) return msg.channel.send("You must be an Admin or Moderator to use this command")
-        let guild = msg.guild
-        if (!msg.mentions || !msg.mentions.users) return msg.channel.send('`Proper command usage is !unmute @user`')
-        let uid = msg.mentions.users.first()
-        let RoleMember = guild.member(uid);
-        if (!RoleMember || typeof RoleMember === 'undefined') return msg.channel.send('`Proper command usage is !unmute @user`')
-        RoleMember.removeRole(TO)
-        RoleMember.addRole('269660541738418176')
-        sql.get(`DELETE FROM timeout WHERE userid = "${RoleMember.user.id}"`);
-        msg.channel.embed(RoleMember + "**, you are no longer muted!**")
+    execute: async function (msg) {
+        let guild = msg.guild;
+        if (!canKick(msg)) return msg.channel.embed("You must be an Admin or Moderator to use this command");
+        if (!msg.mentions || !msg.mentions.members) return msg.channel.embed('`Proper command usage is !unmute @user`');
+        let member = msg.mentions.members.first();
+        if (!member || typeof member === 'undefined') return msg.channel.embed('`Proper command usage is !unmute @user`');
+        await member.removeRole(TO);
+        await member.addRole('269660541738418176'); //BANDITO ROLE
+        await connection.getRepository(Item).createQueryBuilder().delete().where("type = :type", {type: "Timeout"}).andWhere("id = :id", {id: member.id}).execute();
+        msg.channel.embed(member + " **is no longer muted!**");
         if (fairlyused(msg)) {
-            myFunctions.sendembed(msg, msg.guild.channels.get(chans.fairlylog), 'Fairly Local used command!', false, 12845311)
+            myFunctions.sendembed(msg, msg.guild.channels.get(chans.fairlylog), 'Fairly Local used command!', false, 12845311);
         } else {
-            staffUsedCommand(msg, "Unmute", "#50df17", {User_unmuted: RoleMember.toString(),time: (new Date()).toString()})
+            staffUsedCommand(msg, "Unmute", "#50df17", {User_unmuted: member.toString(), time: (new Date()).toString()});
         }
     },
     info: {

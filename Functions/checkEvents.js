@@ -16,17 +16,34 @@ module.exports = async function(guild, Discord) {
     
 
     async function dmReminders(m, toSend) {
-        let ids = await fetchAllUsers(m, "📅");
+        let ids = (await fetchAllUsers(m, "📅"));
         for (let id of ids) {
             try {
                 let mem = m.guild.members.get(id);
                 if (!mem.user.bot) {
                     let dm = await mem.createDM();
-                    await dm.embed(toSend);
+                    await dm.send(new Discord.RichEmbed().setDescription(toSend).setColor("RANDOM"));
                 }
             } catch(e) {
-                console.log(e);
+                console.log(e, /dmreminderr/);
                 continue;
+            }
+        }
+        if (toSend.indexOf("1 hour until") !== -1) {
+            let event_role = await m.guild.createRole({
+                name: m && m.embeds && m.embeds[0] && m.embeds[0].title ? m.embeds[0].title : "event role",
+                color: 'BLUE',
+            });
+            for (let id of ids) {
+                try {
+                    let mem = m.guild.members.get(id);
+                    if (!mem.user.bot) {
+                        await mem.addRole(event_role.id)
+                    }
+                } catch(e) {
+                    console.log(e, /createrolerem/);
+                    continue;
+                }
             }
         }
     }

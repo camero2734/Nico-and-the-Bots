@@ -1,125 +1,122 @@
-module.exports = async function(msg, xpdelay, sql, leveltokens) {
+module.exports = async function(msg, connection, Discord) {
     const bot = msg.client;
-    const Discord = require("discord.js");
-    const fs = require("fs");
-    const loadJsonFile = require("load-json-file");
-    const writeJsonFile = require("write-json-file");
-    const chans = JSON.parse(fs.readFileSync("channels.json"));
-    const myFunctions = require("../functions.js");
+    const chans = Discord.chans;
     return new Promise(async resolve => {
         let delay = 10;
         let xptogive = 2;
-
         if (msg.content.toLowerCase() === "!updatelt") {
-            let row = await sql.get(`SELECT * FROM scores2 WHERE userId ="${msg.author.id}"`);
-            if (row) levelTokens = updateTokens(row.level, msg, false);
+            let gained = await updateTokens(msg, false);
+            if (gained <= 0) await msg.channel.embed("You have no unclaimed LT!");
+            else await msg.channel.embed(`You gained ${levelTokens} level tokens!`);
         }
 
 
         let noxpchans = [chans.lyrics, chans.commands, chans.venting, chans.incallmusic, chans.incall, chans.incallmemes];
 
-        //INITIALIZE THAT STUFF
-        if (!xpdelay[msg.author.id]) {xpdelay[msg.author.id] = {time: 0, num: 0};}
-        if (!xpdelay[msg.author.id].time) xpdelay[msg.author.id].time = 0
-
+        //INITIALIZE XPDELAY
+        let preXP = await connection.getRepository(XPDelay).findOne( {id: msg.author.id} );
+        if (!preXP) {
+            let newXP = new XPDelay(msg.author.id, 0, 0);
+            await connection.manager.save(newXP);
+            preXP = newXP;
+        }
         //If it's not time to dispense exp yet
-        if (xpdelay[msg.author.id].time > Date.now()) {
-            if (!xpdelay[msg.author.id].num) xpdelay[msg.author.id].num = 0;
-            xpdelay[msg.author.id].num++;
+        if (preXP.nextTime > Date.now()) {
+            preXP.messageCount++;
+            await connection.manager.save(preXP);
         }
 
         //Set time has passed, give exp
-        if ((xpdelay[msg.author.id].time <= Date.now() || msg.content.toLowerCase() === "!score") && noxpchans.indexOf(msg.channel.id) === -1) {
-            if (xpdelay[msg.author.id].num) {
-                if (xpdelay[msg.author.id].num <= 50) xptogive = xpdelay[msg.author.id].num //xpdelay[msg.author.id].num = number of msgs sent during period
-                if (xpdelay[msg.author.id].num > 50) xptogive = ~~(((-1) * (0.05 * xpdelay[msg.author.id].num - 2.5) * (0.05 * xpdelay[msg.author.id].num - 2.5)) + 50)
-                if (xptogive < 1) xptogive = 1
+        if ((preXP.nextTime <= Date.now() || msg.content.toLowerCase() === "!score") && noxpchans.indexOf(msg.channel.id) === -1) {
+            if (preXP.messageCount <= 50) xptogive = preXP.messageCount; //preXP.messageCount = number of msgs sent during period
+            if (preXP.messageCount > 50) xptogive = Math.floor(((-1) * (0.05 * preXP.messageCount - 2.5) * (0.05 * preXP.messageCount - 2.5)) + 50);
+            if (xptogive < 1) xptogive = 1;
+            let userEconomy = await connection.getRepository(Economy).findOne( {id: msg.author.id} );
+            if (!userEconomy) {
+                userEconomy = new Economy(msg.author.id); //Initalizes everything else to 0
             }
             if (Math.random() > 0.5) {
-                myFunctions.credits(msg, 2, false, false, false, false, true)
+                userEconomy.credits+=2;
             }
-
-            let row = await sql.get(`SELECT * FROM scores2 WHERE userId ="${msg.author.id}"`)
-            if (!row) {
-                await sql.run("INSERT INTO scores2 (userId, points, level) VALUES (?, ?, ?)", [msg.author.id, 1, 0]);
-                row = await sql.get(`SELECT * FROM scores2 WHERE userId ="${msg.author.id}"`)
-            }
-            let currentPoints = row.points + xptogive;
-            let rq = 100
-            let totalscore = 0
-            let curLevel = 0
+            //ALL TIME
+            let currentPoints = userEconomy.alltimeScore + xptogive;
+            let rq = 100;
+            let totalscore = 0;
+            let curLevel = 0;
             while (totalscore < currentPoints) {
-                totalscore += rq
+                totalscore += rq;
                 if (totalscore < currentPoints) {
-                    rq = (rq + 21) - (Math.pow(1.001450824, rq))
-                    curLevel++
+                    rq = (rq + 21) - (Math.pow(1.001450824, rq));
+                    curLevel++;
                 }
             }
-            if (curLevel > row.level) {
-                let perkrow = await sql.get(`SELECT * FROM perks WHERE userId ="${msg.author.id}"`)
-                if (perkrow && perkrow['lvlcred'] && parseInt(perkrow['lvlcred']) === 1) {
-                    let randomReward = ~~(Math.random() * 1500) + 201;
-                    msg.channel.send(`**Perk Bonus:** You gained ${randomReward} points for leveling up!`)
-                    let temprow = await sql.get(`SELECT * FROM daily WHERE userId ="${msg.author.id}"`)
-                    if (temprow && temprow.xp) await sql.run(`UPDATE daily SET xp ="${temprow.xp + randomReward}" WHERE userId ="${msg.author.id}"`)
+            if (curLevel > userEconomy.alltimeLevel) {
+                //FIXME: perks
+                let hasPerk = await connection.getRepository(Item).findOne( {id: msg.author.id, title: "lvlcred", type: "Perk"} );
+                if (hasPerk) {
+                    let randomReward = Math.floor(Math.random() * 1500) + 201;
+                    hasPerk = `You gained ${randomReward} credits for leveling up!`;
+                    userEconomy.credits+=randomReward;
+                }
+                userEconomy.alltimeLevel = curLevel;
+                levelTokens = await updateTokens(msg, true, curLevel);
+                let lvlEmbed = new Discord.RichEmbed({description: `LEVEL UP: You are now level ${curLevel}!`}).setColor("RANDOM");
+                if (typeof hasPerk === "string") lvlEmbed.addField("Perk Bonus", hasPerk);
+                if (levelTokens > 0) lvlEmbed.addField("Level Tokens", `You gained ${levelTokens} level tokens!`);
+                await msg.channel.send(msg.member, {embed: lvlEmbed});
+            }
+            userEconomy.alltimeScore+=xptogive;
+            let currentMonthlyPoints = userEconomy.monthlyScore + xptogive;
+            let rq2 = 100;
+            let totalscore2 = 0;
+            let newMonthlyLevel = 0;
+            while (totalscore2 < currentMonthlyPoints) {
+                totalscore2 += rq2;
+                if (totalscore2 < currentMonthlyPoints) {
+                    rq2 = (rq2 + 21) - (Math.pow(1.001450824, rq2));
+                    newMonthlyLevel++;
+                }
+            }
+            if (newMonthlyLevel > userEconomy.monthlyLevel) {
+                userEconomy.monthlyLevel = newMonthlyLevel;
+            }
+            userEconomy.monthlyScore+=xptogive;
+            await connection.manager.save(userEconomy);
 
-                }
-                row.level = curLevel;
-                levelTokens = updateTokens(row.level, msg, true)
-                await sql.run(`UPDATE scores2 SET points = ${Math.floor(row.points + xptogive)}, level = ${row.level} WHERE userId = ${msg.author.id}`);
-                msg.channel.send(msg.member, {embed: new Discord.RichEmbed({description: `LEVEL UP: You are now level ${curLevel}!`}).setColor("RANDOM")});
-            }
-            await sql.run(`UPDATE scores2 SET points = ${Math.floor(row.points + xptogive)} WHERE userId = ${msg.author.id}`);
-    
-            let row2 = await sql.get(`SELECT * FROM scores WHERE userId ="${msg.author.id}"`)
-            if (!row2) {
-                await sql.run("INSERT INTO scores (userId, points, level) VALUES (?, ?, ?)", [msg.author.id, 1, 0]);
-            } else {
-                let currentPoints = row2.points + xptogive
-                let rq2 = 100
-                let totalscore2 = 0
-                let curLevel2 = 0
-                while (totalscore2 < currentPoints) {
-                    totalscore2 += rq2
-                    if (totalscore2 < currentPoints) {
-                        rq2 = (rq2 + 21) - (Math.pow(1.001450824, rq2))
-                        curLevel2++
-                    }
-                }
-
-                if (curLevel2 > row2.level) {
-                    row2.level = curLevel2;
-                    await sql.run(`UPDATE scores SET points = ${Math.floor(row2.points + xptogive)}, level = ${row2.level} WHERE userId = ${msg.author.id}`);
-                }
-                await sql.run(`UPDATE scores SET points = ${Math.floor(row2.points + xptogive)} WHERE userId = ${msg.author.id}`);
-            }
-            xpdelay[msg.author.id].time = Date.now() + delay * 1000 * 60
-            xpdelay[msg.author.id].num = 0
-            
+            preXP.nextTime = Date.now() + delay * 1000 * 60;
+            preXP.messageCount = 0;
+            await connection.manager.save(preXP);
         }
-        resolve({delay: xpdelay, tokens: leveltokens})
+        resolve();
     })
 
-    function updateTokens(cL, msg, nosay) {
+    async function updateTokens(msg, nosay, currentLevel) {
+        if (!currentLevel) {
+            let userEconomy = await connection.getRepository(Economy).findOne( {id: msg.author.id} );
+            if (!userEconomy) return 0;
+            currentLevel = userEconomy.alltimeLevel;
+        }
         function tokenNum(x) {return Math.floor((0.0001 * x * x) + (0.045 * x) + 1)};
-        let id = msg.author.id
-        if (!leveltokens[id]) leveltokens[id] = {}
-        if (!leveltokens[id]['tokens']) leveltokens[id]['tokens'] = 0
-        let gained = 0
-        for (let i = 5; i <= cL; i += 5) {
-            if (!leveltokens[id][i]) {
-                leveltokens[id]['tokens'] += tokenNum(i)
-                gained += tokenNum(i)
-                leveltokens[id][i] = 1
+        let gained = 0;
+        let preLT = await connection.getRepository(LevelToken).findOne({ id: msg.author.id });
+        if (!preLT) {
+            let newLT = new LevelToken(msg.author.id, 0, 0);
+            await connection.manager.save(newLT);
+            preLT = newLT;
+        }
+        let lastLevel = preLT.lastLevel;
+        for (let i = preLT.lastLevel + 1; i <= currentLevel; i++) {
+            if (i % 5 === 0) {
+                gained += tokenNum(i);
+                lastLevel = i;
             }
         }
+
         if (gained >= 1) {
-            msg.channel.send(`You gained ${gained} LT!`);
-        } else {
-            if (!nosay) {
-                msg.channel.send('You don\'t have any tokens to claim, but you earn LT every 5 levels!')
-            }
+            preLT.value += gained;
+            preLT.lastLevel = lastLevel;
+            await connection.manager.save(preLT);
         }
-        return leveltokens;
+        return gained;
     }
 }

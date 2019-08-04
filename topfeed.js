@@ -1,35 +1,56 @@
 //IMPORT
-require('dotenv').config();
-var pm2 = require('pm2');
-
-pm2.connect(function (err) {
+require("dotenv").config();
+var pm2 = require("pm2");
+pm2.connect((err) => {
     if (err) throw err;
     setTimeout(() => {
-        pm2.restart('topfeed', () => { });
+        pm2.restart("topfeed", () => { });
     }, 60 * 60 * 1000);
 });
 
-
 let snekfetch = require("snekfetch");
 let fs = require("fs");
-let archive = require('waybackarchive');
-let sql = require('sqlite'); 
-var ypi = require('youtube-channel-videos');
-sql.open('./daily.sqlite', { cached: true });
+let archive = require("waybackarchive");
+var ypi = require("youtube-channel-videos");
 const Discord = require("discord.js");
 const bot = new Discord.Client({ autoReconnect: true, max_message_cache: 0 });
-const chalk = require('chalk');
-const hasha = require('hasha');
+const chalk = require("chalk");
+const hasha = require("hasha");
 const got = require("got");
-let request = require('request');
-let chans = JSON.parse(fs.readFileSync('channels.json'));
-let Canvas = require('canvas');
-let cheerio = require("cheerio");
-const diff = require('fast-diff');
-const checkforsite = require("./Functions/checkforsite.js")
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const cheerio = require("cheerio");
+const diff = require("fast-diff");
+const checkforsite = require("./Functions/checkforsite.js");
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
+let chans = JSON.parse(fs.readFileSync("channels.json"));
+let connection;
+global.typeorm = require("typeorm");
+fs.readdirSync("./app/model").forEach(file => {
+    let fileName = file.split(".")[0];
+    console.log(chalk.yellow.bold("LOADING MODEL " + fileName));
+    global[fileName] = require("./app/model/" + file);
+});
 
+//PRELOAD
+(async function() {
+    let entities = [];
+    let files = await fs.promises.readdir("./app/entity");
+    files.forEach(async (file) => {
+        let fileName = file.split(".")[0];
+        console.log(chalk.red.bold("LOADING ENTITY " + fileName));
+        entities.push(await require("./app/entity/" + file));
+    });
+    connection = await typeorm.createConnection({
+        type: "sqlite",
+        database: "discord.sqlite",
+        synchronize: true,
+        logging: false,
+        entities: entities
+    });
+    await connection.manager.query("PRAGMA busy_timeout=10000;");
+    console.log(chalk.bold("CONNECTION MADE"));
+    bot.login(process.env.KEONS_TOKEN);
+})();
 
 let verbose = true;
 let SocialMedia = require("node-social-media").setAuth({
@@ -55,15 +76,14 @@ let roles = {
         channel: "534882770619465731",
         timer: null
     }
-}
+};
 
 let timers = [null, null, null, null, null];
 
 
-bot.on('ready', async () => {
-    console.log('topfeed ready!');
-    await sql.run("PRAGMA busy_timeout=6000");
-    var guild = bot.guilds.get('269657133673349120');
+bot.on("ready", async () => {
+    console.log("topfeed ready!");
+    var guild = bot.guilds.get("269657133673349120");
     topfeed = guild.channels.get(chans.topfeed);
     await setUsers();
     console.log(chalk.green("USERS LOADED!"));
@@ -72,7 +92,7 @@ bot.on('ready', async () => {
     });
     manageQueue();
     setTimer(1000 * 3600);
-})
+});
 let state = 0;
 let Users = [];
 
@@ -91,7 +111,7 @@ async function manageQueue() {
             await sendFromQueue();
             locked = false;
         }
-    }, 1000)
+    }, 1000);
 }
 
 async function sendFromQueue() {
@@ -100,7 +120,7 @@ async function sendFromQueue() {
         let embeds = first[0];
         let source = first[1];
         if (!embeds || !source) return sendFromQueue();
-        console.log("Sending embeds of length " + embeds.length)
+        console.log("Sending embeds of length " + embeds.length);
         let channel = embeds.shift();
         if (source === "Snapchat") {
             await channel.send({
@@ -110,7 +130,7 @@ async function sendFromQueue() {
         } else {
             let pinged = null;
             for (let embed of embeds) {
-                console.log(embed, /embedsend/)
+                console.log(embed, /embedsend/);
                 if (typeof embed === "string" && embed.startsWith("<@&") && embed.endsWith(">")) {
                     pinged = embed;
                     await enablePing(embed);
@@ -125,10 +145,10 @@ async function sendFromQueue() {
     } else return true;
 }
 
-let checkNum = 1;
+let checkNum = 0;
 let thousand = 0;
 async function controller() {
-    console.log(chalk.yellow("Check " + thousand + "#" + (checkNum++)));
+    console.log(chalk.yellow("Check " + thousand + "#" + (++checkNum)));
     if (checkNum === 1000) checkNum = 0, thousand++;
     //TWITTER, SNAPCHAT, INSTAGRAM
     for (let i = 0; i < Users.length; i++) {
@@ -147,13 +167,13 @@ async function controller() {
                 let ava_hash = await hasha(ava_img);
 
                 let links = [
-                    {type: "avatar", link: ava_hash, hash: ava_hash, overrideLink: profile.avatar}
-                ]
+                    { type: "avatar", link: ava_hash, hash: ava_hash, overrideLink: profile.avatar }
+                ];
                 for (let i = 0; i < posts.links.length; i++) {
-                    links.push({type: "Post", link: posts.links[i], data: posts.posts[i]});
+                    links.push({ type: "Post", link: posts.links[i], data: posts.posts[i] });
                 }
                 for (let i = 0; i < stories.links.length; i++) {
-                    links.push({type: "Story", link: stories.stories[i].shortcode, data: stories.stories[i], overrideLink: stories.links[i]});
+                    links.push({ type: "Story", link: stories.stories[i].shortcode, data: stories.stories[i], overrideLink: stories.links[i] });
                 }
                 await checkLinks(links, "Instagram", user);
             }
@@ -162,7 +182,7 @@ async function controller() {
                 
                 let links = [];
                 for (let post of posts) {
-                    links.push({type: "Story", link: post})
+                    links.push({ type: "Story", link: post });
                 }
                 await checkLinks(links, "Snapchat", user);
             }
@@ -175,14 +195,14 @@ async function controller() {
                 let ava_hash = await hasha(ava_img);
 
                 
-                let banner_response = profile.banner ? await got(profile.banner) : {body: "NOT_FOUND"};
+                let banner_response = profile.banner ? await got(profile.banner) : { body: "NOT_FOUND" };
                 let ban_img = banner_response.body;
                 let ban_hash = await hasha(ban_img);
 
                 let links = [
-                    {type: "avatar", link: profile.avatar, hash: ava_hash, data: profile},
-                    {type: "banner", link: profile.banner, hash: ban_hash, data: profile},
-                ]
+                    { type: "avatar", link: profile.avatar, hash: ava_hash, data: profile },
+                    { type: "banner", link: profile.banner, hash: ban_hash, data: profile }
+                ];
                 if (posts.links) {
                     for (let i = 0; i < posts.links.length; i++) {
                         links.push({ type: "Post", link: posts.links[i], data: posts[i] });
@@ -209,7 +229,8 @@ async function controller() {
     }
 
     if (checkNum % 5 === 0) {
-        await checkIGLikesComments();
+        console.log(chalk.red("RUNNING IG COMMENTS PHP SCRIPT"));
+        await wrapIGComments();
         console.log(chalk.red("IG COMMENTS CHECK DONE"));
     }
 
@@ -222,11 +243,8 @@ async function controller() {
     if (checkNum % 20 === 0) {
         console.log(chalk.blue("CHECKING YOUTUBE"));
         await wrapYoutube();
-
         console.log(chalk.blue("FINISHED YOUTUBE"));
     }
-
-    
     
     if (state !== 1) setTimeout(() => {
         controller().catch(err => {
@@ -251,12 +269,12 @@ async function disablePing(mention) {
     await role.setMentionable(false);
 }
 
-async function checkIGLikesComments() {
-    const STORY_TYPES = {LIKE: 60, COMMENT: 12, FOLLOWING: 101};
-    const USER_IDS = {tylerrjoseph: "22486465", joshuadun: "4607161", twentyonepilots: "21649484"};
+async function wrapIGComments() {
+    const STORY_TYPES = { LIKE: 60, COMMENT: 12, FOLLOWING: 101 };
+    const USER_IDS = { tylerrjoseph: "22486465", joshuadun: "4607161", twentyonepilots: "21649484" };
     let idShortcode = function(id) {
         id = BigInt(id);
-        let map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+        let map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
         let base = BigInt(map.length);
         let code = "";
         while (id > 0) {
@@ -265,15 +283,14 @@ async function checkIGLikesComments() {
             code = map[mod] + code;
         }
         return code;
-    }
+    };
 
     try {
         if (fs.existsSync("./php/results.json")) { //DELETE JSON FIRST
             await fs.promises.unlink("./php/results.json");
         }
         //RUN PHP SCRIPT
-        console.log(chalk.red("Running Comments PHP script"));
-        const { stdout, stderr } = await exec('cd php; php test.php');
+        const { stdout, stderr } = await exec("cd php; php test.php");
         console.log(chalk.red(stdout));
 
         if (fs.existsSync("./php/results.json")) { //CHECK IF JSON EXISTS
@@ -291,13 +308,13 @@ async function checkIGLikesComments() {
                         console.log(chalk.red("USERID EXISTS"));
                         let twitterName = Object.keys(USER_IDS).find(k => USER_IDS[k] === s.args.profile_id);
                         let url = `https://www.instagram.com/p/${postID}/?comment=${s.args.comment_id}`;
-                        let comment_user = Users.find(u => { return u.twitterName ===  twitterName});
+                        let comment_user = Users.find(u => { return u.twitterName ===  twitterName;});
                         if (!comment_user) throw new Error("Invalid user: " + twitterName);
                         let embed = new Discord.RichEmbed().setColor(comment_user.details.color);
                         embed.setAuthor(s.args.text.split(":")[0], s.args.profile_image);
                         embed.setDescription(text.substring(0, 2047));
                         embed.addField("Post Link", `[Click Here](${url})`);
-                        let toPost = [{ link: url, toPost: [embed]}];
+                        let toPost = [{ link: url, toPost: [embed] }];
                         await checkLinks(toPost, "InstagramComment", comment_user);
                     }
                 }
@@ -311,14 +328,14 @@ async function checkIGLikesComments() {
 
 async function setUsers() {
     Users = [
-        new SocialMedia({instaName: "twentyonepilots", twitterName: "twentyonepilots"}, {
+        new SocialMedia({ instaName: "twentyonepilots", twitterName: "twentyonepilots" }, {
             name: "twenty one pilots",
             channel: "534882758770688031",
             role: "534890910526472202",
             color: "#fce300",
             time: 15 * 1000
         }),
-        new SocialMedia({instaName: "tylerrjoseph", twitterName: "tylerrjoseph"}, {
+        new SocialMedia({ instaName: "tylerrjoseph", twitterName: "tylerrjoseph" }, {
             name: "Tyler Joseph",
             channel: "470428804695851008",
             role: "534890883016032257",
@@ -332,56 +349,56 @@ async function setUsers() {
             color: "#0005ff",
             time: 15 * 1000
         }),
-        new SocialMedia({instaName: "debbyryan", twitterName: "debbyRyan"}, {
+        new SocialMedia({ instaName: "debbyryan", twitterName: "debbyRyan" }, {
             name: "Debby Ryan",
             channel: "534882714566918174",
             role: "535588989713907713",
             color: "#FF0CE2",
             time: 45 * 1000
         }),
-        new SocialMedia({instaName: "jennaajoseph"}, {
+        new SocialMedia({ instaName: "jennaajoseph" }, {
             name: "Jenna Joseph",
             channel: "534882714566918174",
             role: "534890933301542912",
             color: "#FFFAF0",
             time: 45 * 1000
         }),
-        new SocialMedia({instaName: "yungjimdun"}, {
+        new SocialMedia({ instaName: "yungjimdun" }, {
             name: "Jim",
             channel: "534882714566918174",
             role: "534890931573358623",
             color: "#D4AD7F",
             time: 45 * 1000
         }),
-        new SocialMedia({instaName: "bradheaton", twitterName: "bradheaton"}, {
+        new SocialMedia({ instaName: "bradheaton", twitterName: "bradheaton" }, {
             name: "Brad Heaton",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#d9593b",
             time: 60 * 1000
         }),
-        new SocialMedia({instaName: "jordandun", twitterName: "JordanCDun"}, {
+        new SocialMedia({ instaName: "jordandun", twitterName: "JordanCDun" }, {
             name: "Jordan Dun",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#234400",
             time: 60 * 1000
         }),
-        new SocialMedia({instaName: "reelbearmedia", twitterName: "ReelBearMedia"}, {
+        new SocialMedia({ instaName: "reelbearmedia", twitterName: "ReelBearMedia" }, {
             name: "ReelBearMedia",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#331900",
             time: 60 * 1000
         }),
-        new SocialMedia({instaName: "jay_t_joseph", twitterName: "JayDrummerBoy"}, {
+        new SocialMedia({ instaName: "jay_t_joseph", twitterName: "JayDrummerBoy" }, {
             name: "Jay Joseph",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#d3ffce",
             time: 60 * 1000
         }),
-        new SocialMedia({twitterName: "blurryface"}, {
+        new SocialMedia({ twitterName: "blurryface" }, {
             name: "BLURRYFACE",
             channel: "534882770619465731",
             role: "534890903664328714",
@@ -398,21 +415,20 @@ async function setUsers() {
 
 async function delay(ms) {
     return new Promise(resolve => {
-        setTimeout(() => {resolve()}, ms)
-    })
+        setTimeout(() => {resolve();}, ms);
+    });
 }
 
-//let toPost = [{ link: url, toPost: [embed]}];
 async function checkLinks(links, platform, user) {
     for (let link of links) {
         //CHECK LOCAL LINKS FIRST
-        let row = await sql.get(`SELECT * FROM feeds WHERE type="${platform}" AND link="${link.link}"`);
-        if (typeof row === "undefined") {
-            //WRITE TO SQL
-            console.log("WRITING " + link.link)
-            sql.run("INSERT INTO feeds (type, link, date) VALUES (?, ?, ?)", [platform, link.link, Date.now()]);
+        let hasLink = await connection.getRepository(Topfeed).findOne({ type: platform, link:link.link });
+        if (!hasLink) {
+            //SAVE LINK
+            console.log("WRITING " + link.link);
+            let newTF = new Topfeed(platform, link.link, Date.now());
+            await connection.manager.save(newTF);
             //SEND
-            //console.log(platform);
             if (typeof link.overrideLink !== "undefined") link.link = link.overrideLink;
             let toPost = [];
             if (platform === "Instagram") {
@@ -444,7 +460,7 @@ async function getChannelVideos(channelID) {
         ypi.channelVideos(process.env.YOUTUBE, channelID, function (channelItems) {
             resolve(channelItems);
         });
-    })
+    });
 };
 
 async function wrapGithub() {
@@ -456,31 +472,31 @@ async function wrapGithub() {
             let links = [];
             $(".muted-link.mt-2.mr-2.d-inline-block.v-align-middle").each((i, e) => {
                 let link = "https://github.com" + e.attribs.href;
-                links.push({link: link, type: "NoTag", toPost: [`${link} <@&554785502591451137>`]});
+                links.push({ link: link, type: "NoTag", toPost: [`${link} <@&554785502591451137>`] });
             });
 
             resolve(links);
-        })
+        });
     }
 
     let posts = await fetchCommentedPosts();
-    let user = {details: {channel: "470406597860917249"}};
+    let user = { details: { channel: "470406597860917249" } };
     await checkLinks(posts, "Github", user);
 }
 
 async function wrapYoutube() {
     return new Promise(async resolve => {
-        let guild = bot.guilds.get('269657133673349120');  
+        let guild = bot.guilds.get("269657133673349120");  
 
         //TOP
         let top_links = [];
         let top = await getChannelVideos("UCBQZwaNPFfJ1gZ1fLZpAEGw");
         for (let video of top) {
             let yt_url = "https://www.youtube.com/watch?v=" + video.id.videoId;
-            let link = {link: yt_url, toPost: [yt_url + " <@&538224831779307534>"]};
+            let link = { link: yt_url, toPost: [yt_url + " <@&538224831779307534>"] };
             top_links.push(link);
         }
-        let top_user = Users.find(s => {return s.twitterName === "twentyonepilots"}) || Users[0];
+        let top_user = Users.find(s => {return s.twitterName === "twentyonepilots";}) || Users[0];
         await checkLinks(top_links, "Youtube", top_user);
 
         //SLUSHIE GUYS
@@ -488,10 +504,10 @@ async function wrapYoutube() {
         let slushie = await getChannelVideos("UCITp_ri9o-MBpLLaYZalTTQ");
         for (let video of slushie) {
             let yt_url = "https://www.youtube.com/watch?v=" + video.id.videoId;
-            let link = {link: yt_url, toPost: [yt_url]};
+            let link = { link: yt_url, toPost: [yt_url] };
             slush_links.push(link);
         }
-        let slushie_user = Users.find(s => {return s.twitterName === "tylerrjoseph"}) || Users[1];
+        let slushie_user = Users.find(s => {return s.twitterName === "tylerrjoseph";}) || Users[1];
         await checkLinks(slush_links, "Youtube", slushie_user);
         
         resolve(true);
@@ -500,15 +516,15 @@ async function wrapYoutube() {
 
 async function wrapDmaorg() {
     return new Promise(async resolve => {
-        let guild = bot.guilds.get('269657133673349120');
+        let guild = bot.guilds.get("269657133673349120");
         let changedSites = [];
         
         let sites = [
-            {name: "dmaorg", url: "http://dmaorg.info/found/15398642_14/clancy.html", tag: true},
-            {name: "dmaroot", url: "http://dmaorg.info", tag: true},
-            {name: "nicoandtheniners", url: "http://nicoandtheniners.com/", tag: false},
-            {name: "nicoJSON", url: "http://nicoandtheniners.com/release/pull", tag: false},
-            {name: "dmaorgIndex", url: "http://plu.evx.mybluehost.me/", tag: false},
+            { name: "dmaorg", url: "http://dmaorg.info/found/15398642_14/clancy.html", tag: true },
+            { name: "dmaroot", url: "http://dmaorg.info", tag: true },
+            { name: "nicoandtheniners", url: "http://nicoandtheniners.com/", tag: false },
+            { name: "nicoJSON", url: "http://nicoandtheniners.com/release/pull", tag: false },
+            { name: "dmaorgIndex", url: "http://plu.evx.mybluehost.me/", tag: false }
         ];
 
         for (let site of sites) {
@@ -532,7 +548,7 @@ async function wrapDmaorg() {
         }
         //console.log(changedSites, /CHANGED/);
         resolve(true);
-    })
+    });
 }
 
 
@@ -549,8 +565,8 @@ async function wrapTwitter(post, user) {
         embed.setThumbnail(post.data.user.profile_image_url);
         embed.setFooter(post.data.created_at, "https://images-ext-1.discordapp.net/external/p0hmzxdYkwJE0RZeFN7Bi8TxlAX1DelMCWY2AaJ536c/https/pbs.twimg.com/profile_images/1013798240683266048/zRim1x6M.jpg");
         embed.setDescription(post.data.full_text);
-        embed.addField("\u200b", `[Post Link](https://twitter.com/${post.data.user.screen_name}/status/${post.data.id_str})`)
-        if (post.data.entities && post.data.entities.media && post.data.entities.media[0]) embed.setImage(post.data.entities.media[0].media_url)
+        embed.addField("\u200b", `[Post Link](https://twitter.com/${post.data.user.screen_name}/status/${post.data.id_str})`);
+        if (post.data.entities && post.data.entities.media && post.data.entities.media[0]) embed.setImage(post.data.entities.media[0].media_url);
         return [embed];
     }
     
@@ -571,13 +587,13 @@ async function wrapSnapchat(post, user) {
         img = new Buffer.from(image.attribs.href.match(/^data:.+\/(.+);base64,(.*)$/)[2], "base64");
     }
 
-    if (img) embed.attachFile(new Discord.Attachment(img, "icon.png"))
+    if (img) embed.attachFile(new Discord.Attachment(img, "icon.png"));
     embed.setThumbnail("attachment://icon.png");
 
     let buffer = await snekfetch.get(post);
     let parts = post.split(".");
     let ending = parts[parts.length - 1];
-    let att = new Discord.Attachment(buffer.body, `snapchat.${ending.substring(0,3)}`);
+    let att = new Discord.Attachment(buffer.body, `snapchat.${ending.substring(0, 3)}`);
     return [embed, att];
 }
 
@@ -597,7 +613,7 @@ async function wrapInstagram(post, user) {
                 embed.setThumbnail(profile.avatar);
                 embed.setDescription(post.data.caption ? post.data.caption : "No caption");
                 embed.setAuthor(post.type + " from " + user.details.name + ` (${user.instaName})`);
-                embed.setFooter(new Date(1000*post.data.taken_at_timestamp), "https://images-ext-2.discordapp.net/external/jncL2CC80EDZyhl_3Jj72zIyEtxG_ypQWQtXBximES8/https/instagram-brand.com/wp-content/uploads/2016/11/app-icon2.png")
+                embed.setFooter(new Date(1000*post.data.taken_at_timestamp), "https://images-ext-2.discordapp.net/external/jncL2CC80EDZyhl_3Jj72zIyEtxG_ypQWQtXBximES8/https/instagram-brand.com/wp-content/uploads/2016/11/app-icon2.png");
                 let urls = [];
                 urls = post && post.data && post.data.getPostMedia ? await post.data.getPostMedia() : urls;
                 if (post.type === "Story") urls = [post.link];
@@ -605,7 +621,7 @@ async function wrapInstagram(post, user) {
                     let parts = urls[i].split("?");
                     urls[i] = parts[0] + "?" + parts[1];
                 }
-                if (urls.length <= 1 && !urls.some(l => {return l.includes(".mp4")})) {
+                if (urls.length <= 1 && !urls.some(l => {return l.includes(".mp4");})) {
                     if (urls.length === 1) embed.setImage(urls[0]);
                     embed.addField("Post Link: ", `[Click Here](${post.link})`);
                     resolve([embed]);
@@ -631,7 +647,7 @@ async function wrapInstagram(post, user) {
             }
         }
         resolve([]);
-    })
+    });
 }
 
 Discord.Role.prototype.allowMentionTime = async function(seconds) {
@@ -642,33 +658,31 @@ Discord.Role.prototype.allowMentionTime = async function(seconds) {
         if (roles[roleShort].timer !== null) clearTimeout(roles[roleShort].timer);
         let role = this.id;
         let myTimeout = setTimeout(() => {
-            console.log(chalk.green("role turning off..."))
+            console.log(chalk.green("role turning off..."));
             bot.guilds.get("269657133673349120").roles.get(role).setMentionable(false, "topfeed off");
-        }, seconds * 1000)
+        }, seconds * 1000);
         roles[roleShort].timer = myTimeout;
     }
     return true;
-}
+};
 
-bot.on('message', msg => {
-    if (msg.content === '..ping') return msg.channel.send('t*pfeed is on!')
+bot.on("message", msg => {
+    if (msg.content === "..ping") return msg.channel.send("t*pfeed is on!");
 });
 
-bot.login(process.env.KEONS_TOKEN);
-
 //Error handling
-bot.on('error', e => handleErr(e));
+bot.on("error", e => handleErr(e));
 process.on("uncaughtException", e => handleErr(e));
 process.on("unhandledRejection", e => handleErr(e));
 
 function handleErr(e) {
     try {
-        if (!e.message || e.message.indexOf("503") === -1) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send(e.message ? e.message : e.toString(), {split: true});
+        if (!e.message || e.message.indexOf("503") === -1) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send(e.message ? e.message : e.toString(), { split: true });
     } catch(e) {
-        console.log(e, /TRYCATCHAHNDLEERR/)
+        console.log(e, /TRYCATCHAHNDLEERR/);
     }
     console.log(e, /E-1/);
-    setTimeout(() => {process.exit(0)}, 10000)
+    setTimeout(() => {process.exit(0);}, 10000);
 }
 
 

@@ -24,7 +24,7 @@ module.exports = {
         //CHECK IF ALREADY HAS DE
         if (msg.member.roles.get("283272728084086784")) {
             if (msg.content.endsWith(".")) msg.delete();
-            else return msg.channel.embed("You are already a Death Eater!")
+            else return msg.channel.embed("You are already a Death Eater!");
         }
 
         //CHECK IF RECENTLY APPLIED
@@ -42,12 +42,12 @@ module.exports = {
         }
         if (applyJSON[msg.author.id] && typeof openApps[msg.author.id].invalid === "string") return msg.channel.embed(openApps[msg.author.id].invalid);
         
-        await msg.channel.embed(msg.member.displayName + ", check your DMs to begin your application!")
+        await msg.channel.embed(msg.member.displayName + ", check your DMs to begin your application!");
         await dm.embed("**Welcome to your DE application!**");
         try {
             //DONT ALLOW MULTIPLE APPS AT ONCE
             openApps[msg.author.id].invalid = "You already have an open application! If this is an error, please contact poot.";
-            await dm.embed("Are you applying as a prominent member of another community?");
+            await dm.embed("Are you applying as a prominent member of another community? (Most people should answer no)");
             let typeQ = await dm.awaitMessage(msg.member, filter);
             if (typeQ.content.trim().toLowerCase() === "yes") {
                 const FOLLOWREQ = 8000;
@@ -59,19 +59,19 @@ module.exports = {
                 let sendCheckmark = async function(requirementMet, val, check, q, response1, response2, overrideAnswer) {
                     let embed = new Discord.RichEmbed().setDescription(q).setColor("RANDOM").setFooter("You have 3 minutes to respond");
                     await dm.send(embed);
-                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ['time'] });
-                    let resp = { type: "checkmark", question: q, answer: overrideAnswer ? {content: overrideAnswer} : collected.first(), val: val, check: check, passed: requirementMet, pMessage: response1, fMessage: response2 };
+                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ["time"] });
+                    let resp = { type: "checkmark", question: q, answer: overrideAnswer ? { content: overrideAnswer } : collected.first(), val: val, check: check, passed: requirementMet, pMessage: response1, fMessage: response2 };
                     qs.push(resp);
                     return resp;
-                }
+                };
                 let sendQuestion = async function (q) {
                     let embed = new Discord.RichEmbed().setDescription(q).setColor("RANDOM").setFooter("You have 3 minutes to respond");
                     await dm.send(embed);
-                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ['time'] });
+                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ["time"] });
                     let resp = { type: "question", question: q, answer: collected.first() };
                     qs.push(resp);
                     return resp;
-                }
+                };
 
                 await sendQuestion("Which platform is your account on? You may list multiple in a single message.");
                 let accounts = qs[qs.length - 1].answer.content;
@@ -82,7 +82,7 @@ module.exports = {
 
                 if (!hasYoutube && !hasTwitter && !hasInstagram) {
                     openApps[msg.author.id].invalid = false;
-                    return dm.embed("You did not enter any social media accounts. Please use `!applyde` again to restart. The only accepted social platforms are YouTube, Instagram, and Twitter.")
+                    return dm.embed("You did not enter any social media accounts. Please use `!applyde` again to restart. The only accepted social platforms are YouTube, Instagram, and Twitter.");
                 }
 
                 if (hasYoutube) {
@@ -91,7 +91,7 @@ module.exports = {
                         let youtube_url = yt_res.answer.content.replace(/@/g, "").trim();
                         let response = await got(youtube_url);
                         let $ = cheerio.load(response.body);
-                        let yt_pfp = $(".channel-header-profile-image").attr('src');
+                        let yt_pfp = $(".channel-header-profile-image").attr("src");
                         let name = $(".spf-link.branded-page-header-title-link.yt-uix-sessionlink").text();
                         let count = $(".yt-subscription-button-subscriber-count-branded-horizontal.subscribed.yt-uix-tooltip").text().replace(/,/g, "");
                         let embed = new Discord.RichEmbed().setTitle(name).setThumbnail(yt_pfp).addField("Subscribers", count);
@@ -99,7 +99,7 @@ module.exports = {
                         let _question = "If this information is incorrect, please contact poot. Otherwise, respond with anything to continue...";
                         await sendCheckmark(count >= FOLLOWREQ, count, FOLLOWREQ, _question, "Has at least %check subscribers", "Does not have at least %check subscribers", count);
                     } catch(e) {
-                        console.log(e)
+                        console.log(e);
                         await dm.send("Error! Note that the url must be in one of the following formats:\n\n`https://www.youtube.com/channel/UC_lIXUOOz5wAmE5YOyX2zpg` OR `https://www.youtube.com/user/twentyonepilots`");
                         throw new Error();
                     }
@@ -124,7 +124,7 @@ module.exports = {
                         let _question = "If this information is incorrect, please contact poot. Otherwise, respond with anything to continue...";
                         await sendCheckmark(count >= FOLLOWREQ, count, FOLLOWREQ, _question, "Has at least %check followers", "Does not have at least %check followers", count);
                     } catch (err) {
-                        console.log(err)
+                        console.log(err);
                         await dm.embed("Error! Please make sure you are entering a valid Twitter username (or a link).");
                         throw new Error();
                     }
@@ -140,7 +140,7 @@ module.exports = {
                         let ig_parts = ig_user.split("/");
                         ig_user = ig_user.endsWith("/") ? ig_parts[ig_parts.length - 2] : ig_parts[ig_parts.length - 1];
 
-                        let ig_sm = new SocialMedia({instaName: ig_user});
+                        let ig_sm = new SocialMedia({ instaName: ig_user });
                         await ig_sm.load();
                         let ig_profile = await ig_sm.getInstagramProfile();
                         let bio = ig_profile.biography;
@@ -152,7 +152,7 @@ module.exports = {
                         let _question = "If this information is incorrect, please contact poot. Otherwise, respond with anything to continue...";
                         await sendCheckmark(count >= FOLLOWREQ, count, FOLLOWREQ, _question, "Has at least %check followers", "Does not have at least %check followers", count);
                     } catch(err) {
-                        console.log(err)
+                        console.log(err);
                         await dm.embed("Error! Please make sure you are entering a valid Instagram username (or a link).");
                         throw new Error();
                     }
@@ -163,7 +163,7 @@ module.exports = {
 
                 //Get passed/total
                 let passedCount = 0;
-                let total = qs.filter(q => { return q.type === "checkmark" }).length;
+                let total = qs.filter(q => { return q.type === "checkmark"; }).length;
                 for (let q of qs) if (q.type === "checkmark" && q.passed) passedCount++;
                 await submitAndEmbed(passedCount, total, qs);
             } else {
@@ -177,23 +177,23 @@ module.exports = {
                 //GET LEVELS AND STUFF
 
                 //LEVEL
-                let levelRow = await sql.get(`SELECT * FROM scores2 WHERE userId ="${msg.author.id}"`);
-                let level = levelRow && levelRow.level ? levelRow.level : 1;
+                let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
+                if (!userEconomy) userEconomy = new Economy(msg.author.id);
+                let level = userEconomy.alltimeLevel;
 
                 //WARNINGS
-                let warnRows = await sql.all(`SELECT * FROM warn WHERE userid = "${msg.author.id}" ORDER BY date DESC`);
-                let filtered = warnRows.filter(wrow => {
-                    return wrow.date >= (Date.now() - (1000 * 60 * 60 * 24 * 60));
-                })
+                let userWarnings = await connection.getRepository(Item).find({ id: msg.author.id, type: "Warning" });
+                let filtered = userWarnings.filter(uw => {
+                    return uw.time >= (Date.now() - (1000 * 60 * 60 * 24 * 60));
+                });
                 let warnings = filtered.length;
 
                 //AVERAGE DAILY MESSAGES
-                let msgsDay = 0;
-                if (msgcountJSON[msg.author.id]) {
-                    for (let key in msgcountJSON[msg.author.id]) msgsDay += msgcountJSON[msg.author.id][key];
-                }
-                msgsDay = Math.floor(msgsDay / 7);
-
+                let userWeekRecap = await connection.getRepository(WeekRecap).findOne({ id: msg.author.id });
+                let days = JSON.parse(userWeekRecap.days);
+                let msgsTotal = 0;
+                for (let day of days) msgsTotal+=day;
+                let msgsDay = Math.ceil(msgsTotal / 7);
                 //JOIN DATE
                 let joinDate = msg.member.joinedAt;
 
@@ -205,15 +205,15 @@ module.exports = {
                     let q = question1.replace(/%val/g, val) + "" + `, which ${requirementMet ? "meets the requirement. Please respond with anything to continue..." : "does not meet the requirement of " + question2.replace(/%check/, check) + ". If you would like to provide context to this, please respond with those details, otherwise reply with 'NA'."}`;
                     let embed = new Discord.RichEmbed().setDescription(q).setColor("RANDOM").setFooter("You have 3 minutes to respond");
                     await dm.send(embed);
-                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ['time'] });
+                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ["time"] });
                     qs.push({ type: "checkmark", question: q, answer: collected.first(), val: val, check: check, passed: requirementMet, pMessage: response1, fMessage: response2 });
-                }
+                };
                 let sendQuestion = async function (q) {
                     let embed = new Discord.RichEmbed().setDescription(q).setColor("RANDOM").setFooter("You have 3 minutes to respond");
                     await dm.send(embed);
-                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ['time'] });
+                    let collected = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ["time"] });
                     qs.push({ type: "question", question: q, answer: collected.first() });
-                }
+                };
 
                 await sendCheckmark(level >= LVLREQ, level, LVLREQ, "Your current level is **%val**", "having level **%check**", "Level %val", "Level %val");
                 await sendCheckmark(warnings <= WARNREQ, warnings, WARNREQ, "You have **%val** warnings", "having no more than **%check** warnings", "Only has %val warning(s)", "Has %val warnings");
@@ -228,7 +228,7 @@ module.exports = {
 
                 //Get passed/total
                 let passedCount = 0;
-                let total = qs.filter(q => { return q.type === "checkmark" }).length;
+                let total = qs.filter(q => { return q.type === "checkmark"; }).length;
                 for (let q of qs) if (q.type === "checkmark" && q.passed) passedCount++;
                 await submitAndEmbed(passedCount, total, qs);
             }
@@ -256,7 +256,7 @@ module.exports = {
 
                 //ASK TO SUBMIT
                 await dm.embed("Would you like to submit your application? **You meet " + passedCount + "/" + total + " of the requirements.** Remember, you can only apply once per month!\n\n`If you would like to submit it, please reply with YES`");
-                let response = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ['time'] });
+                let response = await dm.awaitMessages(filter, { max: 1, time: qTime, errors: ["time"] });
                 if (response.first().content.toLowerCase().indexOf("yes") !== -1) {
                     //SEND TO STAFF
                     let appChannel = msg.guild.channels.get(chans.deapplications);
@@ -285,7 +285,7 @@ module.exports = {
                 openApps[msg.author.id].invalid = false;
                 await writeJsonFile("./json/deapplications.json", applyJSON);
             }
-            return dm.embed("Your application timed out! If you still want to apply, use the command again in the server.")
+            return dm.embed("Your application timed out! If you still want to apply, use the command again in the server.");
         }
     },
     info: {
@@ -293,6 +293,6 @@ module.exports = {
         example: "!applyde",
         minarg: 0,
         description: "Generates an application (in DMs) for Death Eaters. Anyone may apply, but you may only apply once a month.",
-        category: "NA",
+        category: "NA"
     }
-}
+};

@@ -1,21 +1,22 @@
 module.exports = {
     execute: async function(msg){
-        let teams = await loadJsonFile('teams.json');
+        let teams = await loadJsonFile("teams.json");
 
         let finalTeams = [];
         for (let team of teams) {
-            let captain = await sql.get(`SELECT * FROM scores WHERE userId="${team.captain}"`);
-            let totalPoints =  (captain && captain.points) ? captain.points : 0;
+            let captain = await connection.getRepository(Economy).findOne({ id: team.captain });
+            if (!captain) captain = new Economy(team.captain);
+            let totalPoints = captain.monthlyScore;
             for (let member of team.team) {
-                let memberRow = await sql.get(`SELECT * FROM scores WHERE userId="${member}"`);
-                if (memberRow && memberRow.points) totalPoints+= memberRow.points;
+                let memberRow = await connection.getRepository(Economy).findOne({ id: member });
+                if (!memberRow) memberRow = new Economy(team.captain);
+                totalPoints += memberRow.monthlyScore;
             }
             let average = Math.floor(totalPoints / (1 + team.team.length));
             team.points = (average+team.points);
             finalTeams.push(team);
         }
-
-        finalTeams.sort(function(a,b) {return (a.points > b.points) ? 1 : ((b.points > a.points) ? -1 : 0);}).reverse();
+        finalTeams.sort(function (a, b) { return (a.points > b.points) ? 1 : ((b.points > a.points) ? -1 : 0); }).reverse();
 
         let myTeam;
         let teamNum = -1;
@@ -32,21 +33,22 @@ module.exports = {
                 }
             }
         }
-        if (!myTeam) return msg.channel.embed("You are not on a team")
+        if (!myTeam) return msg.channel.embed("You are not on a team");
         let embed = new Discord.RichEmbed().setColor("RANDOM").setAuthor("#" + teamNum + ": " + myTeam.name, myTeam.logo);
-        embed.addField("Captain", msg.guild.members.get(myTeam.captain) ? msg.guild.members.get(myTeam.captain).displayName + ` (<@${myTeam.captain}>)` : "UserLeftServer" )
-        let memText = ""
+        embed.addField("Captain", msg.guild.members.get(myTeam.captain) ? msg.guild.members.get(myTeam.captain).displayName + ` (<@${myTeam.captain}>)` : "UserLeftServer");
+        let memText = "";
         for (let member of myTeam.team) {
-            memText += (msg.guild.members.get(member) ? msg.guild.members.get(member).displayName + ` (<@${member}>)` : "UserLeftServer") + '\n'
+            memText += (msg.guild.members.get(member) ? msg.guild.members.get(member).displayName + ` (<@${member}>)` : "UserLeftServer") + "\n";
         }
-        embed.addField("Members", memText)
-        msg.channel.send(embed)
+        embed.addField("Members", memText);
+        embed.addField("Points", myTeam.points);
+        msg.channel.send(embed);
     },
     info: {
         aliases: false,
         example: "!myteam",
         minarg: 0,
         description: "Displays a list of your teammates",
-        category: "Teams",
+        category: "Teams"
     }
-}
+};

@@ -1,4 +1,4 @@
-module.exports = async function (msg, recap) {
+module.exports = async function (msg, recap, sendRecap) {
     return new Promise(async resolve => {
         if (msg.author.bot) resolve(false);
         else {
@@ -6,14 +6,14 @@ module.exports = async function (msg, recap) {
             const guild = msg.guild;
             let id = msg.author.id;
             let msgtosend = '**__Your daily recap!__**\n\n';
-            sendMsgStats(recap[id], msg).then((buffer) => {
+            sendMsgStats(recap, msg).then((buffer) => {
                 let sorted = [];
                 let total = 0;
-                for (let key in recap[id]) {
+                for (let key in recap) {
                     if (key !== 'day') {
                         if (guild.channels.get(key)) {
                             let channelname = guild.channels.get(key).name;
-                            let count = recap[id][key];
+                            let count = recap[key];
                             total += count;
                             sorted.push({name: channelname, count: count});
                         }
@@ -36,12 +36,7 @@ module.exports = async function (msg, recap) {
                         dmc.send({ file: buffer });
                     })
                 })
-
-                let d = new Date();
-                let n = d.getDate();
-                recap[msg.author.id] = { day: n };
-                resolve(recap);
-                return;
+                resolve(true);
             }).catch(e => {console.log(e, /RESETRECAP/); resolve(false)})
         }
     })

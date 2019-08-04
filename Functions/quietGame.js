@@ -1,6 +1,6 @@
 module.exports = async function (msg, bot, sql) {
-    const loadJsonFile = require('load-json-file');
-    const writeJsonFile = require('write-json-file');
+    const loadJsonFile = require("load-json-file");
+    const writeJsonFile = require("write-json-file");
 
     function msToString(ms) {
         let diff = ms;
@@ -26,9 +26,9 @@ module.exports = async function (msg, bot, sql) {
     parsing = true;
 
     const roleToUse = "269660541738418176";
-    const { createCanvas, loadImage, Image, registerFont } = require('../json/canvas/index.js');
-    registerFont(('./assets/fonts/compacta.ttf'), { family: 'compacta1' }); // eslint-disable-line max-len
-    registerFont(('./assets/fonts/NotoEmoji-Regular.ttf'), { family: 'compacta1' }); // eslint-disable-line max-len 
+    const { createCanvas, loadImage, Image, registerFont } = require("../json/canvas/index.js");
+    registerFont(("./assets/fonts/compacta.ttf"), { family: "compacta1" }); // eslint-disable-line max-len
+    registerFont(("./assets/fonts/NotoEmoji-Regular.ttf"), { family: "compacta1" }); // eslint-disable-line max-len 
     msg.content = msg.content.replace(/\n/g, " ");
     try {
         console.log("updated");
@@ -44,16 +44,16 @@ module.exports = async function (msg, bot, sql) {
                 SEND_MESSAGES: false
             });
         } catch (e) {
-            console.log(e, /CHANERR/)
+            console.log(e, /CHANERR/);
         }
 
-        let row = await sql.get(`SELECT * FROM scavenger WHERE userId="QUIET"`);
+        let row = await sql.get("SELECT * FROM scavenger WHERE userId=\"QUIET\"");
         if (!row || !row.timestart) {
-            await sql.run("INSERT INTO scavenger (userId, timestart, pausestart, hint, extract) VALUES (?, ?, ?, ?, ?)", ["QUIET", Date.now(), 0, "", ""])
+            await sql.run("INSERT INTO scavenger (userId, timestart, pausestart, hint, extract) VALUES (?, ?, ?, ?, ?)", ["QUIET", Date.now(), 0, "", ""]);
             console.log("running first time");
             await sendStartEmbed(bot.user.id, 0, NaN, "???", ".");
         } else if (msg.author.id === "221465443297263618" && msg.content === "restartgame") {
-            await sql.run(`DELETE FROM scavenger WHERE userId="QUIET"`);
+            await sql.run("DELETE FROM scavenger WHERE userId=\"QUIET\"");
             await msg.channel.embed("Game restarted.");
             await msg.channel.overwritePermissions(roleToUse, {
                 SEND_MESSAGES: true
@@ -68,7 +68,7 @@ module.exports = async function (msg, bot, sql) {
         async function sendStartEmbed(lastUser, lastTime, bestTime, topUser, bestMessage) {
             if (lastTime > bestTime || isNaN(bestTime)) {
                 let json = await loadJsonFile("./json/quietgame.json");
-                if (!json.times || !json.bestTimes) json = {times: [], bestTimes: []};
+                if (!json.times || !json.bestTimes) json = { times: [], bestTimes: [] };
                 json.bestTimes.push(Date.now());
                 console.log("updating best things");
                 bestTime = lastTime;
@@ -86,7 +86,7 @@ module.exports = async function (msg, bot, sql) {
                 await writeJsonFile("./json/quietgame.json", json);
             } else {
                 let json = await loadJsonFile("./json/quietgame.json");
-                if (!json.times || !json.bestTimes) json = {times: [], bestTimes: []};
+                if (!json.times || !json.bestTimes) json = { times: [], bestTimes: [] };
                 json.times.push(Date.now());
                 await writeJsonFile("./json/quietgame.json", json);
             }
@@ -98,15 +98,15 @@ module.exports = async function (msg, bot, sql) {
             // let percent2 = Math.min(1, lastTime / (86400 * 1000));
             // let angle2 = 2 * Math.PI - Math.min(percent2 * 2 * Math.PI, 2 * Math.PI);
 
-            console.log("before canvas")
+            console.log("before canvas");
             let canvas = createCanvas(800, 1050);
-            console.log("canvas")
-            let ctx = canvas.getContext('2d');
+            console.log("canvas");
+            let ctx = canvas.getContext("2d");
             let background = await loadImage("./images/QUIETGAME.png");
             let ned = await loadImage("./images/NED.png");
             let nedred = await loadImage("./images/NEDRED.png");
 
-            ctx.font = '20px compacta1';
+            ctx.font = "20px compacta1";
             ctx.drawImage(background, 0, 0, 800, 1050);
             let fillColors = ["#D9D9D9"];
             fillColors.reverse();
@@ -117,16 +117,16 @@ module.exports = async function (msg, bot, sql) {
                 ctx.strokeText(text, x, y);
                 ctx.fillStyle = fillColors[fillIndex++ % fillColors.length];
                 ctx.fillText(text, x, y);
-            }
+            };
             //CURRENT
             console.log("current");
             //TIME
-            console.log(msToString(lastTime), /LAST TIME/)
+            console.log(msToString(lastTime), /LAST TIME/);
             await getSize(ctx, msToString(lastTime), 550, 100);
             ctx.fillStrokeText(msToString(lastTime), 200, 450);
             //USER
             await getSize(ctx, msg.member.displayName, 530, 100);
-            console.log(msg.member.displayName, /CCURENTNAME/)
+            console.log(msg.member.displayName, /CCURENTNAME/);
             ctx.fillStrokeText(msg.member.displayName, 213, 507);
             //MESSAGE
             let lines = await getMessageSize(ctx, msg.content, 650, 80);
@@ -143,7 +143,7 @@ module.exports = async function (msg, bot, sql) {
             //TIME
             await getSize(ctx, msToString(bestTime), 530, 100);
             ctx.fillStrokeText(msToString(bestTime), 200, 795);
-            console.log(msToString(bestTime), /BESTTIME/)
+            console.log(msToString(bestTime), /BESTTIME/);
             //USER
             let name = msg.guild.members.get(topUser.replace(/<|@|>/g, "")) ? msg.guild.members.get(topUser.replace(/<|@|>/g, "")).displayName : "N/A";
             await getSize(ctx, name, 530, 100);
@@ -158,7 +158,7 @@ module.exports = async function (msg, bot, sql) {
                 ctx.fillStrokeText(lines2[i].trim(), 43, 912 + height2 + 20 * i);
                 if (i !== lines2.length - 1) fillIndex--;
             }
-            console.log("after best")
+            console.log("after best");
             //DRAW CIRCLE AROUND NED
 
             //LAST TIME
@@ -166,7 +166,7 @@ module.exports = async function (msg, bot, sql) {
             ctx.drawImage(ned, 3, 14);
             ctx.drawImage(ned, 3, 14);
             ctx.globalAlpha = 0.7;
-            ctx.fillStyle = "#d9d9d9"
+            ctx.fillStyle = "#d9d9d9";
             ctx.beginPath();
             ctx.moveTo(53, 38);
             ctx.arc(53, 38, 53, 0, angle1);
@@ -174,17 +174,17 @@ module.exports = async function (msg, bot, sql) {
             ctx.closePath();
             ctx.fill();
 
-            console.log("after ned")
+            console.log("after ned");
 
             let attachment = new bot.Discord.Attachment(canvas.toBuffer(), "quiet.png");
             console.log(attachment, /ATTACHMENT/);
             try {
                 await msg.channel.send(attachment);
             } catch(e) {
-                console.log(e, /SENDBUFFER/)
+                console.log(e, /SENDBUFFER/);
             }
             
-            console.log("sent attachment")
+            console.log("sent attachment");
             await msg.channel.overwritePermissions(roleToUse, {
                 SEND_MESSAGES: true
             });
@@ -204,20 +204,20 @@ module.exports = async function (msg, bot, sql) {
             try {
                 await sql.run(`UPDATE scavenger SET timestart="${Date.now()}", pausestart="${bestTime}", extract="${topUser}", hint="${lines2.join(" ")}" WHERE userId ="QUIET"`);
             } catch (e) {
-                console.log(e, /ERROR/)
+                console.log(e, /ERROR/);
             }
 
         }
 
         
     } catch (e) {
-        console.log(e)
+        console.log(e);
     }
 
     async function createInterval() {
         if (interval) clearInterval(interval);
         interval = setInterval(async () => {
-            let row = await sql.get(`SELECT * FROM scavenger WHERE userId="QUIET"`);
+            let row = await sql.get("SELECT * FROM scavenger WHERE userId=\"QUIET\"");
             if (!row || !row.timestart) clearInterval(interval), interval = null;
             else {
                 let startTime = row.timestart;
@@ -235,10 +235,10 @@ module.exports = async function (msg, bot, sql) {
         let size = 40;
         let found = false;
         while (size > 9 && !found) {
-            ctx.font = size + 'px compacta1';
+            ctx.font = size + "px compacta1";
             let metrics = ctx.measureText(text);
             if (metrics.width < w && metrics.emHeightAscent + metrics.emHeightDescent < h) {
-                found = true
+                found = true;
                 return size;
             }
             else size--;
@@ -252,7 +252,7 @@ module.exports = async function (msg, bot, sql) {
         let fontSize = isRecurring ? 40 : 40;
 
         while (fontSize > 9) {
-            ctx.font = fontSize + 'px compacta1';
+            ctx.font = fontSize + "px compacta1";
             let stats = ctx.measureText("TestW");
             let height = stats.emHeightAscent + stats.emHeightDescent + 5;
             let start = 0;
@@ -261,7 +261,7 @@ module.exports = async function (msg, bot, sql) {
 
 
             if (words.length === 1) {
-                console.log(words[0], "word length 1")
+                console.log(words[0], "word length 1");
                 if (ctx.measureText(words[0]).width > w) {
                     fontsize = 0;
                     let newText = in_text.replace(/\.\.\./g, "");
@@ -294,7 +294,7 @@ module.exports = async function (msg, bot, sql) {
                 for (let line of lines) {
                     if (ctx.measureText(line).width >= w) {
                         allFit = false;
-                        console.log(line, ctx.measureText(line).width, w, /COMPARE/)
+                        console.log(line, ctx.measureText(line).width, w, /COMPARE/);
                     }
                 }
                 if (!exited && lines.length > 0 && allFit) return lines;
@@ -303,7 +303,7 @@ module.exports = async function (msg, bot, sql) {
         }
         return await getMessageSize(ctx, in_text.substring(0, in_text.length - 20) + "...", w, h, true);
     }
-}
+};
 
 
 

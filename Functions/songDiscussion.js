@@ -1,19 +1,19 @@
 module.exports = async function (guild) {
     const fs = require("fs");
     const snekfetch = require("snekfetch");
-    const { createCanvas, loadImage, Image, registerFont } = require('canvas');
+    const { createCanvas, loadImage, Image, registerFont } = require("canvas");
     console.log("songdiscussion called");
-    guild.client.on('raw', raw)
-    guild.client.on('messageReactionAdd', reactionAdded);
-    guild.client.on('messageReactionRemove', reactionAdded);
-    guild.client.on('message', async (msg) => {
+    guild.client.on("raw", raw);
+    guild.client.on("messageReactionAdd", reactionAdded);
+    guild.client.on("messageReactionRemove", reactionAdded);
+    guild.client.on("message", async (msg) => {
         if (msg.content === "!newsong" && msg.author.id === "221465443297263618") {
             chooseSong();
         }
-    })
-    const loadJsonFile = require('load-json-file');
-    const writeJsonFile = require('write-json-file');
-    const ytsr = require('ytsr');
+    });
+    const loadJsonFile = require("load-json-file");
+    const writeJsonFile = require("write-json-file");
+    const ytsr = require("ytsr");
     let ontime = require("ontime");
     const Discord = require("discord.js");
     console.log("loaded");
@@ -33,7 +33,7 @@ module.exports = async function (guild) {
         }
     
         addPlayer(name) {
-            this.players.push({name: name, wins: 0, autoWins: 0, eliminated: false});
+            this.players.push({ name: name, wins: 0, autoWins: 0, eliminated: false });
         }
     
         getRound() {
@@ -88,7 +88,7 @@ module.exports = async function (guild) {
                         this.chooseWinner(1, true);
                         return this.nextRound(true);
                     }
-                } else return [this.getPlayer1(), this.getPlayer2()]
+                } else return [this.getPlayer1(), this.getPlayer2()];
             }
         }
     
@@ -126,13 +126,13 @@ module.exports = async function (guild) {
 
 
     ontime({
-        cycle: [ '06:00:00', '18:00:00' ]
+        cycle: [ "04:00:00", "18:00:00" ]
     }, function (ot) {
-        console.log("choosing songs?")
+        console.log("choosing songs?");
         chooseSong();
         ot.done();
-        return
-    })
+        return;
+    });
 
 
     //CREATE SONGS ARRAY
@@ -147,13 +147,13 @@ module.exports = async function (guild) {
     let xmm = ["Heathens", "Heavydirtysoul", "Ride", "Tear in My Heart", "Lane Boy"];
 
     // for (let song of npi) songs.push({title: song, album: "No Phun Intended", color: "b18f95", image: "http://hw-img.datpiff.com/m5ee9036/Tyler_Joseph_No_Phun_Intended-front-large.jpg"});
-    for (let song of top) songs.push({title: song, album: "Twenty One Pilots", color: "af679d", image: "https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Twenty_One_Pilots_album_cover.jpg/220px-Twenty_One_Pilots_album_cover.jpg"});
-    for (let song of rab) songs.push({title: song, album: "Regional at Best", color: "206694", image: "http://36.media.tumblr.com/e8186478ae67dff936b328b17ed7fd41/tumblr_nxzklkgOEs1s5qytdo3_1280.jpg"});
-    for (let song of ves) songs.push({title: song, album: "Vessel", color: "aebfd8", image: "https://upload.wikimedia.org/wikipedia/en/2/20/Vessel_by_Twenty_One_Pilots.jpg"});
-    for (let song of blf) songs.push({title: song, album: "Blurryface", color: "ec5747", image: "https://s1-ssl.dmcdn.net/Mreff/x1080-tMz.jpg"});
-    for (let song of trc) songs.push({title: song, album: "Trench", color: "fce300", image: "https://rockinathens.gr/wp-content/uploads/2018/10/281002.jpg"});
-    for (let song of etc) songs.push({title: song, album: "Single/Unreleased", color: "#696969", image: "https://upload.wikimedia.org/wikipedia/en/thumb/6/66/TwentyOnePilotsBarsLogo2018Gritty_yellow.png/200px-TwentyOnePilotsBarsLogo2018Gritty_yellow.png"});
-    for (let song of xmm) songs.push({title: song, album: "TOPxMM", color: "#E74B35", image: "https://m.media-amazon.com/images/I/81HVAuGowwL._SS500_.jpg"});
+    for (let song of top) songs.push({ title: song, album: "Twenty One Pilots", color: "af679d", image: "https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Twenty_One_Pilots_album_cover.jpg/220px-Twenty_One_Pilots_album_cover.jpg" });
+    for (let song of rab) songs.push({ title: song, album: "Regional at Best", color: "206694", image: "http://36.media.tumblr.com/e8186478ae67dff936b328b17ed7fd41/tumblr_nxzklkgOEs1s5qytdo3_1280.jpg" });
+    for (let song of ves) songs.push({ title: song, album: "Vessel", color: "aebfd8", image: "https://upload.wikimedia.org/wikipedia/en/2/20/Vessel_by_Twenty_One_Pilots.jpg" });
+    for (let song of blf) songs.push({ title: song, album: "Blurryface", color: "ec5747", image: "https://s1-ssl.dmcdn.net/Mreff/x1080-tMz.jpg" });
+    for (let song of trc) songs.push({ title: song, album: "Trench", color: "fce300", image: "https://rockinathens.gr/wp-content/uploads/2018/10/281002.jpg" });
+    for (let song of etc) songs.push({ title: song, album: "Single/Unreleased", color: "#696969", image: "https://upload.wikimedia.org/wikipedia/en/thumb/6/66/TwentyOnePilotsBarsLogo2018Gritty_yellow.png/200px-TwentyOnePilotsBarsLogo2018Gritty_yellow.png" });
+    for (let song of xmm) songs.push({ title: song, album: "TOPxMM", color: "#E74B35", image: "https://m.media-amazon.com/images/I/81HVAuGowwL._SS500_.jpg" });
 
     function shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
@@ -176,30 +176,30 @@ module.exports = async function (guild) {
 
     //UPDATE SONG EVERY DAY AT A CERTAIN TIME
     async function chooseSong() {
-        console.log("CHOOSING SONG!!!!!")
+        console.log("CHOOSING SONG!!!!!");
         
         //Clear previous reactions
-        let msgs = await channel.fetchMessages({limit: 1})
+        let msgs = await channel.fetchMessages({ limit: 1 });
         let m = msgs.first();
         if (m && bracket.player1 !== -1) {
             try {
                 console.log("choosing winner");
                 let oldEmbed = m.embeds && m.embeds[0];
                 if (oldEmbed && oldEmbed.title.startsWith("Round")) {
-                    let reacts = ['1⃣', '2⃣'];
+                    let reacts = ["1⃣", "2⃣"];
                     let counts = [];
                     for (let react of reacts) {
                         let count = await fetchAllUsers(m, react);
                         counts.push(count);
                     }
 
-                    if (oldEmbed.footer && oldEmbed.footer.text.indexOf("Ended") !== -1) {
-                        let preText = oldEmbed.footer.text.split(":")[1].trim();
-                        let c1 = preText.split("-")[0];
-                        let c2 =  preText.split("-")[1];
-                        counts[0] = !isNaN(c1) ? c1 : counts[0];
-                        counts[1] = !isNaN(c2) ? c2 : counts[1];
-                    }
+                    // if (oldEmbed.footer && oldEmbed.footer.text.indexOf("Ended") !== -1) {
+                    //     let preText = oldEmbed.footer.text.split(":")[1].trim();
+                    //     let c1 = preText.split("-")[0];
+                    //     let c2 =  preText.split("-")[1];
+                    //     counts[0] = !isNaN(c1) ? c1 : counts[0];
+                    //     counts[1] = !isNaN(c2) ? c2 : counts[1];
+                    // }
 
                     if (counts[0] === counts[1]) {
                         console.log("Tie!");
@@ -217,19 +217,20 @@ module.exports = async function (guild) {
                         console.log("Song " + winNum + " wins");
                         bracket.chooseWinner(winNum);
     
-                        if (!oldEmbed.footer || oldEmbed.footer.text.indexOf("Ended") === -1) {
-                            let newEmbed = new Discord.RichEmbed(oldEmbed);
-                            newEmbed.setFooter("Ended: " + counts[0] + "-" + counts[1]);
-                            newEmbed.setThumbnail("attachment://albums.png");
-                            newEmbed.fields[winNum === 1 ? 0 : 2].name+=" - Winner"
-                            await m.edit(newEmbed);
-                        }
+                        // if (!oldEmbed.footer || oldEmbed.footer.text.indexOf("Ended") === -1) {
+                        let newEmbed = new Discord.RichEmbed(oldEmbed);
+                        newEmbed.setFooter("Ended: " + counts[0] + "-" + counts[1]);
+                        newEmbed.setThumbnail("attachment://albums.png");
+                        newEmbed.fields[winNum === 1 ? 2 : 0].name = newEmbed.fields[winNum === 1 ? 2 : 0].name.replace(" - Winner", "");
+                        newEmbed.fields[winNum === 1 ? 0 : 2].name+=" - Winner";
+                        await m.edit(newEmbed);
+                        //}
                     }
                     //await m.clearReactions();
                     
                 }
             } catch(e) {
-                console.log(e, /INSONGERROR/)
+                console.log(e, /INSONGERROR/);
             }
             
         }
@@ -251,18 +252,18 @@ module.exports = async function (guild) {
             embed.setColor(song1.name.color);
             try {
                 let splitImg = await getImageSplit(song1.name.image, song2.name.image);
-                embed.attachFile({attachment: splitImg, name: "albums.png"});
+                embed.attachFile({ attachment: splitImg, name: "albums.png" });
                 embed.setThumbnail("attachment://albums.png");
             } catch(e) {}
             let em_m = await channel.send(embed);
-            await em_m.react('1⃣');
-            await em_m.react('2⃣');
+            await em_m.react("1⃣");
+            await em_m.react("2⃣");
             let prefix1 = song1.name.album === "Regional at Best" ? "rab-" : (song1.name.album === "TOPxMM" ? "topxmm-" : "");
             let prefix2 = song2.name.album === "Regional at Best" ? "rab-" : (song2.name.album === "TOPxMM" ? "topxmm-" : "");
             await channel.guild.channels.get("524287013357355018").setName(prefix1 + song1.name.title + "-vs-" + prefix2 + song2.name.title);
             bracket.writeToFile("songBattles.json");
         } catch(e) {
-            console.log(e, /SONGDISCUSSIONERROR/)
+            console.log(e, /SONGDISCUSSIONERROR/);
         }
         
     }
@@ -276,14 +277,14 @@ module.exports = async function (guild) {
                 let reaction = msg.reactions.get(react);
                 if (!reaction) done = true;
                 else {
-                    let usrs = await reaction.fetchUsers(100, cur === null ? {} : {after: cur});
+                    let usrs = await reaction.fetchUsers(100, cur === null ? {} : { after: cur });
                     let toAdd = usrs.array();
                     if (toAdd.length === 0) done = true;
                     else count+=toAdd.length, cur = toAdd[toAdd.length - 1].id;
                 }
             }
             resolve(count);
-        })
+        });
     }
     
     async function getImageSplit(album1, album2) {
@@ -292,7 +293,7 @@ module.exports = async function (guild) {
             let img2 = (await snekfetch.get(album2)).body;
             
             let canvas = createCanvas(600, 600);
-            let ctx = canvas.getContext('2d');
+            let ctx = canvas.getContext("2d");
             let a1 = new Image();
             let a2 = new Image();
             a1.src = img1;
@@ -319,14 +320,14 @@ module.exports = async function (guild) {
         } catch (err) {
             let canvas = createCanvas(600, 600);
             return canvas.toBuffer();
-            console.log(err, /SPLITERR/)
+            console.log(err, /SPLITERR/);
         }
     }
 
     async function reactionAdded(reaction, user) {
         let msg = reaction.message;
         let emd = msg.embeds[0];
-        let reacts = ['1⃣', '2⃣'];
+        let reacts = ["1⃣", "2⃣"];
         if (!channel) channel = guild.channels.get("524401231150710794");
         if (msg.channel.id !== channel.id) return;
         if (!msg.author.bot) return;
@@ -334,14 +335,14 @@ module.exports = async function (guild) {
         let counts = [];
         let reactions = msg.reactions.array();
         for (let react of reacts) {
-            let count = await fetchAllUsers(msg,react);
+            let count = await fetchAllUsers(msg, react);
             counts.push(count);
         }
         console.log(counts, /COUNTS/);
     }
     
     async function raw(event) {
-        const events = {MESSAGE_REACTION_ADD: 'messageReactionAdd',MESSAGE_REACTION_REMOVE: 'messageReactionRemove',};
+        const events = { MESSAGE_REACTION_ADD: "messageReactionAdd", MESSAGE_REACTION_REMOVE: "messageReactionRemove"  };
         if (!events.hasOwnProperty(event.t)) return;
         const { d: data } = event; const user = guild.client.users.get(data.user_id); const channel = guild.client.channels.get(data.channel_id) || await user.createDM();
         if (channel.messages.has(data.message_id)) return;
@@ -353,16 +354,16 @@ module.exports = async function (guild) {
 
     async function searchYoutube(query) {
         return new Promise(resolve => {
-            console.log(query, /YTSR/)
+            console.log(query, /YTSR/);
             ytsr(query, {}, function(err, searchResults) {
                 if (err) {
-                    console.log(err, /YTSRERR/)
+                    console.log(err, /YTSRERR/);
                     resolve("");
                 }
                 else {
                     resolve(searchResults.items[0].link);
                 }
             });
-        })
+        });
     }
-}
+};

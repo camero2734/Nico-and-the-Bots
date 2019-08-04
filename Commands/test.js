@@ -1,13 +1,8 @@
 module.exports = {
     execute: async function (msg) {
-        if (msg.author.id !== poot) return;
-        if (msg.content.indexOf("closeprocess") !== -1) {
-            closingProcess = !closingProcess;
-            msg.channel.embed(closingProcess ? "Files no longer being written" : "File write enabled");
-        }
-        else {
-
-        }
+        let q = await connection.manager.query("PRAGMA busy_timeout;");
+        console.log(q);
+        
     },
     info: {
         aliases: false,

@@ -8,7 +8,8 @@ module.exports = async function (guild) {
     guild.client.on("messageReactionRemove", reactionAdded);
     guild.client.on("message", async (msg) => {
         if (msg.content === "!newsong" && msg.author.id === "221465443297263618") {
-            chooseSong();
+            await chooseSong();
+            await msg.channel.send("Done!");
         }
     });
     const loadJsonFile = require("load-json-file");
@@ -19,253 +20,125 @@ module.exports = async function (guild) {
     console.log("loaded");
     let channel = guild.channels.get("524401231150710794");
 
-    let json = await loadJsonFile("songBattles.json");
-    let bracket;
-
-
-    class Bracket {
-        constructor(name, players, player1, player2, ended) {
-            this.name = name;
-            this.ended = ended || false;
-            this.players = players || [];
-            this.player1 = player1 || -1;
-            this.player2 = player2 || -1;
-        }
-    
-        addPlayer(name) {
-            this.players.push({ name: name, wins: 0, autoWins: 0, eliminated: false });
-        }
-    
-        getRound() {
-            let rounds = 0;
-            for (let p of this.players) rounds += (p.wins - p.autoWins);
-            return rounds;
-        }
-
-        getPlayer1() {
-            if (this.player1 < 0) return {};
-            return this.players[this.player1];
-        }
-    
-        getPlayer2() {
-            if (this.player2 < 0) return {};
-            return this.players[this.player2];
-        }
-    
-        nextRound(mightEnd) {
-            if (this.player1 === -1 && this.player2 === -1) {
-                let minWins = 10000;
-                for (let player of this.players) {
-                    if (!player.eliminated && player.wins < minWins) minWins = player.wins;
-                }
-                
-
-                function shuffleArr(a) {
-                    var j, x, i;
-                    for (i = a.length - 1; i > 0; i--) {
-                        j = Math.floor(Math.random() * (i + 1));
-                        x = a[i];
-                        a[i] = a[j];
-                        a[j] = x;
-                    }
-                    return a;
-                }
-
-                this.players = shuffleArr(this.players);
-
-                for (let i in this.players) {
-                    let player = this.players[i];
-                    if (this.player1 === -1 && player.wins <= minWins && !player.eliminated) this.player1 = i;
-                    else if ((this.player2 === -1 || player.autoWins > this.getPlayer2().autoWins) && player.wins <= minWins && !player.eliminated) this.player2 = i;
-                }
-    
-                if (this.player1 && this.player2 === -1) { //AUTO ADVANCE
-                    if (mightEnd) {
-                        this.ended = true;
-                        return false;
-                    }
-                    else {
-                        this.chooseWinner(1, true);
-                        return this.nextRound(true);
-                    }
-                } else return [this.getPlayer1(), this.getPlayer2()];
-            }
-        }
-    
-        writeToFile(fileName) {
-            let json = {};
-            json.name = this.name;
-            json.players = this.players;
-            json.player1 = this.player1;
-            json.player2 = this.player2;
-            json.ended = this.ended;
-            fs.writeFileSync(fileName, JSON.stringify(json));
-        }
-    
-        chooseWinner(num, autoAdvanced) {
-            if (num === 1 && this.player1 !== -1) {
-                this.players[this.player1].wins++;
-                if (autoAdvanced) this.players[this.player1].autoWins++;
-                let toReturn = this.getPlayer1();
-                if (this.player2 !== -1) this.players[this.player2].eliminated = true;
-                this.player1 = -1;
-                this.player2 = -1;
-                return toReturn;
-            } else if (num === 2 && this.player2 !== -1) {
-                this.players[this.player2].wins++;
-                let toReturn = this.getPlayer2();
-                if (this.player1 !== -1) this.players[this.player1].eliminated = true;
-                this.player1 = -1;
-                this.player2 = -1;
-                return toReturn;
-            }
-            
-        }
-    }
-    
-
+    let json = await loadJsonFile("./json/songRank.json");
 
     ontime({
-        cycle: [ "04:00:00", "18:00:00" ]
-    }, function (ot) {
+        cycle: [ "06:00:00", "18:00:00" ]
+    }, async function (ot) {
         console.log("choosing songs?");
-        chooseSong();
+        await chooseSong();
         ot.done();
         return;
     });
 
 
-    //CREATE SONGS ARRAY
-    let songs = [];
-    // let npi = ["Blasphemy", "Drown", "Hole In The Ground", "Save", "Taken By Sleep", "Just Like Yesterday", "Prove Me Wrong", "Realize That It's Gone", "Tonight", "Falling Too", "TB Saga", "Where Did We Go", "Hear Me Now", "Going Down"];
-    let top = ["Implicit Demand for Proof", "Fall Away", "The Pantaloon", "Addict with a Pen", "Friend, Please", "March to the Sea", "Johnny Boy", "Oh Ms Believer", "Air Catcher", "Trapdoor", "A Car, a Torch, a Death", "Taxi Cab", "Before You Start Your Day", "Isle of Flightless Birds"];
-    let rab = ["Guns for Hands", "Holding on to You", "Ode to Sleep", "Slowtown", "Car Radio", "Forest", "Glowing Eyes", "Kitchen Sink", "Anathema", "Lovely", "Ruby", "Trees", "Be Concerned", "Clear"];
-    let ves = ["Ode to Sleep", "Holding on to You", "Migraine", "House of Gold", "Car Radio", "Semi-Automatic", "Screen", "The Run and Go", "Fake You Out", "Guns for Hands", "Trees", "Truce", "Lovely"];
-    let blf = ["Heavydirtysoul", "Stressed Out", "Ride", "Fairly Local", "Tear in My Heart", "Lane Boy", "The Judge", "Doubt", "Polarize", "We Don't Believe What's on TV", "Message Man", "Hometown", "Not Today", "Goner"];
-    let trc = ["Jumpsuit", "Levitate", "Morph", "My Blood", "Chlorine", "Smithereens", "Neon Gravestones", "The Hype", "Nico and the Niners", "Cut My Lip", "Bandito", "Pet Cheetah", "Legend", "Leave the City"];
-    let etc = ["Heathens", "Cancer (Cover)", "Time to Say Goodbye"];
-    let xmm = ["Heathens", "Heavydirtysoul", "Ride", "Tear in My Heart", "Lane Boy"];
-
-    // for (let song of npi) songs.push({title: song, album: "No Phun Intended", color: "b18f95", image: "http://hw-img.datpiff.com/m5ee9036/Tyler_Joseph_No_Phun_Intended-front-large.jpg"});
-    for (let song of top) songs.push({ title: song, album: "Twenty One Pilots", color: "af679d", image: "https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Twenty_One_Pilots_album_cover.jpg/220px-Twenty_One_Pilots_album_cover.jpg" });
-    for (let song of rab) songs.push({ title: song, album: "Regional at Best", color: "206694", image: "http://36.media.tumblr.com/e8186478ae67dff936b328b17ed7fd41/tumblr_nxzklkgOEs1s5qytdo3_1280.jpg" });
-    for (let song of ves) songs.push({ title: song, album: "Vessel", color: "aebfd8", image: "https://upload.wikimedia.org/wikipedia/en/2/20/Vessel_by_Twenty_One_Pilots.jpg" });
-    for (let song of blf) songs.push({ title: song, album: "Blurryface", color: "ec5747", image: "https://s1-ssl.dmcdn.net/Mreff/x1080-tMz.jpg" });
-    for (let song of trc) songs.push({ title: song, album: "Trench", color: "fce300", image: "https://rockinathens.gr/wp-content/uploads/2018/10/281002.jpg" });
-    for (let song of etc) songs.push({ title: song, album: "Single/Unreleased", color: "#696969", image: "https://upload.wikimedia.org/wikipedia/en/thumb/6/66/TwentyOnePilotsBarsLogo2018Gritty_yellow.png/200px-TwentyOnePilotsBarsLogo2018Gritty_yellow.png" });
-    for (let song of xmm) songs.push({ title: song, album: "TOPxMM", color: "#E74B35", image: "https://m.media-amazon.com/images/I/81HVAuGowwL._SS500_.jpg" });
-
-    function shuffle(a) {
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        return a;
-    }
-
-
-    if (json && json.name) {
-        bracket = new Bracket(json.name, json.players, json.player1, json.player2, json.ended);
-    } else {
-        bracket = new Bracket("Song Battles");
-        shuffle(songs);
-        for (let song of songs) {
-            bracket.addPlayer(song);
-        }
-    }
-
     //UPDATE SONG EVERY DAY AT A CERTAIN TIME
-    async function chooseSong() {
-        console.log("CHOOSING SONG!!!!!");
-        
-        //Clear previous reactions
-        let msgs = await channel.fetchMessages({ limit: 1 });
-        let m = msgs.first();
-        if (m && bracket.player1 !== -1) {
-            try {
-                console.log("choosing winner");
-                let oldEmbed = m.embeds && m.embeds[0];
-                if (oldEmbed && oldEmbed.title.startsWith("Round")) {
-                    let reacts = ["1⃣", "2⃣"];
-                    let counts = [];
-                    for (let react of reacts) {
-                        let count = await fetchAllUsers(m, react);
-                        counts.push(count);
-                    }
+    async function chooseSong(rerun) {
+        //CHECK CURRENT WINNER
+        if (json.id && !rerun) {
+            let m = await channel.fetchMessage(json.id);
+            let reacts = ["1⃣", "2⃣"];
+            let votes1 = await fetchAllUsers(m, reacts[0]);
+            let votes2 = await fetchAllUsers(m, reacts[1]);
 
-                    // if (oldEmbed.footer && oldEmbed.footer.text.indexOf("Ended") !== -1) {
-                    //     let preText = oldEmbed.footer.text.split(":")[1].trim();
-                    //     let c1 = preText.split("-")[0];
-                    //     let c2 =  preText.split("-")[1];
-                    //     counts[0] = !isNaN(c1) ? c1 : counts[0];
-                    //     counts[1] = !isNaN(c2) ? c2 : counts[1];
-                    // }
-
-                    if (counts[0] === counts[1]) {
-                        console.log("Tie!");
-
-                        let newEmbed = new Discord.RichEmbed(oldEmbed);
-                        newEmbed.setFooter("Ended: " + counts[0] + "-" + counts[1]);
-                        newEmbed.setThumbnail("attachment://albums.png");
-                        newEmbed.fields[0].name+=" - Tied";
-                        newEmbed.fields[2].name+=" - Tied";
-                        bracket.player1 = -1;
-                        bracket.player2 = -1;
-                        await m.edit(newEmbed);
-                    } else {
-                        let winNum = counts[0] >= counts[1] ? 1 : 2;
-                        console.log("Song " + winNum + " wins");
-                        bracket.chooseWinner(winNum);
-    
-                        // if (!oldEmbed.footer || oldEmbed.footer.text.indexOf("Ended") === -1) {
-                        let newEmbed = new Discord.RichEmbed(oldEmbed);
-                        newEmbed.setFooter("Ended: " + counts[0] + "-" + counts[1]);
-                        newEmbed.setThumbnail("attachment://albums.png");
-                        newEmbed.fields[winNum === 1 ? 2 : 0].name = newEmbed.fields[winNum === 1 ? 2 : 0].name.replace(" - Winner", "");
-                        newEmbed.fields[winNum === 1 ? 0 : 2].name+=" - Winner";
-                        await m.edit(newEmbed);
-                        //}
-                    }
-                    //await m.clearReactions();
-                    
+            function getIndexFromSong(song) {
+                for (let i = 0; i < json.originalSongs.length; i++) {
+                    if (json.originalSongs[i].name === song.name && json.originalSongs[i].album === song.album) return i;
                 }
-            } catch(e) {
-                console.log(e, /INSONGERROR/);
+                return -1;
+            }
+
+
+            let song1 = json.songs[json.arr1][json.index1];
+            let song2 = json.songs[json.arr2][json.index2];
+            if (votes1 > votes2) {
+                json.history.push({ winner: getIndexFromSong(song1), loser: getIndexFromSong(song2) });
+                json.songs[json.arr2].splice(json.index2, 0, json.songs[json.arr1].shift());
+                json.index2++;
+            } else {
+                json.history.push({ winner: getIndexFromSong(song2), loser: getIndexFromSong(song1) });
+                json.index2++;
+            }
+
+            let embed = new Discord.RichEmbed(m.embeds[0]);
+            embed.setFooter(`Ended: ${votes1}-${votes2}`);
+            embed.setThumbnail("attachment://albums.png");
+            embed.fields[votes1 > votes2 ? 0 : 1].name = `Song ${votes1 > votes2 ? 1 : 2} - Winner`;
+            m.edit(embed);
+        }
+
+        if (json.songs.length > 1) {
+            //FIND NEW GROUPS
+            if (json.arr1 === null || json.arr2 === null) {
+                for (let i = 0; i < json.songs.length; i++) {
+                    if (json.songs[i].length <= json.curLength) {
+                        if (json.arr1 === null) {
+                            json.arr1 = i;
+                        } else {
+                            if (json.songs[json.arr1].length > json.songs[i].length) {
+                                json.arr2 = json.arr1;
+                                json.arr1 = i;
+                            } else json.arr2 = i;
+                            break;
+                        }
+                    }
+                }
+
+                //CURLENGTH TOO SMALL, MOVE UP TO BIGGER GROUPS
+                if (json.arr1 === null || json.arr2 === null) json.curLength++;
+                else {
+                    json.index1 = 0;
+                    json.index2 = 0;
+                }
+                return chooseSong(true);
+            } else if (json.songs[json.arr1].length > 0) { //STILL HAVE SONGS IN ARR1 TO PLACE IN ARR2
+                if (json.index2 === json.songs[json.arr2].length) { //IF LESS THAN ALL, PLACE ALL SONGS AT THE END
+                    for (let i = json.songs[json.arr1].length - 1; i >= 0; i--) {
+                        json.songs[json.arr2].push(json.songs[json.arr1].shift());
+                    }
+                    return chooseSong(true);
+                } else {
+                    //SEND EMBED OF SONGS
+                    let song1 = json.songs[json.arr1][json.index1];
+                    let song2 = json.songs[json.arr2][json.index2];
+
+                    let yt1 = await searchYoutube(song1.name + " " + song1.album + " twenty one pilots");
+                    let yt2 = await searchYoutube(song2.name + " " + song2.album + " twenty one pilots");
+
+
+                    let embed = new Discord.RichEmbed().setColor(song1.color).setTitle(`Match #${json.history.length + 1}`);
+
+                    embed.addField("Song 1", `[${song1.name + " - " + song1.album}](${yt1 ? yt1 : "https://www.youtube.com/watch?v=HpqjueKUQWs"})`);
+                    embed.addField("Song 2", `[${song2.name + " - " + song2.album}](${yt2 ? yt2 : "https://www.youtube.com/watch?v=HpqjueKUQWs"})`);
+                    embed.setFooter(`${json.songs.length} groupings remaining || Current sizes: [${json.songs[json.arr1].length}, ${json.songs[json.arr2].length}]`);
+                    try {
+                        let splitImg = await getImageSplit(song1.image, song2.image);
+                        embed.attachFile({ attachment: splitImg, name: "albums.png" });
+                        embed.setThumbnail("attachment://albums.png");
+                    } catch(e) {}
+
+                    let m = await channel.send(embed);
+
+                    let name1 = song1.name + (song1.album === "Regional at Best" ? "-rab" : (song1.album === "TOPxMM" ? "-topxmm" : ""));
+                    let name2 = song2.name + (song2.album === "Regional at Best" ? "-rab" : (song2.album === "TOPxMM" ? "-topxmm" : ""));
+                    await channel.guild.channels.get("524287013357355018").setName(`${name1}-vs-${name2}`);
+                    let reacts = ["1⃣", "2⃣"];
+                    await m.react(reacts[0]);
+                    await m.react(reacts[1]);
+                    json.id = m.id;
+                    await writeJsonFile("./json/songRank.json", json);
+                }
+            } else { //THIS ARR1 EMPTY, YEET
+                json.songs.splice(json.arr1, 1); 
+                json.arr1 = null;
+                json.arr2 = null;
+                return chooseSong(true);
             }
             
+        } else {
+            await writeJsonFile("./json/songRank.json", json);
+            console.log("choose song length 0");
         }
-        let players = bracket.nextRound();
-
-        let embed = new Discord.RichEmbed();
-        let song1 = players[0];
-        let song2 = players[1];
-        if (!song1 || !song2) console.log("Corrupted songs");
-
-        try {
-            embed.setTitle("Round " + (bracket.getRound() + 1));
-            embed.addField("Song 1", song1.name.title + " - " + song1.name.album);
-            let link1 = await searchYoutube(song1.name.title + " " + song1.name.album);
-            embed.addField("Link", link1 ? link1 : "No Link Available");
-            embed.addField("Song 2", song2.name.title + " - " + song2.name.album);
-            let link2 = await searchYoutube(song2.name.title + " " + song2.name.album);
-            embed.addField("Link", link2 ? link2 : "No Link Available");
-            embed.setColor(song1.name.color);
-            try {
-                let splitImg = await getImageSplit(song1.name.image, song2.name.image);
-                embed.attachFile({ attachment: splitImg, name: "albums.png" });
-                embed.setThumbnail("attachment://albums.png");
-            } catch(e) {}
-            let em_m = await channel.send(embed);
-            await em_m.react("1⃣");
-            await em_m.react("2⃣");
-            let prefix1 = song1.name.album === "Regional at Best" ? "rab-" : (song1.name.album === "TOPxMM" ? "topxmm-" : "");
-            let prefix2 = song2.name.album === "Regional at Best" ? "rab-" : (song2.name.album === "TOPxMM" ? "topxmm-" : "");
-            await channel.guild.channels.get("524287013357355018").setName(prefix1 + song1.name.title + "-vs-" + prefix2 + song2.name.title);
-            bracket.writeToFile("songBattles.json");
-        } catch(e) {
-            console.log(e, /SONGDISCUSSIONERROR/);
-        }
-        
     }
 
     async function fetchAllUsers(msg, react) {
@@ -280,7 +153,7 @@ module.exports = async function (guild) {
                     let usrs = await reaction.fetchUsers(100, cur === null ? {} : { after: cur });
                     let toAdd = usrs.array();
                     if (toAdd.length === 0) done = true;
-                    else count+=toAdd.length, cur = toAdd[toAdd.length - 1].id;
+                    else count += toAdd.length, cur = toAdd[toAdd.length - 1].id;
                 }
             }
             resolve(count);
@@ -325,6 +198,7 @@ module.exports = async function (guild) {
     }
 
     async function reactionAdded(reaction, user) {
+        if (!reaction) return console.log("reaction undefined");
         let msg = reaction.message;
         let emd = msg.embeds[0];
         let reacts = ["1⃣", "2⃣"];

@@ -15,20 +15,28 @@ module.exports = {
 
         //DAILY COUNTER
         userEconomy.dailyCount++;
+        let dailyCounter = await connection.getRepository(Counter).findOne({ id: msg.author.id, title: "ConsecutiveDaily" });
+        if (!dailyCounter) dailyCounter = new Counter(msg.author.id, "ConsecutiveDaily", 0, curdate);
         if (curdate - userEconomy.lastDaily <= 86400000 * 2) {
-            userEconomy.consecutiveDaily++;
-        } else userEconomy.consecutiveDaily = 1;
+            dailyCounter.count++;
+        } else dailyCounter.count = 1, dailyCounter.lastUpdated = curdate;
         userEconomy.lastDaily = curdate;
 
         //FIXME: Weekly consecutive bonus
+        if (dailyCounter.count % 7 === 0) {
+            await msg.channel.embed("**Weekly `!daily` bonus!**\n\nYou've done !daily 7 days in a row, so you've earned 2000 extra credits!");
+            userEconomy.credits += 2000;
+        }
+        console.log("AAAAAAAAAA");
+        await connection.manager.save(dailyCounter);
 
         //DOUBLEDAILY / GIVE CREDITS
         let hasDouble = await connection.getRepository(Item).findOne({ id: msg.author.id, type: "Perk", title: "doubledaily" });
         let creditsToGive = 200;
         let badgeLogo = null;
-        if (msg.member.roles.get("332021614256455690")) creditsToGive = 300, badgeLogo="cf";
-        if (hasDouble) creditsToGive*=2, badgeLogo="dd";
-        userEconomy.credits+=creditsToGive;
+        if (msg.member.roles.get("332021614256455690")) creditsToGive = 300, badgeLogo = "cf";
+        if (hasDouble) creditsToGive *= 2, badgeLogo = "dd";
+        userEconomy.credits += creditsToGive;
 
         //CHANGE BACKGROUND BASED ON ALBUM ROLE
         let album = "default";
@@ -99,7 +107,7 @@ module.exports = {
         } else if (after === before && after === 5) { //STILL AT 5
             tokenMessage = "**You have the maximum number of tokens, so you did not earn any today!** Spend them with `!blurrybox.`";
         } else { //EARNED SOME
-            tokenMessage = `You earned **${after - before} token${after - before === 1 ? "" : "s"}**! You now have **${after} tokens total**- you can spend them with \`!blurrybox.\``;
+            tokenMessage = `You earned **${after - before} token${after - before === 1 ? "" : "s"}**! You now have **${after} token${after === 1 ? "" : "s"} total**- you can spend ${after === 1 ? "it" : "them"} with \`!blurrybox.\``;
         }
         
         await connection.manager.save(userEconomy);

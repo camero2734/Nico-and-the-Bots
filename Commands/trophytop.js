@@ -3,10 +3,10 @@ module.exports = {
         let page = (!isNaN(args[1]) && args[1] > 0) ? args[1] : 1;
         let userEconomies = await connection.getRepository(Economy).createQueryBuilder("e").orderBy("e.trophies", "DESC").addOrderBy("e.ingots", "DESC").skip(10 * page - 10).take(10).getMany();
         let embed = new Discord.RichEmbed({ title: "Trophy Leaderboard" });
-        let i = 0;
+        let i = 1 + 10 * (page - 1);
         for (let econ of userEconomies) {
             if (msg.guild.members.get(econ.id)) {
-                embed.addField(i + ". " + msg.guild.members.get(econ.id).displayName, "🏆 x" + econ.trophies + "  💎x" + econ.trophies);
+                embed.addField(i + ". " + msg.guild.members.get(econ.id).displayName, "🏆 x" + econ.trophies + "  💎x" + econ.ingots);
             } else embed.addField(i + ". Invalid User", "🏆 x0  💎x0");
             i++;
         }

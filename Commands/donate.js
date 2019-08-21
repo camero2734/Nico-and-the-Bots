@@ -21,7 +21,7 @@ module.exports = {
         let onehour = 3600000;
         let oneweek = 604800000;
         if (Date.now() - relationship.recentTime < onehour && msg.author.id !== poot) return msg.channel.embed(`You cannot donate to <@${taggedid}> because you have donated to them within the last hour!`);
-        else if (relationship.count > 3 && Date.now() - relationship.countTime < oneweek) return msg.channel.embed(`You cannot donate to <@${taggedid}> because you have donated to them 3 times in the last week!`);
+        else if (relationship.count > 3 && Date.now() - relationship.countTime < oneweek && msg.author.id !== poot) return msg.channel.embed(`You cannot donate to <@${taggedid}> because you have donated to them 3 times in the last week!`);
 
 
         let taxed = (msg.author.id === poot) ? 0 : Math.ceil(amountToGive * 1.1);
@@ -35,8 +35,8 @@ module.exports = {
             //Check if giver has enough
             if (giverEconomy.credits < taxed && msg.author.id !== poot) return msg.channel.embed("You don't have enough credits to donate " + amountToGive + " credits! The cost is " + taxed + " credits. (10% tax)");
             //Take taxed credits from giver
-            if (msg.author.id !== poot) giverEconomy.credits-=taxed;
-            getterEconomy.credits+=amountToGive;
+            if (msg.author.id !== poot) giverEconomy.credits -= taxed;
+            getterEconomy.credits += amountToGive;
             //Give requested credits to other person
             await updateJSON();
             await connection.manager.save(giverEconomy);

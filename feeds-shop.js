@@ -39,17 +39,6 @@ fs.readdirSync("./app/model").forEach(file => {
     bot.login(process.env.KEONS_TOKEN);
 })();
 
-var Twit = require("twit");
-
-var T_POST = new Twit({
-    consumer_key:         process.env.CONSUMER,
-    consumer_secret:      process.env.CONSUMER_S,
-    access_token:         process.env.ACCESS,
-    access_token_secret:  process.env.ACCESS_S,
-    timeout_ms:           60*1000  // optional HTTP request timeout to apply to all requests.
-});
-
-
 bot.on("ready", () => {
     loadJsonFile("channels.json").then(async (c) => {
         chans = c;
@@ -104,7 +93,8 @@ async function setShops(guild) {
         });
     }
     console.log(chalk.blue.bold("Shop setting up!"));
-    shop.bulkDelete(20);
+    await shop.bulkDelete(100);
+    await shop.bulkDelete(100);
     let embed = new Discord.RichEmbed();
     embed.setTitle("Role Shop");
     embed.addField("🇦 | Common Fren", "100 D");
@@ -118,7 +108,7 @@ async function setShops(guild) {
     embed.addField("💵 | Rich", "50,000 C");
     embed.addField("💿 | DΣMΛ", "100,000 C");
     embed.setFooter("C = Credits | L = Level | D = # of !daily uses");
-    shop.send({ embed:embed }).then(async (m) => {
+    shop.send({ embed: embed }).then(async (m) => {
         await m.react("🇦");
         await m.react("🇧");
         await m.react("🇨");
@@ -149,7 +139,7 @@ async function setShops(guild) {
         embed2.addField("💙 | Blurrybox Token Increaser", "5 LT");
         embed2.addField("💚 | Earn credits on level up", "4 LT");
         embed2.setFooter("LT = Level Tokens [Earn by leveling up] | C = Credits");
-        let m = await shop.send({ embed:embed2 });
+        let m = await shop.send({ embed: embed2 });
         await m.react("🇦");
         await m.react("🇧");
         await m.react("🇨");
@@ -193,7 +183,7 @@ async function setShops(guild) {
         embed3.addField("🇭 | Ruby", "6,000 C | 21 L");
         embed3.addField("🇮 | Taxi Cab", "6,000 C | 21 L");
         embed3.setFooter("C = Credits, L = Level");
-        let m = await shop.send({ embed:embed3 });
+        let m = await shop.send({ embed: embed3 });
         await m.react("🇦");
         await m.react("🇧");
         await m.react("🇨");
@@ -442,7 +432,7 @@ async function buyColorRole(shopNum, emoji, id) {
     if (userEconomy.credits < requirements.credits) {return channel.send("`You need " + (requirements.credits - userEconomy.credits) + " more credits to buy this role.`").then((m) => { m.delete(5000); }); }
     
     //Take Credits
-    userEconomy.credits-=requirements.credits;
+    userEconomy.credits -= requirements.credits;
     await connection.manager.save(userEconomy);
     //Give Role
     let newCR = new Item(id, role, "ColorRole", Date.now());
@@ -480,7 +470,7 @@ async function buyRole(roleID, credits, level, daily, userid, reaction, notSongR
     //Credits check
     if (userEconomy.credits < credits) { return channel.send("`You need " + (credits - userEconomy.credits) + " more credits to buy this role.`").then((m) => { m.delete(5000); }); };
 
-    userEconomy.credits-=credits;
+    userEconomy.credits -= credits;
     await connection.manager.save(userEconomy);
     if (notSongRole) await member.addRole(roleID);
     else {
@@ -514,8 +504,8 @@ async function buyLTRole(roleID, ltreq, userid, credits) {
     //LT
     if (ltreq > userLT.value) return channel.send(`This item costs ${ltreq} tokens. You have ${userLT.value}`).then((m) => m.delete(5000));
     //Take away credits and LT and create role object
-    if (credits) userEconomy.credits-=credits;
-    userLT.value-=ltreq;
+    if (credits) userEconomy.credits -= credits;
+    userLT.value -= ltreq;
     let newSR = new Item(userid, roleID, "SongRole", Date.now());
     //Save
     await connection.manager.save(userEconomy);
@@ -543,7 +533,7 @@ async function buyPerk(perkname, id, ltreq) {
     if (!userLT) userLT = new LevelToken(id, 0, 0);
     if (ltreq > userLT.value) return channel.send(`This item costs ${ltreq} tokens. You have ${userLT.value}`).then((m) => m.delete(5000));
     //REMOVE LT
-    userLT.value-=ltreq;
+    userLT.value -= ltreq;
     await connection.manager.save(userLT);
     //GIVE PERK
     let newPerk = new Item(id, perkname, "Perk", Date.now());
@@ -557,28 +547,7 @@ async function buyPerk(perkname, id, ltreq) {
     dm.send({ embed: embed });
 }
 
-bot.on("voiceStateUpdate", (oldm, newm) => {
-    let channels = bot.guilds.get("269657133673349120").channels.array();
-    for (let channel of channels) {
-        if (channel.type === "voice") {
-            let listeners = channel.members.array();
-            if (channel.name.indexOf("Radio") !== -1) {
-                let temp = channel.name.split("┋");
-                let newstring = "🔵" + "┋" + temp[1]; 
-                channel.setName(newstring);
-            }
-            else if (listeners.length === 0) {
-                let temp = channel.name.split("┋");
-                let newstring = "⚫" + "┋" + temp[1]; 
-                channel.setName(newstring);
-            } else {
-                let temp = channel.name.split("┋");
-                let newstring = "🔴" + "┋" + temp[1]; 
-                channel.setName(newstring);
-            }
-        }
-    }
-});
+
 
 
 function websiteDay() {
@@ -586,7 +555,7 @@ function websiteDay() {
         cycle: [ "30" ]
     }, function (ot) {
         console.log(new Date(), /ONTIME/);
-        updateDay();
+        //updateDay();
         ot.done();
         return;
     });
@@ -666,12 +635,12 @@ function calculateTimeRemaining(date, n) {
     var hours = (Math.floor(delta / 3600) % 24).toString();
     if (days <= numDays) {
         delta -= hours * 3600;
-        var minutes = (Math.floor(delta/60) % 60).toString();
+        var minutes = (Math.floor(delta / 60) % 60).toString();
         if (hours === "0" && days === "0") {
             delta -= minutes * 60;
             var seconds = (Math.floor(delta) % 60).toString();
             return (minutes + ` minute${parseInt(minutes) === 1 ? "" : "s"} and ` + seconds + ` second${parseInt(seconds) === 1 ? "" : "s"}`);
-        } else return ((parseInt(hours) + (days*24)) + ` hour${parseInt(hours + (days*24)) === 1 ? "" : "s"} and ` + Math.ceil(parseInt(minutes) + ((Math.floor(delta - minutes * 60) % 60)) / 60) + ` minute${Math.round(parseInt(minutes) + ((Math.floor(delta - minutes * 60) % 60)) / 60) === 1 ? "" : "s"}`);
+        } else return ((parseInt(hours) + (days * 24)) + ` hour${parseInt(hours + (days * 24)) === 1 ? "" : "s"} and ` + Math.ceil(parseInt(minutes) + ((Math.floor(delta - minutes * 60) % 60)) / 60) + ` minute${Math.round(parseInt(minutes) + ((Math.floor(delta - minutes * 60) % 60)) / 60) === 1 ? "" : "s"}`);
     } else return (days + ` day${parseInt(days) === 1 ? "" : "s"} and ` + hours + ` hour${parseInt(hours) === 1 ? "" : "s"}`);
 }
 

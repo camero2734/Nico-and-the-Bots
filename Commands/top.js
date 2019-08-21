@@ -16,9 +16,9 @@ module.exports = {
             //Border
             let startY = 65;
             ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-            ctx.strokeRect(20, (startY-5), 460, (startY-5) + 475);
+            ctx.strokeRect(20, (startY - 5), 460, (startY - 5) + 475);
             ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-            ctx.fillRect(20, (startY-5), 460, (startY-5) + 475);
+            ctx.fillRect(20, (startY - 5), 460, (startY - 5) + 475);
             
             //Get the page number and bounds
             let page = msg.args && !isNaN(msg.args[1]) && msg.args[1] > 0 ? ~~msg.args[1] : 1;
@@ -51,7 +51,7 @@ module.exports = {
                     }
                     
                     let pfp = await loadImage(r);
-                    ctx.drawImage(pfp, 80, (startY-1) + 46.3 * diff, 42, 42);
+                    ctx.drawImage(pfp, 80, (startY - 1) + 46.3 * diff, 42, 42);
                 }
 
                 //STYLE ME!!
@@ -60,24 +60,24 @@ module.exports = {
                 ctx.fillStyle = "white";
 
                 //Row num
-                ctx.fillText(rownum, 65, (startY+30) + 46.1 * diff);
+                ctx.fillText(rownum, 65, (startY + 30) + 46.1 * diff);
 
                 //Username
                 ctx.textAlign = "start";
                 if (msg.guild.members.get(ec.id)) ctx.fillStyle = msg.guild.members.get(ec.id).displayHexColor;
                 else ctx.fillStyle = "white";
                 let user_name = uName.replace(/̶/g, "");
-                ctx.fillText(user_name, 132, (startY+21) + 46.3 * diff, 330);
+                ctx.fillText(user_name, 132, (startY + 21) + 46.3 * diff, 330);
 
                 //Level and points
                 ctx.font = "16px futura";
                 ctx.fillStyle = "white";
-                ctx.fillText("Level: " + ec.monthlyLevel, 300, (startY+43) + 45.9 * diff);
-                ctx.fillText("Points: " + ec.monthlyScore, 165, (startY+43) + 46.1 * diff);
+                ctx.fillText("Level: " + ec.monthlyLevel, 300, (startY + 43) + 45.9 * diff);
+                ctx.fillText("Points: " + ec.monthlyScore, 165, (startY + 43) + 46.1 * diff);
                 //Time hehe
                 let hours = (ec.monthlyScore / 300).toFixed(2);
                 ctx.fillStyle = "#00ff00";
-                ctx.fillText(`(${hours} hrs)`, 380, (startY+43) + 45.9 * diff);
+                ctx.fillText(`(${hours} hrs)`, 380, (startY + 43) + 45.9 * diff);
 
                 rownum++;
             }

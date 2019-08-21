@@ -11,8 +11,14 @@ module.exports = function(guild) {
         for (let rem of reminders) {
             let mem = guild.members.get(rem.id);
             if (!mem) continue;
-            let dm = await mem.createDM();
-            await dm.send("REMINDER: You are being reminded that you said the following: **" + rem.title + "**");
+            try {
+                let dm = await mem.createDM();
+                await dm.send("REMINDER: You are being reminded that you said the following: **" + rem.title + "**");
+            } catch(e) {
+                console.log(e);
+                console.log("Could not dm " + mem.displayName + " reminder");
+            }
+            
         }
         await connection.manager.remove(reminders);
         
@@ -22,8 +28,14 @@ module.exports = function(guild) {
             if (!mem) continue;
             await mem.removeRole(TO);
             await mem.addRole("269660541738418176"); //BANDITOS role
-            let dm = await mem.createDM();
-            await dm.send("You are no longer muted!");
+            try {
+                let dm = await mem.createDM();
+                await dm.send("You are no longer muted!");
+            } catch(e) {
+                console.log(e);
+                console.log("Could not dm " + mem.displayName + " timeout");
+            }
+            
         }
         await connection.manager.remove(timeouts);
     }, 10000);

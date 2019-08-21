@@ -5,7 +5,7 @@ module.exports = {
         let perk = args[1];
         if (perks.indexOf(perk) === -1) return msg.channel.embed("Invalid perk name");
         let id = msg.mentions.users.first().id;
-        let hasPerk = await connection.getRepository(Item).findOne({ id: id, type: "Perk" });
+        let hasPerk = await connection.getRepository(Item).findOne({ id: id, type: "Perk", title: perk });
         if (hasPerk) return msg.channel.embed("This user already has this perk!");
         let newPerk = new Item(id, perk, "Perk", Date.now());
         await connection.manager.save(newPerk);

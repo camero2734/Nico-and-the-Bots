@@ -14,7 +14,7 @@ module.exports = async function(msg, connection, Discord) {
         let noxpchans = [chans.lyrics, chans.commands, chans.venting, chans.incallmusic, chans.incall, chans.incallmemes];
 
         //INITIALIZE XPDELAY
-        let preXP = await connection.getRepository(XPDelay).findOne( {id: msg.author.id} );
+        let preXP = await connection.getRepository(XPDelay).findOne({ id: msg.author.id });
         if (!preXP) {
             let newXP = new XPDelay(msg.author.id, 0, 0);
             await connection.manager.save(newXP);
@@ -27,16 +27,16 @@ module.exports = async function(msg, connection, Discord) {
         }
 
         //Set time has passed, give exp
-        if ((preXP.nextTime <= Date.now() || msg.content.toLowerCase() === "!score") && noxpchans.indexOf(msg.channel.id) === -1) {
+        if ((preXP.nextTime <= Date.now() && noxpchans.indexOf(msg.channel.id) === -1) || msg.content.toLowerCase() === "!score") {
             if (preXP.messageCount <= 50) xptogive = preXP.messageCount; //preXP.messageCount = number of msgs sent during period
             if (preXP.messageCount > 50) xptogive = Math.floor(((-1) * (0.05 * preXP.messageCount - 2.5) * (0.05 * preXP.messageCount - 2.5)) + 50);
             if (xptogive < 1) xptogive = 1;
-            let userEconomy = await connection.getRepository(Economy).findOne( {id: msg.author.id} );
+            let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
             if (!userEconomy) {
                 userEconomy = new Economy(msg.author.id); //Initalizes everything else to 0
             }
             if (Math.random() > 0.5) {
-                userEconomy.credits+=2;
+                userEconomy.credits += 2;
             }
             //ALL TIME
             let currentPoints = userEconomy.alltimeScore + xptogive;
@@ -52,20 +52,20 @@ module.exports = async function(msg, connection, Discord) {
             }
             if (curLevel > userEconomy.alltimeLevel) {
                 //FIXME: perks
-                let hasPerk = await connection.getRepository(Item).findOne( {id: msg.author.id, title: "lvlcred", type: "Perk"} );
+                let hasPerk = await connection.getRepository(Item).findOne({ id: msg.author.id, title: "lvlcred", type: "Perk" });
                 if (hasPerk) {
                     let randomReward = Math.floor(Math.random() * 1500) + 201;
                     hasPerk = `You gained ${randomReward} credits for leveling up!`;
-                    userEconomy.credits+=randomReward;
+                    userEconomy.credits += randomReward;
                 }
                 userEconomy.alltimeLevel = curLevel;
                 levelTokens = await updateTokens(msg, true, curLevel);
-                let lvlEmbed = new Discord.RichEmbed({description: `LEVEL UP: You are now level ${curLevel}!`}).setColor("RANDOM");
+                let lvlEmbed = new Discord.RichEmbed({ description: `LEVEL UP: You are now level ${curLevel}!` }).setColor("RANDOM");
                 if (typeof hasPerk === "string") lvlEmbed.addField("Perk Bonus", hasPerk);
                 if (levelTokens > 0) lvlEmbed.addField("Level Tokens", `You gained ${levelTokens} level tokens!`);
-                await msg.channel.send(msg.member, {embed: lvlEmbed});
+                await msg.channel.send(msg.member, { embed: lvlEmbed });
             }
-            userEconomy.alltimeScore+=xptogive;
+            userEconomy.alltimeScore += xptogive;
             let currentMonthlyPoints = userEconomy.monthlyScore + xptogive;
             let rq2 = 100;
             let totalscore2 = 0;
@@ -80,7 +80,7 @@ module.exports = async function(msg, connection, Discord) {
             if (newMonthlyLevel > userEconomy.monthlyLevel) {
                 userEconomy.monthlyLevel = newMonthlyLevel;
             }
-            userEconomy.monthlyScore+=xptogive;
+            userEconomy.monthlyScore += xptogive;
             await connection.manager.save(userEconomy);
 
             preXP.nextTime = Date.now() + delay * 1000 * 60;
@@ -88,15 +88,15 @@ module.exports = async function(msg, connection, Discord) {
             await connection.manager.save(preXP);
         }
         resolve();
-    })
+    });
 
     async function updateTokens(msg, nosay, currentLevel) {
         if (!currentLevel) {
-            let userEconomy = await connection.getRepository(Economy).findOne( {id: msg.author.id} );
+            let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
             if (!userEconomy) return 0;
             currentLevel = userEconomy.alltimeLevel;
         }
-        function tokenNum(x) {return Math.floor((0.0001 * x * x) + (0.045 * x) + 1)};
+        function tokenNum(x) {return Math.floor((0.0001 * x * x) + (0.045 * x) + 1);};
         let gained = 0;
         let preLT = await connection.getRepository(LevelToken).findOne({ id: msg.author.id });
         if (!preLT) {
@@ -119,4 +119,4 @@ module.exports = async function(msg, connection, Discord) {
         }
         return gained;
     }
-}
+};

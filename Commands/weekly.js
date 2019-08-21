@@ -8,60 +8,63 @@ module.exports = {
         //         this.image = album.image[album.image.length - 1]["#text"];
         //     }
         //     getLine() {
-        //         return {font: "Arial", color: "white", text: this.artist + "\n" + this.name + " " + this.playcount}
+        //         return { font: "Arial", color: "white", text: this.artist + "\n" + this.name + " " + this.playcount };
         //     }
         // }
 
         // //IMPORTS
         // const got = require("got");
-        // const { createCanvas, loadImage, Image, registerFont } = require('canvas');
-        // const API_KEY = "09b458ca97038e1ac58ea33f4542b2f4"
+        // const { createCanvas, loadImage, Image, registerFont } = require("canvas");
+        // const API_KEY = "09b458ca97038e1ac58ea33f4542b2f4";
 
         // //INPUTS FORMAT: !weekly 3x3 90
-        // let username = "pootusmaximus";
+        // let userItem = await connection.getRepository(Item).findOne({ id: msg.author.id, type: "FM" });
+        // if (!userItem) return msg.channel.embed("You must use `!setfm` first!");
+        // let username = userItem.title;
+        // console.log(username, /USERNAME/);
         // let width = msg.content.match(/\d+(?=x)/) ? msg.content.match(/\d+(?=x)/)[0] : 3;
         // let height = msg.content.match(/(?<=x)\d+/) ?  msg.content.match(/(?<=x)\d+/)[0] : 3;
-        // let timequery = msg.content.replace(width+"x"+height, "").replace("!weekchart", "").trim() || "7 days";
+        // let timequery = msg.content.replace(width + "x" + height, "").replace("!weekchart", "").trim() || "7 days";
 
         // //GET DATE STRING overall | 7day | 1month | 3month | 6month | 12month
         // let date;
         // switch(timequery.toLowerCase().split(" ").join("")) {
-        //     case "3":
-        //     case "90":
-        //     case "90days":
-        //     case "threemonths":
-        //     case "3month":
-        //     case "3months":
-        //         date = "3month";
-        //         break;
-        //     case "7":
-        //     case "7day":
-        //     case "7days":
-        //     case "oneweek":
-        //     case "1week":
-        //         date = "7day";
-        //         break;
-        //     case "1":
-        //     case "1month":
-        //     case "onemonth":
-        //         date = "1month";
-        //         break;
-        //     case "6":
-        //     case "sixmonths":
-        //     case "6month":
-        //     case "6months":
-        //         date = "6month";
-        //         break;
-        //     case "12":
-        //     case "oneyear":
-        //     case "1year":
-        //     case "12months":
-        //     case "12month":
-        //         date = "12month";
-        //         break;
-        //     default:
-        //         date = "7day";
-        //         break;
+        // case "3":
+        // case "90":
+        // case "90days":
+        // case "threemonths":
+        // case "3month":
+        // case "3months":
+        //     date = "3month";
+        //     break;
+        // case "7":
+        // case "7day":
+        // case "7days":
+        // case "oneweek":
+        // case "1week":
+        //     date = "7day";
+        //     break;
+        // case "1":
+        // case "1month":
+        // case "onemonth":
+        //     date = "1month";
+        //     break;
+        // case "6":
+        // case "sixmonths":
+        // case "6month":
+        // case "6months":
+        //     date = "6month";
+        //     break;
+        // case "12":
+        // case "oneyear":
+        // case "1year":
+        // case "12months":
+        // case "12month":
+        //     date = "12month";
+        //     break;
+        // default:
+        //     date = "7day";
+        //     break;
         // }
 
         // //FETCH LAST FM DATA
@@ -71,18 +74,18 @@ module.exports = {
         // try {
         //     let r = await got(req_url);
         //     let json = JSON.parse(r.body)["topalbums"]["album"];
-        //     let num = width*height;
-        //     if (width*height > 50) return msg.channel.send(new Discord.RichEmbed({description: "At most 50 albums can be displayed."}).setColor("RANDOM"))
+        //     let num = width * height;
+        //     if (width * height > 50) return msg.channel.send(new Discord.RichEmbed({ description: "At most 50 albums can be displayed." }).setColor("RANDOM"));
         //     for (let i = 0; i < num; i++) {
         //         collected.push(new album(json[i]));
         //     }
         // } catch(e) {
-        //     console.log(e, /ERROR/)
+        //     console.log(e, /ERROR/);
         // }
 
         // //CREATE COLLAGE
-        // let canvas = createCanvas(width * 200, height * 200)
-        // let ctx = canvas.getContext('2d');
+        // let canvas = createCanvas(width * 200, height * 200);
+        // let ctx = canvas.getContext("2d");
         // for (let i = 0; i < collected.length; i++) {
         //     let album = collected[i];
         //     if (album.image.length < 2) continue;
@@ -102,8 +105,10 @@ module.exports = {
         //     .attachFile(new Discord.Attachment(canvas.toBuffer(), "chart.png"))
         //     .setImage("attachment://chart.png")
         //     .setColor("RANDOM")
-        //     .setDescription(`${width}x${height}, ${date}`);
-        // msg.channel.send(embed);
+        //     .setDescription(`${width}x${height}, ${date}`)
+        //     .setFooter(username);
+        // return;
+        msg.channel.send(embed);
 
     },
     info: {
@@ -111,9 +116,9 @@ module.exports = {
         example: "!weekly",
         minarg: 0,
         description: "Sends an image with weekly fm album info",
-        category: "N/A",
+        category: "FM"
     }
 
     
-}
+};
 

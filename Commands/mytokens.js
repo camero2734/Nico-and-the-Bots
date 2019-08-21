@@ -1,15 +1,14 @@
 module.exports = {
-    execute: function (msg) {
-        leveltokens = JSON.parse(fs.readFileSync("./leveltokens.json", "utf8"));
-        if (!leveltokens[msg.author.id] || !leveltokens[msg.author.id]['tokens'] || leveltokens[msg.author.id]['tokens'] === 0) return msg.channel.send('You don\'t have any LT! Earn them by leveling up!')
-        msg.channel.send('You have ' + leveltokens[msg.author.id]['tokens'] + ' LT!')
-        //
+    execute: async function (msg) {
+        let userLT = await connection.getRepository(LevelToken).findOne({ id: msg.author.id });
+        if (!userLT) userLT = new LevelToken(msg.author.id, 0, 0);
+        return msg.channel.embed(`You have ${userLT.value} LT!`);
     },
     info: {
-        aliases: ["mytokens","lt","checklt"],
+        aliases: ["mytokens", "lt", "checklt"],
         example: "!mytokens",
         minarg: 0,
         description: "Displays how many Level Tokens you have",
-        category: "Basic",
+        category: "Basic"
     }
-}
+};

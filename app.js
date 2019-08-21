@@ -14,6 +14,7 @@ const fs = require("fs");
 const Canvas = require("canvas");
 const storage = require("node-persist"); require("dotenv").config();
 const got = require("got");
+const Chart = require("chart.js");
 const loadJsonFile = require("load-json-file");
 const writeJsonFile = require("write-json-file");
 const Discord = require("discord.js");
@@ -189,7 +190,7 @@ bot.on("ready", async () => {
     setInterval(async () => {
         let currentTime = Date.now();
         let goldLength = 86400000 * 7; // 1 WEEK
-        let goldTimes = await connection.getRepository(Counter).find({ title:"GoldCount", lastUpdated: typeorm.Between(1, currentTime - goldLength) });
+        let goldTimes = await connection.getRepository(Counter).find({ title: "GoldCount", lastUpdated: typeorm.Between(1, currentTime - goldLength) });
         for (let counter of goldTimes) {
             counter.lastUpdated = 0;
             let goldMem =  guild.members.get(counter.id);
@@ -321,7 +322,7 @@ bot.on("messageDelete", message => {
         let arr = audit.entries.array();
         let deletefound = false;
         for (let i = 0; i < arr.length; i++) {
-            if (arr[i].target.id === message.author.id && !deletefound) {
+            if (arr[i] && arr[i].target && arr[i].target.id === message.author.id && !deletefound) {
                 let deletedAudit = audit.entries.first();
                 if (deletedAudit.action === "MESSAGE_DELETE") {
                     whodunit = " by " + deletedAudit.executor.username;
@@ -409,6 +410,7 @@ bot.on("message", async msg => {
             let newRP = new Recap(msg.author.id, msg.channel.id, today, Date.now());
             await connection.manager.save(newRP);
         } else {
+            console.log("Recap for " + msg.member.displayName);
             let recaps = await connection.getRepository(Recap).find({ id: msg.author.id, day: typeorm.Not(today) });
             if (msg.member.roles.get("402948433301733378") && recaps.length > 0) {
                 let recap_json = { day: today - 1 };
@@ -416,7 +418,10 @@ bot.on("message", async msg => {
                     if (!recap_json[rc.channel]) recap_json[rc.channel] = 0;
                     recap_json[rc.channel]++;
                 }
-                await resetrecap(msg, recap_json);
+                msg.Discord = Discord;
+                msg.Canvas = Canvas;
+                msg.Chart = Chart;
+                await resetrecap(msg, recap_json, recaps);
             }
             let weekRecap = await connection.getRepository(WeekRecap).findOne({ id: msg.author.id });
             if (!weekRecap) {
@@ -433,8 +438,8 @@ bot.on("message", async msg => {
                 await connection.manager.remove(recaps);
             } catch(e) {
                 console.log(chalk.red.bold(`Too many recap rows for ${msg.member.displayName}, removing 500 at a time...`));
-                for (let i = 0; i < recaps.length; i+=500) {
-                    let sliced = recaps.slice(i, i+500);
+                for (let i = 0; i < recaps.length; i += 500) {
+                    let sliced = recaps.slice(i, i + 500);
                     await connection.manager.remove(sliced);
                 }
                 console.log(chalk.red.bold("Deleted all rows!"));
@@ -534,10 +539,10 @@ bot.on("message", async msg => {
     if (!msg.content.startsWith(prefix)) return;
 
     //Channels that you can use commands in, commands that can be used in any channel, and roles that override everything
-    let allowedChannels = [chans.bottest, chans.commands, chans.suggestions, chans.fairlylocals, chans.venting];
+    let allowedChannels = [chans.bottest, chans.commands, chans.suggestions, chans.venting];
     let allowedCommands = ["spoiler", "tag", "stayalive", "fm", "chart", "weekly", "geo", "test"];
     let allowedRoles = ["330877657132564480"];
-    let allowedPairs = [{ chan: chans.lyrics, command: "randomlyric" }];
+    let allowedPairs = [{ chan: chans.lyrics, command: "randomlyric" }, { chan: chans.fairlylocals, command: "tag" }];
     let hasAllowedRole = false;
     for (let role of allowedRoles) {if (msg.member.roles.get(role)) hasAllowedRole = true;}
 
@@ -703,10 +708,10 @@ bot.on("messageReactionAdd", async (reaction, user) => {
 
     for (let i = recentReactions.length - 1; i >= 0; i--) {
         if (Date.now() - recentReactions[i].time > 5000) recentReactions.splice(i, 1);
-        else if (recentReactions[i].id === msg.id+user.id) return;
+        else if (recentReactions[i].id === msg.id + user.id) return;
     }
 
-    recentReactions.push({ id: msg.id+user.id, time: Date.now() });
+    recentReactions.push({ id: msg.id + user.id, time: Date.now() });
 
     if (msg.channel.id === chans.topfeed) return;
 
@@ -754,7 +759,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
         if (type === "strike") {
             strikes = response;
             handleStrike(msg, strikes[msg.author.id][msg.channel.id].count);
-            staffUsedCommand(user.username, "Strike ❌", "#ee3647", { User_striked: msg.author.toString(), channel: msg.channel.toString(), strike_num:strikes[msg.author.id][msg.channel.id].count, time: (new Date()).toString() });
+            staffUsedCommand(user.username, "Strike ❌", "#ee3647", { User_striked: msg.author.toString(), channel: msg.channel.toString(), strike_num: strikes[msg.author.id][msg.channel.id].count, time: (new Date()).toString() });
         } else if (type === "updownvote") {
             msg.delete();
             msg.guild.channels.get(chans.bottest).send("Message deleted by bot!\n" + response[0] + " likes\n" + response[1] + "dislikes");
@@ -948,10 +953,10 @@ function handleStrike(msg, strikes) {
     if (strikes > 3) strikes = 3;
     msg.channel.embed(`Giving ${strikes == 0 ? "a warning" : ("strike number " + strikes)} to ${msg.member.displayName} for not contributing to the chat.`);
     let descriptions = [
-        "You have received a warning for being off-topic or unproductive in #" + msg.channel.name +". Because this is your first offense, this is simply a warning. **__Next time, you will receive a strike__**\n\n**1 strike**- 24 hour ban from the channel.\n**2 strikes**- 7 day ban from the channel.\n**3 strikes**- Permanent ban from the channel.",
-        "You have received a strike for being off-topic or unproductive in #" + msg.channel.name +". You are banned from the channel for the next 24 hours.\n\nYou can regain access after 24 hours or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a 7 day ban from the channel.**", 
-        "You have received a second strike for being off-topic or unproductive in #" + msg.channel.name +". You are banned from the channel for the next 7 days.\n\nYou can regain access after 7 days or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a *permanent* ban from the channel**",
-        "You have received a third strike for being off-topic or unproductive in #" + msg.channel.name +". **You are banned from the channel permanently.**"
+        "You have received a warning for being off-topic or unproductive in #" + msg.channel.name + ". Because this is your first offense, this is simply a warning. **__Next time, you will receive a strike__**\n\n**1 strike**- 24 hour ban from the channel.\n**2 strikes**- 7 day ban from the channel.\n**3 strikes**- Permanent ban from the channel.",
+        "You have received a strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 24 hours.\n\nYou can regain access after 24 hours or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a 7 day ban from the channel.**", 
+        "You have received a second strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 7 days.\n\nYou can regain access after 7 days or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a *permanent* ban from the channel**",
+        "You have received a third strike for being off-topic or unproductive in #" + msg.channel.name + ". **You are banned from the channel permanently.**"
     ];
     let times = [0, 1000 * 3600 * 24, 1000 * 3600 * 24 * 7, -10];
     msg.member.createDM().then(async (dm) => {
@@ -966,6 +971,22 @@ function handleStrike(msg, strikes) {
         }
     });
 }
+
+let internetFailed = false;
+
+setInterval(async () => {
+    try {
+        await snekfetch.get("https://www.google.com/");
+        if (internetFailed) {
+            pm2.restart("all");
+            console.log(chalk.red.bold("RESTARTING ALL BOTS"));
+            internetFailed = false;
+        } else console.log(chalk.red("Successful internet connection"));
+    } catch(e) {
+        internetFailed = true;
+        console.log(chalk.red.bold("INTERNET ERROR, WILL RESTART ALL BOTS UPON SUCCESSFUL CONNECTION."));
+    }
+}, 10000);
 
 process.on("SIGINT", async function () {
     console.log("\nGracefully shutting down from SIGINT (Ctrl-C), waiting 5 seconds...");

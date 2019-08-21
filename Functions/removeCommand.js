@@ -1,6 +1,6 @@
 module.exports = function (c) {
-    let _ar = c.split(' ');
+    let _ar = c.split(" ");
     _ar.shift();
-    var r = _ar.join(' ');
+    var r = _ar.join(" ");
     return r;
-}
+};

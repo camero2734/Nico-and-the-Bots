@@ -1,37 +1,40 @@
 module.exports = {
     execute: async function (msg) {
-        let q = await connection.manager.query("PRAGMA busy_timeout;");
-        console.log(q);
-        
+        let goldMems = msg.guild.roles.get("386969744709910530").members.array();
+        for (let m of goldMems) {
+            await m.removeRole("386969744709910530");
+            await delay(500);
+        }
+        msg.channel.embed("Done");
     },
     info: {
         aliases: false,
         example: "!test",
         minarg: 0,
         description: "Test command",
-        category: "NA",
+        category: "NA"
     }
-}
+};
 
 
 // if (msg.author.id !== poot) return;
-        // let m = await msg.channel.fetchMessage("602635979408408587");
-        // let newEmbed = new Discord.RichEmbed(m.embeds[0]);
-        // newEmbed.setThumbnail("attachment://albums.png");
-        // newEmbed.fields[0].name = "Song 1";
-        // newEmbed.fields[2].name = "Song 2";
-        // await m.edit(newEmbed);
+// let m = await msg.channel.fetchMessage("602635979408408587");
+// let newEmbed = new Discord.RichEmbed(m.embeds[0]);
+// newEmbed.setThumbnail("attachment://albums.png");
+// newEmbed.fields[0].name = "Song 1";
+// newEmbed.fields[2].name = "Song 2";
+// await m.edit(newEmbed);
 
-        // let bgURL = "https://i.imgur.com/SglNgFH.png";
-        // let fgURL = await messageToImage(msg, 1200, 400);
+// let bgURL = "https://i.imgur.com/SglNgFH.png";
+// let fgURL = await messageToImage(msg, 1200, 400);
 
-        // let topLeft = { x: 3*214, y: 3*229.3333282470703 };
-        // let topRight = { x: 3*520, y: 3*226.3333282470703 };
-        // let botLeft = { x: 3*259, y: 3*287.3333282470703 };
-        // let botRight = { x: 3*478, y: 3*285.3333282470703 };
-        // let sign_buffer = await overlayImage(bgURL, fgURL, topLeft, topRight, botLeft, botRight, false, true);
-        // if (!sign_buffer) return msg.channel.embed("Error!");
-        // await msg.channel.send(new Discord.Attachment(sign_buffer, "overlay.png"));
+// let topLeft = { x: 3*214, y: 3*229.3333282470703 };
+// let topRight = { x: 3*520, y: 3*226.3333282470703 };
+// let botLeft = { x: 3*259, y: 3*287.3333282470703 };
+// let botRight = { x: 3*478, y: 3*285.3333282470703 };
+// let sign_buffer = await overlayImage(bgURL, fgURL, topLeft, topRight, botLeft, botRight, false, true);
+// if (!sign_buffer) return msg.channel.embed("Error!");
+// await msg.channel.send(new Discord.Attachment(sign_buffer, "overlay.png"));
 
 /*
 msg.content = removeCommand(msg.content);
@@ -41,30 +44,30 @@ msg.channel.send(new Discord.Attachment(buffer, "img.png"));
 // let role = "283272728084086784";
 
 
-        // let m = await msg.channel.send(`Removing ${msg.guild.roles.get(role).name} role...`)
-        // let members = msg.guild.roles.get(role).members.array();
+// let m = await msg.channel.send(`Removing ${msg.guild.roles.get(role).name} role...`)
+// let members = msg.guild.roles.get(role).members.array();
 
-        // for (let member of members) {
-        //     await m.edit(`Removing ${msg.guild.roles.get(role).name} role from \`${member.displayName}...\``)
-        //     member.removeRole(role);
-        //     await new Promise(next => {
-        //         setTimeout(() => {
-        //             next();
-        //         }, 1000)
-        //     })
-        // }
+// for (let member of members) {
+//     await m.edit(`Removing ${msg.guild.roles.get(role).name} role from \`${member.displayName}...\``)
+//     member.removeRole(role);
+//     await new Promise(next => {
+//         setTimeout(() => {
+//             next();
+//         }, 1000)
+//     })
+// }
 
-        // msg.channel.embed("Done.")
+// msg.channel.embed("Done.")
 
-        // if (msg.author.id !== poot) return msg.delete();
-        // if (!msg.mentions || !msg.mentions.users || !msg.mentions.users.first()) return;
-        // let id = msg.mentions.users.first().id;
-        // let msgsDay = 0;
-        // if (msgcountJSON[id]) {
-        //     for (let key in msgcountJSON[id]) msgsDay += msgcountJSON[id][key];
-        // }
-        // msgsDay = Math.floor(msgsDay / 7);
-        // msg.channel.embed(msgsDay + " messages/day");
+// if (msg.author.id !== poot) return msg.delete();
+// if (!msg.mentions || !msg.mentions.users || !msg.mentions.users.first()) return;
+// let id = msg.mentions.users.first().id;
+// let msgsDay = 0;
+// if (msgcountJSON[id]) {
+//     for (let key in msgcountJSON[id]) msgsDay += msgcountJSON[id][key];
+// }
+// msgsDay = Math.floor(msgsDay / 7);
+// msg.channel.embed(msgsDay + " messages/day");
 
 
 /*
@@ -127,8 +130,8 @@ let id = "574731157061632000";
 */
 
 
-        // let content = removeCommand(msg.content);
-        // await sql.run(`UPDATE scavenger SET hint="${content}" WHERE userId ="QUIET"`);
+// let content = removeCommand(msg.content);
+// await sql.run(`UPDATE scavenger SET hint="${content}" WHERE userId ="QUIET"`);
 
 
 

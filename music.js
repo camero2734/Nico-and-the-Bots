@@ -243,7 +243,7 @@ async function playNext() {
         }
     }
     console.log("after attach");
-    let voiceChannel = bot.guilds.get("269657133673349120").channels.get("470337464159174666");//.channels.get(musicChan);
+    let voiceChannel = bot.guilds.get("269657133673349120").channels.get(musicChan);
     voiceChannel.join().then(async (vc) => {
         await sendInfo(song);
         console.log(song.url, /URL/);

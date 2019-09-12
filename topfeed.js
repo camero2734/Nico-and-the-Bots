@@ -99,7 +99,7 @@ let Users = [];
 async function setTimer(time) {
     setTimeout(async () => {
         if (queue.length === 0) process.exit(0);
-        else setTimer(1000 * 60);
+        else setTimer(1000 * 3600); //EVERY HOUR
     }, time);
 }
 
@@ -160,20 +160,20 @@ async function controller() {
             if (user.hasInstagram()) {
                 let posts = await user.getInstagramPosts(3);
                 let stories = await user.getInstagramStories();
-                let profile = await user.getInstagramProfile();
+                // let profile = await user.getInstagramProfile();
 
-                let avatar_response = await got(profile.avatar);
-                let ava_img = avatar_response.body;
-                let ava_hash = await hasha(ava_img);
+                // let avatar_response = await got(profile.avatar);
+                // let ava_img = avatar_response.body;
+                // let ava_hash = await hasha(ava_img);
 
                 let links = [
-                    { type: "avatar", link: ava_hash, hash: ava_hash, overrideLink: profile.avatar }
+                    //{ type: "avatar", link: ava_hash, hash: ava_hash, overrideLink: profile.avatar }
                 ];
                 for (let i = 0; i < posts.links.length; i++) {
                     links.push({ type: "Post", link: posts.links[i], data: posts.posts[i] });
                 }
                 for (let i = 0; i < stories.links.length; i++) {
-                    links.push({ type: "Story", link: stories.stories[i].shortcode, data: stories.stories[i], overrideLink: stories.links[i] });
+                    links.push({ type: "Story", link: stories.stories[i].url, storyLink: stories.stories[i].url, overrideLink: stories.stories[i].image_versions2.candidates[0].url, data: stories.stories[i] });
                 }
                 await checkLinks(links, "Instagram", user);
             }
@@ -328,70 +328,70 @@ async function wrapIGComments() {
 
 async function setUsers() {
     Users = [
-        new SocialMedia({ twitterName: "twentyonepilots" }, {
+        new SocialMedia({ twitterName: "twentyonepilots", instaName: "twentyonepilots" }, {
             name: "twenty one pilots",
             channel: "534882758770688031",
             role: "534890910526472202",
             color: "#fce300",
             time: 15 * 1000
         }),
-        new SocialMedia({ twitterName: "tylerrjoseph" }, {
+        new SocialMedia({ twitterName: "tylerrjoseph", instaName: "tylerrjoseph" }, {
             name: "Tyler Joseph",
             channel: "470428804695851008",
             role: "534890883016032257",
             color: "#ff0000",
             time: 15 * 1000
         }),
-        new SocialMedia({ twitterName: "joshuadun", snapName: "joshuadun" }, {
+        new SocialMedia("joshuadun", {
             name: "Josh Dun",
             channel: "534882732820529174",
             role: "534890899323224064",
             color: "#0005ff",
             time: 15 * 1000
         }),
-        new SocialMedia({ twitterName: "debbyRyan" }, {
+        new SocialMedia({ twitterName: "debbyRyan", instaName: "debbyRyan" }, {
             name: "Debby Ryan",
             channel: "534882714566918174",
             role: "535588989713907713",
             color: "#FF0CE2",
             time: 45 * 1000
         }),
-        // new SocialMedia({ instaName: "jennaajoseph" }, {
-        //     name: "Jenna Joseph",
-        //     channel: "534882714566918174",
-        //     role: "534890933301542912",
-        //     color: "#FFFAF0",
-        //     time: 45 * 1000
-        // }),
-        // new SocialMedia({ instaName: "yungjimdun" }, {
-        //     name: "Jim",
-        //     channel: "534882714566918174",
-        //     role: "534890931573358623",
-        //     color: "#D4AD7F",
-        //     time: 45 * 1000
-        // }),
-        new SocialMedia({ twitterName: "bradheaton" }, {
+        new SocialMedia({ instaName: "jennaajoseph" }, {
+            name: "Jenna Joseph",
+            channel: "534882714566918174",
+            role: "534890933301542912",
+            color: "#FFFAF0",
+            time: 45 * 1000
+        }),
+        new SocialMedia({ instaName: "yungjimdun" }, {
+            name: "Jim",
+            channel: "534882714566918174",
+            role: "534890931573358623",
+            color: "#D4AD7F",
+            time: 45 * 1000
+        }),
+        new SocialMedia({ twitterName: "bradheaton", instaName: "bradheaton" }, {
             name: "Brad Heaton",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#d9593b",
             time: 60 * 1000
         }),
-        new SocialMedia({ twitterName: "JordanCDun" }, {
+        new SocialMedia({ twitterName: "JordanCDun", instaName: "jordandun" }, {
             name: "Jordan Dun",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#234400",
             time: 60 * 1000
         }),
-        new SocialMedia({ twitterName: "ReelBearMedia" }, {
+        new SocialMedia({ twitterName: "ReelBearMedia", instaName: "reelbearmedia" }, {
             name: "ReelBearMedia",
             channel: "534882701963034624",
             role: "534890940343779328",
             color: "#331900",
             time: 60 * 1000
         }),
-        new SocialMedia({ twitterName: "JayDrummerBoy" }, {
+        new SocialMedia({ twitterName: "JayDrummerBoy", instaName: "jay_t_joseph" }, {
             name: "Jay Joseph",
             channel: "534882701963034624",
             role: "534890940343779328",
@@ -613,7 +613,7 @@ async function wrapInstagram(post, user) {
                 embed.setThumbnail(profile.avatar);
                 embed.setDescription(post.data.caption ? post.data.caption : "No caption");
                 embed.setAuthor(post.type + " from " + user.details.name + ` (${user.instaName})`);
-                embed.setFooter(new Date(1000 * post.data.taken_at_timestamp), "https://images-ext-2.discordapp.net/external/jncL2CC80EDZyhl_3Jj72zIyEtxG_ypQWQtXBximES8/https/instagram-brand.com/wp-content/uploads/2016/11/app-icon2.png");
+                embed.setFooter(post.data && post.data.taken_at_timestamp ? new Date(1000 * post.data.taken_at_timestamp) : Date.now(), "https://images-ext-2.discordapp.net/external/jncL2CC80EDZyhl_3Jj72zIyEtxG_ypQWQtXBximES8/https/instagram-brand.com/wp-content/uploads/2016/11/app-icon2.png");
                 let urls = [];
                 urls = post && post.data && post.data.getPostMedia ? await post.data.getPostMedia() : urls;
                 if (post.type === "Story") urls = [post.link];
@@ -623,7 +623,7 @@ async function wrapInstagram(post, user) {
                 }
                 if (urls.length <= 1 && !urls.some(l => {return l.includes(".mp4");})) {
                     if (urls.length === 1) embed.setImage(urls[0]);
-                    embed.addField("Post Link: ", `[Click Here](${post.link})`);
+                    embed.addField("Post Link: ", `[Click Here](${post.storyLink ? post.storyLink : post.link})`);
                     resolve([embed]);
                 } else {
                     embed.addField("\u200b", `[Post Link](${post.link})`);
@@ -677,12 +677,17 @@ process.on("unhandledRejection", e => handleErr(e));
 
 function handleErr(e) {
     try {
-        if (!e.message || e.message.indexOf("503") === -1) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send(e.message ? e.message : e.toString(), { split: true });
+        if (!e.message || e.message.indexOf("503") === -1) {
+            let g = bot.guilds.get("269657133673349120");
+            if (!g) throw new Error(e);
+            let c = g.channels.get("470406597860917249");
+            if (!c) throw new Error(e);
+            c.send(e.message ? e.message : e.toString(), { split: true });
+        }
     } catch(e) {
         console.log(e, /TRYCATCHAHNDLEERR/);
     }
     console.log(e, /E-1/);
-    setTimeout(() => {process.exit(0);}, 10000);
 }
 
 

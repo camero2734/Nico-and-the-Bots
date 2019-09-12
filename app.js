@@ -539,7 +539,7 @@ bot.on("message", async msg => {
     if (!msg.content.startsWith(prefix)) return;
 
     //Channels that you can use commands in, commands that can be used in any channel, and roles that override everything
-    let allowedChannels = [chans.bottest, chans.commands, chans.suggestions, chans.venting];
+    let allowedChannels = [chans.bottest, chans.commands, chans.suggestions, chans.venting, chans.staff, chans.laxstaff];
     let allowedCommands = ["spoiler", "tag", "stayalive", "fm", "chart", "weekly", "geo", "test"];
     let allowedRoles = ["330877657132564480"];
     let allowedPairs = [{ chan: chans.lyrics, command: "randomlyric" }, { chan: chans.fairlylocals, command: "tag" }];

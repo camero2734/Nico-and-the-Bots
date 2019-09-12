@@ -11,7 +11,7 @@ module.exports = {
     },
     info: {
         aliases: false,
-        example: "!monthlyreset",
+        example: "!resetallscores",
         minarg: 0,
         description: "resets the score boards",
         category: "Staff"

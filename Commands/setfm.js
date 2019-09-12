@@ -5,7 +5,7 @@ module.exports = {
         userItem.time = Date.now();
         userItem.title = removeCommand(msg.content);
         await connection.manager.save(userItem);
-        //msg.channel.embed("Succesfully updated your FM username to `" + userItem.title + "`");
+        msg.channel.embed("Succesfully updated your FM username to `" + userItem.title + "`");
     },
     info: {
         aliases: false,

@@ -110,7 +110,7 @@ module.exports = {
                     for (let role of winRoles) {
                         let membersofrole = msg.guild.roles.get(role).members.array();
                         for (let mem of membersofrole) {
-                            console.log("Would remove role from " + mem);//mem.removeRole(role);
+                            mem.removeRole(role);
                         }
                     }
                     let roleToGive = winRoles[winnercount - 1];

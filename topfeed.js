@@ -1,6 +1,6 @@
 //IMPORT
 require("dotenv").config();
-var pm2 = require("pm2");
+let pm2 = require("pm2");
 pm2.connect((err) => {
     if (err) throw err;
     setTimeout(() => {
@@ -22,8 +22,12 @@ const diff = require("fast-diff");
 const checkforsite = require("./Functions/checkforsite.js");
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
+const Assert = require("./Functions/assert.js");
+let assert = new Assert();
+
 let chans = JSON.parse(fs.readFileSync("channels.json"));
 let connection;
+let failedTests = false;
 global.typeorm = require("typeorm");
 fs.readdirSync("./app/model").forEach(file => {
     let fileName = file.split(".")[0];
@@ -49,6 +53,10 @@ fs.readdirSync("./app/model").forEach(file => {
     });
     await connection.manager.query("PRAGMA busy_timeout=10000;");
     console.log(chalk.bold("CONNECTION MADE"));
+
+    await setUsers();
+    await runTests();
+
     bot.login(process.env.KEONS_TOKEN);
 })();
 
@@ -83,9 +91,20 @@ let timers = [null, null, null, null, null];
 
 bot.on("ready", async () => {
     console.log("topfeed ready!");
-    var guild = bot.guilds.get("269657133673349120");
-    topfeed = guild.channels.get(chans.topfeed);
-    await setUsers();
+    let guild;
+
+    while (!guild || !topfeed) {
+        console.log(chalk.blue("Fetching guild and/or topfeed"));
+        guild = bot.guilds.get("269657133673349120");
+        topfeed = guild.channels.get(chans.topfeed);
+        await new Promise(next => setTimeout(next, 300));
+    }
+
+    
+    if (failedTests && failedTests > 0) guild.channels.get(chans.bottest).send(`<@221465443297263618> **${failedTests.length} test${failedTests.length === 1 ? "" : "s"} failed**\n\`\`\`diff\n-> ${failedTests.join("\n-> ")}\n\`\`\``);
+    else if (failedTests && failedTests < 0) { //failedTests=-42  =>  42 passed tests
+        guild.channels.get(chans.bottest).send(new Discord.RichEmbed({ description: `Topfeed restarted. All ${-failedTests} unit tests passed.` }).setColor("GREEN"));
+    }
     console.log(chalk.green("USERS LOADED!"));
     controller().catch(e => {
         handleErr(e);
@@ -692,6 +711,160 @@ function handleErr(e) {
 
 
 
+async function runTests() {
+    try {
+        let topUser = Users.find(s => s.twitterName === "twentyonepilots");
+
+        let randomCount = Math.floor(Math.random() * 8 + 3);
+    
+        let testUser = new SocialMedia({ snapName: "test" }, {
+            name: "Test User",
+            channel: "channelid",
+            role: "roleid",
+            color: "#C0FFEE",
+            time: 100
+        });
+    
+        //Assert will return true or false, store in an array
+        console.log(chalk.cyan("Test: SocialMedia"));
+        assert.strictEquals(topUser.instaName, "twentyonepilots", "TOP User's instaName should be twentyonepilots");
+        assert.strictEquals(topUser.hasInstagram(), true, "topUser should have Instagram attached");
+        assert.strictEquals(topUser.hasSnapchat(), false, "topUser should not have Snapchat attached");
+        assert.objectLacksProperty(testUser, "twitterName", "Test User should have no twitterName");
+        assert.strictEquals(testUser.details.name, "Test User", "Test User's name should be Test User");
+        assert.strictEquals(testUser.details.time, 100, "Test User time should be 100");
+    
+        console.log(chalk.cyan("Test: Twitter"));
+        assert.strictEquals(testUser.addTwitter("DiscordClique"), testUser.twitterName, "Added twitterName should be set");
+        
+        console.log(chalk.cyan("\t->Posts<-"));
+        let posts = await testUser.getTwitterPosts(randomCount);
+        assert.array(posts.links, "posts.links should be an array");
+        assert.strictEquals(posts.length, randomCount, `posts.length should be ${randomCount}`);
+        assert.strictEquals(posts.links.length, randomCount, `posts.links.length should be ${randomCount}`);
+        
+        let post = posts[0];
+        assert.objectHasProperty(post, "full_text", "post should have property full_text");
+        assert.objectHasProperty(post, "user", "post should have property user");
+        assert.string(post.full_text, "post.full_text should be a string");
+        assert.object(post.user, "post.user should be a string");
+    
+        console.log(chalk.cyan("\t->Profile<-"));
+        let profile = await testUser.getTwitterProfile();
+        assert.strictEquals(profile.id, "882435797370241024", "DiscordClique ID should be 882435797370241024");
+        assert.string(profile.name, "profile.name should be a string");
+        assert.string(profile.description, "profile.description should be a string");
+        assert.bool(profile.verified, "profile.verified should be a boolean");
+        assert.int(profile.following, "profile.following should be an integer");
+        assert.int(profile.followers, "profile.followers should be an integer");
+        assert.int(profile.likes, "profile.likes should be an integer");
+        assert.int(profile.postCount, "profile.postCount should be an integer");
+        assert.string(profile.accountCreated, "profile.accountCreated should be a string");
+        assert.url(profile.background, "profile.background should be a URL");
+        assert.url(profile.banner, "profile.banner should be a URL");
+        assert.url(profile.avatar, "profile.avatar should be a URL");
+        
+        console.log(chalk.cyan("\t->Likes<-"));
+        let likes = await topUser.getTwitterLikes(randomCount);
+        assert.array(likes.data, "likes.data should be an array");
+        assert.array(likes.links, "likes.links should be an array");
+        assert.strictEquals(likes.data.length, randomCount, `likes.data.length should be ${randomCount}`);
+        assert.strictEquals(likes.links.length, randomCount, `likes.links.length should be ${randomCount}`);
+        let like = likes.data[0];
+        assert.objectHasProperty(like, "full_text", "likes should have property full_text");
+        assert.string(like.full_text, "likes.full_text should be a string");
+        assert.object(like.user, "likes.user should be an object");
+    
+    
+        console.log(chalk.cyan("Test: Instagram")); //instagram changes stuff so often :(
+    
+        assert.equals(testUser.instagram, undefined, "Instagram should be undefined because not loaded");
+        await testUser.addInstagram("DiscordClique"); //adds instagram and loads
+        assert.object(testUser.instagram, "Instagram should now be loaded and an object");
+        assert.string(testUser.instagram.userid, "Instagram userid should be a string");
+    
+        console.log(chalk.cyan("\t->Posts<-"));
+        let IGPosts = await topUser.getInstagramPosts(randomCount);
+        assert.object(IGPosts.user, "IGPosts.user should be an object");
+        assert.array(IGPosts.posts, "IGPosts.array should be an array");
+        assert.array(IGPosts.links, "IGPosts.links should be an array");
+        assert.url(IGPosts.links[0], "IGPosts.links[0] should be a URL");
+
+        let ipost = IGPosts.posts[0];
+        assert.objectHasProperties(ipost, ["id", "caption", "owner", "edge_media_to_caption", "likes", "comments", "shortcode"], "ipost should have properties: id, caption, owner, edge_media_to_caption, likes, comments, shortcode");
+    
+        console.log(chalk.cyan("\t\t->post.getPostMedia()<-"));
+        let media = await ipost.getPostMedia();
+        assert.array(media, "media should be an array");
+        assert.url(media[0], "media[0] should be an array");
+
+        console.log(chalk.cyan("\t\t->post.getComments()<-"));
+        let comments = await ipost.getComments();
+        assert.objectHasProperties(comments, ["shortcode_media", "comments", "totalComments"], "Fetched comments should have properties: shortcode_media, comments, totalComments");
+        let comment = comments.comments[0];
+        assert.objectHasProperties(comment, ["id", "text", "created_at", "owner", "likes"], "comment should have properties: id, text, created_at, owner, likes");
+        assert.string(comment.text, "comment.text should be a string");
+        assert.int(comment.likes, "comment.likes should be an integer");
+
+        console.log(chalk.cyan("\t->Stories<-"));
+        let storyUser = Users.find(s => s.instaName.toLowerCase() === "debbyryan"); //More likely to have a story up
+        let stories = await storyUser.getInstagramStories();
+        assert.objectHasProperties(stories, ["allData", "stories", "links"], "stories should have properties: allData, stories, links");
+        assert.object(stories.allData, "stories.allData should be an object");
+        assert.array(stories.links, "stories.links should be an array");
+        assert.array(stories.stories, "stories.stories should be an array");
+        assert.equals(stories.links.length, stories.stories.length, "links and stories should have the same length");
+        
+        console.log(chalk.cyan("\t\t->stories.allData<-"));
+        let data = stories.allData;
+        assert.objectHasProperties(data, ["id", "user", "items"], "data has properties: id, user, items");
+        assert.strictEquals(storyUser.instaName.toLowerCase(), data.user.username.toLowerCase(), "The fetched data's username should match the SocialMedia instaName");
+
+        console.log(chalk.cyan("\t\t->stories.links|stories.stories<-"));
+        if (stories.links.length > 0) {
+            assert.url(stories.links[0], "stories.links[0] should be a URL");
+            assert.object(stories.stories[0], "stories.stories[0] should be an object");
+            assert.objectHasProperties(stories.stories[0], ["id", "user", "url"], "stories.stories[0] has properties: id, user, url");
+            assert.url(stories.stories[0].url, "stories.stories[0].url should be a valid URL");
+        } else console.log(chalk.red(storyUser.instaName + " has no available insta-stories, unable to test"));
+
+        console.log(chalk.cyan("\t->Profile<-"));
+        let prof = await topUser.getInstagramProfile();
+        assert.objectHasProperties(prof, ["response", "avatar", "id", "followers", "biography", "verified", "private"], "prof should have properties: response, avatar, id, followers, biography, verified, private");
+        assert.object(prof.response, "prof.response should be an object");
+        assert.url(prof.avatar, "prof.avatar should be a URL");
+        assert.string(prof.id, "prof.id should be a string");
+        assert.int(prof.followers, "prof.followers should be an integer");
+        assert.string(prof.biography, "prof.biography should be a string");
+        assert.bool(prof.verified, "prof.verified should be a boolean");
+        assert.bool(prof.private, "prof.private should be a boolean");
+
+        console.log(chalk.cyan("Test: Snapchat")); //The least important one
+        let snapUser = new SocialMedia();
+        snapUser.addSnapchat("djkhaled305"); //More likely to have snaps. Don't particularly like the guy but
+        let sc_stories = await snapUser.getSnapchatStories();
+        assert.array(sc_stories, "sc_stories should be an array");
+        if (sc_stories.length > 0) {
+            assert.url(sc_stories[0], "sc_stories[0] should be a link");
+        } else console.log(chalk.red(snapUser.snapName + " has no available snapchat-stories, unable to test"));
+        let snapcode = await snapUser.getSnapcode();
+        assert.objectHasProperties(snapcode, ["png", "svg"], "snapcode has properties: png, svg");
+        assert.buffer(snapcode.png, "snapcode.png should be a buffer");
+        assert.buffer(snapcode.svg, "snapcode.svg should be a buffer");
+    } catch(e) {
+        console.log(chalk.red("EXECUTION ERROR: " + e.message));
+        assert.failed.push("Execution error");
+    }
+
+    let numFailed = assert.failed.length;
+    if (numFailed > 0) {
+        console.log(chalk.black.bgRed(numFailed + ` test${numFailed === 1 ? "" : "s"} failed`));
+        failedTests = assert.failed;
+    } else {
+        failedTests = -assert.count;
+        console.log(chalk.black.bgGreen(`All ${assert.count} tests passed`));
+    }
+}
 
 /*
 async function checkforsite(url, checkname, tag) {

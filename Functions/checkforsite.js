@@ -74,8 +74,8 @@ module.exports = async function(url, name, tag, guild) {
                 return resolve({ type: "MINOR", data: text });
             }
         } catch (e) {
-            console.log(e, /CHECKFORSITEERROR/);
             let _site = (e && e.request && e.request.connection && e.request.connection._host) ? e.request.connection._host : "dmaorg";
+            console.log(`${_site}: ${e.message}`, /CHECKFORSITEERROR!/);
             guild.channels.get(chans.bottest).send(`<@&554785502591451137> error in ${_site} ` + (e.message ? e.message : e.toString()));
             resolve(null);
         }

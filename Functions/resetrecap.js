@@ -6,6 +6,7 @@ module.exports = async function (msg, recap, recapRows) {
             const guild = msg.guild;
             let id = msg.author.id;
             let msgtosend = "**__Your daily recap!__**\n\n";
+
             sendMsgStats(recap, msg).then(async (buffer) => {
                 let sorted = [];
                 let total = 0;
@@ -35,7 +36,7 @@ module.exports = async function (msg, recap, recapRows) {
                 await dmc.send({ file: buffer });
                 await sendMessageLineGraph(dmc);
                 resolve(true);
-            }).catch(e => {console.log(e, /RESETRECAP/); resolve(false);});
+            }).catch(e => { console.log(e, /RESETRECAP/); resolve(false); });
         }
     });
 
@@ -66,7 +67,7 @@ module.exports = async function (msg, recap, recapRows) {
             if (msgTime < startOfDay || msgTime >= endOfDay) continue;
             data.push({ t: new Date(parseInt(times[i])), y: ++count });
         }
-    
+
         data.push({ t: new Date(endOfDay), y: count });
 
         var chart = new msg.Chart(ctx, {
@@ -83,7 +84,7 @@ module.exports = async function (msg, recap, recapRows) {
                     pointBorderColor: "rgba(0, 0, 0, 0)"
                 }]
             },
-        
+
             // Configuration options go here
             options: {
                 scales: {
@@ -97,7 +98,7 @@ module.exports = async function (msg, recap, recapRows) {
                             fontColor: "white",
                             stepSize: 1,
                             autoSkip: false,
-                            callback: function(dataLabel, index) {
+                            callback: function (dataLabel, index) {
                                 if (dataLabel.split(" ")[0].endsWith("00")) {
                                     return dataLabel.split(" ")[0].split(":")[0] + " " + dataLabel.split(" ")[1];
                                 }
@@ -109,7 +110,7 @@ module.exports = async function (msg, recap, recapRows) {
                             labelString: "Time",
                             fontColor: "#ffffff"
                         }
-                    
+
                     }],
                     yAxes: [{
                         ticks: {
@@ -121,7 +122,7 @@ module.exports = async function (msg, recap, recapRows) {
                             fontColor: "#ffffff"
                         }
                     }]
-                
+
                 }
             }
         });

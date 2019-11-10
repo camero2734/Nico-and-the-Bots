@@ -100,7 +100,7 @@ module.exports = async function(reaction, user) {
         //GOLD
         if (reaction.emoji.id === "389216023141941249") {
             if (user.id === reaction.message.author.id) return reaction.remove(user);
-            let cost = 1000; //credits
+            let cost = 5000; //credits
             let time = Date.now();
             user.createDM().then(DMCHannel => {
                 let alreadyGave = false;
@@ -135,10 +135,12 @@ module.exports = async function(reaction, user) {
                 if (!userEconomy) userEconomy = new Economy(id);
 
                 if (userEconomy.credits < cost) {
-                    reaction.remove(user);
-                    return reaction.message.channel.embed("`Giving gold costs " + cost + "credits!`");
+                    await reaction.remove(user);
+                    let dm = await user.createDM();
+                    await dm.send("`Giving gold costs " + cost + " credits!`");
+                    resolve();
                 } else {
-                    userEconomy.credits-=cost;
+                    userEconomy.credits -= cost;
                     await connection.manager.save(userEconomy);
                     let _m = reaction.message;
                     let embed = new Discord.RichEmbed();

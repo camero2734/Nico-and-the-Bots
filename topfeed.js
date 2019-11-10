@@ -101,9 +101,9 @@ bot.on("ready", async () => {
     }
 
     
-    if (failedTests && failedTests > 0) guild.channels.get(chans.bottest).send(`<@221465443297263618> **${failedTests.length} test${failedTests.length === 1 ? "" : "s"} failed**\n\`\`\`diff\n-> ${failedTests.join("\n-> ")}\n\`\`\``);
-    else if (failedTests && failedTests < 0) { //failedTests=-42  =>  42 passed tests
-        guild.channels.get(chans.bottest).send(new Discord.RichEmbed({ description: `Topfeed restarted. All ${-failedTests} unit tests passed.` }).setColor("GREEN"));
+    if (failedTests && Array.isArray(failedTests)) guild.channels.get(chans.bottest).send(`<@221465443297263618> **${failedTests.length} test${failedTests.length === 1 ? "" : "s"} failed**\n\`\`\`diff\n-> ${failedTests.join("\n-> ")}\n\`\`\``);
+    else if (failedTests && !isNaN(failedTests)) { 
+        guild.channels.get(chans.bottest).send(new Discord.RichEmbed({ description: `Topfeed restarted. All ${failedTests} unit tests passed.` }).setColor("GREEN"));
     }
     console.log(chalk.green("USERS LOADED!"));
     controller().catch(e => {
@@ -247,11 +247,12 @@ async function controller() {
         console.log(chalk.yellow("FINISHED DMAORG"));
     }
 
-    if (checkNum % 5 === 0) {
-        console.log(chalk.red("RUNNING IG COMMENTS PHP SCRIPT"));
-        await wrapIGComments();
-        console.log(chalk.red("IG COMMENTS CHECK DONE"));
-    }
+    // Need to find a better way to do this
+    // if (checkNum % 5 === 0) {
+    //     console.log(chalk.red("RUNNING IG COMMENTS PHP SCRIPT"));
+    //     await wrapIGComments();
+    //     console.log(chalk.red("IG COMMENTS CHECK DONE"));
+    // }
 
     if (checkNum % 10 === 0) {
         console.log(chalk.green("CHECKING GITHUB COMMITS"));
@@ -440,7 +441,6 @@ async function delay(ms) {
 
 async function checkLinks(links, platform, user) {
     for (let link of links) {
-        //CHECK LOCAL LINKS FIRST
         let hasLink = await connection.getRepository(Topfeed).findOne({ type: platform, link: link.link });
         if (!hasLink) {
             //SAVE LINK
@@ -852,6 +852,7 @@ async function runTests() {
         assert.buffer(snapcode.png, "snapcode.png should be a buffer");
         assert.buffer(snapcode.svg, "snapcode.svg should be a buffer");
     } catch(e) {
+        console.log(e);
         console.log(chalk.red("EXECUTION ERROR: " + e.message));
         assert.failed.push("Execution error");
     }
@@ -861,7 +862,7 @@ async function runTests() {
         console.log(chalk.black.bgRed(numFailed + ` test${numFailed === 1 ? "" : "s"} failed`));
         failedTests = assert.failed;
     } else {
-        failedTests = -assert.count;
+        failedTests = assert.count;
         console.log(chalk.black.bgGreen(`All ${assert.count} tests passed`));
     }
 }

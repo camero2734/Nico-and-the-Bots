@@ -11,7 +11,7 @@ module.exports = {
         var hourremain = Math.floor(timeremain);
         var minremain = Math.floor((timeremain - Math.floor(timeremain)) * 60);
         if ((curdate - userEconomy.lastDaily < 86400000) && (msg.author.id !== "221465443297263618") && (msg.author.id !== "335912315494989825")) return msg.channel.embed("You have already received your credits today! You have " + hourremain + " hours and " + minremain + " minutes " + "remaining!");
-        
+
 
         //DAILY COUNTER
         userEconomy.dailyCount++;
@@ -64,7 +64,7 @@ module.exports = {
         var canvas = createCanvas(500, 162);
         var ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
-        
+
         //MAKE TEXT FIT
         let maxWidth = 300;
         let maxHeight = 50;
@@ -91,7 +91,7 @@ module.exports = {
         if (badgeLogo === "cf") ctx.drawImage(cf, 408, 91, 30, 30);
         else if (badgeLogo === "dd") ctx.drawImage(dd, 408, 91, 30, 30);
         ctx.drawImage(img2, 30, 44); //ALBUM LOGO
-        
+
         //GIVE BLURRYTOKEN
         let hasTokenInc = await connection.getRepository(Item).findOne({ id: msg.author.id, type: "Perk", title: "blurryboxinc" });
         let bTokensToGive = hasTokenInc ? 2 : 1;
@@ -109,7 +109,7 @@ module.exports = {
         } else { //EARNED SOME
             tokenMessage = `You earned **${after - before} token${after - before === 1 ? "" : "s"}**! You now have **${after} token${after === 1 ? "" : "s"} total**- you can spend ${after === 1 ? "it" : "them"} with \`!blurrybox.\``;
         }
-        
+
         await connection.manager.save(userEconomy);
 
 
@@ -129,8 +129,8 @@ module.exports = {
             `Check out <#${chans.positivity}> for cute pets and words of encouragement!`,
             `Check out <#${chans.hiatusmemes}> for era-related memes!`,
             `Check out <#${chans.polls}> to vote on polls created by staff members!`,
-            `Head over to <#${chans.suggestions}> to submit a suggestion about the server!`, 
-            `Find a message really funny, or a piece of art really amazing? React with :gold: to give them gold! (Costs 1000 credits). \n\nTheir message will show up in <#${chans.houseofgold}>!`,
+            `Head over to <#${chans.suggestions}> to submit a suggestion about the server!`,
+            `Find a message really funny, or a piece of art really amazing? React with :gold: to give them gold! (Costs 5000 credits). \n\nTheir message will show up in <#${chans.houseofgold}>!`,
             "Stream Truce. Now."
         ];
 

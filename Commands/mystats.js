@@ -12,7 +12,7 @@ module.exports = {
         msg.channel.send(embed);
     },
     info: {
-        aliases: ["mystats", "inventory"],
+        aliases: ["mystats", "inventory", "inv"],
         example: "!mystats",
         minarg: 0,
         description: "Displays the items you've won from !blurrybox",

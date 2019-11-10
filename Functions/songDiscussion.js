@@ -23,7 +23,7 @@ module.exports = async function (guild) {
     let json = await loadJsonFile("./json/songRank.json");
 
     ontime({
-        cycle: [ "06:00:00", "18:00:00" ]
+        cycle: ["06:00:00", "18:00:00"]
     }, async function (ot) {
         console.log("choosing songs?");
         await chooseSong();
@@ -85,7 +85,7 @@ module.exports = async function (guild) {
                 }
 
                 //CURLENGTH TOO SMALL, MOVE UP TO BIGGER GROUPS
-                if (json.arr1 === null || json.arr2 === null) json.curLength++;
+                if (json.arr1 === null || json.arr2 === null || json.arr1 === json.arr2) json.curLength++;
                 else {
                     json.index1 = 0;
                     json.index2 = 0;
@@ -115,7 +115,7 @@ module.exports = async function (guild) {
                         let splitImg = await getImageSplit(song1.image, song2.image);
                         embed.attachFile({ attachment: splitImg, name: "albums.png" });
                         embed.setThumbnail("attachment://albums.png");
-                    } catch(e) {}
+                    } catch (e) { }
 
                     let m = await channel.send(embed);
 
@@ -129,12 +129,12 @@ module.exports = async function (guild) {
                     await writeJsonFile("./json/songRank.json", json);
                 }
             } else { //THIS ARR1 EMPTY, YEET
-                json.songs.splice(json.arr1, 1); 
+                json.songs.splice(json.arr1, 1);
                 json.arr1 = null;
                 json.arr2 = null;
                 return chooseSong(true);
             }
-            
+
         } else {
             await writeJsonFile("./json/songRank.json", json);
             console.log("choose song length 0");
@@ -159,19 +159,19 @@ module.exports = async function (guild) {
             resolve(count);
         });
     }
-    
+
     async function getImageSplit(album1, album2) {
         try {
             let img1 = (await snekfetch.get(album1)).body;
             let img2 = (await snekfetch.get(album2)).body;
-            
+
             let canvas = createCanvas(600, 600);
             let ctx = canvas.getContext("2d");
             let a1 = new Image();
             let a2 = new Image();
             a1.src = img1;
             a2.src = img2;
-    
+
             ctx.drawImage(a1, 0, 0, a1.width / 2, a1.height, 0, 0, 300, 600);
             ctx.drawImage(a2, a2.width / 2, 0, a2.width / 2, a2.height, 300, 0, 300, 600);
 
@@ -214,9 +214,9 @@ module.exports = async function (guild) {
         }
         console.log(counts, /COUNTS/);
     }
-    
+
     async function raw(event) {
-        const events = { MESSAGE_REACTION_ADD: "messageReactionAdd", MESSAGE_REACTION_REMOVE: "messageReactionRemove"  };
+        const events = { MESSAGE_REACTION_ADD: "messageReactionAdd", MESSAGE_REACTION_REMOVE: "messageReactionRemove" };
         if (!events.hasOwnProperty(event.t)) return;
         const { d: data } = event; const user = guild.client.users.get(data.user_id); const channel = guild.client.channels.get(data.channel_id) || await user.createDM();
         if (channel.messages.has(data.message_id)) return;
@@ -229,7 +229,7 @@ module.exports = async function (guild) {
     async function searchYoutube(query) {
         return new Promise(resolve => {
             console.log(query, /YTSR/);
-            ytsr(query, {}, function(err, searchResults) {
+            ytsr(query, {}, function (err, searchResults) {
                 if (err) {
                     console.log(err, /YTSRERR/);
                     resolve("");

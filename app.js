@@ -33,6 +33,7 @@ const color = require("color");
 const pm2 = require("pm2");
 const fuzzyMatch = require("fuzzaldrin").filter;
 
+
 //SQLITE
 global.typeorm = require("typeorm");
 fs.readdirSync("./app/model").forEach(file => {
@@ -50,14 +51,13 @@ const SocialMedia = require("node-social-media").setAuth({
 });
 
 //Function definitions
-(async function() {await storage.init();})();
-function requireFunction(name) {return require(`./Functions/${name}.js`);};
-function wrap(t) {return ("```" + t + "```");};
-async function chooseKey() {let keys = chans.keys;let found = false;for (let key of keys) {console.log(key);await new Promise(next => {let currentKey = nsfai.app._config.apiKey;if (!found) {nsfai = new NSFAI(key);nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg").then(() => {found = true; next();}).catch(e => {console.log(e.data);next();});} else next();});}if (!found) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out.");console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey));}
-function setGame(game1, type) {bot.user.setPresence({ game: { name: game1, type: type } });};
-function runFunctions(guild) {remindersTimeoutCheck(guild);registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord);};
-Number.prototype.map = function (in_min, in_max, out_min, out_max) {return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;};
-async function delay(ms) {return new Promise(resolve => {setTimeout(() => {resolve();}, ms);});}
+(async function () { await storage.init(); })();
+function requireFunction(name) { return require(`./Functions/${name}.js`); };
+function wrap(t) { return ("```" + t + "```"); };
+async function chooseKey() { let keys = chans.keys; let found = false; for (let key of keys) { console.log(key); await new Promise(next => { let currentKey = nsfai.app._config.apiKey; if (!found) { nsfai = new NSFAI(key); nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg").then(() => { found = true; next(); }).catch(e => { console.log(e.data); next(); }); } else next(); }); } if (!found) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out."); console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey)); }
+function runFunctions(guild) { remindersTimeoutCheck(guild); registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord); };
+Number.prototype.map = function (in_min, in_max, out_min, out_max) { return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min; };
+async function delay(ms) { return new Promise(resolve => { setTimeout(() => { resolve(); }, ms); }); }
 
 //Function imports
 const remindersTimeoutCheck = requireFunction("remindersTimeoutCheck");
@@ -136,8 +136,8 @@ let numberGames = [];
 let logQueue = [];
 
 //Command that runs commands within global scope
-Discord.Message.prototype.runCommand = function(name) {
-    command = hotload("./Commands/" + name + ".js", function(){});
+Discord.Message.prototype.runCommand = function (name) {
+    command = hotload("./Commands/" + name + ".js", function () { });
     let fnctn = command.execute.toString();
     console.log("Command: " + chalk.green(name));
     eval("toRun = " + fnctn);
@@ -154,7 +154,7 @@ const NPI = "319632312654495754";
 const TO = "278225702455738368";
 
 //PRELOAD
-(async function() {
+(async function () {
     let entities = [];
     let files = await fs.promises.readdir("./app/entity");
     files.forEach(async (file) => {
@@ -182,7 +182,7 @@ bot.on("ready", async () => {
     chooseKey();
     console.log("going to run functions");
     runFunctions(guild);
-    setGame(guild.memberCount + " members", 3);
+    bot.user.setPresence({ game: { name: guild.memberCount + " members" } });
     let announceRole = guild.roles.get("357682068785856514");
     if (announceRole.mentionable) await announceRole.setMentionable(false);
     if (guild.channels.get("470406597860917249")) guild.channels.get(chans.bottest).send("`Nico is on fire`");
@@ -190,12 +190,23 @@ bot.on("ready", async () => {
     setInterval(async () => {
         let currentTime = Date.now();
         let goldLength = 86400000 * 7; // 1 WEEK
+
+        // let users = guild.roles.get("386969744709910530").members.array();
+        // console.log(users.length + " users");
+
         let goldTimes = await connection.getRepository(Counter).find({ title: "GoldCount", lastUpdated: typeorm.Between(1, currentTime - goldLength) });
         for (let counter of goldTimes) {
             counter.lastUpdated = 0;
-            let goldMem =  guild.members.get(counter.id);
-            await goldMem.removeRole("386969744709910530");
-            await connection.manager.save(counter);
+            let goldMem = guild.members.get(counter.id);
+            try {
+                await goldMem.removeRole("386969744709910530");
+            } catch (e) {
+                console.log(/ge/);
+                if (counter.id === "303234365163438081") console.log("found diana");
+            } finally {
+                await connection.manager.save(counter); //Remove no matter what
+            }
+
         }
     }, 1000 * 1000);
     writeJSONFiles();
@@ -215,7 +226,7 @@ async function writeJSONFiles() {
     return writeJSONFiles();
 }
 
-fs.writeFileQueued = async function(path, data) {
+fs.writeFileQueued = async function (path, data) {
     if (!fs.queue) fs.queue = [];
     if (closingProcess) return;
     if (typeof data === "object") data = JSON.stringify(data);
@@ -225,13 +236,13 @@ fs.writeFileQueued = async function(path, data) {
     fs.queue.push({ path, data });
 };
 
-fs.readFileAsync = async function(path) {
+fs.readFileAsync = async function (path) {
     if (closingProcess) return;
     try {
         let data = await fs.promises.readFile(path);
         data = JSON.parse(data);
         return data;
-    } catch(e) {
+    } catch (e) {
         await bot.guilds.get("269657133673349120").channels.get(chans.bottest).send("<@221465443297263618> error in " + path + ", overwriting...");
         fs.writeFileQueued(path, {});
         return {};
@@ -282,7 +293,7 @@ bot.on("typingStart", async (channel, user) => {
     //     switch (channel.id) {
 
     //     }
-        
+
     //     for (let id of roleIDS) {
     //         let role = msg.guild.roles.get(id);
     //         if (!role) continue;
@@ -346,18 +357,18 @@ bot.on("guildMemberAdd", member => {
     let guild = member.guild;
     // guild.defaultChannel.send("Salutations, " + member.user + "! Welcome to the /r/twentyonepilots Discord! For an overview of the server and some useful commands, check out <#314572694794272768>  |-/");
 
-    //setGame updater
+    //update bot status
     var members = guild.members.array();
-    setGame(guild.memberCount + " members", 3);
+    bot.user.setPresence({ game: { name: guild.memberCount + " members" } });
     //
 
 });
 bot.on("guildMemberRemove", member => {
     if (member.guild.id !== "269657133673349120") return;
     let guild = member.guild;
-    //setGame updater
+    //update bot status
     var members = guild.members.array();
-    setGame(guild.memberCount + " members", 3);
+    bot.user.setPresence({ game: { name: guild.memberCount + " members" } });
     //
     member.guild.channels.get(chans.deletelog).fetchPinnedMessages().then((data) => {
         var arra = data.array();
@@ -381,37 +392,47 @@ bot.on("message", async msg => {
     if (msg.author.id === "349728613521817600" && msg.channel.id === "470337593746259989" && msg.content.toLowerCase() === "ok") {
         msg.channel.send("ok jenn");
     }
-    
-    if ((msg.channel.type === "dm" && msg.content.endsWith("?")) || msg.channel.id === chans.submittedsuggestions) askQuestion(msg, Discord);
+
+    if ((msg.channel.type === "dm" && msg.content.endsWith("??")) || msg.channel.id === chans.submittedsuggestions) askQuestion(msg, Discord);
     if (msg.channel.id === "554046505128951833") {
         bot.Discord = Discord;
         return quietGame(msg, bot, Canvas);
     }
 
-    
+
     if (msg.content.startsWith("$image")) return msg.runCommand("image");
     //NSFW CHECKER
     let sfw = true;
     if (msg && msg.member && !msg.content.startsWith(prefix + "nsfw") && !msg.author.bot && msg.author.id !== bot.user.id && msg.author.id !== poot) sfw = await checkNSFW(msg, false, nsfai);
     if (sfw === "error") await chooseKey();
     if (!sfw) return;
-    
+
     //Delete any !suggest messages in #suggestions
     if (msg.channel.id === chans.suggestions && msg.content.startsWith(prefix) && !msg.content.toLowerCase().startsWith(prefix + "suggest") && msg.author.id !== poot) return msg.delete();
-    
+
     //daily recap
     if (msg && msg.member) {
         let epoch = new Date(2019, 6, 1); //JULY 1ST 2019
         let startOfToday = (new Date()).setHours(0, 0, 0, 0);
         let today = Math.round(Math.abs((epoch.getTime() - startOfToday) / (24 * 60 * 60 * 1000)));
         let preRP = await connection.getRepository(Recap).findOne({ id: msg.author.id, day: typeorm.Not(today) });
-       
+
         if (!preRP) { // JUST ADD
             let newRP = new Recap(msg.author.id, msg.channel.id, today, Date.now());
             await connection.manager.save(newRP);
         } else {
             console.log("Recap for " + msg.member.displayName);
             let recaps = await connection.getRepository(Recap).find({ id: msg.author.id, day: typeorm.Not(today) });
+            try {
+                await connection.manager.remove(recaps);
+            } catch (e) {
+                console.log(chalk.red.bold(`Too many recap rows for ${msg.member.displayName}, removing 500 at a time...`));
+                for (let i = 0; i < recaps.length; i += 500) {
+                    let sliced = recaps.slice(i, i + 500);
+                    await connection.manager.remove(sliced);
+                }
+                console.log(chalk.red.bold("Deleted all rows!"));
+            }
             if (msg.member.roles.get("402948433301733378") && recaps.length > 0) {
                 let recap_json = { day: today - 1 };
                 for (let rc of recaps) {
@@ -423,10 +444,10 @@ bot.on("message", async msg => {
                 msg.Chart = Chart;
                 await resetrecap(msg, recap_json, recaps);
             }
+
             let weekRecap = await connection.getRepository(WeekRecap).findOne({ id: msg.author.id });
-            if (!weekRecap) {
-                weekRecap = new WeekRecap(msg.author.id, "[]", today - 1);
-            }
+            if (!weekRecap) weekRecap = new WeekRecap(msg.author.id, "[]", today - 1);
+
             let arr = JSON.parse(weekRecap.days ? weekRecap.days : "[]");
             let daysSkipped = today - weekRecap.lastDay - 1;
             for (let i = 0; i < daysSkipped; i++) arr.push(0);
@@ -434,18 +455,9 @@ bot.on("message", async msg => {
             weekRecap.days = JSON.stringify(arr.slice(-7));
             weekRecap.lastDay = today;
             await connection.manager.save(weekRecap);
-            try {
-                await connection.manager.remove(recaps);
-            } catch(e) {
-                console.log(chalk.red.bold(`Too many recap rows for ${msg.member.displayName}, removing 500 at a time...`));
-                for (let i = 0; i < recaps.length; i += 500) {
-                    let sliced = recaps.slice(i, i + 500);
-                    await connection.manager.remove(sliced);
-                }
-                console.log(chalk.red.bold("Deleted all rows!"));
-            }
+
         }
-            
+
     }
     //emoji reactor 3.0
     let finalemojis = [];
@@ -457,19 +469,19 @@ bot.on("message", async msg => {
             for (let emoji of finalemojis) {
                 await new Promise(next => {
                     if (!emoji.emoji) next();
-                    else try {msg.react(emoji.emoji).then(() => next()).catch(err => next());} catch (err) {next();}
+                    else try { msg.react(emoji.emoji).then(() => next()).catch(err => next()); } catch (err) { next(); }
                 });
             }
         })();
     }
-    
+
     //collections creations like
     if (msg.channel.id === chans.collections || msg.channel.id === chans.creations) {
         if (msg.attachments.array().length !== 0) {
             msg.react("%E2%9D%A4");
         }
     }
-    
+
     //Hall of Fame upvote/ downvote
     if (msg.channel.id === chans.halloffame || msg.channel.id === chans.hiatusmemes || msg.channel.id === chans.theorylist) {
         if (msg.attachments.array().length === 0 && (msg.channel.id === chans.halloffame || msg.channel.id === chans.hiatusmemes)) msg.delete();
@@ -479,7 +491,7 @@ bot.on("message", async msg => {
             });
         }
     }
-    
+
     //Handle messages differently if it's a dm
     if (msg.channel.type === "dm") {
         if (msg.content.toLowerCase() === prefix + "endbreak") msg.runCommand("endbreak");
@@ -493,7 +505,7 @@ bot.on("message", async msg => {
         }
         return;
     }
-    
+
     //Umm
     if (rip.indexOf("poot hates the gays") !== -1) {
         let gRole = "492903807282577408";
@@ -515,24 +527,23 @@ bot.on("message", async msg => {
         msg.Discord = Discord;
         return sendTopfeedBot(msg);
     }
-    
-    for (let i = 0; i < swearWords.length; i++) { //Slurs are bad mmk
-        let rip2 = msg.content.toLowerCase();
-        if (rip.includes(swearWords[i])) {
-            let swearPos = rip.indexOf(swearWords[i]);
-            let guild = msg.guild;
+
+    swearWords.forEach((s, i) => {
+        let swearPos = msg.content.toLowerCase().indexOf(s);
+        if (swearPos !== -1) {
             let misfires = ["klondike", "retardant"];
             let falseFlag = false;
             for (let m of misfires) {
-                if (rip.indexOf(m) === swearPos || (m.indexOf(swearWords[i]) !== -1  && rip.indexOf(m) !== -1)) falseFlag = true;
+                if (msg.content.toLowerCase().indexOf(m) === swearPos || (m.indexOf(s) !== -1 && msg.content.toLowerCase().indexOf(m) !== -1)) falseFlag = true;
             }
-            if (!falseFlag) {
-                if (msg.channel.type !== "dm") {
-                    msg.channel.send("Please refrain from using slurs. A copy of your message has been sent to the Admins.\n`Slur used: " + safeswears[i] + "`");
-                }
+            if (!falseFlag && msg.channel.type !== "dm") {
+                msg.channel.send("Please refrain from using slurs. A copy of your message has been sent to the Admins.\n`Slur used: " + safeswears[i] + "`");
                 myFunctions.sendembed(msg, msg.guild.channels.get(chans.slurlog), "Slurs detected!", false, 16711680);
             }
         }
+    });
+    for (let i = 0; i < swearWords.length; i++) { //Slurs are bad mmk
+
     }
 
     //The glorious prefix check
@@ -540,22 +551,22 @@ bot.on("message", async msg => {
 
     //Channels that you can use commands in, commands that can be used in any channel, and roles that override everything
     let allowedChannels = [chans.bottest, chans.commands, chans.suggestions, chans.venting, chans.staff, chans.laxstaff];
-    let allowedCommands = ["spoiler", "tag", "stayalive", "fm", "chart", "weekly", "geo", "test"];
+    let allowedCommands = ["spoiler", "tag", "stayalive", "fm", "fm2", "chart", "weekly", "geo", "test"];
     let allowedRoles = ["330877657132564480"];
-    let allowedPairs = [{ chan: chans.lyrics, command: "randomlyric" }, { chan: chans.fairlylocals, command: "tag" }];
+    let allowedPairs = [{ chan: chans.lyrics, command: "randomlyric" }, { chan: chans.fairlylocals, command: "tag" }, { chan: chans.fairlylocals, command: "qa" }];
     let hasAllowedRole = false;
-    for (let role of allowedRoles) {if (msg.member.roles.get(role)) hasAllowedRole = true;}
+    for (let role of allowedRoles) { if (msg.member.roles.get(role)) hasAllowedRole = true; }
 
     //Please use commands in #commands
     if (allowedChannels.indexOf(msg.channel.id) === -1 && allowedCommands.indexOf(msg.commandName) === -1 && !hasAllowedRole) {
         let allowed = false;
-        for (let pair of allowedPairs) if(pair.chan === msg.channel.id && pair.command === msg.commandName) allowed = true;
+        for (let pair of allowedPairs) if (pair.chan === msg.channel.id && pair.command === msg.commandName) allowed = true;
         if (!allowed) {
             msg.delete();
             return msg.channel.embed("Please use commands in <#" + chans.commands + ">").then((m) => m.delete(5000));
         }
     }
-    
+
     //Command use logger for badges TODO: Delete maybe?
     // ;(async function () {
     //     let preCount = await connection.getRepository(Counter).findOne( {id: msg.author.id, title: "CommandsUsed"} );
@@ -619,7 +630,7 @@ function registerCommands() {
             this.description = description;
             this.minarg = minarg;
             this.example = example;
-            this.inputfunction = function(msg) {msg.runCommand(this.name);};
+            this.inputfunction = function (msg) { msg.runCommand(this.name); };
             commands.push(this);
         }
         initiate(msg) {
@@ -647,7 +658,7 @@ function registerCommands() {
         }
 
         isNamed(commandName) {
-            if (Array.isArray(this.aliases)) return this.aliases.some(alias => {return (commandName.toLowerCase() === alias.toLowerCase());});
+            if (Array.isArray(this.aliases)) return this.aliases.some(alias => { return (commandName.toLowerCase() === alias.toLowerCase()); });
             else return (commandName.toLowerCase() === this.name.toLowerCase());
         }
 
@@ -744,7 +755,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
             let thanksEmbed = new Discord.RichEmbed().setAuthor(user.username, user.displayAvatarURL).setColor("RANDOM").setDescription("Said thanks!");
             bot.guilds.get("269657133673349120").channels.get(chans.submittedsuggestions).send(thanksEmbed);
         }
-        
+
     }
     if ((reaction.emoji.name === "✅" || reaction.emoji.name === "❌") && msg.author.bot && !user.bot && msg.channel.id === chans.artistsubmissions) {
         return artistSubmissions(reaction, user, Discord);
@@ -808,7 +819,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
                 }
                 dm_embed.setFooter("Total golds: " + preGD.count, "https://i.imgur.com/QTzrs2Y.png");
                 await dm.send(dm_embed);
-            } catch(e) {console.log(e, /GOLDDMERR/);}
+            } catch (e) { console.log(e, /GOLDDMERR/); }
             await msg.member.addRole("386969744709910530");
         }
     });
@@ -954,7 +965,7 @@ function handleStrike(msg, strikes) {
     msg.channel.embed(`Giving ${strikes == 0 ? "a warning" : ("strike number " + strikes)} to ${msg.member.displayName} for not contributing to the chat.`);
     let descriptions = [
         "You have received a warning for being off-topic or unproductive in #" + msg.channel.name + ". Because this is your first offense, this is simply a warning. **__Next time, you will receive a strike__**\n\n**1 strike**- 24 hour ban from the channel.\n**2 strikes**- 7 day ban from the channel.\n**3 strikes**- Permanent ban from the channel.",
-        "You have received a strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 24 hours.\n\nYou can regain access after 24 hours or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a 7 day ban from the channel.**", 
+        "You have received a strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 24 hours.\n\nYou can regain access after 24 hours or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a 7 day ban from the channel.**",
         "You have received a second strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 7 days.\n\nYou can regain access after 7 days or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a *permanent* ban from the channel**",
         "You have received a third strike for being off-topic or unproductive in #" + msg.channel.name + ". **You are banned from the channel permanently.**"
     ];
@@ -982,7 +993,7 @@ setInterval(async () => {
             console.log(chalk.red.bold("RESTARTING ALL BOTS"));
             internetFailed = false;
         } else console.log(chalk.red("Successful internet connection"));
-    } catch(e) {
+    } catch (e) {
         internetFailed = true;
         console.log(chalk.red.bold("INTERNET ERROR, WILL RESTART ALL BOTS UPON SUCCESSFUL CONNECTION."));
     }
@@ -994,7 +1005,7 @@ process.on("SIGINT", async function () {
     await bot.destroy();
     let count = 0;
     let interval = setInterval(() => {
-        if (!fs  || !fs.queue || fs.queue.length === 0 || count++ === 50) { //Wait for files to be written or wait 5 seconds
+        if (!fs || !fs.queue || fs.queue.length === 0 || count++ === 50) { //Wait for files to be written or wait 5 seconds
             clearInterval(interval);
             process.exit();
         }

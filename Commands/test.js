@@ -1,12 +1,37 @@
 module.exports = {
     execute: async function (msg) {
-        let goldMems = msg.guild.roles.get("386969744709910530").members.array();
-        for (let m of goldMems) {
-            await m.removeRole("386969744709910530");
-            await delay(500);
+        if (msg.author.id !== poot) return;
+        let msgs = (await msg.channel.fetchMessages()).array();
+        for (let m of msgs) {
+            await m.delete();
+            console.log("deleted!");
+            await new Promise(next => setTimeout(next, 1000));
         }
-        msg.channel.embed("Done");
-    },
+        return;
+    }
+
+    // let m = await msg.channel.send(`Taking average of ${arr.length} users' pfps`);
+    // for (let i = 4730; i < arr.length; i++) {
+    //     if (i % 27 === 0) await fs.promises.writeFile("colorresults.json", JSON.stringify(results));
+    //     await new Promise(async next => {
+    //         let r = await snekfetch.get(arr[i].user.displayAvatarURL);
+    //         average(r.body, async (err, color) => {
+    //             var [red, green, blue, alpha] = color;
+    //             let d = Math.sqrt(Math.pow(red - 165, 2) + Math.pow(green - 196, 2) + Math.pow(blue - 191, 2));
+    //             results.push({ id: arr[i].user.id, distance: d });
+    //             if (i % 10 === 0) await m.edit(arr[i].displayName + " " + i);
+    //             await new Promise(done => setTimeout(done, 500));
+    //             next();
+    //         });
+    //     });
+    // }
+    // m.edit("Done");
+
+
+
+
+
+    ,
     info: {
         aliases: false,
         example: "!test",
@@ -84,9 +109,9 @@ if (msg.author.id !== poot) return msg.delete();
 
 
 let id = "574731157061632000";
-        
+
         // let mention = msg.mentions && msg.mentions.members && msg.mentions.members.first() ? msg.mentions.members.first() : null;
-        
+
         // if (!mention) return msg.delete();
 
         //CLOWN UP
@@ -102,7 +127,7 @@ let id = "574731157061632000";
                     })
                 }
             }
-            
+
             // await mention.addRole("498702380007686146");
             // await mention.removeRole("283272728084086784");
             // await mention.addRole(id);
@@ -120,7 +145,7 @@ let id = "574731157061632000";
                 }
 
             }
-            
+
             // await mention.removeRole("498702380007686146");
             // await mention.addRole("283272728084086784");
             // await mention.removeRole("569330362749026304")

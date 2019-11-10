@@ -28,48 +28,48 @@ module.exports = {
         //GET DATE STRING overall | 7day | 1month | 3month | 6month | 12month
         let date;
         switch(timequery.toLowerCase().split(" ").join("")) {
-        case "3":
-        case "90":
-        case "90days":
-        case "threemonths":
-        case "3month":
-        case "3months":
-            date = "3month";
-            break;
-        case "7":
-        case "7day":
-        case "7days":
-        case "oneweek":
-        case "1week":
-            date = "7day";
-            break;
-        case "1":
-        case "1month":
-        case "onemonth":
-            date = "1month";
-            break;
-        case "6":
-        case "sixmonths":
-        case "6month":
-        case "6months":
-            date = "6month";
-            break;
-        case "12":
-        case "oneyear":
-        case "1year":
-        case "12months":
-        case "12month":
-            date = "12month";
-            break;
-        case "all":
-        case "alltime":
-        case "overall":
-        case "forever":
-            date = "overall";
-            break;
-        default:
-            date = "7day";
-            break;
+            case "3":
+            case "90":
+            case "90days":
+            case "threemonths":
+            case "3month":
+            case "3months":
+                date = "3month";
+                break;
+            case "7":
+            case "7day":
+            case "7days":
+            case "oneweek":
+            case "1week":
+                date = "7day";
+                break;
+            case "1":
+            case "1month":
+            case "onemonth":
+                date = "1month";
+                break;
+            case "6":
+            case "sixmonths":
+            case "6month":
+            case "6months":
+                date = "6month";
+                break;
+            case "12":
+            case "oneyear":
+            case "1year":
+            case "12months":
+            case "12month":
+                date = "12month";
+                break;
+            case "all":
+            case "alltime":
+            case "overall":
+            case "forever":
+                date = "overall";
+                break;
+            default:
+                date = "7day";
+                break;
         }
 
         //FETCH LAST FM DATA

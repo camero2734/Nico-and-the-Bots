@@ -1,5 +1,5 @@
 require("dotenv").config();
-let Discord = require("./discord-master");
+let Discord = require("discord.js-master");
 const fs = require("fs"); require("dotenv").config();
 const ytdl = require("ytdl-core");
 const snekfetch = require("snekfetch");
@@ -52,6 +52,7 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (msg) => {
+    if (msg.author.id !== "221465443297263618") return;
     if (!msg || msg.author.bot) return;
     msg.args = msg.content.split(" ");
     if (msg.command("play")) {
@@ -70,6 +71,8 @@ bot.on("message", async (msg) => {
     if (msg.command("queue")) {
         sendQueue(msg.channel, msg.args[1] ? msg.args[1] : "1");
     }
+
+    if (msg.content.startsWith("!")) console.log(msg.command("play"))
 }); 
 
 function isUrl(content) {

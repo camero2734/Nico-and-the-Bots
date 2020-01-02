@@ -376,7 +376,7 @@ async function setUsers() {
             color: "#FF0CE2",
             time: 45 * 1000
         }),
-        new SocialMedia({ instaName: "jennaajoseph" }, {
+        new SocialMedia({ instaName: "jennaajoseph", twitterName: "jennaajoseph" }, {
             name: "Jenna Joseph",
             channel: "534882714566918174",
             role: "534890933301542912",

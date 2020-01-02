@@ -31,7 +31,6 @@ module.exports = async function (guild) {
         return;
     });
 
-
     //UPDATE SONG EVERY DAY AT A CERTAIN TIME
     async function chooseSong(rerun) {
         //CHECK CURRENT WINNER
@@ -42,8 +41,8 @@ module.exports = async function (guild) {
             let votes2 = await fetchAllUsers(m, reacts[1]);
 
             function getIndexFromSong(song) {
-                for (let i = 0; i < json.originalSongs.length; i++) {
-                    if (json.originalSongs[i].name === song.name && json.originalSongs[i].album === song.album) return i;
+                for (let joi = 0; joi < json.originalSongs.length; joi++) {
+                    if (json.originalSongs[joi].name === song.name && json.originalSongs[joi].album === song.album) return joi;
                 }
                 return -1;
             }
@@ -51,12 +50,18 @@ module.exports = async function (guild) {
 
             let song1 = json.songs[json.arr1][json.index1];
             let song2 = json.songs[json.arr2][json.index2];
+            console.log(song1.name, song2.name, /NAMES/);
             if (votes1 > votes2) {
-                json.history.push({ winner: getIndexFromSong(song1), loser: getIndexFromSong(song2) });
+                let winlose = { winner: getIndexFromSong(song1), loser: getIndexFromSong(song2) };
+                json.history.push(winlose);
+                // Move song 1 in front of song 2 in 2nd array
                 json.songs[json.arr2].splice(json.index2, 0, json.songs[json.arr1].shift());
+                // Stay on same song in 2nd array
                 json.index2++;
             } else {
-                json.history.push({ winner: getIndexFromSong(song2), loser: getIndexFromSong(song1) });
+                let winlose = { winner: getIndexFromSong(song2), loser: getIndexFromSong(song1) };
+                json.history.push(winlose);
+                // No insertion, just move to the next song in 2nd array
                 json.index2++;
             }
 
@@ -69,23 +74,30 @@ module.exports = async function (guild) {
 
         if (json.songs.length > 1) {
             //FIND NEW GROUPS
-            if (json.arr1 === null || json.arr2 === null) {
-                for (let i = 0; i < json.songs.length; i++) {
-                    if (json.songs[i].length <= json.curLength) {
+            if (json.arr1 === null || json.arr2 === null || json.arr1 === json.arr2) {
+                for (let jsi in json.songs) {
+                    if (json.songs[jsi].length <= json.curLength) {
                         if (json.arr1 === null) {
-                            json.arr1 = i;
+                            json.arr1 = jsi;
                         } else {
-                            if (json.songs[json.arr1].length > json.songs[i].length) {
-                                json.arr2 = json.arr1;
-                                json.arr1 = i;
-                            } else json.arr2 = i;
-                            break;
+                            if (jsi !== json.arr1 && jsi !== json.arr2) {
+                                if (json.songs[jsi].length < json.songs[json.arr1].length) {
+                                    json.arr2 = json.arr1;
+                                    json.arr1 = jsi;
+                                } else json.arr2 = jsi;
+                                break;
+                            }
+
                         }
                     }
                 }
 
                 //CURLENGTH TOO SMALL, MOVE UP TO BIGGER GROUPS
-                if (json.arr1 === null || json.arr2 === null || json.arr1 === json.arr2) json.curLength++;
+                console.log(json.arr1, json.arr2, /ABOUTTORERUN/);
+                if (json.arr1 === null || json.arr2 === null || json.arr1 === json.arr2) {
+                    console.log(`increasing length from ${json.curLength} to ${json.curLength + 1}`);
+                    json.curLength++;
+                }
                 else {
                     json.index1 = 0;
                     json.index2 = 0;

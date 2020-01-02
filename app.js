@@ -42,14 +42,6 @@ fs.readdirSync("./app/model").forEach(file => {
     global[fileName] = require("./app/model/" + file);
 });
 
-const SocialMedia = require("node-social-media").setAuth({
-    sessionid: process.env.SESSIONID,
-    consumer: process.env.CONSUMER,
-    consumer_secret: process.env.CONSUMER_S,
-    access: process.env.ACCESS,
-    access_secret: process.env.ACCESS_S
-});
-
 //Function definitions
 (async function () { await storage.init(); })();
 function requireFunction(name) { return require(`./Functions/${name}.js`); };
@@ -185,7 +177,7 @@ bot.on("ready", async () => {
     bot.user.setPresence({ game: { name: guild.memberCount + " members" } });
     let announceRole = guild.roles.get("357682068785856514");
     if (announceRole.mentionable) await announceRole.setMentionable(false);
-    if (guild.channels.get("470406597860917249")) guild.channels.get(chans.bottest).send("`Nico is on fire`");
+    if (guild.channels.get("470406597860917249")) guild.channels.get(chans.bottest).embed("Nico is on fire");
     lotteryCheck(guild);
     setInterval(async () => {
         let currentTime = Date.now();
@@ -411,7 +403,7 @@ bot.on("message", async msg => {
     if (msg.channel.id === chans.suggestions && msg.content.startsWith(prefix) && !msg.content.toLowerCase().startsWith(prefix + "suggest") && msg.author.id !== poot) return msg.delete();
 
     //daily recap
-    if (msg && msg.member) {
+    if (msg && msg.member && 1 == 2) { //TODO: Fix
         let epoch = new Date(2019, 6, 1); //JULY 1ST 2019
         let startOfToday = (new Date()).setHours(0, 0, 0, 0);
         let today = Math.round(Math.abs((epoch.getTime() - startOfToday) / (24 * 60 * 60 * 1000)));

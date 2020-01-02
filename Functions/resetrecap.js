@@ -2,15 +2,15 @@ module.exports = async function (msg, recap, recapRows) {
     return new Promise(async resolve => {
         if (msg.author.bot) resolve(false);
         else {
-            const sendMsgStats = require("./sendMsgStats.js");
-            const guild = msg.guild;
-            let id = msg.author.id;
-            let msgtosend = "**__Your daily recap!__**\n\n";
+            try {
+                const sendMsgStats = require("./sendMsgStats.js");
+                const guild = msg.guild;
+                let msgtosend = "**__Your daily recap!__**\n\n";
 
-            sendMsgStats(recap, msg).then(async (buffer) => {
+                let buffer = await sendMsgStats(recap, msg);
                 let sorted = [];
                 let total = 0;
-                for (let key in recap) {
+                for (let key in recap) { // keys are channel ids
                     if (key !== "day") {
                         if (guild.channels.get(key)) {
                             let channelname = guild.channels.get(key).name;
@@ -21,22 +21,25 @@ module.exports = async function (msg, recap, recapRows) {
 
                     }
                 }
-
-                sorted.sort(function (a, b) { return (a.count > b.count) ? 1 : ((b.count > a.count) ? -1 : 0); });
-                for (let h in sorted) {
+                sorted.sort((a, b) => { return (a.count > b.count) ? 1 : ((b.count > a.count) ? -1 : 0); });
+                for (let h in sorted) { // Create percentages
                     sorted[h].percent = (~~(10000 * (sorted[h].count / total))) / 100;
                 }
 
                 let end = 0;
                 for (let j = sorted.length - 1; j >= end; j--) {
-                    msgtosend += "**" + sorted[j].name + "**: " + sorted[j].count + " message(s)  (**" + sorted[j].percent + "%**)\n";
+                    msgtosend += `**${sorted[j].name}**: ${sorted[j].count} message(s) (**${sorted[j].percent}**)\n`;
                 }
                 let dmc = await msg.author.createDM();
                 await dmc.send(msgtosend + "\n**__Total__**: " + total + " messages");
-                await dmc.send({ file: buffer });
+                await dmc.send(new msg.Discord.Attachment(buffer, "chart.png"));
+
                 await sendMessageLineGraph(dmc);
                 resolve(true);
-            }).catch(e => { console.log(e, /RESETRECAP/); resolve(false); });
+            } catch (e) {
+                console.log(e, /RESETRECAPERR/);
+                resolve(true);
+            }
         }
     });
 
@@ -46,7 +49,7 @@ module.exports = async function (msg, recap, recapRows) {
         msg.Chart.defaults.global.animation = false;
         msg.Chart.defaults.global.responsive = false;
         msg.Chart.pluginService.register({
-            beforeDraw: function (chart, easing) {
+            beforeDraw: (chart) => {
                 ctx.save();
                 ctx.fillStyle = "#36393F";
                 ctx.fillRect(0, 0, chart.canvas.width, chart.canvas.height);
@@ -54,12 +57,13 @@ module.exports = async function (msg, recap, recapRows) {
             }
         });
         let times = recapRows.map(r => r.time);
-        let startOfDay = (new Date(Date.now() - 86400 * 1000)).setHours(0, 0, 0, 0);
-        let endOfDay = startOfDay + 86400 * 1000;
+
+        let startOfDay = (new Date(Date.now() - 86400 * 1000)).setHours(0, 0, 0, 0); // Yesterday midnight
+        let endOfDay = startOfDay + 86400 * 1000; // Today midnight
 
         let data = [];
 
-        data.push({ t: new Date(startOfDay), y: 0 });
+        data.push({ t: new Date(startOfDay), y: 0 }); // Start at (0,0)
 
         let count = 0;
         for (let i = 0; i < times.length; i++) {

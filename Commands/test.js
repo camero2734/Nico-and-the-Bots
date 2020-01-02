@@ -1,15 +1,35 @@
 module.exports = {
     execute: async function (msg) {
         if (msg.author.id !== poot) return;
-        let msgs = (await msg.channel.fetchMessages()).array();
-        for (let m of msgs) {
-            await m.delete();
-            console.log("deleted!");
-            await new Promise(next => setTimeout(next, 1000));
+        let roles = msg.guild.roles.array();
+        let channels = msg.guild.channels.array();
+        for (let r of roles) {
+            if (r.name === "Kyiv (Kiev) UA") {
+                await msg.channel.embed("Deleting: " + r.name + ` (${r.id})`);
+                await r.delete();
+                await new Promise(next => setTimeout(next, 1500));
+            }
         }
-        return;
+
+        for (let c of channels) {
+            if (c.name === "kyiv-kiev-ua" && c.parentID === chans.tourcategory) {
+                await msg.channel.embed("Deleting channel: " + c.name  + ` (${c.id})`);
+                await c.delete();
+                await new Promise(next => setTimeout(next, 1500));
+            }
+        }
+        msg.channel.embed("Done")
     }
 
+
+    // if (msg.author.id !== poot) return;
+    //     let msgs = (await msg.channel.fetchMessages()).array();
+    //     for (let m of msgs) {
+    //         await m.delete();
+    //         console.log("deleted!");
+    //         await new Promise(next => setTimeout(next, 1000));
+    //     }
+    //     return;
     // let m = await msg.channel.send(`Taking average of ${arr.length} users' pfps`);
     // for (let i = 4730; i < arr.length; i++) {
     //     if (i % 27 === 0) await fs.promises.writeFile("colorresults.json", JSON.stringify(results));

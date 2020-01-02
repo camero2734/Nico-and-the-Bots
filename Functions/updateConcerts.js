@@ -75,7 +75,7 @@ module.exports = async function (guild, Discord) {
         for (let i = 0; i < json.length; i++) {
             let concert = json[i];
             //CREATE CHANNEL NAME
-            let name = `${concert.location.city.split(",")[0]}-${getCountryCode(concert.location.city.split(",")[1].trim())}`.replace(/ /g, "-").replace(/-{2,}/g, "-");
+            let name = `${concert.location.city.split(",")[0]}-${getCountryCode(concert.location.city.split(",")[1].trim())}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-z0-9]/g, "-").replace(/-{2,}/g, "-");
             console.log(name, /NAME/);
             //SEE IF CHANNEL EXISTS
             let alreadyExists = guild.channels.find(ch => { return ch.name.toLowerCase() === name.toLowerCase(); });

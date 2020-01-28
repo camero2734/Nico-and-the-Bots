@@ -7,7 +7,7 @@ module.exports = {
         if (!reminderDate || reminderDate.getTime() - Date.now() < 0) {
             return await origMsg.edit(new Discord.RichEmbed({description: "Invalid remind time!"}).setColor("GREEN"))
         }
-        // GET D H M S
+        // GET D H M S and inHours
         let { d, h, m, s, inHours } = getTime(reminderDate);
         //GET REMINDER TEXT
         let remindText = msg.removeCommand(msg.content);

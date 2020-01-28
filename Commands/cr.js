@@ -38,10 +38,8 @@ module.exports = {
         roles.push(new Role("DMAORG White", "#FFFFFE"));
         
         
-        
-        
-        var canvas = new Canvas.Canvas(1600, 100 * roles.length);
-        var ctx = canvas.getContext('2d');
+        let canvas = new Canvas.Canvas(2400, 100 * roles.length);
+        let ctx = canvas.getContext('2d');
 
         Canvas.registerFont(('./assets/fonts/h.ttf'), { family: 'futura' }); // eslint-disable-line max-len
         Canvas.registerFont(('./assets/fonts/f.ttf'), { family: 'futura' }); // eslint-disable-line max-len
@@ -60,12 +58,15 @@ module.exports = {
             ctx.fillRect(0, 100 * i, 800, 100);
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(800, 100 * i, 800, 100);
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(1600, 100 * i, 800, 100);
             ctx.fillStyle = roles[i].hex;
-            //ctx.strokeText(roles[i], 250, 100 * i + 50);
             let ending = roles[i].hex === "#FFFFFF" ? "" : ` (${roles[i].hex.toUpperCase()})`
             ctx.fillText(roles[i].name + ending, 400, 100 * i + 65);
             if (ctx.fillStyle.toUpperCase() === "#FFFFFF") ctx.fillStyle = "#000000";
             ctx.fillText(roles[i].name + ending, 1200, 100 * i + 65);
+            if (ctx.fillStyle.toUpperCase() === "#000000") ctx.fillStyle = "#FFFFFF";
+            ctx.fillText(roles[i].name + ending, 2000, 100 * i + 65);
         }
 
         msg.channel.send({file: canvas.toBuffer()})

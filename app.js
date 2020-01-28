@@ -32,7 +32,8 @@ const morse = require("morse-node").create("ITU");
 const color = require("color");
 const pm2 = require("pm2");
 const fuzzyMatch = require("fuzzaldrin").filter;
-
+const friendlyTime = require("friendly-time");
+const chrono = require("chrono-node");
 
 //SQLITE
 global.typeorm = require("typeorm");
@@ -703,11 +704,61 @@ bot.on("messageUpdate", (oMessage, nMessage) => {
 
 });
 
+async function handleFMReaction(reaction, user, msg, currentRow) {
+    let reactions = await msg.reactions.array();
+
+    if (reaction) {
+        for (let _r of reactions) {
+            if (_r.emoji.name !== reaction.emoji.name) await _r.remove(user);
+        }
+    }
+
+
+    let reactionArray = ["664678209157333016", "664678208981172225", "664678208578256908"].map(em => reactions.find(re => re.emoji.id === em));
+
+    getUsers = async (re) => (await re.fetchUsers()).array().filter(u => !u.bot).map(u => u.id);
+
+    let userArray = [];
+
+    for (let i in reactionArray) userArray[i] = await getUsers(reactionArray[i]);
+
+    let currentJSON = JSON.parse(currentRow.title);
+    currentJSON.upvotes = userArray[0];
+    currentJSON.downvotes = userArray[1];
+    currentJSON.unknowns = userArray[2];
+    currentRow.title = JSON.stringify(currentJSON);
+
+    await connection.manager.save(currentRow);
+}
+
+
+
 let recentReactions = [];
 
-bot.on("messageReactionAdd", async (reaction, user) => {
-    var msg = reaction.message;
+bot.on("messageReactionRemove", async (reaction, user) => {
+    let msg = await reaction.message.guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
 
+    if (msg.channel.id === chans.topfeed) return;
+
+    if (!user.bot && msg.embeds && msg.embeds[0] && msg.embeds[0].author && msg.embeds[0].author.name.endsWith("scrobbles") && msg.embeds[0].title.endsWith("'s FM")) {
+        let currentRow = await connection.getRepository(Item).findOne({ id: msg.id, type: "FMVote" });
+        if (!currentRow || !currentRow.title) return;
+        return await handleFMReaction(null, user, msg, currentRow);
+    }
+});
+
+bot.on("messageReactionAdd", async (reaction, user) => {
+    let msg = await reaction.message.guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
+
+
+    if (msg.channel.id === chans.topfeed) return;
+
+    if (!user.bot && msg.embeds && msg.embeds[0] && msg.embeds[0].author && msg.embeds[0].author.name.endsWith("scrobbles") && msg.embeds[0].title.endsWith("'s FM")) {
+        let currentRow = await connection.getRepository(Item).findOne({ id: msg.id, type: "FMVote" });
+        console.log(msg.id, currentRow, /currentRow/)
+        if (!currentRow || !currentRow.title) return;
+        return await handleFMReaction(reaction, user, msg, currentRow);
+    }
 
     for (let i = recentReactions.length - 1; i >= 0; i--) {
         if (Date.now() - recentReactions[i].time > 5000) recentReactions.splice(i, 1);
@@ -715,8 +766,6 @@ bot.on("messageReactionAdd", async (reaction, user) => {
     }
 
     recentReactions.push({ id: msg.id + user.id, time: Date.now() });
-
-    if (msg.channel.id === chans.topfeed) return;
 
     if (msg.channel.id === chans.interviewsubmissions && (reaction.emoji.name === "✅" || reaction.emoji.name === "❌") && !user.bot) {
         return interviewSubmissions(reaction, user, Discord);
@@ -760,9 +809,11 @@ bot.on("messageReactionAdd", async (reaction, user) => {
         let response = (r && r.obj) ? r.obj : null;
         let type = (r && r.type) ? r.type : null;
         if (type === "strike") {
-            strikes = response;
-            handleStrike(msg, strikes[msg.author.id][msg.channel.id].count);
-            staffUsedCommand(user.username, "Strike ❌", "#ee3647", { User_striked: msg.author.toString(), channel: msg.channel.toString(), strike_num: strikes[msg.author.id][msg.channel.id].count, time: (new Date()).toString() });
+            // Outdated
+            return;
+            // strikes = response;
+            // handleStrike(msg, strikes[msg.author.id][msg.channel.id].count);
+            // staffUsedCommand(user.username, "Strike ❌", "#ee3647", { User_striked: msg.author.toString(), channel: msg.channel.toString(), strike_num: strikes[msg.author.id][msg.channel.id].count, time: (new Date()).toString() });
         } else if (type === "updownvote") {
             msg.delete();
             msg.guild.channels.get(chans.bottest).send("Message deleted by bot!\n" + response[0] + " likes\n" + response[1] + "dislikes");
@@ -772,7 +823,6 @@ bot.on("messageReactionAdd", async (reaction, user) => {
             msg.guild.channels.get(chans.bottest).embed(`Message in <#${chans.trenchmemes}> deleted for being a repost`);
         } else if (type === "gold") {
             let embed = response;
-            //TODO: add Counter
             let preGD = await connection.getRepository(Counter).findOne({ id: msg.author.id, title: "GoldCount" });
             if (!preGD) {
                 preGD = new Counter(msg.author.id, "GoldCount", 0, 0);
@@ -951,29 +1001,29 @@ async function findClosestCommand(msg) {
 }
 
 //THREE STRIKES YOU'RE OUT!!!
-function handleStrike(msg, strikes) {
-    if (strikes < 0) return;
-    if (strikes > 3) strikes = 3;
-    msg.channel.embed(`Giving ${strikes == 0 ? "a warning" : ("strike number " + strikes)} to ${msg.member.displayName} for not contributing to the chat.`);
-    let descriptions = [
-        "You have received a warning for being off-topic or unproductive in #" + msg.channel.name + ". Because this is your first offense, this is simply a warning. **__Next time, you will receive a strike__**\n\n**1 strike**- 24 hour ban from the channel.\n**2 strikes**- 7 day ban from the channel.\n**3 strikes**- Permanent ban from the channel.",
-        "You have received a strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 24 hours.\n\nYou can regain access after 24 hours or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a 7 day ban from the channel.**",
-        "You have received a second strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 7 days.\n\nYou can regain access after 7 days or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a *permanent* ban from the channel**",
-        "You have received a third strike for being off-topic or unproductive in #" + msg.channel.name + ". **You are banned from the channel permanently.**"
-    ];
-    let times = [0, 1000 * 3600 * 24, 1000 * 3600 * 24 * 7, -10];
-    msg.member.createDM().then(async (dm) => {
-        dm.send({ embed: new Discord.RichEmbed({ description: descriptions[strikes] }).setColor("RANDOM") });
-        if (times[strikes] !== 0) {
-            msg.channel.overwritePermissions(msg.author, { SEND_MESSAGES: false }, "Channel ban started");
-            let strikeJSON = await fs.readFileAsync("strikes.json");
-            if (!strikeJSON[msg.author.id]) strikeJSON[msg.author.id] = {};
-            if (!strikeJSON[msg.author.id][msg.channel.id]) strikeJSON[msg.author.id][msg.channel.id] = { count: 1, time: 0 };
-            strikeJSON[msg.author.id][msg.channel.id].time = times[strikes] < 0 ? -10 : Date.now() + times[strikes];
-            fs.writeFileQueued("strikes.json", strikeJSON);
-        }
-    });
-}
+// function handleStrike(msg, strikes) {
+//     if (strikes < 0) return;
+//     if (strikes > 3) strikes = 3;
+//     msg.channel.embed(`Giving ${strikes == 0 ? "a warning" : ("strike number " + strikes)} to ${msg.member.displayName} for not contributing to the chat.`);
+//     let descriptions = [
+//         "You have received a warning for being off-topic or unproductive in #" + msg.channel.name + ". Because this is your first offense, this is simply a warning. **__Next time, you will receive a strike__**\n\n**1 strike**- 24 hour ban from the channel.\n**2 strikes**- 7 day ban from the channel.\n**3 strikes**- Permanent ban from the channel.",
+//         "You have received a strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 24 hours.\n\nYou can regain access after 24 hours or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a 7 day ban from the channel.**",
+//         "You have received a second strike for being off-topic or unproductive in #" + msg.channel.name + ". You are banned from the channel for the next 7 days.\n\nYou can regain access after 7 days or check the time remaining by simply saying **!chanbans** in #commands.\n\n**The next offense will result in a *permanent* ban from the channel**",
+//         "You have received a third strike for being off-topic or unproductive in #" + msg.channel.name + ". **You are banned from the channel permanently.**"
+//     ];
+//     let times = [0, 1000 * 3600 * 24, 1000 * 3600 * 24 * 7, -10];
+//     msg.member.createDM().then(async (dm) => {
+//         dm.send({ embed: new Discord.RichEmbed({ description: descriptions[strikes] }).setColor("RANDOM") });
+//         if (times[strikes] !== 0) {
+//             msg.channel.overwritePermissions(msg.author, { SEND_MESSAGES: false }, "Channel ban started");
+//             let strikeJSON = await fs.readFileAsync("strikes.json");
+//             if (!strikeJSON[msg.author.id]) strikeJSON[msg.author.id] = {};
+//             if (!strikeJSON[msg.author.id][msg.channel.id]) strikeJSON[msg.author.id][msg.channel.id] = { count: 1, time: 0 };
+//             strikeJSON[msg.author.id][msg.channel.id].time = times[strikes] < 0 ? -10 : Date.now() + times[strikes];
+//             fs.writeFileQueued("strikes.json", strikeJSON);
+//         }
+//     });
+// }
 
 let internetFailed = false;
 

@@ -52,7 +52,7 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (msg) => {
-    if (msg.author.id !== "221465443297263618") return;
+
     if (!msg || msg.author.bot) return;
     msg.args = msg.content.split(" ");
     if (msg.command("play")) {

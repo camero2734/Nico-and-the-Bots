@@ -10,10 +10,11 @@ module.exports = {
         let taggedid = (msg.mentions && msg.mentions.users && msg.mentions.users.first()) ? msg.mentions.users.first().id : false;
         if (!taggedid) return msg.channel.embed("Invalid tagged user");
 
+        if (taggedid === msg.author.id) return msg.channel.embed("You cannot donate to yourself.")
+
         //Check how often they donate
         if (typeof donations[msg.author.id] === "undefined") donations[msg.author.id] = {};
         if (typeof donations[msg.author.id][taggedid] === "undefined") {
-            console.log("no existy");
             donations[msg.author.id][taggedid] = { recentTime: 0, countTime: 0, count: 0 };
         }
 

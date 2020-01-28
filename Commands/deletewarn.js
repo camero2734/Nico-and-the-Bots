@@ -1,5 +1,6 @@
 module.exports = {
     execute: async function (msg) {
+        return msg.channel.embed("This command is depricated");
         try {
             if (!msg.member.hasPermission("BAN_MEMBERS")) return msg.channel.embed("You must be an Admin or Moderator to use this command");
             if (!msg.args || !msg.mentions || !msg.mentions.members || !msg.mentions.members.first()) return msg.channel.embed("Invalid input!");

@@ -1,20 +1,17 @@
 module.exports = {
     execute: async function (msg) {
-        //GET [DAYS, HOURS, MINS, SECS, TOTALHOURS]
-        let timeObject = getTime(msg.removeCommand(msg.content));
-        if (!timeObject && Number(msg.args[msg.args.length - 1]) && Number(msg.args[msg.args.length - 1]) > 1) timeObject = {d: 0, h: msg.args[msg.args.length - 1], m: 0, s: 0, inHours: msg.args[msg.args.length - 1]};
-        if (!timeObject) return msg.channel.embed("Invalid time! Use a comma before the time.\n\nExample: `!remind Give poot all my ingies, 2 hours 30 minutes`\n(Note the comma; it is required)");
-        let {d, h, m, s, inHours} = timeObject;
+        let origMsg = await msg.channel.send(new Discord.RichEmbed({description: "Creating reminder..."}).setColor("GREEN"));
+        await new Promise(next => setTimeout(next, 1000));
 
-        //CHECK MAX TIME
-        if (inHours > 43800) return msg.channel.embed("Max time allowed is 5 years");
-
-        //GET REMINDER UNIX TIME
-        let reminderTime = Math.floor(Date.now() + (inHours * 3600000));
-        let reminderDate = new Date(reminderTime);
+        let reminderDate = chrono.parseDate(msg.content);
+        if (!reminderDate || reminderDate.getTime() - Date.now() < 0) {
+            return await origMsg.edit(new Discord.RichEmbed({description: "Invalid remind time!"}).setColor("GREEN"))
+        }
+        // GET D H M S
+        let { d, h, m, s, inHours } = getTime(reminderDate);
         //GET REMINDER TEXT
-        let remindText = msg.removeCommand(msg.content).split(",")[0];
-        let newReminder = new Item(msg.author.id, msg.content, "Reminder", reminderTime);
+        let remindText = msg.removeCommand(msg.content);
+        let newReminder = new Item(msg.author.id, msg.content, "Reminder", reminderDate.getTime());
         //SAVE!!
         await connection.manager.save(newReminder);
 
@@ -28,9 +25,9 @@ module.exports = {
         let today_normalized = new Date(now_date.getDate() + ' ' + months[now_date.getMonth()] + ' ' + now_date.getFullYear());
         let then_normalized = new Date(reminderDate.getDate() + ' ' + months[reminderDate.getMonth()] + ' ' + reminderDate.getFullYear());
         let dateString = get_dateString(then_normalized.getTime() - today_normalized.getTime());
-        embed.addField("Time:", ((d != 0) ? `${d} days` : ``) + ((h != 0) ? ` ${h} hours` : ``) + ((m != 0) ? ` ${m} minutes` : ``) + ((s != 0) ? ` ${s} seconds` : ``) + ` [${dateString} at ${timeString} CT]`);
+        embed.addField("Time remaining:", ((d != 0) ? `${d} days` : ``) + ((h != 0) ? ` ${h} hours` : ``) + ((m != 0) ? ` ${m} minutes` : ``) + ((s != 0) ? ` ${s} seconds` : ``) + ` [${dateString} at ${timeString} CT]`);
         embed.setColor("00FF00");
-        await msg.channel.send(embed);
+        await origMsg.edit(embed);
         return;
 
         function get_dateString(ms) {
@@ -39,19 +36,27 @@ module.exports = {
             return days[reminderDate.getDay()] + ', ' + reminderDate.getDate() + ' ' + months[reminderDate.getMonth()]
         }
 
-        function getTime(string) {
-            let days_reg = new RegExp("(?<=,.*)[0-9]{1,}?(?= *d)", "gi");
-            let hours_reg = new RegExp("(?<=,.*)[0-9]{1,}?(?= *h)", "gi");
-            let minutes_reg = new RegExp("(?<=,.*)[0-9]{1,}?(?= *m)", "gi");
-            let seconds_reg = new RegExp("(?<=,.*)[0-9]{1,}?(?= *s)", "gi");
-            let d = string.match(days_reg) || ['0'];
-            let h = string.match(hours_reg) || ['0'];
-            let m = string.match(minutes_reg) || ['0'];
-            let s = string.match(seconds_reg) || ['0'];
-            if (d[0].toString() + h[0].toString() + m[0].toString() + s[0].toString() === '0000') return null;
-            if (Number(d[0]) < 0 || Number(h[0]) < 0 || Number(m[0]) < 0 || Number(s[0]) < 0) return null;
-            let hourNum = 24 * parseInt(d[0]) + parseInt(h[0]) + parseInt(m[0]) / 60 + parseInt(s[0]) / 3600;
-            return {d: d[0], h: h[0], m: m[0], s: s[0], inHours: hourNum};
+        function getTime(date) {
+            let time = date.getTime() - Date.now();
+
+            if (time <= 0) {
+                return null;
+            }
+
+            let d = Math.floor(time/(1000 * 60 * 60 * 24));
+            time -= d * (1000 * 60 * 60 * 24);
+
+            let h = Math.floor(time/(1000 * 60 * 60));
+            time -= h * (1000 * 60 * 60);
+
+            let m = Math.floor(time/(1000 * 60));
+            time -= m * (1000 * 60);
+
+            let s = Math.floor(time/(1000));
+            time -= s * (1000);
+
+            let hourNum = 24 * d + h + m / 60 + s / 3600;
+            return { d, h, m, s, inHours: hourNum};
         }
     }
 ,

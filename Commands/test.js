@@ -1,27 +1,84 @@
 module.exports = {
     execute: async function (msg) {
         if (msg.author.id !== poot) return;
-        let roles = msg.guild.roles.array();
-        let channels = msg.guild.channels.array();
-        for (let r of roles) {
-            if (r.name === "Kyiv (Kiev) UA") {
-                await msg.channel.embed("Deleting: " + r.name + ` (${r.id})`);
-                await r.delete();
-                await new Promise(next => setTimeout(next, 1500));
-            }
-        }
 
-        for (let c of channels) {
-            if (c.name === "kyiv-kiev-ua" && c.parentID === chans.tourcategory) {
-                await msg.channel.embed("Deleting channel: " + c.name  + ` (${c.id})`);
-                await c.delete();
-                await new Promise(next => setTimeout(next, 1500));
-            }
-        }
-        msg.channel.embed("Done")
+        let userWarns = await connection.getRepository(Item).find({ id: msg.author.id, type: "Warning" });
+        userWarns = userWarns.sort((a,b) => b.time - a.time);
+
+        let newEmbed = new Discord.RichEmbed();
+        newEmbed.addField("")
     }
 
+    
 
+    // let allMessages = await fetchAllMessages(500);
+
+    // let html = "<head>\n  <style>\n    body {background-color: #36393f}\n   .avatar {border-radius: 100%; }\n    .timestamp {font-size: 10px; color: #777777}\n    .textcontent {font-size: 12px; color: white}\n    .username {color: white; font-size: 30px}\n  </style>\n</head>";
+
+    // for (let m of allMessages) {
+    //     if (m.content || m.attachments) {
+    //         let registered = false;
+    //         let mhtml = "<div>\n"
+    //         mhtml += `<img class="avatar" src="${m.author.displayAvatarURL}" align="left" height=40/><span class="username"><b>${m.member.displayName}</b></span>  <span class="timestamp">(${m.author.id})</span>\n`
+    //         mhtml += `<p display="inline" class="timestamp"> ${m.createdAt.toString().replace("Central Standard Time", m.createdTimestamp)} </p>\n`
+    //         if (m.content) {
+    //             mhtml += `<p class="textcontent">${fixEmojis(m.content)}</p>`;
+    //             registered = true;
+    //         }
+    //         if (m.attachments) {
+    //             let attachments = m.attachments.array();
+    //             for (let a of attachments) {
+    //                 if (a.filename.endsWith("png" || a.filename.endsWith("gif") || a.filename.endsWith("jpg"))) {
+    //                     let _file = await snekfetch.get(a.url);
+    //                     let base64 = _file.body.toString('base64');
+    //                     console.log(base64.substring(0, 100), "base64")
+    //                     html += `\n<img src="data:image/jpeg;base64,${base64}"><br><br>`;
+    //                     registered = true;                           ;
+    //                 }
+    //             }
+    //         }
+    //         if (registered) html += mhtml + "\n</div><br>\n";
+    //     } 
+        
+    // }
+    // console.log("creating attachment")
+    // let attachment = new Discord.Attachment(Buffer.from(html), "jail.html");
+    // msg.channel.send(attachment);
+
+    // function fixEmojis(text) {
+    //     let regCapture = /<(a{0,1}):\w+:(\d{18})>/
+    //     while (regCapture.test(text)) {
+    //         let results = regCapture.exec(text);
+    //         let ending = results[1] && results[1] === "a" ? "gif" : "png";
+    //         let id = results[2];
+    //         let newText = `<img src="https://cdn.discordapp.com/emojis/${id}.${ending}" height=20>`;
+    //         text = text.replace(regCapture, newText);
+    //     }
+    //     return text;
+    // }
+
+    // async function fetchAllMessages(limit=500) {
+    //     let messages = {};
+    //     let lastMessage = null;
+
+    //     fetcher:
+    //     while (Object.keys(messages).length < limit) {
+    //         let options = { limit: 100 };
+    //         if (lastMessage) options.before = lastMessage;
+    //         console.log("Fetching...")
+    //         let msgs = (await msg.channel.fetchMessages(options)).array();
+    //         if (!msgs || !msgs[msgs.length - 1] || msgs[msgs.length - 1].id === lastMessage) break fetcher;
+    //         for (let m of msgs) {
+    //             messages[m.id] = m;
+    //         }
+    //         lastMessage = msgs[msgs.length - 1].id;
+    //     }
+    //     let finalArray = [];
+    //     for (let id in messages) {
+    //         finalArray.push(messages[id])
+    //     }
+    //     return finalArray.reverse();
+    // }
     // if (msg.author.id !== poot) return;
     //     let msgs = (await msg.channel.fetchMessages()).array();
     //     for (let m of msgs) {

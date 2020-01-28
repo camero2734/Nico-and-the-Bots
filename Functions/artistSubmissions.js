@@ -13,5 +13,5 @@ module.exports = async function(reaction, user, Discord) {
     if (dm) {
         await dm.embed(`You were ${accepting ? "approved for" : "denied"} the Artist/Musician role${accepting ? "!" : ". Please wait a few months if you wish to try again."}`)
     }
-    await msg.channel.embed("Done.")
+    await msg.channel.send(new Discord.RichEmbed({description: `${accepting ? "Approved" : "Denied"} ${member}'s (${member.user.id}) application for the Artist/Musician role.`}).setColor(accepting ? "GREEN" : "RED"))
 }

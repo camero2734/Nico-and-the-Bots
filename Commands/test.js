@@ -2,14 +2,16 @@ module.exports = {
     execute: async function (msg) {
         if (msg.author.id !== poot) return;
 
-        let userWarns = await connection.getRepository(Item).find({ id: msg.author.id, type: "Warning" });
-        userWarns = userWarns.sort((a,b) => b.time - a.time);
+        let shopChan = msg.guild.channels.get(chans.shop);
+        let msgs = (await shopChan.fetchMessages({ limit: 100 })).array();
 
-        let newEmbed = new Discord.RichEmbed();
-        newEmbed.addField("")
+        for (let m of msgs) {
+            await m.delete();
+            await new Promise(next => setTimeout(next, 1000));
+        }
     }
 
-    
+
 
     // let allMessages = await fetchAllMessages(500);
 
@@ -38,8 +40,8 @@ module.exports = {
     //             }
     //         }
     //         if (registered) html += mhtml + "\n</div><br>\n";
-    //     } 
-        
+    //     }
+
     // }
     // console.log("creating attachment")
     // let attachment = new Discord.Attachment(Buffer.from(html), "jail.html");

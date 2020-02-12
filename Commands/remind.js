@@ -1,5 +1,8 @@
 module.exports = {
     execute: async function (msg) {
+
+        if (removeCommand(msg.content) === "24") msg.content = "!remind 24 hours";
+
         let origMsg = await msg.channel.send(new Discord.RichEmbed({description: "Creating reminder..."}).setColor("GREEN"));
         await new Promise(next => setTimeout(next, 1000));
 

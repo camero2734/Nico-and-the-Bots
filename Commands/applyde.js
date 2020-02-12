@@ -1,13 +1,13 @@
 module.exports = {
     execute: async function (msg) {
-
+        return msg.channel.embed("Applications are currently closed");
         if (typeof openApps[msg.author.id] === "undefined") openApps[msg.author.id] = {};
 
         //if (!msg.member.roles.get("498702380007686146")) return msg.channel.embed("This command is currently only available to former death eaters. Applications for everyone will open soon!");
         let applyJSON = await loadJsonFile("./json/deapplications.json");
         let dm = await msg.member.createDM();
         if (!dm) return msg.channel.embed("I cannot DM you for some reason, please make sure you are not blocking DMs from this server!");
-        
+
         const f = (m => (m.author.id === msg.author.id) && (m.content.toLowerCase().indexOf("yes") !== -1));
         const filter = (m => (m.author.id === msg.author.id));
 
@@ -41,7 +41,7 @@ module.exports = {
             return msg.channel.embed("You have already applied in the past month! Please wait " + timeString + " before applying again.");
         }
         if (applyJSON[msg.author.id] && typeof openApps[msg.author.id].invalid === "string") return msg.channel.embed(openApps[msg.author.id].invalid);
-        
+
         await msg.channel.embed(msg.member.displayName + ", check your DMs to begin your application!");
         await dm.embed("**Welcome to your DE application!**");
         try {
@@ -75,7 +75,7 @@ module.exports = {
 
                 await sendQuestion("Which platform is your account on? You may list multiple in a single message.");
                 let accounts = qs[qs.length - 1].answer.content;
-                
+
                 let hasYoutube = /yt|you|tube/i.test(accounts);
                 let hasInstagram = /ig|insta/i.test(accounts);
                 let hasTwitter = /twit/i.test(accounts);
@@ -136,7 +136,7 @@ module.exports = {
                         let ig_user = ig_res.answer.content.replace(/@/g, "").trim();
                         let ig_url = ig_user.indexOf("instagram.com") === -1 ? "https://www.instagram.com/" + ig_user : ig_user;
                         qs[qs.length - 1].answer.content = ig_url;
-                        
+
                         let ig_parts = ig_user.split("/");
                         ig_user = ig_user.endsWith("/") ? ig_parts[ig_parts.length - 2] : ig_parts[ig_parts.length - 1];
 
@@ -173,7 +173,7 @@ module.exports = {
                 const MSGREQ = 50;
                 const JOINREQ = new Date(1525150800000);
 
-                
+
                 //GET LEVELS AND STUFF
 
                 //LEVEL
@@ -182,7 +182,7 @@ module.exports = {
                 let level = userEconomy.alltimeLevel;
 
                 //WARNINGS
-                let userWarnings = await connection.getRepository(Item).find({ id: msg.author.id, type: "Warning" });
+                let userWarnings = await connection.getRepository(Item).find({ id: msg.author.id, type: "Warning" }) || [];
                 let filtered = userWarnings.filter(uw => {
                     return uw.time >= (Date.now() - (1000 * 60 * 60 * 24 * 60));
                 });
@@ -190,7 +190,8 @@ module.exports = {
 
                 //AVERAGE DAILY MESSAGES
                 let userWeekRecap = await connection.getRepository(WeekRecap).findOne({ id: msg.author.id });
-                let days = JSON.parse(userWeekRecap.days);
+                let days = [];
+                if (userWeekRecap) days = JSON.parse(userWeekRecap.days);
                 let msgsTotal = 0;
                 for (let day of days) msgsTotal+=day;
                 let msgsDay = Math.ceil(msgsTotal / 7);
@@ -249,8 +250,8 @@ module.exports = {
 
                 }
                 embed.setFooter(msg.author.id).setTitle("DE Application");
-                
-                
+
+
 
                 await dm.send(embed);
 
@@ -278,7 +279,7 @@ module.exports = {
                     await writeJsonFile("./json/deapplications.json", applyJSON);
                 }
             }
-                       
+
         } catch(e) {
             console.log(e, /DEE/);
             if (applyJSON[msg.author.id]) {

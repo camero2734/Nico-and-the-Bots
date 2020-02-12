@@ -53,14 +53,14 @@ module.exports = {
             let embed = new Discord.RichEmbed().setColor(msg.member.displayHexColor);
             embed.setTitle(`${username}'s FM`);
             embed.addField("Title", (track.name ? track.name : "No Title") + `  \n[${trackPlay.track ? trackPlay.track.userplaycount : 0} plays](${us_pl(trackPlay.track ? trackPlay.track.url : "https://www.last.fm")})`, true);
-            embed.addField("Album", (track.album ? track.album : "No Album") + `  \n[${albumPlay.album ? albumPlay.album.userplaycount : 0} plays](${us_pl(albumPlay.album.url)})`, true);
+            embed.addField("Album", (track.album ? track.album : "No Album") + `  \n[${albumPlay.album ? albumPlay.album.userplaycount : 0} plays](${us_pl(albumPlay.album ? albumPlay.album.url : "https://www.last.fm")})`, true);
             embed.addField("Artist", (track.artist ? track.artist : "No Artist") + `  \n[${(artistPlay.artist && artistPlay.artist.stats) ? artistPlay.artist.stats.userplaycount : 0} plays](${us_pl(artistPlay.artist.url)})`, true);
             embed.setThumbnail(track.image ? track.image : "http://orig14.deviantart.net/5162/f/2014/153/9/e/no_album_art__no_cover___placeholder_picture_by_cmdrobot-d7kpm65.jpg");
             // embed.addField("\u200b", "<:UpFCE300:664678209157333016> Like <:DownFCE300:664678208981172225> Dislike <:questionmarkFCE300:664678208578256908> Never heard");
             embed.setFooter(track.date);
             embed.setAuthor(total + " total scrobbles", "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png", `https://www.last.fm/user/${username}`);
             let fm_m = await msg.channel.send(embed);
-            
+
             // if (!selfFM) return;
             return; // TODO: remove and make embed look better
             await fm_m.react("664678209157333016"); // Up
@@ -68,12 +68,12 @@ module.exports = {
             await fm_m.react("664678208578256908"); // Question
 
             let fm_json = {
-                userid: msg.author.id, 
-                track: track.name || "N/A", 
-                album: track.album || "N/A", 
-                artist: track.artist || "N/A", 
-                upvotes: 0, 
-                downvotes: 0, 
+                userid: msg.author.id,
+                track: track.name || "N/A",
+                album: track.album || "N/A",
+                artist: track.artist || "N/A",
+                upvotes: 0,
+                downvotes: 0,
                 unknowns: 0
             };
             let fm_item = new Item(fm_m.id, JSON.stringify(fm_json), "FMVote", Date.now());

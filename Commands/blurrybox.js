@@ -16,7 +16,7 @@ module.exports = {
                 let embed = new Discord.RichEmbed().setColor("RANDOM");
                 embed.setDescription(`${msg.member}, ` + this.toExecute());
                 await msg.channel.send(embed);
-                return embed; 
+                return embed;
             }
         }
 
@@ -53,13 +53,13 @@ module.exports = {
                 prizes_array.push(prize);
             }
         }
-            
+
         //CHOOSE PRIZE
         let chosen_prize = prizes_array[Math.floor(Math.random() * prizes_array.length)];
         let prizeEmbed = await chosen_prize.award(msg);
         userEconomy.blurrytokens--;
         userEconomy.ingots++;
-        
+
         if (userEconomy.ingots >= 10) {
             userEconomy.ingots = userEconomy.ingots % 10;
             userEconomy.credits+=2500;
@@ -73,7 +73,7 @@ module.exports = {
         msg.channel.send(embed);
     },
     info: {
-        aliases: false,
+        aliases: ["blurrybox", "bb"],
         example: "!blurrybox",
         minarg: 0,
         description: "Opens a Blurrybox using a daily token",

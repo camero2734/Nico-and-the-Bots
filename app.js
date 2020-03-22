@@ -666,33 +666,8 @@ bot.on("messageUpdate", (oMessage, nMessage) => {
 
 });
 
-async function handleFMReaction(reaction, user, msg, currentRow) {
-    let reactions = await msg.reactions.array();
-
-    if (reaction) {
-        for (let _r of reactions) {
-            if (_r.emoji.name !== reaction.emoji.name) await _r.remove(user);
-        }
-    }
-
-
-    let reactionArray = ["664678209157333016", "664678208981172225", "664678208578256908"].map(em => reactions.find(re => re.emoji.id === em));
-
-    getUsers = async (re) => (await re.fetchUsers()).array().filter(u => !u.bot).map(u => u.id);
-
-    let userArray = [];
-
-    for (let i in reactionArray) userArray[i] = await getUsers(reactionArray[i]);
-
-    let currentJSON = JSON.parse(currentRow.title);
-    currentJSON.upvotes = userArray[0];
-    currentJSON.downvotes = userArray[1];
-    currentJSON.unknowns = userArray[2];
-    currentRow.title = JSON.stringify(currentJSON);
-
-    await connection.manager.save(currentRow);
-}
-
+bot.on("guildBanAdd", (b_guild, b_user) => banHandler(b_guild, b_user, {chan: chans.banlog, Discord, banned: true}));
+bot.on("guildBanRemove", (b_guild, b_user) => banHandler(b_guild, b_user, {chan: chans.banlog, Discord, banned: false}));
 
 
 let recentReactions = [];

@@ -678,23 +678,20 @@ bot.on("messageReactionRemove", async (reaction, user) => {
     if (msg.channel.id === chans.topfeed) return;
 
     if (!user.bot && msg.embeds && msg.embeds[0] && msg.embeds[0].author && msg.embeds[0].author.name.endsWith("scrobbles") && msg.embeds[0].title.endsWith("'s FM")) {
-        let currentRow = await connection.getRepository(Item).findOne({ id: msg.id, type: "FMVote" });
-        if (!currentRow || !currentRow.title) return;
-        return await handleFMReaction(null, user, msg, currentRow);
+        let FMentry = await connection.getRepository(FM).findOne({ message_id: msg.id });
+        msg.data = { Discord, connection };
+        if (FMentry && FMentry.hasOwnProperty("stars")) return await fmStarSystem(FMentry, msg, reaction, user);
     }
 });
 
 bot.on("messageReactionAdd", async (reaction, user) => {
     let msg = await reaction.message.guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
-
-
     if (msg.channel.id === chans.topfeed) return;
 
     if (!user.bot && msg.embeds && msg.embeds[0] && msg.embeds[0].author && msg.embeds[0].author.name.endsWith("scrobbles") && msg.embeds[0].title.endsWith("'s FM")) {
-        let currentRow = await connection.getRepository(Item).findOne({ id: msg.id, type: "FMVote" });
-        console.log(msg.id, currentRow, /currentRow/)
-        if (!currentRow || !currentRow.title) return;
-        return await handleFMReaction(reaction, user, msg, currentRow);
+        let FMentry = await connection.getRepository(FM).findOne({ message_id: msg.id });
+        msg.data = { Discord, connection };
+        if (FMentry && FMentry.hasOwnProperty("stars")) return await fmStarSystem(FMentry, msg, reaction, user);
     }
 
     for (let i = recentReactions.length - 1; i >= 0; i--) {

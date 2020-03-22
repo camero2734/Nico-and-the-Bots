@@ -17,7 +17,7 @@ module.exports = {
         }
         let dmc = await RoleMember.createDM()
         await dmc.send(new Discord.RichEmbed({title: "You have been banned from the twenty one pilots discord."}).setColor("RANDOM").addField("Reason", (banMessage === "") ? "No reason provided" : banMessage).addField("Timestamp", (new Date()).toString()))
-        RoleMember.ban(msg.author.username)
+        RoleMember.ban(`${msg.author.username} ${msg.author.id}`)
         staffUsedCommand(msg, "Ban", "#810b0b", {User_banned: RoleMember.toString(), time: (new Date()).toString()})
     },
     info: {

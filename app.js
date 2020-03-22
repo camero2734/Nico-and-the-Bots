@@ -136,7 +136,7 @@ let logQueue = [];
 
 //Command that runs commands within global scope
 Discord.Message.prototype.runCommand = function (name) {
-    command = hotload("./Commands/" + name + ".js", function () { });
+    command = hotload("./Commands/" + name + ".js", () => {});
     let fnctn = command.execute.toString();
     console.log("Command: " + chalk.green(name));
     eval("toRun = " + fnctn);
@@ -307,11 +307,22 @@ bot.on("voiceStateUpdate", (oldM, newM) => {
     if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
 });
 
-//Give people points for their messages lol (exp)
+//Give people points for their messages and log messages (exp)
 bot.on("message", async message => {
     if (message.author.bot) return;
-    if (message.channel.type !== "text") return;
-    if (message.channel.id === chans.lyrics) return;
+    if (message.channel.type !== "text" && message.channel.type !== "news") return;
+
+    let m = new MessageLog(message.author.id, message.channel.id, message.id, message.createdTimestamp);
+    await connection.manager.save(m);
+
+    let disallowedChannels = [chans.memes]; // Specific channels
+    let disallowedCategories = [chans.staff, chans.staffventing, chans.submittedsuggestions, chans.commands, chans.incall]; // Category that contains listed channels
+
+    disallowedCategories = disallowedCategories.map(c => message.guild.channels.get(c).parentID);
+
+    message.disallowedChannels = disallowedChannels;
+    message.disallowedCategories = disallowedCategories;
+
     await givePoints(message, connection, Discord);
 });
 

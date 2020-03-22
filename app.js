@@ -26,6 +26,7 @@ const google = require("google");
 const cheerio = require("cheerio");
 const ypi = require("youtube-playlist-info");
 const snekfetch = require("snekfetch");
+const nodefetch = require("node-fetch");
 const hotload = require("hotload");
 const yauzl = require("yauzl-promise");
 const morse = require("morse-node").create("ITU");
@@ -34,6 +35,7 @@ const pm2 = require("pm2");
 const fuzzyMatch = require("fuzzaldrin").filter;
 const friendlyTime = require("friendly-time");
 const chrono = require("chrono-node");
+const Fuse = require("fuse.js");
 
 //SQLITE
 global.typeorm = require("typeorm");
@@ -87,6 +89,9 @@ const artistSubmissions = requireFunction("artistSubmissions");
 const messageToImage = requireFunction("messageToImage");
 const interviewSubmissions = requireFunction("interviewSubmissions");
 const overlayImage = requireFunction("overlayImage");
+const banHandler = requireFunction("banHandler");
+const handleReacts = requireFunction("handleReacts");
+const fmStarSystem = requireFunction("fmStarSystem");
 storage.entries = requireFunction("entries");
 Discord.Channel.prototype.awaitMessage = requireFunction("awaitMessage");
 String.prototype.startsWithP = requireFunction("startsWithP");
@@ -105,6 +110,7 @@ let profiles = loadJsonFile.sync("profiles.json");
 let tags = loadJsonFile.sync("tags.json");
 let boostEmojiJSON = loadJsonFile.sync("./json/boostemoji.json");
 let earned = loadJsonFile.sync("earnedbadges.json");
+let autoreactJSON = loadJsonFile.sync("./json/autoreact.json");
 
 //Class instantiation/initiation
 const bot = new Discord.Client({ autoReconnect: true, max_message_cache: 0, fetchAllMembers: true });

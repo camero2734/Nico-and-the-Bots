@@ -1,4 +1,5 @@
 module.exports = async function (guild) {
+    return;
     const fs = require("fs");
     const snekfetch = require("snekfetch");
     const { createCanvas, loadImage, Image, registerFont } = require("canvas");

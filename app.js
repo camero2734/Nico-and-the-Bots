@@ -336,24 +336,8 @@ bot.on("messageDelete", message => {
     if (message.content.startsWith(prefix + "delete")) return;
     if (message.content.startsWith(prefix + "tag")) return;
     if (message.channel.type === "dm") return;
-    let guild = message.guild;
-    if (!message) return;
-    let whodunit = "!";
-    message.guild.fetchAuditLogs({ type: "MESSAGE_DELETE" }).then((audit) => {
-        let arr = audit.entries.array();
-        let deletefound = false;
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i] && arr[i].target && arr[i].target.id === message.author.id && !deletefound) {
-                let deletedAudit = audit.entries.first();
-                if (deletedAudit.action === "MESSAGE_DELETE") {
-                    whodunit = " by " + deletedAudit.executor.username;
-                }
-                if ((message.content.indexOf("welcome") !== -1) && (message.content.indexOf("hell") !== -1)) return;
-                myFunctions.sendembed(message, guild.channels.get(chans.deletelog), "Message deleted" + whodunit, false, 16776960);
-                deletefound = true;
-            }
-        }
-    });
+
+    myFunctions.sendembed(message, message.guild.channels.get(chans.deletelog), `Message deleted ${message.author.id}`, false, 16776960);
 });
 
 //Death eater message
@@ -392,16 +376,20 @@ bot.on("guildMemberRemove", member => {
 
 //Message event
 bot.on("message", async msg => {
-    let d = Date.now() + msg.author.id;
-    if (msg.channel.id === chans.houseofgold) return hog(msg, Discord);
-    msg.commandName = msg.content.split(" ")[0].substring(1);
-    let rip = msg.content.toLowerCase();
-    if (msg.content === "fuck js") msg.delete(); //x2's bot does this it's annoying, good bye!
-    if (msg.author.bot) return; //This would end badly
+    msg.commandName = msg.content.split(" ")[0].substring(1).toLowerCase();
+    msg.Discord = Discord;
 
-    if (msg.author.id === "349728613521817600" && msg.channel.id === "470337593746259989" && msg.content.toLowerCase() === "ok") {
-        msg.channel.send("ok jenn");
+    // Auto react (uses rulesheet from !autoreact)
+    await handleReacts(msg, autoreactJSON);
+
+    if (/discord[. dot()]+?gg(?!\/twentyonepilots)/.test(msg.content.toLowerCase())) {
+        await msg.channel.embed(`${msg.author} Please do not send links to other servers`);
+        await msg.delete();
+        return await msg.guild.channels.get(chans.invitelog).send(new Discord.RichEmbed().setTitle(`${msg.member.displayName} (${msg.author.id})`).addField("Message sent", msg.content.substring(0, 1000)).addField("Channel", msg.channel.name));
     }
+
+    if (msg.channel.id === chans.houseofgold) return hog(msg, Discord);
+    if (msg.author.bot) return; //This would end badly
 
     if ((msg.channel.type === "dm" && msg.content.endsWith("??")) || msg.channel.id === chans.submittedsuggestions) askQuestion(msg, Discord);
     if (msg.channel.id === "554046505128951833") {
@@ -485,51 +473,11 @@ bot.on("message", async msg => {
         })();
     }
 
-    //collections creations like
-    if (msg.channel.id === chans.collections || msg.channel.id === chans.creations) {
-        if (msg.attachments.array().length !== 0) {
-            msg.react("%E2%9D%A4");
-        }
-    }
-
-    //Hall of Fame upvote/ downvote
-    if (msg.channel.id === chans.halloffame || msg.channel.id === chans.hiatusmemes || msg.channel.id === chans.theorylist) {
-        if (msg.attachments.array().length === 0 && (msg.channel.id === chans.halloffame || msg.channel.id === chans.hiatusmemes)) msg.delete();
-        else {
-            msg.react("%E2%AC%86").then(() => {
-                msg.react("%E2%AC%87");
-            });
-        }
-    }
-
     //Handle messages differently if it's a dm
     if (msg.channel.type === "dm") {
         if (msg.content.toLowerCase() === prefix + "endbreak") msg.runCommand("endbreak");
-        if (msg.content.toLowerCase() === "i agree leaks-theories" || msg.content.toLowerCase() === "i agree leaks theories" || msg.content.toLowerCase() === "i agree leakstheories") {
-            msg.channel.send({ embed: new Discord.RichEmbed({ description: "You now have access to #leaks-theories!\n\nAs a side note, if you want to be pinged in the server as soon as the band tweets, posts to IG, or uploads a YT video, use the command **!topfeed** in #commands to be notified!" }) }).then(() => {
-                let theguild = bot.guilds.get("269657133673349120");
-                let member = theguild.members.get(msg.author.id);
-                member.addRole("384543869917855744");
-            });
-            return;
-        }
         return;
     }
-
-    //Umm
-    if (rip.indexOf("poot hates the gays") !== -1) {
-        let gRole = "492903807282577408";
-        if (!msg.member.roles.get(gRole)) {
-            let user = msg.author;
-            user.createDM().then(DMCHannel => {
-                DMCHannel.send("Congratulations! You won the `Poot hates the Gays` badge!\n*Please note poot doesn't actually hate the gays*");
-                DMCHannel.sendFile("./badges/poothatesthegays.png");
-            });
-            msg.member.addRole(gRole);
-        }
-    }
-    //Some filters
-    if ((rip.indexOf("welcome") !== -1) && (rip.indexOf("to") !== -1) && (rip.indexOf("hell") !== -1)) msg.delete();
 
     let topfeedChannels = ["470428804695851008", "534882732820529174", "534882758770688031", "534882714566918174", "534882701963034624", "534882770619465731"];
     if (topfeedChannels.indexOf(msg.channel.id) !== -1 && msg.member.roles.get("330877657132564480") && !msg.author.bot) {
@@ -548,13 +496,10 @@ bot.on("message", async msg => {
             }
             if (!falseFlag && msg.channel.type !== "dm") {
                 msg.channel.send("Please refrain from using slurs. A copy of your message has been sent to the Admins.\n`Slur used: " + safeswears[i] + "`");
-                myFunctions.sendembed(msg, msg.guild.channels.get(chans.slurlog), "Slurs detected!", false, 16711680);
+                myFunctions.sendembed(msg, msg.guild.channels.get(chans.slurlog), `Slurs detected! (${msg.author.id})`, false, 16711680);
             }
         }
     });
-    for (let i = 0; i < swearWords.length; i++) { //Slurs are bad mmk
-
-    }
 
     //The glorious prefix check
     if (!msg.content.startsWith(prefix)) return;

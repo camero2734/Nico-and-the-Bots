@@ -26,7 +26,7 @@ module.exports = async function(reaction, user) {
                 resolve({ obj: strikes, type: "strike" });
             })();
         }
-    
+
         //SPOILERS
         if (msg.embeds && msg.embeds.length >= 1) {
             if (msg.embeds && msg.embeds[0] && msg.embeds[0].title && msg.embeds[0].title.startsWith("Spoiler from") && reaction.emoji.name === "👀") {
@@ -52,25 +52,6 @@ module.exports = async function(reaction, user) {
             }
         }
 
-        //UPVOTE DOWNVOTE
-        if (msg.channel.id === chans.halloffame || msg.channel.id === chans.theorylist) {
-            var reactions = msg.reactions.array();
-            var emoji1 = 0;
-            var emoji2 = 0;
-            for (let i = 0; i < reactions.length; i++) {
-                var reaction3 = reactions[i];
-                if (reaction3.emoji.name === "⬆") {
-                    emoji1 = reaction3.count - 1;
-                }
-                if (reaction3.emoji.name === "⬇") {
-                    emoji2 = reaction3.count - 1;
-                }
-            }
-            if (emoji2 - emoji1 > 4) resolve({ obj: [emoji1, emoji2], type: "updownvote" });
-            else resolve();
-            return;
-        }
-
         if (msg.channel.id === chans.houseofgold) {
             console.log("downvotey in houseofgoldy");
             (async function() {
@@ -80,7 +61,7 @@ module.exports = async function(reaction, user) {
                     console.log(emoji2, /EMOJI2/);
                     emoji2 = (await emoji2.fetchUsers()).array().length;
                     if (emoji2 >= 5) resolve({ obj: [emoji1, emoji2], type: "updownvote" });
-                } 
+                }
             })();
         }
 
@@ -123,12 +104,12 @@ module.exports = async function(reaction, user) {
                             reaction.remove(user);
                         }
                     }, 1000);
-    
+
                 });
-    
+
             });
-    
-    
+
+
             async function sendGold() {
                 let id = user.id;
                 let userEconomy = await connection.getRepository(Economy).findOne({ id: id });
@@ -165,11 +146,11 @@ module.exports = async function(reaction, user) {
                             embed = { embed: embed, file: new Discord.Attachment(r.body, "gold." + ending) };
                         }
                     }
-                    
+
                     resolve({ obj: embed, type: "gold" });
                 }
             }
-    
+
         }
     });
 };

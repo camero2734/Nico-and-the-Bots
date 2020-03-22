@@ -61,23 +61,18 @@ module.exports = {
             embed.setAuthor(total + " total scrobbles", "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png", `https://www.last.fm/user/${username}`);
             let fm_m = await msg.channel.send(embed);
 
-            // if (!selfFM) return;
-            return; // TODO: remove and make embed look better
-            await fm_m.react("664678209157333016"); // Up
-            await fm_m.react("664678208981172225"); // Down
-            await fm_m.react("664678208578256908"); // Question
+            if (!selfFM || msg.channel.id !== "470406597860917249") return;
 
-            let fm_json = {
-                userid: msg.author.id,
-                track: track.name || "N/A",
-                album: track.album || "N/A",
-                artist: track.artist || "N/A",
-                upvotes: 0,
-                downvotes: 0,
-                unknowns: 0
-            };
-            let fm_item = new Item(fm_m.id, JSON.stringify(fm_json), "FMVote", Date.now());
+            // Don't react if recently scrobbled same song
+            let TIME_LIMIT = 10; // Minutes
+            let recentlyScrobbled = await connection.getRepository(FM).find({ id: msg.author.id, track: track.name, album: track.album, artist: track.artist, time: typeorm.MoreThan(Date.now() - TIME_LIMIT * 60 * 1000) })
+            if (recentlyScrobbled && recentlyScrobbled.length > 0) return;
+
+            // React and save to database
+            await fm_m.react("⭐");
+            let fm_item = new FM(msg.author.id, fm_m.id, track.name, track.album, track.artist);
             await connection.manager.save(fm_item);
+
         } catch (e) {
             console.log(e, /FM_ERROR/);
             msg.channel.embed("Error in fetching the FM. Did you set your FM correctly?");

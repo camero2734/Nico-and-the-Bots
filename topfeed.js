@@ -100,9 +100,9 @@ bot.on("ready", async () => {
         await new Promise(next => setTimeout(next, 300));
     }
 
-    
+
     if (failedTests && Array.isArray(failedTests)) guild.channels.get(chans.bottest).send(`<@221465443297263618> **${failedTests.length} test${failedTests.length === 1 ? "" : "s"} failed**\n\`\`\`diff\n-> ${failedTests.join("\n-> ")}\n\`\`\``);
-    else if (failedTests && !isNaN(failedTests)) { 
+    else if (failedTests && !isNaN(failedTests)) {
         guild.channels.get(chans.bottest).send(new Discord.RichEmbed({ description: `Topfeed restarted. All ${failedTests} unit tests passed.` }).setColor("GREEN"));
     }
     console.log(chalk.green("USERS LOADED!"));
@@ -198,7 +198,7 @@ async function controller() {
             }
             if (user.hasSnapchat()) {
                 let posts = await user.getSnapchatStories();
-                
+
                 let links = [];
                 for (let post of posts) {
                     links.push({ type: "Story", link: post });
@@ -208,12 +208,12 @@ async function controller() {
             if (user.hasTwitter()) {
                 let posts = await user.getTwitterPosts(3);
                 let profile = await user.getTwitterProfile();
-                
+
                 let avatar_response = await got(profile.avatar);
                 let ava_img = avatar_response.body;
                 let ava_hash = await hasha(ava_img);
 
-                
+
                 let banner_response = profile.banner ? await got(profile.banner) : { body: "NOT_FOUND" };
                 let ban_img = banner_response.body;
                 let ban_hash = await hasha(ban_img);
@@ -227,7 +227,7 @@ async function controller() {
                         links.push({ type: "Post", link: posts.links[i], data: posts[i] });
                     }
                 }
-                
+
                 if (user.details.count % 4 === 0) {
                     console.log("checking likes");
                     let likes = await user.getTwitterLikes(3);
@@ -235,7 +235,7 @@ async function controller() {
                         links.push({ type: "Like", link: likes.links[i], data: likes.data[i] });
                     }
                 }
-                
+
                 await checkLinks(links, "Twitter", user);
             }
         }
@@ -265,7 +265,7 @@ async function controller() {
         await wrapYoutube();
         console.log(chalk.blue("FINISHED YOUTUBE"));
     }
-    
+
     if (state !== 1) setTimeout(() => {
         controller().catch(err => {
             handleErr(err);
@@ -362,7 +362,7 @@ async function setUsers() {
             color: "#ff0000",
             time: 15 * 1000
         }),
-        new SocialMedia("joshuadun", {
+        new SocialMedia({ twitterName: "joshuadun", instaName: "joshuadun" }, {
             name: "Josh Dun",
             channel: "534882732820529174",
             role: "534890899323224064",
@@ -487,7 +487,7 @@ async function wrapGithub() {
         return new Promise(async resolve => {
             let r = await snekfetch.get("https://github.com/DJScias/Discord-Datamining/commits/master");
             let $ = cheerio.load(r.body.toString());
-    
+
             let links = [];
             $(".muted-link.mt-2.mr-2.d-inline-block.v-align-middle").each((i, e) => {
                 let link = "https://github.com" + e.attribs.href;
@@ -505,8 +505,7 @@ async function wrapGithub() {
 
 async function wrapYoutube() {
     return new Promise(async resolve => {
-        let guild = bot.guilds.get("269657133673349120");  
-
+        let guild = bot.guilds.get("269657133673349120");
         //TOP
         let top_links = [];
         let top = await getChannelVideos("UCBQZwaNPFfJ1gZ1fLZpAEGw");
@@ -517,7 +516,6 @@ async function wrapYoutube() {
         }
         let top_user = Users.find(s => {return s.twitterName === "twentyonepilots";}) || Users[0];
         await checkLinks(top_links, "Youtube", top_user);
-
         //SLUSHIE GUYS
         let slush_links = [];
         let slushie = await getChannelVideos("UCITp_ri9o-MBpLLaYZalTTQ");
@@ -528,7 +526,7 @@ async function wrapYoutube() {
         }
         let slushie_user = Users.find(s => {return s.twitterName === "tylerrjoseph";}) || Users[1];
         await checkLinks(slush_links, "Youtube", slushie_user);
-        
+
         resolve(true);
     });
 }
@@ -537,7 +535,7 @@ async function wrapDmaorg() {
     return new Promise(async resolve => {
         let guild = bot.guilds.get("269657133673349120");
         let changedSites = [];
-        
+
         let sites = [
             { name: "dmaorg", url: "http://dmaorg.info/found/15398642_14/clancy.html", tag: true },
             { name: "dmaroot", url: "http://dmaorg.info", tag: true },
@@ -588,14 +586,14 @@ async function wrapTwitter(post, user) {
         if (post.data.entities && post.data.entities.media && post.data.entities.media[0]) embed.setImage(post.data.entities.media[0].media_url);
         return [embed];
     }
-    
+
 }
 
 async function wrapSnapchat(post, user) {
     post = post.link;
     let embed = new Discord.RichEmbed().setColor(user.details.color);
     embed.setTitle("Snapchat from " + user.details.name);
-    
+
     //GET BITMOJI
     let s = await user.getSnapcode();
     let $ = cheerio.load(s.svg);
@@ -716,7 +714,7 @@ async function runTests() {
         let topUser = Users.find(s => s.twitterName === "twentyonepilots");
 
         let randomCount = Math.floor(Math.random() * 8 + 3);
-    
+
         let testUser = new SocialMedia({ snapName: "test" }, {
             name: "Test User",
             channel: "channelid",
@@ -724,7 +722,7 @@ async function runTests() {
             color: "#C0FFEE",
             time: 100
         });
-    
+
         //Assert will return true or false, store in an array
         console.log(chalk.cyan("Test: SocialMedia"));
         assert.strictEquals(topUser.instaName, "twentyonepilots", "TOP User's instaName should be twentyonepilots");
@@ -733,22 +731,22 @@ async function runTests() {
         assert.objectLacksProperty(testUser, "twitterName", "Test User should have no twitterName");
         assert.strictEquals(testUser.details.name, "Test User", "Test User's name should be Test User");
         assert.strictEquals(testUser.details.time, 100, "Test User time should be 100");
-    
+
         console.log(chalk.cyan("Test: Twitter"));
         assert.strictEquals(testUser.addTwitter("DiscordClique"), testUser.twitterName, "Added twitterName should be set");
-        
+
         console.log(chalk.cyan("\t->Posts<-"));
         let posts = await testUser.getTwitterPosts(randomCount);
         assert.array(posts.links, "posts.links should be an array");
         assert.strictEquals(posts.length, randomCount, `posts.length should be ${randomCount}`);
         assert.strictEquals(posts.links.length, randomCount, `posts.links.length should be ${randomCount}`);
-        
+
         let post = posts[0];
         assert.objectHasProperty(post, "full_text", "post should have property full_text");
         assert.objectHasProperty(post, "user", "post should have property user");
         assert.string(post.full_text, "post.full_text should be a string");
         assert.object(post.user, "post.user should be a string");
-    
+
         console.log(chalk.cyan("\t->Profile<-"));
         let profile = await testUser.getTwitterProfile();
         assert.strictEquals(profile.id, "882435797370241024", "DiscordClique ID should be 882435797370241024");
@@ -763,7 +761,7 @@ async function runTests() {
         assert.url(profile.background, "profile.background should be a URL");
         assert.url(profile.banner, "profile.banner should be a URL");
         assert.url(profile.avatar, "profile.avatar should be a URL");
-        
+
         console.log(chalk.cyan("\t->Likes<-"));
         let likes = await topUser.getTwitterLikes(randomCount);
         assert.array(likes.data, "likes.data should be an array");
@@ -774,15 +772,15 @@ async function runTests() {
         assert.objectHasProperty(like, "full_text", "likes should have property full_text");
         assert.string(like.full_text, "likes.full_text should be a string");
         assert.object(like.user, "likes.user should be an object");
-    
-    
+
+
         console.log(chalk.cyan("Test: Instagram")); //instagram changes stuff so often :(
-    
+
         assert.equals(testUser.instagram, undefined, "Instagram should be undefined because not loaded");
         await testUser.addInstagram("DiscordClique"); //adds instagram and loads
         assert.object(testUser.instagram, "Instagram should now be loaded and an object");
         assert.string(testUser.instagram.userid, "Instagram userid should be a string");
-    
+
         console.log(chalk.cyan("\t->Posts<-"));
         let IGPosts = await topUser.getInstagramPosts(randomCount);
         assert.object(IGPosts.user, "IGPosts.user should be an object");
@@ -792,7 +790,7 @@ async function runTests() {
 
         let ipost = IGPosts.posts[0];
         assert.objectHasProperties(ipost, ["id", "caption", "owner", "edge_media_to_caption", "likes", "comments", "shortcode"], "ipost should have properties: id, caption, owner, edge_media_to_caption, likes, comments, shortcode");
-    
+
         console.log(chalk.cyan("\t\t->post.getPostMedia()<-"));
         let media = await ipost.getPostMedia();
         assert.array(media, "media should be an array");
@@ -814,7 +812,7 @@ async function runTests() {
         assert.array(stories.links, "stories.links should be an array");
         assert.array(stories.stories, "stories.stories should be an array");
         assert.equals(stories.links.length, stories.stories.length, "links and stories should have the same length");
-        
+
         console.log(chalk.cyan("\t\t->stories.allData<-"));
         let data = stories.allData;
         assert.objectHasProperties(data, ["id", "user", "items"], "data has properties: id, user, items");
@@ -841,7 +839,7 @@ async function runTests() {
 
         console.log(chalk.cyan("Test: Snapchat")); //The least important one
         let snapUser = new SocialMedia();
-        snapUser.addSnapchat("djkhaled305"); //More likely to have snaps. Don't particularly like the guy but
+        snapUser.addSnapchat("ethandolan"); //More likely to have snaps. Don't particularly like the guy but
         let sc_stories = await snapUser.getSnapchatStories();
         assert.array(sc_stories, "sc_stories should be an array");
         if (sc_stories.length > 0) {
@@ -899,9 +897,9 @@ async function checkforsite(url, checkname, tag) {
                     res();
                 })
             })
-            
+
         }
-    
+
         function textIsValid(text, checkname) {
             console.log(checkname, /CHECKING TEXT/);
 
@@ -925,8 +923,8 @@ async function checkforsite(url, checkname, tag) {
             console.log(text, /VALID/)
             return text.length > 30;
         }
-    
-    
+
+
         async function ignoreError(r, checkname, tag) {
             //Same check as for non 403 pages
             if (!(await fs.existsSync('./dmasite/' + checkname + '.txt'))) return await changed(r, checkname, false);
@@ -934,14 +932,14 @@ async function checkforsite(url, checkname, tag) {
             if (r.text !== r.stored) await changed(r, checkname, tag);
             else await same();
         }
-    
+
         async function changed(r, checkname, tag) {
             //What a glorious day
             console.log(new RegExp(checkname.toUpperCase() + " UPDATED"));
             await new Promise(async resolveChanged => {
                 //Safely try to tag myself
                 //try {await guild.channels.get("470406597860917249").send("<@221465443297263618> dma site updated");} catch(e) {console.log(e)}
-                
+
                 //New file name
                 let fileName = './dmasite/html/' + checkname + Date.now() + '.html'
                 //Write the txt file (the one that's compared to)
@@ -988,7 +986,7 @@ async function checkforsite(url, checkname, tag) {
                 changedSites.push([embed, tag]);
                 resolveChanged();
             })
-    
+
         }
 
 */

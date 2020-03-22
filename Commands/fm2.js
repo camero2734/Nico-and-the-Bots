@@ -27,7 +27,7 @@ module.exports = {
             let info = (await snekfetch.get(url)).body.recenttracks;
             let total = info["@attr"].total;
             let track = { album: info.track[0].album["#text"], artist: info.track[0].artist["#text"], name: info.track[0].name, date: info.track[0].date ? "Played: " + info.track[0].date["#text"] : "Now playing" };
-    
+
             let images = info.track.map(t => t.image.pop()["#text"]).slice(0, 10);
 
 
@@ -44,7 +44,7 @@ module.exports = {
 
             ctx.font = "50px futura";
             let img = await loadImage("./images/lastfm.png");
-            
+
             let nameLength = ctx.measureText(username).width;
             let start = (1200 - 85 - 15 - nameLength) / 2;
 
@@ -61,8 +61,6 @@ module.exports = {
                 let albumImg = await loadImage(images[i]);
                 let dimension = 300 * Math.pow(0.8, i);
 
-                
-
                 if (i == 0) {
                     ctx.drawImage(albumImg, startX, 50 + (450 - dimension) / 2, dimension, dimension);
                 } else {
@@ -76,7 +74,7 @@ module.exports = {
                     console.log(i, sx, sy, swidth, sheight, startX, y, _width, _height);
                     ctx.drawImage(albumImg, sx, sy, swidth, sheight, startX, y, _width, _height);
                 }
-                
+
                 startX += (i == 0 ? dimension : percentShow * dimension);
                 ctx.globalAlpha *= 0.9;
             }
@@ -105,4 +103,3 @@ module.exports = {
         category: "N/A"
     }
 };
-

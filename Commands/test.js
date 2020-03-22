@@ -1,17 +1,148 @@
 module.exports = {
     execute: async function (msg) {
-        if (msg.author.id !== poot) return;
+        let result = await connection.getRepository(FM)
+            .createQueryBuilder("fm")
+            .select([`fm.id AS "userid"`, `SUM(fm.stars) AS "Stars"`])
+            .groupBy([`fm.id`])
+            .orderBy("Stars", "DESC")
+            .getRawMany();
 
-        let shopChan = msg.guild.channels.get(chans.shop);
-        let msgs = (await shopChan.fetchMessages({ limit: 100 })).array();
+        console.log(result, /RESULT/)
+    }
 
-        for (let m of msgs) {
-            await m.delete();
-            await new Promise(next => setTimeout(next, 1000));
+    // let shopChan = msg.guild.channels.get(chans.shop);
+    // let msgs = (await shopChan.fetchMessages({ limit: 100 })).array();
+    //
+    // for (let m of msgs) {
+    //     await m.delete();
+    //     await new Promise(next => setTimeout(next, 1000));
+    // }
+
+    /*
+    if (msg.author.id !== poot) return;
+
+    let count = 77;
+    let maxRows = 11;
+    let d = 10;
+
+    const { createCanvas, loadImage, Image, registerFont } = Canvas;
+    const average = require("image-average-color");
+
+    let json = JSON.parse(await fs.promises.readFile("./json/songRank.json"));
+    console.log(json.originalSongs.length)
+    let songList = json.songs[0];
+
+    let rows = Math.min(count, maxRows);
+    let cols = Math.ceil(count / maxRows);
+
+    let canvas = createCanvas(500 * cols, 100 * rows);
+    let ctx = canvas.getContext("2d");
+
+
+    let imgs = {};
+
+    loadFonts();
+
+    ctx.font = "30px Futura";
+    ctx.fillStyle = "#000000"
+    ctx.fillRect(0, 0, 500 * cols, 100 * count);
+
+    for (let i = 0; i < count; i++) {
+        let x = 500 * Math.floor(i / maxRows);
+        let y = 100 * (i % maxRows);
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        let url = songList[i].image;
+        if (!imgs[url]) {
+            let r = await snekfetch.get(url);
+            let avg = await new Promise(c => average(r.body, (err, color) => c(color)));
+            imgs[url] = {img: r.body, avg};
         }
+
+        let [r, g, b, a] = imgs[url].avg;
+        // Border rect
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = `#${songList[i].color}`;//`rgba(${r}, ${g}, ${b}, ${a / 255})`;
+        ctx.fillRect(0, 0, 500, 100);
+
+        // Inner rect
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0.5 * d, 0.5 * d, 500 - d, 100 - d);
+
+        ctx.fillStyle = `#${songList[i].color}`;
+        ctx.fillRect(0.5 * d, 0.5 * d, 500 - d, 100 - d);
+        ctx.globalAlpha = 1;
+
+        let albumArt = new Image();
+        albumArt.src = imgs[url].img;
+
+        ctx.drawImage(albumArt, d + 50, d, 100 - 2 * d, 100 - 2 * d);
+
+        // Save context; prevent text from being jaggedy
+        ctx.miterLimit = 2;
+        ctx.lineJoin = 'circle';
+
+        ctx.fillStrokeText = (text, x, y, fill=`#000000`, stroke=`#${songList[i].color}`) => {
+            // Outline
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = 1;
+            // ctx.strokeText(text, x, y);
+
+            // Actual text
+            ctx.lineWidth = 1;
+            ctx.fillStyle = fill;
+            ctx.fillText(text, x, y);
+        }
+
+        // Song rank #
+        ctx.fillStrokeText(`${i + 1}. `, d, 65);
+
+        // Song title
+        ctx.fillStrokeText(songList[i].name, 180 - d, 40);
+
+        // Album title
+        ctx.font = "25px Futura";
+        ctx.fillStrokeText(songList[i].album, 180 - d, 80);
+
+        // Find song's index
+        let songIndex = json.originalSongs.findIndex(s => s.name === songList[i].name && s.album === songList[i].album);
+
+        // Find song's wins
+        let wins = 0;
+        for (let matchup of json.history) {
+            if (matchup.winner === songIndex) wins++;
+        }
+
+        // Find song's losses
+        let losses = 0;
+        for (let matchup of json.history) {
+            if (matchup.loser === songIndex) losses++;
+        }
+
+        // Draw wins-losses
+        ctx.textAlign = "end";
+        ctx.fillStrokeText(`${wins}-${losses}`, 500 - d, 80);
+        ctx.restore();
     }
 
 
+
+    await msg.channel.send(new Discord.Attachment(canvas.toBuffer(), "hanasmells.png"))
+
+    function loadFonts() {
+        //LOAD FONTS
+        registerFont(("./assets/fonts/h.ttf"), { family: "futura" });
+        registerFont(("./assets/fonts/f.ttf"), { family: "futura" });
+        registerFont(("./assets/fonts/NotoEmoji-Regular.ttf"), { family: "futura" });
+        registerFont(("./assets/fonts/a.ttf"), { family: "futura" });
+        registerFont(("./assets/fonts/j.ttf"), { family: "futura" });
+        registerFont(("./assets/fonts/c.ttf"), { family: "futura" });
+        registerFont(("./assets/fonts/br.ttf"), { family: "futura" });
+    }
+
+    */
 
     // let allMessages = await fetchAllMessages(500);
 

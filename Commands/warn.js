@@ -23,7 +23,7 @@ module.exports = {
                     msg.content = msg.content.replace(regex, "");
                 }
             }
-            
+
         }
 
         let explanation = msg.content.split(" ").slice(2).join(" ");
@@ -67,7 +67,7 @@ module.exports = {
             }
             await askForRule();
         }
-        
+
         if (!severity || (severity < 1 || severity > 10)) {
             let askForSev = async (_in="") => {
                 let m = await msg.channel.send(new Discord.RichEmbed({...baseEmbed, description: `${_in}What severity was this action? Please rate it between **1** and **10**, with 1 being a very small warning, and 10 being a very serious warning.`}));
@@ -89,7 +89,7 @@ module.exports = {
         let con_m = await msg.channel.send(confirmationEmbed);
 
         let confirmation_msg = await msg.channel.awaitMessage(msg.member, null, 120000);
-        
+
         await new Promise(next => setTimeout(next, 300));
         await confirmation_msg.delete();
         await con_m.delete();
@@ -110,11 +110,33 @@ module.exports = {
             let warnData = { edited: false, given: msg.author.id, channel: msg.channel.id, rule: rules.find(_r => _r.startsWith(rule)), severity: parseInt(severity), content: explanation };
             let warn = new Item(member.id, JSON.stringify(warnData), "Warning", Date.now());
             await connection.manager.save(warn);
+            autoJailCheck(warn, member);
             staffUsedCommand(msg, "Warn", "#a4a516", { channel: msg.channel.toString(), User_warned: member.displayName, warning: explanation, severity_given: severity, rule: rule, time: (new Date()).toString() });
         } else {
             await msg.channel.embed("Warning cancelled. Use !warn to start again.")
         }
-        
+
+        async function autoJailCheck() {
+            const allWarns = await connection.getRepository(Item).find({id: member.id, type: "Warning", time: typeorm.MoreThan((new Date("16 March 2020 22:00")).getTime())});
+            if (allWarns.length >= 3) {
+                autoJail();
+            } else await msg.channel.embed(`${Math.max(0, 3 - allWarns.length)} more warning${allWarns.length === 1 ? "" : "s"} until this user is auto-jailed.`);
+        }
+
+        async function autoJail() {
+            let autoMsg = new Discord.Message(msg.channel, {
+                content: `!jail ${member}`,
+                type: `DEFAULT`,
+                author: msg.author,
+                embeds: [],
+                attachments: [],
+                mentions: [member.user],
+                timestamp: Date.now()
+            }, bot);
+            autoMsg.autojail = true;
+            autoMsg.runCommand("jail");
+        }
+
     },
     info: {
         aliases: false,

@@ -2,25 +2,31 @@ module.exports = {
     execute: async function (msg) {
         if (!msg.member.roles.get("330877657132564480")) return msg.channel.embed("You must be a staff member to use this command");
 
+        const ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
+
         let allDEs = msg.guild.roles.get("283272728084086784").members.array().filter(m => {
             return (!m.roles.get("330877657132564480"));
         });
 
 
+        // AVERAGE DAILY MESSAGES
+        let messagelog = await connection.getRepository(MessageLog)
+            .createQueryBuilder("wr")
+            .select([`wr.user_id AS "id"`, `COUNT(wr.message_id) / 7 AS "avg"`]) // Avg daily messages
+            .where(`wr.time >= ${Date.now() - ONE_WEEK}`) // Over the last week
+            .groupBy([`wr.user_id`])
+            .orderBy("avg", "DESC")
+            .getRawMany();
+
         let failingDEs = [];
 
         for (let de of allDEs) {
             try {
-                // AVERAGE DAILY MESSAGES
-                let userWeekRecap = await connection.getRepository(WeekRecap).findOne({ id: de.user.id });
-                let days = [];
-                if (userWeekRecap) days = JSON.parse(userWeekRecap.days);
-                let msgsTotal = 0;
-                for (let day of days) msgsTotal += day;
-                let msgsDay = Math.ceil(msgsTotal / 7);
+                let logUser = messagelog.find(wr => wr.id === de.user.id);
+                if (!logUser) logUser = { id: de.user.id, avg: 0 };
 
-                if (msgsDay < 50) {
-                    de.msgsDay = msgsDay;
+                if (logUser.avg < 50) {
+                    de.msgsDay = logUser.avg;
                     failingDEs.push(de);
                 }
             } catch(e) {
@@ -45,7 +51,7 @@ module.exports = {
         } else await msg.channel.send(embed);
     },
     info: {
-        aliases: false,
+        aliases: ["monitorde", "inactivede"],
         example: "!monitorde",
         minarg: 0,
         description: "Displays a list of current DE members that fall below the requirements",

@@ -1,6 +1,6 @@
 module.exports = {
     execute: async function (msg) {
-        return msg.channel.embed("Applications are currently closed");
+        // if (msg.author.id !== poot) return msg.channel.embed("Applications are currently closed");
         if (typeof openApps[msg.author.id] === "undefined") openApps[msg.author.id] = {};
 
         //if (!msg.member.roles.get("498702380007686146")) return msg.channel.embed("This command is currently only available to former death eaters. Applications for everyone will open soon!");
@@ -221,8 +221,16 @@ module.exports = {
                 await sendCheckmark(msgsDay >= MSGREQ, msgsDay, MSGREQ, "You have **%val** average daily messages", "having at least **%check** average daily messages", "Averages %val messages per day", "Averages %val messages per day");
                 if (!qs[qs.length - 1].passed) await sendCheckmark(joinDate <= JOINREQ, joinDate.toDateString(), JOINREQ.toDateString(), "You joined on **%val**", "joining before **%check**", "Joined %val", "Joined %val");
 
-                await sendQuestion("Why do you want to be a Death Eater, and why are you qualified to be one? **Please be brief, but comprehensive in your response.**");
+                // Free Response Questions
+                await sendQuestion("Why do you want to be a Death Eater, and why are you qualified to be one? **Please be brief, but comprehensive in your response; *your response should not just be that you want to talk in vulture valley!***");
+                await sendQuestion("Besides being a member of the server, what are some other ways you are involved in the Twenty One Pilots community as a whole?");
+
+                await sendQuestion("How well do you get along with other members of the server? Please explain your answer.")
                 await sendQuestion("Is there any questionable behavior that the staff might find upon reviewing your messages/warnings/server history? If so, please explain and provide context to this. **Be as thorough as possible.**");
+
+                await sendQuestion("What do you like/dislike about the Discord Clique community?");
+                await sendQuestion("Do you see any specific, serious issues with any current DEs (or the state of the Death Eater role as a whole) that you think needs addressing?")
+
                 await sendQuestion("If you have any other comments regarding your application or your qualification, please leave them here.");
 
 

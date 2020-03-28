@@ -1,13 +1,12 @@
 module.exports = {
-    execute: async function (msg) {
-        let result = await connection.getRepository(FM)
-            .createQueryBuilder("fm")
-            .select([`fm.id AS "userid"`, `SUM(fm.stars) AS "Stars"`])
-            .groupBy([`fm.id`])
-            .orderBy("Stars", "DESC")
-            .getRawMany();
+    execute: async function (msg, checkRoles) {
+        if (msg.author.id !== poot) return;
 
-        console.log(result, /RESULT/)
+        function getRole(name) {
+            return msg.guild.roles.find(r => r.name.startsWith(name));
+        }
+
+        msg.channel.embed(getRole("Rebel Red") + " " + getRole("Admins"))
     }
 
     // let shopChan = msg.guild.channels.get(chans.shop);

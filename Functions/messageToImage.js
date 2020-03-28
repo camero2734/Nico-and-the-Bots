@@ -51,7 +51,7 @@ module.exports = async function(msg, goalW, goalH) {
             var ctx = canvas.getContext('2d');
 
             registerFont(('./fonts/whitney.otf'), { family: 'whitney' });
-            registerFont(('./assets/fonts/NotoEmoji-Regular.ttf'), { family: 'whitney' }); 
+            registerFont(('./assets/fonts/NotoEmoji-Regular.ttf'), { family: 'whitney' });
 
             //PREMEASURE TEXT
             ctx.font = (20 * scale) + 'px whitney'
@@ -80,7 +80,7 @@ module.exports = async function(msg, goalW, goalH) {
                     lines.push(line2.join(" "));
                 }
             }
-            
+
             ctx.font = (19 * scale) + 'px whitney';
             let textWidth = ctx.measureText(lines[0]).width;
             for (let line of lines) if (ctx.measureText(line).width > textWidth) textWidth = ctx.measureText(line).width;
@@ -88,7 +88,7 @@ module.exports = async function(msg, goalW, goalH) {
             let maxWidth = Math.max(82 * scale + textWidth, 82 * scale + nameWidth + 15 + timeWidth) + 40;
             let maxHeight = canvas.height + 25 * scale * lines.length;
 
-           
+
 
             let imgObject = false;
             let originalImg;
@@ -132,7 +132,7 @@ module.exports = async function(msg, goalW, goalH) {
             ctx.drawImage(mask, 7 * scale, 10 * scale, 48 * scale, 48 * scale);
 
             ctx.font = (20 * scale) + 'px whitney'
-            ctx.fillStyle = msg.member.displayHexColor;
+            ctx.fillStyle = msg.hex ? msg.hex : msg.member.displayHexColor;
             ctx.fillText(msg.member.displayName, 82 * scale, 26 * scale);
 
             let prevWidth = ctx.measureText(msg.member.displayName).width;
@@ -148,7 +148,7 @@ module.exports = async function(msg, goalW, goalH) {
                 ctx.fillText(line, 82 * scale, 53 * scale + 25 * scale * i);
                 lastY = line === "" ? 53 * scale + 25 * scale * i : 53 * scale + 25 * scale * (i+1);
             }
-            
+
             if (img && imgObject) {
                 console.log("yes");
                 let x = 82 * scale;

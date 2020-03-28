@@ -61,7 +61,7 @@ module.exports = {
             embed.setAuthor(total + " total scrobbles", "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png", `https://www.last.fm/user/${username}`);
             let fm_m = await msg.channel.send(embed);
 
-            if (!selfFM || msg.channel.id !== "470406597860917249") return;
+            if (!selfFM) return;
 
             // Don't react if recently scrobbled same song
             let TIME_LIMIT = 10; // Minutes

@@ -9,7 +9,7 @@ module.exports = {
             var role = roles[i]
             var temp = role.name.replace(/ø/g, "o")
             var rolename = temp.replace(/Ø/g, "O")
-            if (rolename.toLowerCase() === string.toLowerCase()) {
+            if (rolename.toLowerCase().startsWith(string.toLowerCase())) {
                 var time = role.createdTimestamp
                 var timenow = Date.now()
                 var diff = (timenow - time) / 1000

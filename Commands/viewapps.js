@@ -68,8 +68,8 @@ module.exports = {
         async function getCells(auth) {
             const sheets = google.sheets({ version: "v4", auth });
             sheets.spreadsheets.values.get({
-                spreadsheetId: "1GgaKTeTn7vH0CDSwjxfk0JGvus4jRfK7B1QEzbJ1Uuw",
-                range: "A:S"
+                spreadsheetId: "1nK6xSqFBmcF1V97QYaWEmR1Wl3_Wdnj_FaXTLWT2ry4",
+                range: "A:K"
             }, async (err, res) => {
                 if (err) {
                     msg.channel.embed("Error");
@@ -112,7 +112,7 @@ module.exports = {
                 try {
                     embed.addField(titles[i] || "What?", (row[i] && row[i].substring(0, 1023)) || "No input");
                 } catch(e) {}
-                
+
             }
             msg.channel.send(embed);
         }

@@ -53,7 +53,8 @@ module.exports = async function(msg, connection, Discord) {
             for (let i = 0; i < userMessages.length; i++) {
                 if (multipliers[userMessages[i].channel_id] === 0) continue;
                 sum += spamValue(i + 1) * multipliers[userMessages[i].channel_id];
-                description += `${i + 1}. ${Math.round(spamValue(i + 1) * 100) / 100} * ${Math.round(100 * multipliers[userMessages[i].channel_id]) / 100} (#${msg.guild.channels.get(userMessages[i].channel_id).name})\n`;
+                let channelName = msg.guild.channels.get(userMessages[i].channel_id) ? msg.guild.channels.get(userMessages[i].channel_id).name : "None";
+                description += `${i + 1}. ${Math.round(spamValue(i + 1) * 100) / 100} * ${Math.round(100 * multipliers[userMessages[i].channel_id]) / 100} (#${channelName})\n`;
             }
 
             embed.setDescription(description.substring(0, 1800) + "\nSUM: " + sum);

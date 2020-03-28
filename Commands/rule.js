@@ -51,7 +51,7 @@ module.exports = {
             	"Messaging"
     		),
             new Rule(
-                "Never post personal information. This includes information such as full name, birthday, address, etc.",
+                "Never post personal information. This includes information such as full name, address, etc.",
                 "You should always be careful posting any information that someone can use to identify you. Remember, this is a public server, so tens of thousands of people have access to anything you post here.",
             	"Messaging"
     		),

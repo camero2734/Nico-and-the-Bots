@@ -92,6 +92,7 @@ const overlayImage = requireFunction("overlayImage");
 const banHandler = requireFunction("banHandler");
 const handleReacts = requireFunction("handleReacts");
 const fmStarSystem = requireFunction("fmStarSystem");
+const getColorRoles = requireFunction("getColorRoles");
 storage.entries = requireFunction("entries");
 Discord.Channel.prototype.awaitMessage = requireFunction("awaitMessage");
 String.prototype.startsWithP = requireFunction("startsWithP");
@@ -189,9 +190,6 @@ bot.on("ready", async () => {
     setInterval(async () => {
         let currentTime = Date.now();
         let goldLength = 86400000 * 7; // 1 WEEK
-
-        // let users = guild.roles.get("386969744709910530").members.array();
-        // console.log(users.length + " users");
 
         let goldTimes = await connection.getRepository(Counter).find({ title: "GoldCount", lastUpdated: typeorm.Between(1, currentTime - goldLength) });
         for (let counter of goldTimes) {

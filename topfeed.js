@@ -261,8 +261,8 @@ async function controller() {
     }
 
     if (checkNum % 20 === 0) {
-        console.log(chalk.blue("CHECKING YOUTUBE"));
-        await wrapYoutube();
+        console.log(chalk.blue("(NOT) CHECKING YOUTUBE"));
+        // await wrapYoutube();
         console.log(chalk.blue("FINISHED YOUTUBE"));
     }
 

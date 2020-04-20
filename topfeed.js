@@ -541,14 +541,22 @@ async function wrapDmaorg() {
             { name: "dmaorg", url: "http://dmaorg.info/found/15398642_14/clancy.html", tag: true },
             { name: "dmaroot", url: "http://dmaorg.info", tag: true },
             { name: "nicoandtheniners", url: "http://nicoandtheniners.com/", tag: false },
-            { name: "nicoJSON", url: "http://nicoandtheniners.com/release/pull", tag: false },
+            { name: "nicoJSON", url: `http://nicoandtheniners.com/release/pull-2020-${latest_cache}`, tag: false },
             { name: "dmaorgIndex", url: "http://plu.evx.mybluehost.me/", tag: false }
         ];
 
         for (let site of sites) {
             guild.chans = chans;
-            let change = await checkforsite(site.url, site.name, site.tag, guild);
-            if (change) {
+            console.log(chalk.cyan(`Checking ${site.url}`));
+            let change = await checkforsite(site.url, site.name, site.tag, guild, site.name === "nicoandtheniners" ? latest_cache : null);
+
+            /* Set latest cache value for next JSON check */
+            if (change && change.latest_cache && !isNaN(change.latest_cache)) {
+                latest_cache = change.latest_cache;
+            }
+            if (change && change.type) {
+
+
                 await guild.channels.get(chans.bottest).send("<@221465443297263618> sending change in " + site.name + " at " + Date.now());
                 let c = [];
                 if (site.tag) {

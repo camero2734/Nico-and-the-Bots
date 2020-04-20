@@ -1,4 +1,4 @@
-module.exports = async function(url, name, tag, guild) {
+module.exports = async function(url, name, tag, guild, latest_cache) {
     const snekfetch = require("snekfetch");
     const fs = require("fs");
     const cheerio = require("cheerio");
@@ -38,6 +38,15 @@ module.exports = async function(url, name, tag, guild) {
                 return resolve(null);
             }
             //Changed!
+            if (name === "nicoandtheniners") {
+                /* Deal with cache thing they added */
+                let cacheMatch = text.match(/var cache = (\d{10});/);
+                if (cacheMatch && cacheMatch.length > 1 && cacheMatch[1] !== latest_cache) {
+                    latest_cache = cacheMatch[1];
+                }
+                text = text.replace(/var cache = (\d{10});/g, "");
+                if (text === stored) return resolve({latest_cache});
+            }
             if (name === "dmaorg") {
                 let newMoonCount = (r.text.match(/MOON/gi)) ? (r.text.match(/MOON/gi)).length : 0;
                 let oldMoonCount = (stored.match(/MOON/gi)) ? (stored.match(/MOON/gi)).length : 0;
@@ -71,7 +80,7 @@ module.exports = async function(url, name, tag, guild) {
                 try {
                     let a_url = await archive(r.originalURL, { attempts: 10 });
                 } catch(err) {/*So sad!*/}
-                return resolve({ type: "MINOR", data: text });
+                return resolve({ type: "MINOR", data: text, latest_cache });
             }
         } catch (e) {
             let _site = (e && e.request && e.request.connection && e.request.connection._host) ? e.request.connection._host : "dmaorg";

@@ -24,6 +24,7 @@ const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 const Assert = require("./Functions/assert.js");
 let assert = new Assert();
+let latest_cache = Math.floor(Date.now() / 1000);
 
 let chans = JSON.parse(fs.readFileSync("channels.json"));
 let connection;

@@ -1,12 +1,7 @@
 module.exports = {
     execute: async function (msg, checkRoles) {
         if (msg.author.id !== poot) return;
-
-        function getRole(name) {
-            return msg.guild.roles.find(r => r.name.startsWith(name));
-        }
-
-        msg.channel.embed(getRole("Rebel Red") + " " + getRole("Admins"))
+        msg.channel.send(msg.guild.iconURL)
     }
 
     // let shopChan = msg.guild.channels.get(chans.shop);

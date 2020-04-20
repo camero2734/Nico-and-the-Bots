@@ -40,6 +40,7 @@ module.exports = {
             let albumPlay = {};
             try {
                 trackPlay = (await snekfetch.get(trackRequest)).body;
+                if (msg.author.id === poot) console.log(trackPlay, /TRACKPLAY/, trackRequest);
                 artistPlay = (await snekfetch.get(artistRequest)).body;
                 albumPlay = (await snekfetch.get(albumRequest)).body;
             } catch (e) {console.log(e, /ERROR/)}

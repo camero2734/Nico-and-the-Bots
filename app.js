@@ -380,7 +380,7 @@ bot.on("message", async msg => {
     // Auto react (uses rulesheet from !autoreact)
     await handleReacts(msg, autoreactJSON);
 
-    if (/discord[. dot()]+?gg(?!\/twentyonepilots)/.test(msg.content.toLowerCase())) {
+    if (/discord[. dot()]+?gg(?!\/twentyonepilots)/.test(msg.content.toLowerCase()) && !msg.member.roles.get("330877657132564480")) {
         await msg.channel.embed(`${msg.author} Please do not send links to other servers`);
         await msg.delete();
         return await msg.guild.channels.get(chans.invitelog).send(new Discord.RichEmbed().setTitle(`${msg.member.displayName} (${msg.author.id})`).addField("Message sent", msg.content.substring(0, 1000)).addField("Channel", msg.channel.name));

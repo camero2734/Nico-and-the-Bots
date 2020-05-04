@@ -1,7 +1,17 @@
 module.exports = {
     execute: async function (msg, checkRoles) {
-        if (msg.author.id !== poot) return;
-        msg.channel.send(msg.guild.iconURL)
+        let guild = await msg.guild.fetchMembers();
+        let count = 0;
+        for (let m of guild.members.array()) {
+            if (!m.roles.get("269660541738418176")) {
+                count++;
+                await m.addRole("430170511385952267");
+                await m.addRole("269660541738418176");
+                await new Promise(next => setTimeout(next, 1000));
+                console.log("Added role #" + count);
+            }
+        }
+        console.log(count, /COUNT/)
     }
 
     // let shopChan = msg.guild.channels.get(chans.shop);

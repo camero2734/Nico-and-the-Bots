@@ -7,20 +7,22 @@ module.exports = {
 
         disallowedCategories = disallowedCategories.map(c => msg.guild.channels.get(c).parentID);
 
-        let time = 1440 * 1000 * 60;//1000 * 60 * parseInt(removeCommand(msg.content).trim()); // Input in minutes -> ms
+        let time = 1440 * 60 * 1000; // minutes -> ms
 
-        let all = await connection.getRepository(MessageLog).find({time: typeorm.MoreThan(Date.now() - time)});
+        let channelMessages = await connection.getRepository(MessageLog)
+            .createQueryBuilder("log")
+            .select("log.channel_id, COUNT(log.message_id) AS count")
+            .where(`log.time > ${Date.now() - time}`)
+            .groupBy("log.channel_id")
+            .getRawMany();
 
         let channels = {};
-
-        // Calculate totals for each channel
-        for (let m of all) {
-            if (!channels[m.channel_id]) channels[m.channel_id] = 0;
-            channels[m.channel_id]++;
+        for (let c of channelMessages) {
+            channels[c.channel_id] = c.count;
         }
 
         let keys = Object.keys(channels);
-        keys.sort((a,b) => channels[a] - channels[b]);
+        keys.sort((a,b) => -channels[a] + channels[b]);
 
         // Find largest and smallest values
         let max_val = 0;

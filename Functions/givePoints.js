@@ -37,10 +37,8 @@ module.exports = async function(msg, connection, Discord) {
         // XP time
         else {
             // Calculate multiplier for XP
-            let embed = new Discord.RichEmbed().setTitle("Results");
-            let description = "";
-            let { all, multipliers } = await getMultipliers(); // all = {user_id, channel_id, message_id, time}
-            let userMessages = all.filter(a => a.user_id === msg.author.id && a.time >= preXP.nextTime);
+            let { multipliers } = await getMultipliers(); // all = {user_id, channel_id, message_id, time}
+            let userMessages = await connection.getRepository(MessageLog).find({time: typeorm.MoreThan(preXP.nextTime), user_id: msg.author.id});
 
             let messageCount = userMessages.length;
             let sum = 0;
@@ -53,15 +51,6 @@ module.exports = async function(msg, connection, Discord) {
             for (let i = 0; i < userMessages.length; i++) {
                 if (multipliers[userMessages[i].channel_id] === 0) continue;
                 sum += spamValue(i + 1) * multipliers[userMessages[i].channel_id];
-                let channelName = msg.guild.channels.get(userMessages[i].channel_id) ? msg.guild.channels.get(userMessages[i].channel_id).name : "None";
-                description += `${i + 1}. ${Math.round(spamValue(i + 1) * 100) / 100} * ${Math.round(100 * multipliers[userMessages[i].channel_id]) / 100} (#${channelName})\n`;
-            }
-
-            embed.setDescription(description.substring(0, 1800) + "\nSUM: " + sum);
-            if (msg.author.id === "221465443297263618") {
-                console.log("sending DM to poot");
-                let dm = await msg.member.createDM();
-                dm.send(embed);
             }
 
             let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
@@ -160,19 +149,23 @@ module.exports = async function(msg, connection, Discord) {
     }
 
     async function getMultipliers(chanList) {
-        let TIME = 1440; // In minutes
+        let TIME = 1440 * 60 * 1000;
 
-        let all = await connection.getRepository(MessageLog).find({time: typeorm.MoreThan(Date.now() - TIME * 60 * 1000)});
+        let messageCounts = await connection.getRepository(MessageLog)
+            .createQueryBuilder("log")
+            .select("log.channel_id, COUNT(log.message_id) AS count")
+            .where(`log.time > ${Date.now() - TIME}`)
+            .groupBy("log.channel_id")
+            .getRawMany();
+
         let channels = {};
-
-        // Calculate totals for each channel
-        for (let m of all) {
-            if (!channels[m.channel_id]) channels[m.channel_id] = 0;
-            channels[m.channel_id]++;
+        for (let c of messageCounts) {
+            channels[c.channel_id] = c.count;
         }
 
         // Default chanList
         if (!chanList || chanList.length === 0) chanList = Object.keys(channels);
+
 
         // Find largest and smallest values
         let max_val = 0;
@@ -195,13 +188,13 @@ module.exports = async function(msg, connection, Discord) {
             avg += channels[c];
             count++;
         }
-        avg = (avg - max_val) / (count - 1);
+        avg = count === 1 ? min_val : (avg - max_val) / (count - 1);
+
 
         // Calculate pts multiplier for each channel
         const MAX_MULT = 1.5;
         const MIN_MULT = 0.5;
         const POWER = 4;
-        let embed = new Discord.RichEmbed().setTitle("Message Log Results");
 
         let multipliers = {};
         for (let c of chanList) {
@@ -216,13 +209,13 @@ module.exports = async function(msg, connection, Discord) {
                 } else { // (avg, 1), (max_val, MIN)
                     multiplier = MIN_MULT + (1 - MIN_MULT) * Math.pow((channels[c] - avg) / (avg - max_val) + 1, POWER);
                 }
-                multipliers[c] = multiplier;
+                multipliers[c] = isNaN(multiplier) ? 1 : multiplier;
             } catch(e) {
-                console.log(e);
-                multipliers[c] = 0;
+                multipliers[c] = 1;
             }
         }
 
-        return { all, multipliers };
+
+        return { multipliers };
     }
 };

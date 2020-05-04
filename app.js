@@ -37,6 +37,7 @@ const friendlyTime = require("friendly-time");
 const chrono = require("chrono-node");
 const Fuse = require("fuse.js");
 
+
 //SQLITE
 global.typeorm = require("typeorm");
 fs.readdirSync("./app/model").forEach(file => {
@@ -301,8 +302,8 @@ bot.on("typingStart", async (channel, user) => {
 
 //Add or remove the VC role
 bot.on("voiceStateUpdate", (oldM, newM) => {
-    if (oldM.voiceChannel && typeof newM.voiceChannel === "undefined") newM.removeRole("465268535543988224");
-    if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
+    // if (oldM.voiceChannel && typeof newM.voiceChannel === "undefined") newM.removeRole("465268535543988224");
+    // if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
 });
 
 //Give people points for their messages and log messages (exp)
@@ -322,6 +323,7 @@ bot.on("message", async message => {
     message.disallowedCategories = disallowedCategories;
 
     await givePoints(message, connection, Discord);
+    m = null;
 });
 
 //Deleted Messages logger
@@ -683,7 +685,9 @@ bot.on("messageReactionRemove", async (reaction, user) => {
 });
 
 bot.on("messageReactionAdd", async (reaction, user) => {
-    let msg = await reaction.message.guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
+    let guild = reaction.message.guild ? reaction.message.guild : bot.guilds.get("269657133673349120");
+    if (!guild) return;
+    let msg = await guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
     if (msg.channel.id === chans.topfeed) return;
 
     if (!user.bot && msg.embeds && msg.embeds[0] && msg.embeds[0].author && msg.embeds[0].author.name.endsWith("scrobbles") && msg.embeds[0].title.endsWith("'s FM")) {

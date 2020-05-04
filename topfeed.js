@@ -102,7 +102,7 @@ bot.on("ready", async () => {
     }
 
 
-    if (failedTests && Array.isArray(failedTests)) guild.channels.get(chans.bottest).send(`<@221465443297263618> **${failedTests.length} test${failedTests.length === 1 ? "" : "s"} failed**\n\`\`\`diff\n-> ${failedTests.join("\n-> ")}\n\`\`\``);
+    if (failedTests && Array.isArray(failedTests)) guild.channels.get(chans.bottest).send(`**${failedTests.length} test${failedTests.length === 1 ? "" : "s"} failed**\n\`\`\`diff\n-> ${failedTests.join("\n-> ")}\n\`\`\``);
     else if (failedTests && !isNaN(failedTests)) {
         guild.channels.get(chans.bottest).send(new Discord.RichEmbed({ description: `Topfeed restarted. All ${failedTests} unit tests passed.` }).setColor("GREEN"));
     }
@@ -540,8 +540,6 @@ async function wrapDmaorg() {
         let sites = [
             { name: "dmaorg", url: "http://dmaorg.info/found/15398642_14/clancy.html", tag: true },
             { name: "dmaroot", url: "http://dmaorg.info", tag: true },
-            { name: "nicoandtheniners", url: "http://nicoandtheniners.com/", tag: false },
-            { name: "nicoJSON", url: `http://nicoandtheniners.com/release/pull-2020-${latest_cache}`, tag: false },
             { name: "dmaorgIndex", url: "http://plu.evx.mybluehost.me/", tag: false }
         ];
 

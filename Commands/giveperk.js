@@ -7,7 +7,7 @@ module.exports = {
         let id = msg.mentions.users.first().id;
         let hasPerk = await connection.getRepository(Item).findOne({ id: id, type: "Perk", title: perk });
         if (hasPerk) return msg.channel.embed("This user already has this perk!");
-        let newPerk = new Item(id, perk, "Perk", Date.now());
+        let newPerk = new Item({ id, title: perk, type: "Perk", time: Date.now() })
         await connection.manager.save(newPerk);
         await msg.channel.embed("Successfully added the " + perk + " perk for " + msg.mentions.members.first());
     },

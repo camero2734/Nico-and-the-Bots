@@ -27,7 +27,7 @@ module.exports = async function (msg, Discord) {
             else dm.send("A channel was not added to the gold.");
             console.log(channel, /CHANNEL/);
             let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-            if (!userEconomy) userEconomy = new Economy(msg.author.id);
+            if (!userEconomy) userEconomy = new Economy({id: msg.author.id});
             if (userEconomy.credits < cost) return dm.send("Not enough credits!");
             userEconomy.credits-=cost;
             await connection.manager.save(userEconomy);

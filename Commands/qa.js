@@ -1,3 +1,4 @@
+
 module.exports = {
     execute: async function (msg) {
         if (!msg.member.roles.get("283272728084086784")) return;
@@ -12,7 +13,7 @@ module.exports = {
                 dm = await msg.author.createDM();
                 await dm.embed("__What Q&A?__\n Recently we had [an impromptu voice chat](https://www.youtube.com/watch?v=R-vWYazTKe4&feature=youtu.be) with [Mark](https://twitter.com/ReelBearMedia).\n\nDuring this call, Josh said he would come back and do a proper Q&A in the server. **We want to give you an opporunity to ask a question!** Not only can you submit a question to be asked, but if yours is chosen, you will have an opporunity to ask the question yourself in the voice chat with Togg and Jogg! \n\n__**Please enter your question below**__. There will be some follow up questions to categorize your question! You have **two minutes** to answer each question.");
                 let qMessage = await dm.awaitMessage(msg.member, null, 120 * 1000, null);
-                
+
                 await dm.embed("Is your question more funny or serious? Please label this accurately, there will be questions from both categories!\n\nRespond with `funny` or `serious`.");
                 let tMessage = await dm.awaitMessage(msg.member, null, 120 * 1000, null);
                 let type = ["funny", "serious"].find(a => tMessage.content.toLowerCase().startsWith(a));
@@ -46,14 +47,15 @@ module.exports = {
                     global.qa[msg.author.id] = false;
                     await dm.embed("Submitted! Thanks!");
                     let sentMID = (await msg.guild.channels.get("625466406397280256").send(embed)).id;
-                    let questionItem = new Item(msg.author.id, JSON.stringify({
+                    let questionItem = new Item({ id: msg.author.id, title: JSON.stringify({
                         question: qMessage.content,
                         type,
                         for: qFor,
                         canask: yesNo,
                         isde: isDE,
                         mid: sentMID
-                    }), "Q&A", Date.now());
+                    }), type: "Q&A", time: Date.now() })
+
                     connection.manager.save(questionItem);
                     console.log(questionItem);
                 }
@@ -68,8 +70,8 @@ module.exports = {
             await msg.channel.embed("Removed item!");
         } else return msg.channel.embed("Sorry, you have already submitted a question!"); //FIXME: maybe add an edit option?
 
-        
-        
+
+
     },
     info: {
         aliases: ["qa", "q&a"],

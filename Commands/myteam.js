@@ -5,11 +5,11 @@ module.exports = {
         let finalTeams = [];
         for (let team of teams) {
             let captain = await connection.getRepository(Economy).findOne({ id: team.captain });
-            if (!captain) captain = new Economy(team.captain);
+            if (!captain) captain = new Economy({ id: team.captain });
             let totalPoints = captain.monthlyScore;
             for (let member of team.team) {
                 let memberRow = await connection.getRepository(Economy).findOne({ id: member });
-                if (!memberRow) memberRow = new Economy(team.captain);
+                if (!memberRow) memberRow = new Economy({ id: member });
                 totalPoints += memberRow.monthlyScore;
             }
             let average = Math.floor(totalPoints / (1 + team.team.length));

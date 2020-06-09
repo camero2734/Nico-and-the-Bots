@@ -29,28 +29,25 @@ let latest_cache = Math.floor(Date.now() / 1000);
 let chans = JSON.parse(fs.readFileSync("channels.json"));
 let connection;
 let failedTests = false;
+
+require('ts-node').register({});
 global.typeorm = require("typeorm");
-fs.readdirSync("./app/model").forEach(file => {
-    let fileName = file.split(".")[0];
-    console.log(chalk.yellow.bold("LOADING MODEL " + fileName));
-    global[fileName] = require("./app/model/" + file);
-});
 
 //PRELOAD
 (async function() {
-    let entities = [];
     let files = await fs.promises.readdir("./app/entity");
     files.forEach(async (file) => {
         let fileName = file.split(".")[0];
-        console.log(chalk.red.bold("LOADING ENTITY " + fileName));
-        entities.push(await require("./app/entity/" + file));
+        console.log(chalk.yellow.bold("LOADING ENTITY " + fileName));
+        let entity = require("./app/entity/" + file);
+        global[fileName] = entity[fileName];
     });
     connection = await typeorm.createConnection({
         type: "sqlite",
         database: "discord.sqlite",
         synchronize: true,
         logging: false,
-        entities: entities
+        entities: ["./app/entity/*.ts"]
     });
     await connection.manager.query("PRAGMA busy_timeout=10000;");
     console.log(chalk.bold("CONNECTION MADE"));
@@ -446,7 +443,7 @@ async function checkLinks(links, platform, user) {
         if (!hasLink) {
             //SAVE LINK
             console.log("WRITING " + link.link);
-            let newTF = new Topfeed(platform, link.link, Date.now());
+            let newTF = new Topfeed({ type: platform, link: link.link })
             await connection.manager.save(newTF);
             //SEND
             if (typeof link.overrideLink !== "undefined") link.link = link.overrideLink;

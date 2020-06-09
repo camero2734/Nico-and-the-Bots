@@ -108,7 +108,7 @@ module.exports = {
 
             //INSERT WARNING TO DATABASE
             let warnData = { edited: false, given: msg.author.id, channel: msg.channel.id, rule: rules.find(_r => _r.startsWith(rule)), severity: parseInt(severity), content: explanation };
-            let warn = new Item(member.id, JSON.stringify(warnData), "Warning", Date.now());
+            let warn = new Item({ id: member.id, title: JSON.stringify(warnData), type: "Warning", time: Date.now() })
             await connection.manager.save(warn);
             autoJailCheck(warn, member);
             staffUsedCommand(msg, "Warn", "#a4a516", { channel: msg.channel.toString(), User_warned: member.displayName, warning: explanation, severity_given: severity, rule: rule, time: (new Date()).toString() });

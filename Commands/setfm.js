@@ -1,7 +1,7 @@
 module.exports = {
     execute: async function (msg) {
         let userItem = await connection.getRepository(Item).findOne({ id: msg.author.id, type: "FM" });
-        if (!userItem) userItem = new Item(msg.author.id, "", "FM", Date.now());
+        if (!userItem) userItem = new Item({ id: msg.author.id, title: "", type: "FM", time: Date.now() })
         userItem.time = Date.now();
         userItem.title = removeCommand(msg.content);
         await connection.manager.save(userItem);

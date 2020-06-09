@@ -2,7 +2,7 @@ module.exports = {
     execute: async function (msg) {
         let embed = new Discord.RichEmbed({ title: "Blurrybox items" });
         let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-        if (!userEconomy) userEconomy = new Economy(msg.author.id);
+        if (!userEconomy) userEconomy = new Economy({id: msg.author.id});
         let { blurrytokens, steals, blocks, ingots, trophies } = userEconomy;
         let hasArr = [blurrytokens, steals, blocks, ingots, trophies];
         let titles = ["💸 Blurrytokens", "⚔️ Steals", "❌ Blocks", "💎 Ingots", "🏆 Trophies"];

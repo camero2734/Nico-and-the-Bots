@@ -10,16 +10,16 @@ module.exports = {
             for (let rem of reminders) parsedReminders.push({text: rem.title, timeString: calculateTimeRemaining(new Date(rem.time)), time: rem.time});
             parsedReminders.sort(function(a,b) {return (a.time > b.time) ? 1 : ((b.time > a.time) ? -1 : 0);});
             let embed = new Discord.RichEmbed({title: "Your reminders"}).setColor("RANDOM");
-    
+
             let parsedPages = [];
             for (let i = 0; i < parsedReminders.length; i++) {
                 let pageNum = Math.floor(i/25);
                 if (!parsedPages[pageNum]) parsedPages[pageNum] = [];
                 parsedPages[pageNum].push(parsedReminders[i]);
             }
-    
+
             if (!parsedPages[page]) return msg.channel.embed("You have **" + parsedPages.length + `** page${parsedPages.length === 1 ? "" : "s"} of reminders.`);
-    
+
             for (let i = 0; i < parsedPages[page].length; i++) {
                     let reminder = parsedPages[page][i];
                     let text1 = removeCommand(reminder.text);
@@ -43,7 +43,7 @@ module.exports = {
             }
             embed.setFooter("Page " + (page + 1), bot.user.displayAvatarURL);
             msg.channel.send({embed: embed});
-    
+
             function calculateTimeRemaining(date) {
                 let now = Date.now()
                 let diff = date - now
@@ -63,11 +63,11 @@ module.exports = {
             }
         } catch(e) {
             console.log(e)
-        }  
-        
+        }
+
     },
     info: {
-        aliases: ["remindlist","reminderlist","rlist","myreminders","reminders"],
+        aliases: ["remindlist", "reminderlist", "remlist", "rlist", "myreminders", "reminders"],
         example: "!remindlist [page #]",
         minarg: 0,
         description: "Sends a list of your reminders",

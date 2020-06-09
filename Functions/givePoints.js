@@ -24,7 +24,7 @@ module.exports = async function(msg, connection, Discord) {
         // Initialize XPDelay if user doesn't have one
         let preXP = await connection.getRepository(XPDelay).findOne({ id: msg.author.id });
         if (!preXP) {
-            let newXP = new XPDelay(msg.author.id, 0, 0);
+            let newXP =  new XPDelay({ id: msg.author.id, messageCount: 0, nextTime: 0 })
             await connection.manager.save(newXP);
             preXP = newXP;
         }
@@ -49,13 +49,13 @@ module.exports = async function(msg, connection, Discord) {
             }
 
             for (let i = 0; i < userMessages.length; i++) {
-                if (multipliers[userMessages[i].channel_id] === 0) continue;
+                if (!multipliers[userMessages[i].channel_id] || multipliers[userMessages[i].channel_id] === 0) continue;
                 sum += spamValue(i + 1) * multipliers[userMessages[i].channel_id];
             }
 
             let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
             if (!userEconomy) {
-                userEconomy = new Economy(msg.author.id); //Initalizes everything else to 0
+                userEconomy = new Economy({id: msg.author.id}); //Initalizes everything else to 0
             }
             if (Math.random() > 0.5) {
                 userEconomy.credits += 2;
@@ -128,7 +128,7 @@ module.exports = async function(msg, connection, Discord) {
         let gained = 0;
         let preLT = await connection.getRepository(LevelToken).findOne({ id: msg.author.id });
         if (!preLT) {
-            let newLT = new LevelToken(msg.author.id, 0, 0);
+            let newLT = new LevelToken({ id: msg.author.id, value: 0, lastLevel: 0 })
             await connection.manager.save(newLT);
             preLT = newLT;
         }

@@ -1,7 +1,7 @@
 module.exports = {
     execute: async function (msg) {
         let userLT = await connection.getRepository(LevelToken).findOne({ id: msg.author.id });
-        if (!userLT) userLT = new LevelToken(msg.author.id, 0, 0);
+        if (!userLT) userLT = new LevelToken({ id: msg.author.id, value: 0, lastLevel: 0 })
         return msg.channel.embed(`You have ${userLT.value} LT!`);
     },
     info: {

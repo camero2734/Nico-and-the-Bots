@@ -14,7 +14,7 @@ module.exports = {
         let { d, h, m, s, inHours } = getTime(reminderDate);
         //GET REMINDER TEXT
         let remindText = msg.removeCommand(msg.content);
-        let newReminder = new Item(msg.author.id, msg.content, "Reminder", reminderDate.getTime());
+        let newReminder = new Item({ id: msg.author.id, title: msg.content, type: "Reminder", time: reminderDate.getTime() })
         //SAVE!!
         await connection.manager.save(newReminder);
 

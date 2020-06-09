@@ -3,7 +3,7 @@ module.exports = {
         if (msg.channel.id !== "470331990231744512" && msg.channel.id !== "470406597860917249" && msg.author.id != poot) return msg.channel.embed("You can only use !blurrybox in <#470331990231744512>!");
 
         let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-        if (!userEconomy) userEconomy = new Economy(msg.author.id);
+        if (!userEconomy) userEconomy = new Economy({id: msg.author.id});
         if (userEconomy.blurrytokens < 1) return msg.channel.embed("`You don't have any tokens!`");
         let prizes = [];
         class Prize {

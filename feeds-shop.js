@@ -306,7 +306,7 @@ bot.on("messageReactionAdd", (reaction, user) => {
         if (reaction.emoji.name === "💿") {
             buyRole("451217741584793601", 100000, 0, 0, user.id, reaction, true);
         }
-        
+
     } else if (reaction.message.embeds[0].title === "Level Token (LT) Shop") {
         if (reaction.emoji.name === "🇦") {
             buyLTRole("425328174919057429", 2, user.id);
@@ -347,7 +347,7 @@ bot.on("messageReactionAdd", (reaction, user) => {
         if (reaction.emoji.name === "💚") {
             buyPerk("lvlcred", user.id, 4);
         }
-        
+
     } else if (reaction.message.embeds[0].title === "Level Badge Shop") {
         if (reaction.emoji.name === "🔵") {
             buyRole("449654670357692416", 0, 25, 0, user.id, reaction, true);
@@ -358,7 +358,7 @@ bot.on("messageReactionAdd", (reaction, user) => {
         if (reaction.emoji.name === "⚫") {
             buyRole("449654945076215828", 0, 100, 0, user.id, reaction, true);
         }
-    } 
+    }
     else if (reaction.message.embeds[0].title === "Song Role Shop") {
         if (reaction.emoji.name === "🇦") {
             buyRole("562636490946117632", 6000, 21, 0, user.id, reaction);
@@ -401,17 +401,17 @@ bot.on("messageReactionAdd", (reaction, user) => {
     else if (reaction.message.embeds[0].title === "Tier 4 Color Shop") {
         buyColorRole(3, reaction.emoji.name, user.id);
     }
-   
+
 });
 
 async function buyColorRole(shopNum, emoji, id) {
-    
+
     let channel = bot.guilds.get("269657133673349120").channels.get(chans.shop);
     let rolesArr = getRolesArr();
     let reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "0⃣", "🇦", "🇧", "🇨", "🇩"];
     let roles = rolesArr[shopNum];
     let index = reactions.indexOf(emoji);
-    
+
     let requirementsArr = [{ level: 10, credits: 7500 }, { level: 20, credits: 15000 }, { level: 50, credits: 25000 }, { level: 100, credits: 50000 }];
     if (index < 0 || index >= roles.length || !roles[index]) return channel.send("`Invalid reaction`").then((m) => {m.delete(5000);});
 
@@ -422,20 +422,20 @@ async function buyColorRole(shopNum, emoji, id) {
     if (channel.guild.members.get(id).roles.get(role)) return channel.send("`You already have this role1!`").then((m) => {m.delete(5000);});
     else {
         let hasRole = await connection.getRepository(Item).findOne({ id: id, type: "ColorRole", title: role });
-        if (hasRole) return channel.send("`You already have this role in your inventory!`").then((m) => {m.delete(5000);}); 
+        if (hasRole) return channel.send("`You already have this role in your inventory!`").then((m) => {m.delete(5000);});
     }
     let userEconomy = await connection.getRepository(Economy).findOne({ id: id });
-    if (!userEconomy) userEconomy = new Economy(id);
+    if (!userEconomy) userEconomy = new Economy({id: id});
     //Level check
     if (userEconomy.alltimeLevel < requirements.level) return channel.send("`You must be level " + requirements.level + " to purchase this role.`").then((m) => {m.delete(5000);});
     //Credit check
     if (userEconomy.credits < requirements.credits) {return channel.send("`You need " + (requirements.credits - userEconomy.credits) + " more credits to buy this role.`").then((m) => { m.delete(5000); }); }
-    
+
     //Take Credits
     userEconomy.credits -= requirements.credits;
     await connection.manager.save(userEconomy);
     //Give Role
-    let newCR = new Item(id, role, "ColorRole", Date.now());
+    let newCR = new Item({ id, title: role, type: "ColorRole", time: Date.now() })
     await connection.manager.save(newCR);
 
     //DM and reply in #shop
@@ -462,7 +462,7 @@ async function buyRole(roleID, credits, level, daily, userid, reaction, notSongR
         if (hasRole) return channel.send("`You already have this role!`").then((m) => {m.delete(5000);});
     }
     let userEconomy = await connection.getRepository(Economy).findOne({ id: userid });
-    if (!userEconomy) userEconomy = new Economy(userid);
+    if (!userEconomy) userEconomy = new Economy({id: userid});
     //level check
     if (userEconomy.alltimeLevel < level) return channel.send("`You must be level " + level + " to purchase this role.`").then((m) => {m.delete(5000);});
     //Daily check
@@ -474,7 +474,7 @@ async function buyRole(roleID, credits, level, daily, userid, reaction, notSongR
     await connection.manager.save(userEconomy);
     if (notSongRole) await member.addRole(roleID);
     else {
-        let newSR = new Item(userid, roleID, "SongRole", Date.now());
+        let newSR = new Item({ id: userid, title: roleID, type: "SongRole", time: Date.now() })
         await connection.manager.save(newSR);
     }
     let dm = await member.createDM();
@@ -493,7 +493,7 @@ async function buyLTRole(roleID, ltreq, userid, credits) {
     let channel = bot.guilds.get("269657133673349120").channels.get(chans.shop);
 
     let userEconomy = await connection.getRepository(Economy).findOne({ id: userid });
-    if (!userEconomy) userEconomy = new Economy(userid);
+    if (!userEconomy) userEconomy = new Economy({id: userid});
     let userLT = await connection.getRepository(LevelToken).findOne({ id: userid });
     if (!userLT) userLT = new LevelToken(userid, 0, 0);
     //Has role check
@@ -506,7 +506,7 @@ async function buyLTRole(roleID, ltreq, userid, credits) {
     //Take away credits and LT and create role object
     if (credits) userEconomy.credits -= credits;
     userLT.value -= ltreq;
-    let newSR = new Item(userid, roleID, "SongRole", Date.now());
+    let newSR = new Item({ id: userid, title: roleID, type: "SongRole", time: Date.now() })
     //Save
     await connection.manager.save(userEconomy);
     await connection.manager.save(userLT);
@@ -519,8 +519,8 @@ async function buyLTRole(roleID, ltreq, userid, credits) {
     embed.setFooter((new Date()).toString());
     dm.send({ embed: embed });
     dm.send("**You can enable the song role you just bought by saying** `!choosesong " + member.guild.roles.get(roleID).name + "` **in the commands channel!**");
-   
-    
+
+
 }
 
 async function buyPerk(perkname, id, ltreq) {
@@ -536,7 +536,7 @@ async function buyPerk(perkname, id, ltreq) {
     userLT.value -= ltreq;
     await connection.manager.save(userLT);
     //GIVE PERK
-    let newPerk = new Item(id, perkname, "Perk", Date.now());
+    let newPerk = new Item({ id, title: perkname, type: "Perk", time: Date.now() })
     await connection.manager.save(newPerk);
 
     channel.send(`\`You bought ${perkname}!\``).then((m) => m.delete(5000));
@@ -616,8 +616,8 @@ async function updateConcerts() {
                 let timeRemaining = calculateTimeRemaining(concertDate);
                 let toTopic = timeRemaining + " until " + channel.name + " concert";
                 if (channel.topic !== toTopic) {
-                    channel.setTopic(toTopic); 
-                    console.log("Updating " + channel.name + " topic..."); 
+                    channel.setTopic(toTopic);
+                    console.log("Updating " + channel.name + " topic...");
                     setTimeout(() => {next();}, 3000);}
                 else next();
             }).catch(e => setTimeout(() => {next();}, 3000));
@@ -762,7 +762,7 @@ bot.on("error", (err) => {
             intervalStr = hours + ' hour(s) and ' + (interval - hours * 60) + ' minute(s)'
         }
         bot.guilds.get('269657133673349120').channels.get(chans.twitterfeed).send('`There are ' + (tweetsOfToday.length) + ' historic tweets for today! They will be sent out every ' + intervalStr + '!`')
-        
+
         let current = 0
         sendTweet()
         let int2 = setInterval(() => {

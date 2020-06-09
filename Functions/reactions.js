@@ -113,7 +113,7 @@ module.exports = async function(reaction, user) {
             async function sendGold() {
                 let id = user.id;
                 let userEconomy = await connection.getRepository(Economy).findOne({ id: id });
-                if (!userEconomy) userEconomy = new Economy(id);
+                if (!userEconomy) userEconomy = new Economy({ id });
 
                 if (userEconomy.credits < cost) {
                     await reaction.remove(user);

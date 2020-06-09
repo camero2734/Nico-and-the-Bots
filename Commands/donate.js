@@ -30,9 +30,9 @@ module.exports = {
         let response = await msg.channel.awaitMessage(msg.member, m => {return ((m.content.toLowerCase().indexOf("yes") !== -1 || m.content.toLowerCase().indexOf("no") !== -1) && m.author.id === msg.author.id);});
         if (response && response.content.toLowerCase().indexOf("yes") !== -1) {
             let giverEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-            if (!giverEconomy) giverEconomy = new Economy(msg.author.id);
+            if (!giverEconomy) giverEconomy = new Economy({id: msg.author.id});
             let getterEconomy = await connection.getRepository(Economy).findOne({ id: taggedid });
-            if (!getterEconomy) getterEconomy = new Economy(taggedid);
+            if (!getterEconomy) getterEconomy = new Economy({id: taggedid});
             //Check if giver has enough
             if (giverEconomy.credits < taxed && msg.author.id !== poot) return msg.channel.embed("You don't have enough credits to donate " + amountToGive + " credits! The cost is " + taxed + " credits. (10% tax)");
             //Take taxed credits from giver

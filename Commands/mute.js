@@ -13,11 +13,11 @@ module.exports = {
             member.addRole(TO);
             member.removeRole("269660541738418176"); //BANDITOS ROLE
             msg.channel.send(new Discord.RichEmbed({ description: "```User has been muted for " + timeParameter + " minutes```" }));
-            
+
             await connection.getRepository(Item).createQueryBuilder().delete().where("type = :type", { type: "Timeout" }).andWhere("id = :id", { id: member.id }).execute();
-            let newTimeout = new Item(member.id, msg.author.id, "Timeout", time);
+            let newTimeout = new Item({ id: member.id, title: msg.author.id, type: "Timeout", time })
             await connection.manager.save(newTimeout);
-            
+
             if (fairlyused(msg)) {
                 myFunctions.sendembed(msg, msg.guild.channels.get(chans.fairlylog), "Fairly Local used command!", false, 12845311);
             } else {

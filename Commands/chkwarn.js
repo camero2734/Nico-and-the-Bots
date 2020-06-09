@@ -46,13 +46,15 @@ module.exports = {
             let i = 0;
             for (let warn of pagedWarns) {
                 let d1 = new Date(warn.time);
-                let data = JSON.parse(warn.title);
+                let data = { content: warn.title, rule: "N/A", severity: "N/A"};
+                try {
+                    data = JSON.parse(warn.title);
+                    severityArr[0] += data.severity;
+                    severityArr[1]++;
+                } catch (e) {}
                 let header = `${i + 1}. ${friendlyTime(d1)} [${d1.toString().split(" GMT")[0].split(" ").slice(1).join(" ")} CT]`;
                 let content = `**${data.content}**\nRule broken: \`${data.rule}\`\nSeverity: \`${data.severity}\``;
                 embed.addField(header, content);
-                severityArr[0] += data.severity;
-                severityArr[1]++;
-
                 i++;
             }
 
@@ -84,6 +86,7 @@ module.exports = {
                     await m.clearReactions();
                     let number = parseInt(r.emoji.name.substring(0,1));
                     let chosenWarn = pagedWarns[number - 1];
+                    console.log("json2");
                     let chosenData = JSON.parse(chosenWarn.title);
                     let detailedEmbed = new Discord.RichEmbed();
                     detailedEmbed.setAuthor(member.displayName, member.user.displayAvatarURL);

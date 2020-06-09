@@ -3,7 +3,10 @@ module.exports = {
     execute: async function (msg) {
         let input = removeCommand(msg.content);
         let length = 10;
-        if (!isNaN(input) && input > 0) length = input; 
+        if (!isNaN(input) && input > 0) length = input;
+
+        if (msg.author.id !== poot) length = Math.min(length, 50);
+
         let string = "";
         for (let i = 0; i < length; i++) {
             let letters = "abcdefghijklmnopqrstuvwxyz".split("");

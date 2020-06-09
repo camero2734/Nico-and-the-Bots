@@ -178,7 +178,7 @@ module.exports = {
 
                 //LEVEL
                 let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-                if (!userEconomy) userEconomy = new Economy(msg.author.id);
+                if (!userEconomy) userEconomy = new Economy({id: msg.author.id});
                 let level = userEconomy.alltimeLevel;
 
                 //WARNINGS

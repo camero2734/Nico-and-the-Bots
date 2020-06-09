@@ -6,9 +6,9 @@ module.exports = {
         if (mentioned.id === msg.author.id) return msg.channel.embed("You can't steal from yourself...");
 
         let stealerEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-        if (!stealerEconomy) stealerEconomy = new Economy(msg.author.id);
+        if (!stealerEconomy) stealerEconomy = new Economy({id: msg.author.id});
         let stolenEconomy = await connection.getRepository(Economy).findOne({ id: mentioned.id });
-        if (!stolenEconomy) stolenEconomy = new Economy(msg.author.id);
+        if (!stolenEconomy) stolenEconomy = new Economy({id: msg.author.id});
 
         if (stealerEconomy.steals < 1) return msg.channel.embed("You don't have any steals!");
         if (stolenEconomy.ingots < 1) return msg.channel.embed(`${mentioned} doesn't have any ingots!`);

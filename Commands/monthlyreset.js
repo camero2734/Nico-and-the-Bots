@@ -13,7 +13,7 @@ module.exports = {
                 let member = msg.guild.members.get(id);
                 if (!member) continue;
                 mems += `<@${id}> `;
-                
+
                 try {
                     await member.addRole("503645677574684683");
                     let dm = await member.createDM();
@@ -26,7 +26,7 @@ module.exports = {
                 await connection.manager.save(teamWinnerEconomy);
             }
             await msg.guild.channels.get(chans.announcements).send(`**${winningTeam.name} won the team competition!** \n\nThe team members were: ${mems}. They each won 2000 credits and a badge.\n\n*The teams are currently being reset*`);
-    
+
             let allEconomies = await connection.getRepository(Economy).createQueryBuilder("e").orderBy("e.monthlyScore", "DESC").getMany();
             let teamEconomies = [];
             let t_i = 0;
@@ -81,7 +81,7 @@ module.exports = {
                     await new Promise(done => setTimeout(done, 2000));
                 }
             }
-    
+
             for (let team of finalTeams) {
                 let teamNum = finalTeams.indexOf(team) + 1;
                 let teamStr = "";
@@ -97,7 +97,7 @@ module.exports = {
                 }
                 await new Promise(done => setTimeout(done, 2000));
             }
-    
+
             //Leaderboard Monthly reset
             let winners = "__**This month's winners are:**__\n\n";
             let winnercount = 0;
@@ -120,7 +120,7 @@ module.exports = {
             }
 
             await msg.guild.channels.get(chans.announcements).send(winners + "\n**These users will receive special roles that they can recolor with `!color [hex code]`**\nWinners are chosen automatically based on the previous monthly scores earned by being active. The scores reset on the 21st day of every month!");
-            
+
             //Reset monthly scores and levels
             await connection
                 .createQueryBuilder()
@@ -129,18 +129,18 @@ module.exports = {
                 .execute();
             console.log(chalk.red("Done with monthly reset!"));
             return;
-    
+
             async function selectWinningTeam() {
                 let finalTeams = [];
                 let teams = await loadJsonFile("teams.json");
-    
+
                 for (let team of teams) {
                     let captain = await connection.getRepository(Economy).findOne({ id: team.captain });
-                    if (!captain) captain = new Economy(team.captain);
+                    if (!captain) captain = new Economy({id: team.captain});
                     let totalPoints = captain.monthlyScore;
                     for (let member of team.team) {
                         let memberRow = await connection.getRepository(Economy).findOne({ id: member });
-                        if (!memberRow) memberRow = new Economy(team.captain);
+                        if (!memberRow) memberRow = new Economy({id: member});
                         totalPoints += memberRow.monthlyScore;
                     }
                     let average = Math.floor(totalPoints / (1 + team.team.length));
@@ -155,7 +155,7 @@ module.exports = {
             msg.channel.embed("Error in monthly reset");
             console.log(e, /ERR/);
         }
-        
+
     }
     ,
     info: {

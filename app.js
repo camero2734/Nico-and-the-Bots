@@ -39,19 +39,15 @@ const Fuse = require("fuse.js");
 
 
 //SQLITE
+require('ts-node').register({});
 global.typeorm = require("typeorm");
-fs.readdirSync("./app/model").forEach(file => {
-    let fileName = file.split(".")[0];
-    console.log(chalk.yellow.bold("LOADING MODEL " + fileName));
-    global[fileName] = require("./app/model/" + file);
-});
 
 //Function definitions
 (async function () { await storage.init(); })();
 function requireFunction(name) { return require(`./Functions/${name}.js`); };
 function wrap(t) { return ("```" + t + "```"); };
 async function chooseKey() { let keys = chans.keys; let found = false; for (let key of keys) { console.log(key); await new Promise(next => { let currentKey = nsfai.app._config.apiKey; if (!found) { nsfai = new NSFAI(key); nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg").then(() => { found = true; next(); }).catch(e => { console.log(e.data); next(); }); } else next(); }); } if (!found) bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out."); console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey)); }
-function runFunctions(guild) { remindersTimeoutCheck(guild); registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord); };
+function runFunctions(guild) { remindersTimeoutCheck(guild); registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord); updateFMStats(guild, Discord, FMStats, Item, connection, typeorm, nodefetch); };
 Number.prototype.map = function (in_min, in_max, out_min, out_max) { return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min; };
 async function delay(ms) { return new Promise(resolve => { setTimeout(() => { resolve(); }, ms); }); }
 
@@ -94,6 +90,7 @@ const banHandler = requireFunction("banHandler");
 const handleReacts = requireFunction("handleReacts");
 const fmStarSystem = requireFunction("fmStarSystem");
 const getColorRoles = requireFunction("getColorRoles");
+const updateFMStats = requireFunction("updateFMStats");
 storage.entries = requireFunction("entries");
 Discord.Channel.prototype.awaitMessage = requireFunction("awaitMessage");
 String.prototype.startsWithP = requireFunction("startsWithP");
@@ -156,19 +153,19 @@ const TO = "278225702455738368";
 
 //PRELOAD
 (async function () {
-    let entities = [];
     let files = await fs.promises.readdir("./app/entity");
     files.forEach(async (file) => {
         let fileName = file.split(".")[0];
-        console.log(chalk.red.bold("LOADING ENTITY " + fileName));
-        entities.push(await require("./app/entity/" + file));
+        console.log(chalk.yellow.bold("LOADING ENTITY " + fileName));
+        let entity = require("./app/entity/" + file);
+        global[fileName] = entity[fileName];
     });
     global.connection = await typeorm.createConnection({
         type: "sqlite",
         database: "discord.sqlite",
         synchronize: true,
         logging: false,
-        entities: entities
+        entities: ["./app/entity/*.ts"]
     });
     await connection.manager.query("PRAGMA busy_timeout=10000;");
     console.log(chalk.bold("CONNECTION MADE"));
@@ -177,6 +174,11 @@ const TO = "278225702455738368";
 
 //Actual bot stuff
 bot.on("ready", async () => {
+    setTimeout(() => {
+        process.exit(0);
+    }, 1000 * 60 * 60 * 2); // Restart every 2 hours
+
+
     if (!tags["despacito"]) tags = JSON.parse(tags);
     console.log(`Logged in as ${bot.user.tag}!`);
     let guild = bot.guilds.get("269657133673349120");
@@ -302,8 +304,8 @@ bot.on("typingStart", async (channel, user) => {
 
 //Add or remove the VC role
 bot.on("voiceStateUpdate", (oldM, newM) => {
-    // if (oldM.voiceChannel && typeof newM.voiceChannel === "undefined") newM.removeRole("465268535543988224");
-    // if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
+    if (oldM.voiceChannel && typeof newM.voiceChannel === "undefined") newM.removeRole("465268535543988224");
+    if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
 });
 
 //Give people points for their messages and log messages (exp)
@@ -311,7 +313,7 @@ bot.on("message", async message => {
     if (message.author.bot) return;
     if (message.channel.type !== "text" && message.channel.type !== "news") return;
 
-    let m = new MessageLog(message.author.id, message.channel.id, message.id, message.createdTimestamp);
+    let m = new MessageLog({ user_id: message.author.id, channel_id: message.channel.id, message_id: message.id, time: message.createdTimestamp })
     await connection.manager.save(m);
 
     let disallowedChannels = [chans.memes]; // Specific channels
@@ -382,10 +384,11 @@ bot.on("message", async msg => {
     // Auto react (uses rulesheet from !autoreact)
     await handleReacts(msg, autoreactJSON);
 
-    if (/discord[. dot()]+?gg(?!\/twentyonepilots)/.test(msg.content.toLowerCase()) && !msg.member.roles.get("330877657132564480")) {
+    if (!msg.author.bot && /discord[. dot()]+?gg(?!\/twentyonepilots)/.test(msg.content.toLowerCase()) && !msg.member.roles.get("330877657132564480")) {
         await msg.channel.embed(`${msg.author} Please do not send links to other servers`);
         await msg.delete();
-        return await msg.guild.channels.get(chans.invitelog).send(new Discord.RichEmbed().setTitle(`${msg.member.displayName} (${msg.author.id})`).addField("Message sent", msg.content.substring(0, 1000)).addField("Channel", msg.channel.name));
+        await msg.guild.channels.get(chans.invitelog).send(new Discord.RichEmbed().setTitle(`${msg.member.displayName} (${msg.author.id})`).addField("Message sent", msg.content.substring(0, 1000)).addField("Channel", msg.channel.name));
+        return msg.guild.channels.get(chans.invitelog).send("https://discord.gg/" + msg.content.match(/discord[. dot()]+gg(?!\/twentyonepilots)\/{0,1}([A-z0-9]+)/)?.[1]);
     }
 
     if (msg.channel.id === chans.houseofgold) return hog(msg, Discord);
@@ -416,7 +419,7 @@ bot.on("message", async msg => {
         let preRP = await connection.getRepository(Recap).findOne({ id: msg.author.id, day: typeorm.Not(today) });
 
         if (!preRP) { // JUST ADD
-            let newRP = new Recap(msg.author.id, msg.channel.id, today, Date.now());
+            let newRP = new Recap({ channel: msg.channel.id, day: today, id: msg.author.id });
             await connection.manager.save(newRP);
         } else {
             console.log("Recap for " + msg.member.displayName);
@@ -444,7 +447,8 @@ bot.on("message", async msg => {
             }
 
             let weekRecap = await connection.getRepository(WeekRecap).findOne({ id: msg.author.id });
-            if (!weekRecap) weekRecap = new WeekRecap(msg.author.id, "[]", today - 1);
+
+            if (!weekRecap) weekRecap = new WeekRecap({ id: msg.author.id, days: "[]", lastDay: today - 1 })
 
             let arr = JSON.parse(weekRecap.days ? weekRecap.days : "[]");
             let daysSkipped = today - weekRecap.lastDay - 1;
@@ -687,8 +691,10 @@ bot.on("messageReactionRemove", async (reaction, user) => {
 bot.on("messageReactionAdd", async (reaction, user) => {
     let guild = reaction.message.guild ? reaction.message.guild : bot.guilds.get("269657133673349120");
     if (!guild) return;
-    let msg = await guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
-    if (msg.channel.id === chans.topfeed) return;
+    let chan = guild.channels.get(reaction.message.channel.id);
+    if (!chan) return;
+    let msg = await chan.fetchMessage(reaction.message.id);
+    if (!msg || msg.channel.id === chans.topfeed) return;
 
     if (!user.bot && msg.embeds && msg.embeds[0] && msg.embeds[0].author && msg.embeds[0].author.name.endsWith("scrobbles") && msg.embeds[0].title.endsWith("'s FM")) {
         let FMentry = await connection.getRepository(FM).findOne({ message_id: msg.id });
@@ -761,7 +767,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
             let embed = response;
             let preGD = await connection.getRepository(Counter).findOne({ id: msg.author.id, title: "GoldCount" });
             if (!preGD) {
-                preGD = new Counter(msg.author.id, "GoldCount", 0, 0);
+                preGD = new Counter({id: msg.author.id, title: "GoldCount", count: 0})
             }
             preGD.count++;
             preGD.lastUpdated = Date.now();

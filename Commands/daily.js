@@ -3,7 +3,7 @@ module.exports = {
         const { createCanvas, loadImage, Image, registerFont } = Canvas;
 
         let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-        if (!userEconomy) userEconomy = new Economy(msg.author.id);
+        if (!userEconomy) userEconomy = new Economy({id: msg.author.id});
 
         //CALCULATE TIME REMAINING
         let curdate = Date.now();
@@ -16,7 +16,7 @@ module.exports = {
         //DAILY COUNTER
         userEconomy.dailyCount++;
         let dailyCounter = await connection.getRepository(Counter).findOne({ id: msg.author.id, title: "ConsecutiveDaily" });
-        if (!dailyCounter) dailyCounter = new Counter(msg.author.id, "ConsecutiveDaily", 0, curdate);
+        if (!dailyCounter) dailyCounter = new Counter({id: msg.author.id, title: "ConsecutiveDaily", count: 0, lastUpdated: curdate});
         if (curdate - userEconomy.lastDaily <= 86400000 * 2) {
             dailyCounter.count++;
         } else dailyCounter.count = 1, dailyCounter.lastUpdated = curdate;

@@ -19,7 +19,7 @@ module.exports = {
         }
         async function sendInfo(member) {
             let userEconomy = await connection.getRepository(Economy).findOne({ id: member.id });
-            if (!userEconomy) userEconomy = new Economy(member.id);
+            if (!userEconomy) userEconomy = new Economy({id: member.id});
 
             let roles = member.roles.array();
             let rolestring = "";

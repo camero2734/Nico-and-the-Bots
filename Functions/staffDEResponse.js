@@ -15,7 +15,7 @@ module.exports = async function(reaction, user, Discord) {
         msg.clearReactions();
 
         let accepting = reaction.emoji.name === "✅";
-    
+
         let membed = msg.embeds[0];
         let member = msg.guild.members.get(membed.footer.text);
         let passed = 0;
@@ -39,7 +39,7 @@ module.exports = async function(reaction, user, Discord) {
         } else if (accepting && !passing) {
             //Needs explanation
             embed.setColor("RED");
-            embed.setDescription("You are approving " + member.displayName + "'s application for Death Eater. They do not meet at least " + (PERCENTREQ * 100) + "% of the requirements, so **an explanation is required.**\n\nPlease respond to this message with a thorough explanation of why this user is being accepted despite not meeting the requierments.");
+            embed.setDescription("You are approving " + member.displayName + "'s application for Death Eater. They do not meet at least " + (PERCENTREQ * 100) + "% of the requirements, so **an explanation is required.**\n\nPlease respond to this message with a thorough explanation of why this user is being accepted despite not meeting the requirements.");
             msg.channel.send(embed);
             let msgs = await msg.channel.awaitMessages(filter, { max: 1, time: qTime, errors: ['time'] });
             let reply = msgs.first().content;
@@ -71,11 +71,11 @@ module.exports = async function(reaction, user, Discord) {
             let reply = msgs.first().content;
             denyDeathEater(member, reply.trim().toLowerCase() === "na" ? "" : reply, user);
         }
-        
+
     } catch(e) {
         console.log(e)
     }
-    
+
     async function acceptDeathEater(member, reply, staffUser) {
         let dm = await member.createDM();
         if (!dm) return msg.channel.embed("This user has DMs turned off. Please ask them to enable it and then re-react to restart.");

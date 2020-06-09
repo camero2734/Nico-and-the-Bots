@@ -17,10 +17,10 @@ module.exports = {
         if (credits < 0) return msg.channel.embed("You do not have enough credits! You need " + (-credits) + " more.");
         else msg.channel.embed(`You entered into the lottery for ${cost} credits! You now have ${credits} credits remaining`);
 
-        
+
 
         let lotteryTime = await storage.getItem("_time");
-        
+
         if (!lotteryTime || typeof lotteryTime === "undefined") {
             console.log(/HERE/);
             let count = (await storage.entries()).length;
@@ -28,13 +28,13 @@ module.exports = {
             if (count > 0) await storage.setItem("_time", Date.now());
         }
 
-        
+
 
         await storage.setItem(msg.author.id, Date.now());
 
         async function checkCredits() {
             let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-            if (!userEconomy) userEconomy = new Economy(msg.author.id);
+            if (!userEconomy) userEconomy = new Economy({id: msg.author.id});
             if (userEconomy.credits < cost) return userEconomy.credits - cost;
             userEconomy.credits-=cost;
             await connection.manager.save(userEconomy);

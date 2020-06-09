@@ -71,12 +71,12 @@ module.exports = {
 
             // React and save to database
             await fm_m.react("⭐");
-            let fm_item = new FM(msg.author.id, fm_m.id, track.name, track.album, track.artist);
+            let fm_item = new FM({ id: msg.author.id, message_id: fm_m.id, track: track.name, album: track.album, artist: track.artist, stars: 0 })
             await connection.manager.save(fm_item);
 
         } catch (e) {
             console.log(e, /FM_ERROR/);
-            msg.channel.embed("Error in fetching the FM. Did you set your FM correctly?");
+            msg.channel.embed("Error in fetching the FM. Did you set your FM correctly? Use `!setfm` to set it up.");
         }
     },
     info: {

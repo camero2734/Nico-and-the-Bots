@@ -15,7 +15,7 @@ module.exports = {
         if (prevCharts && prevCharts.length > 0) {
             await connection.manager.remove(prevCharts);
         }
-        let chartItem = new Item(msg.author.id, url, "Chart", Date.now());
+        let chartItem = new Item({ id: msg.author.id, title: url, type: "Chart", time: Date.now() })
         await connection.manager.save(chartItem);
         await msg.channel.embed("Updated your chart successfully!");
     },

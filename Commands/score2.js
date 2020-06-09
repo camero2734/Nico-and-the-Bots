@@ -1,5 +1,5 @@
 module.exports = {
-    
+
     execute: async function (msg) {
         if (msg.author.id !== poot) return msg.channel.embed("This command is under construction.");
         const BF = "319620325224480768";
@@ -10,7 +10,7 @@ module.exports = {
         const TRENCH = "466627343520104449";
         let albumsArray = [TRENCH, BF, VSL, RAB, ST, NPI];
         const { createCanvas, loadImage, Image, registerFont } = require("canvas");
-		
+
         if (msg && msg.mentions && msg.mentions.users && msg.mentions.users.first()) {
             let member = msg.mentions.users.first();
             if (member.bot) return msg.channel.send("`Bots do not have score`");
@@ -20,13 +20,13 @@ module.exports = {
         if ((msg.mentions) && (msg.mentions.users) && (msg.mentions.users.first())) {
             eyed = msg.mentions.users.first().id;
         }
-		
+
         let userGold = await connection.getRepository(Counter).findOne({ id: eyed, title: "GoldCount" });
         let userEconomy = await connection.getRepository(Economy).findOne({ id: eyed });
-        if (!userEconomy) userEconomy = new Economy(eyed);
+        if (!userEconomy) userEconomy = new Economy({id: eyed});
         let economies = await connection.getRepository(Economy).find({ monthlyScore: typeorm.MoreThan(userEconomy.monthlyScore) });
         let placeNum = economies.length + 1;
-		
+
 
         let getBadges = require("./badges.js");
         let badges = await getBadges(msg.guild.members.get(eyed), Image, userGold, placeNum);
@@ -154,7 +154,7 @@ module.exports = {
             if (imageData.data[i] !== notC.r || imageData.data[i + 1] !== notC.g || imageData.data[i + 2] !== notC.b) {
                 imageData.data[i] = newC.r;
                 imageData.data[i + 1] = newC.g;
-                imageData.data[i + 2] = newC.b; 
+                imageData.data[i + 2] = newC.b;
             }
         }
         ctx.putImageData(imageData, 0, 0);
@@ -170,7 +170,7 @@ module.exports = {
             ctx.restore();
         }
 
-        
+
 
         //WRITE SCORES
         ctx.font = "30px futura";
@@ -178,9 +178,9 @@ module.exports = {
         ctx.fillText("Monthly:", areas.score.x, areas.score.y);
         let shiftX = ctx.measureText("Monthly:").width;
         ctx.fillText(userEconomy.monthlyScore, areas.score.x + shiftX, areas.score.y);
-        
 
-       
+
+
 
         //BADGES
         let cols = Math.floor(Math.sqrt(badges.length));
@@ -209,7 +209,7 @@ module.exports = {
         ctx.fillStyle = (src === TRENCH) ? "black" : (inverted ? "black" : "white");
         ctx.fillText(placeNum, 631, 98);
         return msg.channel.send(new Discord.Attachment(canvas.toBuffer(), "score.png"));
-		
+
     },
     info: {
         aliases: false,

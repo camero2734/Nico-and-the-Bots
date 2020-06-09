@@ -1,17 +1,67 @@
 module.exports = {
-    execute: async function (msg, checkRoles) {
-        let guild = await msg.guild.fetchMembers();
-        let count = 0;
-        for (let m of guild.members.array()) {
-            if (!m.roles.get("269660541738418176")) {
-                count++;
-                await m.addRole("430170511385952267");
-                await m.addRole("269660541738418176");
-                await new Promise(next => setTimeout(next, 1000));
-                console.log("Added role #" + count);
+    execute: async function (msg) {
+        if (msg.author.id !== poot) return;
+        await new Promise(next => setTimeout(next, 5000));
+        let {guild} = msg;
+        let {IsNull, Not} = typeorm;
+        let allfms = await connection.getRepository(Item).find({ type: "FM", title: Not(IsNull()) });
+
+        let fms = [], deletefms = [];
+        for (let fm of allfms) {
+            if (guild.member(fm.id)) fms.push(fm);
+            else deletefms.push(fm.title);
+        }
+
+        await connection
+            .createQueryBuilder()
+            .delete()
+            .from(FMStats)
+            .where('fmuser IN (:...deletefms)', { deletefms })
+            .execute();
+
+        for (let i in fms) {
+            if (i < 55) continue;
+            let fm = fms[i];
+            let username = fm.title;
+            console.log(chalk.cyan(username), chalk.yellow(i));
+            let info = await getFMInfo(username);
+            let artists = info?.topartists?.artist;
+            if (!artists) continue;
+
+            let statsArray = [];
+            let previousKeys = [];
+            for (let artist of artists) {
+                let stats = new FMStats({ fmuser: username, artist: artist.name, playcount: artist.playcount })
+                let key = username + ";" + artist.name;
+                if (previousKeys.indexOf(key) === -1) {
+                    statsArray.push(stats);
+                    previousKeys.push(key);
+                }
+                if (statsArray.length >= 400) {
+                    await connection.manager.save(statsArray);
+                    statsArray = [];
+                }
+            }
+            if (statsArray.length > 0) await connection.manager.save(statsArray);
+            await new Promise(next => setTimeout(next, 100));
+        }
+
+
+        let start = Date.now();
+        await getFMInfo("pootusmaximus");
+        console.log(`done in ${Date.now() - start} ms`)
+
+
+
+        async function getFMInfo(username) {
+            try {
+                let req = `http://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${encodeURIComponent(username)}&api_key=${process.env.LASTFM}&format=json&limit=1000`
+                let info = await (await nodefetch(req)).json();
+                return info;
+            } catch(e) {
+                console.log(e, /GETFMINFO_ERR/);
             }
         }
-        console.log(count, /COUNT/)
     }
 
     // let shopChan = msg.guild.channels.get(chans.shop);

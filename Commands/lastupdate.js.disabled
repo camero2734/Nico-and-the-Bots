@@ -1,0 +1,16 @@
+module.exports = {
+    execute: async function(msg){
+        const {jsdom} = require('jsdom')
+        let site = await (got("http://plu.evx.mybluehost.me/"))
+        const document = new jsdom(site.body);
+        let date = document.getElementsByTagName("td")['2']
+        msg.channel.embed("Last dmaorg update was on " + date.textContent)
+    },
+    info: {
+        aliases: false,
+        example: "!lastupdate",
+        minarg: 0,
+        description: "Returns last update date of dmaorg.info",
+        category: "Other",
+    }
+}

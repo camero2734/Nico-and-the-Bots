@@ -1,0 +1,43 @@
+module.exports = {
+    execute: function (msg) {
+        
+        // let locations = ["Nashville, TN", "Chicago, IL", "St Louis, MO", "Milwaukee, WI", "St Paul, MN", "Cleveland, OH", "Detroit, MI", "Boston, MA", "Uniondale, NY", "Philadelphia, PA", "New York, NY", "Washington, DC", "Atlanta, GA", "Tampa, FL", "Sunrise, FL", "Houston, TX", "Dallas, TX", "Phoenix, AZ", "Inglewood, CA", "Oakland, CA", "Salt Lake City, UT", "Portland, OR", "Tacoma, WA", "Boise, ID", "Denver, CO", "Lincoln, NE", "Kansas City, MO"]
+        // let lowests = []
+        // msg.channel.embed("This'll take a bit...")
+        // var seatgeek = require("seatgeek");
+        // (async function () {
+        //     for (let location of locations) {
+        //         await new Promise(next => {
+        //             seatgeek(location).then((details) => {
+        //                 if (details.toString().startsWith('Error')) console.log(details.toString())
+        //                 if (!details || !details.events || !details.events[0]) next()
+        //                 else {
+        //                     details = details.events[0]
+        //                     let set = false;
+        //                     for (let i = 0; i < lowests.length; i++) {
+        //                         low = lowests[i]
+        //                         if (!set && low.gaprice < details.gaprice) lowests.splice(i, 0, { gaprice: details.gaprice, venue: details.venue["display_location"] }), set = true
+        //                     }
+        //                     if (!set) lowests.push({ gaprice: details.gaprice, venue: details.venue["display_location"] })
+        //                     next()
+        //                 }
+        //             })
+        //         })
+        //     }
+        //     lowests.reverse()
+        //     let embed = new Discord.RichEmbed({ title: "**Cheapest pit tickets:**" })
+        //     for (let concert of lowests) {
+        //         embed.addField(concert.venue, `Price: ${concert.gaprice}`)
+        //     }
+        //     msg.channel.send({ embed: embed })
+        // })()
+
+    },
+    info: {
+        aliases: false,
+        example: "lowestpit",
+        minarg: 0,
+        description: "Returns the concert with the lowest pit ticket cost",
+        category: "N/A",
+    }
+}

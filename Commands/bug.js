@@ -9,9 +9,9 @@ module.exports = {
     },
     info: {
         aliases: ["bug", "issue"],
-        example: "!callvote Do you like dolphins? (yes, no, maybe)",
+        example: "!bug [describe what's wrong with the bot]",
         minarg: 2,
-        description: "Creates a vote that other users can participate in. End with !endvote",
-        category: "Voting",
+        description: "Sends a message to the staff describing the bug you've found in the bot",
+        category: "Other",
     }
 }

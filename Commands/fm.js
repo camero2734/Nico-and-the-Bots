@@ -1,5 +1,6 @@
 module.exports = {
     execute: async function (msg) {
+
         //DETERMINE INPUT TYPE
         let username = null;
         let selfFM = false;

@@ -1,12 +1,13 @@
 module.exports = {
     execute: async function(msg){
+        const MAX_CREDITS = 10000;
         let donations = await loadJsonFile("json/donations.json");
 
         //if (msg.author.id !== poot) return msg.channel.embed("Only poot can donate credits... for now...")
 
         let amountToGive = Math.floor(getAmount());
         if (!amountToGive) return msg.channel.embed("Invalid amount");
-        if ((amountToGive > 2000 || amountToGive < 1) && msg.author.id !== poot) return msg.channel.embed("Amount must be between 1 and 2000 credits");
+        if ((amountToGive > MAX_CREDITS || amountToGive < 1) && msg.author.id !== poot) return msg.channel.embed(`Amount must be between 1 and ${MAX_CREDITS} credits`);
         let taggedid = (msg.mentions && msg.mentions.users && msg.mentions.users.first()) ? msg.mentions.users.first().id : false;
         if (!taggedid) return msg.channel.embed("Invalid tagged user");
 

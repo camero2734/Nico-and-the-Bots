@@ -1,5 +1,6 @@
 module.exports = {
     execute: async function (msg) {
+        return msg.channel.embed("This command is disabled");
         const { loadImage, createCanvas, registerFont } =  Canvas;
 
         let subcommands = [

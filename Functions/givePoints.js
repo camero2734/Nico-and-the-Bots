@@ -37,7 +37,7 @@ module.exports = async function(msg, connection, Discord) {
         // XP time
         else {
             // Calculate multiplier for XP
-            let { multipliers } = await getMultipliers(); // all = {user_id, channel_id, message_id, time}
+            // let { multipliers } = await getMultipliers(); // all = {user_id, channel_id, message_id, time}
             let userMessages = await connection.getRepository(MessageLog).find({time: typeorm.MoreThan(preXP.nextTime), user_id: msg.author.id});
 
             let messageCount = userMessages.length;
@@ -49,8 +49,8 @@ module.exports = async function(msg, connection, Discord) {
             }
 
             for (let i = 0; i < userMessages.length; i++) {
-                if (!multipliers[userMessages[i].channel_id] || multipliers[userMessages[i].channel_id] === 0) continue;
-                sum += spamValue(i + 1) * multipliers[userMessages[i].channel_id];
+                // if (!multipliers[userMessages[i].channel_id] || multipliers[userMessages[i].channel_id] === 0) continue;
+                sum += spamValue(i + 1); //* multipliers[userMessages[i].channel_id];
             }
 
             let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });

@@ -40,7 +40,7 @@ const mime = require("mime");
 
 
 //SQLITE
-require('ts-node').register({});
+require('ts-node').register({ typeCheck: false, transpileOnly: true });
 global.typeorm = require("typeorm");
 
 //Function definitions
@@ -60,7 +60,7 @@ async function chooseKey() {
                     await nsfai.predict("https://thebalancedplate.files.wordpress.com/2008/05/bagel-group.jpg");
                     found = true;
                     next();
-                } catch(e) {
+                } catch (e) {
                     next();
                 }
             } else next();
@@ -71,7 +71,12 @@ async function chooseKey() {
         bot.guilds.get("269657133673349120").channels.get("470406597860917249").send("All NSFW keys have run out.");
     } else console.log(chalk.blueBright("Key chosen: " + nsfai.app._config.apiKey));
 }
-function runFunctions(guild) { remindersTimeoutCheck(guild); registerCommands(); removeNew(guild); songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord, chans); updateFMStats(guild, Discord, FMStats, Item, connection, typeorm, nodefetch); };
+function runFunctions(guild) {
+    remindersTimeoutCheck(guild);
+    registerCommands();
+    removeNew(guild);
+    // songDiscussion(guild); updateConcerts(guild, Discord); checkEvents(guild, Discord, chans); updateFMStats(guild, Discord, FMStats, Item, connection, typeorm, nodefetch);
+};
 Number.prototype.map = function (in_min, in_max, out_min, out_max) { return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min; };
 async function delay(ms) { return new Promise(resolve => { setTimeout(() => { resolve(); }, ms); }); }
 
@@ -160,7 +165,7 @@ let logQueue = [];
 
 //Command that runs commands within global scope
 Discord.Message.prototype.runCommand = function (name) {
-    command = hotload("./Commands/" + name + ".js", () => {});
+    command = hotload("./Commands/" + name + ".js", () => { });
     let fnctn = command.execute.toString();
     console.log("Command: " + chalk.green(name));
     eval("toRun = " + fnctn);
@@ -204,44 +209,42 @@ bot.on("ready", async () => {
         process.exit(0);
     }, 1000 * 60 * 60 * 6); // Restart every 2 hours
 
-
-    if (!tags["despacito"]) tags = JSON.parse(tags);
     console.log(`Logged in as ${bot.user.tag}!`);
     let guild = bot.guilds.get("269657133673349120");
-    let announceRole = guild?.roles?.get("357682068785856514");
+    let announceRole = guild ?.roles ?.get("357682068785856514");
     while (!announceRole) {
         console.log(chalk.bgYellow.black("Waiting for guild properties to be fetched..."))
         await new Promise(next => setTimeout(next, 100));
-        announceRole = guild?.roles?.get("357682068785856514");
+        announceRole = guild ?.roles ?.get("357682068785856514");
     }
+    await chooseKey();
     if (announceRole.mentionable) await announceRole.setMentionable(false);
 
-    chooseKey();
     console.log("going to run functions");
     runFunctions(guild);
     bot.user.setPresence({ game: { name: guild.memberCount + " members" } });
 
     if (guild.channels.get("470406597860917249")) guild.channels.get(chans.bottest).embed("Nico is on fire");
-    lotteryCheck(guild);
-    setInterval(async () => {
-        let currentTime = Date.now();
-        let goldLength = 86400000 * 7; // 1 WEEK
-
-        let goldTimes = await connection.getRepository(Counter).find({ title: "GoldCount", lastUpdated: typeorm.Between(1, currentTime - goldLength) });
-        for (let counter of goldTimes) {
-            counter.lastUpdated = 0;
-            let goldMem = guild.members.get(counter.id);
-            try {
-                await goldMem.removeRoles(["386969744709910530"]);
-            } catch (e) {
-                console.log(/ge/);
-                if (counter.id === "303234365163438081") console.log("found diana");
-            } finally {
-                await connection.manager.save(counter); //Remove no matter what
-            }
-
-        }
-    }, 1000 * 1000);
+    // lotteryCheck(guild);
+    // setInterval(async () => {
+    //     let currentTime = Date.now();
+    //     let goldLength = 86400000 * 7; // 1 WEEK
+    //
+    //     let goldTimes = await connection.getRepository(Counter).find({ title: "GoldCount", lastUpdated: typeorm.Between(1, currentTime - goldLength) });
+    //     for (let counter of goldTimes) {
+    //         counter.lastUpdated = 0;
+    //         let goldMem = guild.members.get(counter.id);
+    //         try {
+    //             await goldMem.removeRoles(["386969744709910530"]);
+    //         } catch (e) {
+    //             console.log(/ge/);
+    //             if (counter.id === "303234365163438081") console.log("found diana");
+    //         } finally {
+    //             await connection.manager.save(counter); //Remove no matter what
+    //         }
+    //
+    //     }
+    // }, 1000 * 1000);
     writeJSONFiles();
 });
 
@@ -342,12 +345,10 @@ bot.on("typingStart", async (channel, user) => {
 //Add or remove the VC role
 bot.on("voiceStateUpdate", (oldM, newM) => {
     return;
-    if (oldM.voiceChannel && typeof newM.voiceChannel === "undefined") newM.removeRole("465268535543988224");
-    if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
+    // if (oldM.voiceChannel && typeof newM.voiceChannel === "undefined") newM.removeRole("465268535543988224");
+    // if (typeof oldM.voiceChannel === "undefined" && newM.voiceChannel) newM.addRole("465268535543988224");
 });
 
-let messageQueue = [];
-// let lastCache = Date.now();
 
 //Give people points for their messages and log messages (exp)
 bot.on("message", async message => {
@@ -365,7 +366,7 @@ bot.on("message", async message => {
             let m = await cacheChannel.send(value.id, att);
             let cached = m.attachments.first().url;
             message.attachments.set(key, { ...value, cached });
-        } catch(e) {
+        } catch (e) {
             console.log(chalk.red(`Image#${key} dissolved`));
         }
     }
@@ -503,7 +504,7 @@ bot.on("message", async msg => {
         await msg.channel.embed(`${msg.author} Please do not send links to other servers`);
         await msg.delete();
         await msg.guild.channels.get(chans.invitelog).send(new Discord.RichEmbed().setTitle(`${msg.member.displayName} (${msg.author.id})`).addField("Message sent", msg.content.substring(0, 1000)).addField("Channel", msg.channel.name));
-        return msg.guild.channels.get(chans.invitelog).send("https://discord.gg/" + msg.content.match(/discord[. dot()]+gg(?!\/twentyonepilots)\/{0,1}([A-z0-9]+)/)?.[1]);
+        return msg.guild.channels.get(chans.invitelog).send("https://discord.gg/" + msg.content.match(/discord[. dot()]+gg(?!\/twentyonepilots)\/{0,1}([A-z0-9]+)/) ?.[1]);
     }
 
     if (msg.channel.id === chans.houseofgold) return hog(msg, Discord);
@@ -785,15 +786,15 @@ bot.on("messageUpdate", (oMessage, nMessage) => {
 
 });
 
-bot.on("guildBanAdd", (b_guild, b_user) => banHandler(b_guild, b_user, {chan: chans.banlog, Discord, banned: true}));
-bot.on("guildBanRemove", (b_guild, b_user) => banHandler(b_guild, b_user, {chan: chans.banlog, Discord, banned: false}));
+bot.on("guildBanAdd", (b_guild, b_user) => banHandler(b_guild, b_user, { chan: chans.banlog, Discord, banned: true }));
+bot.on("guildBanRemove", (b_guild, b_user) => banHandler(b_guild, b_user, { chan: chans.banlog, Discord, banned: false }));
 
 
 let recentReactions = [];
 
 bot.on("messageReactionRemove", async (reaction, user) => {
     if (reaction.message.channel.type === "dm") return;
-    let guild = await reaction.message?.guild;
+    let guild = await reaction.message ?.guild;
     if (!guild) return;
     let msg = await guild.channels.get(reaction.message.channel.id).fetchMessage(reaction.message.id);
     if (msg.channel.id === chans.topfeed) return;
@@ -884,7 +885,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
             let embed = response;
             let preGD = await connection.getRepository(Counter).findOne({ id: msg.author.id, title: "GoldCount" });
             if (!preGD) {
-                preGD = new Counter({id: msg.author.id, title: "GoldCount", count: 0})
+                preGD = new Counter({ id: msg.author.id, title: "GoldCount", count: 0 })
             }
             preGD.count++;
             preGD.lastUpdated = Date.now();
@@ -1070,7 +1071,7 @@ async function findClosestCommand(msg) {
 // }
 
 // let internetFailed = false;
-//
+
 // setInterval(async () => {
 //     try {
 //         await snekfetch.get("https://www.google.com/");

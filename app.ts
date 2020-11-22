@@ -1,16 +1,16 @@
 import * as Discord from "discord.js";
-import * as config from "./configuration/config";
-import { Command } from "./configuration/definitions";
-import * as secrets from "./configuration/secrets.json";
-import { CommandLoader } from "./helpers";
+import * as config from "configuration/config";
+import { Command } from "configuration/definitions";
+import * as secrets from "configuration/secrets.json";
+import * as helpers from "helpers";
 
 const commands: Command[] = [];
 
 const client = new Discord.Client();
 
 client.on("ready", () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    CommandLoader(commands);
+    console.log(`Logged in as ${client.user?.tag}!`);
+    helpers.loadCommands(commands);
 });
 
 client.on("message", (msg) => {

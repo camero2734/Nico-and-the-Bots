@@ -1,5 +1,5 @@
 import { Message, MessageEmbed } from "discord.js";
-import { Command, CommandError } from "../configuration/definitions";
+import { Command, CommandError } from "configuration/definitions";
 
 export default new Command({
     name: "8ball",

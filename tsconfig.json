@@ -1,15 +1,18 @@
 {
-    "ts-node": {
-        "compilerOptions": {
-            "module": "commonjs"
-        }
-    },
     "compilerOptions": {
-        "module": "ESNext",
+        "module": "commonjs",
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "noImplicitAny": true,
         "removeComments": true,
-        "target": "ESNext"
-    }
+        "target": "ESNext",
+        "baseUrl": "./src",
+        "outDir": "dist",
+        "strict": true,
+        "strictPropertyInitialization": false,
+        // "paths": {
+        //     "src/*": [ "./src/*" ],
+        // }
+    },
+    "compileOnSave": true
 }

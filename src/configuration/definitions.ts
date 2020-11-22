@@ -1,3 +1,7 @@
+/** DEFINITIONS.TS
+ * Contains types, classes, interfaces, etc.
+ */
+
 import { Message, MessageEmbed, TextChannel } from "discord.js";
 
 export class CommandError extends Error {}

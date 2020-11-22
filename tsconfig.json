@@ -1,8 +1,15 @@
 {
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs"
+        }
+    },
     "compilerOptions": {
-      "module": "ES2020",
-      "moduleResolution": "node",
-      "noImplicitAny": true,
-      "removeComments": true
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "target": "ESNext"
     }
 }

@@ -1,4 +1,5 @@
 import * as Discord from "discord.js";
+import * as secrets from "./secrets.json";
 
 const client = new Discord.Client();
 
@@ -12,4 +13,4 @@ client.on("message", (msg) => {
     }
 });
 
-client.login();
+client.login(config.bots.nico);

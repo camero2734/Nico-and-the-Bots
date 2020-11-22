@@ -1,19 +1,21 @@
 {
-  "name": "nico-next",
-  "version": "1.0.0",
-  "description": "Main bot for Discord Clique",
-  "main": "app.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "discord.js": "^12.5.0"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.8.1",
-    "eslint": "^7.14.0",
-    "prettier": "2.2.0"
-  }
+    "name": "nico-next",
+    "version": "1.0.0",
+    "description": "Main bot for Discord Clique",
+    "main": "app.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "ts-node app.ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "discord.js": "^12.5.0",
+        "typescript": "^4.2.0-dev.20201122"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^4.8.1",
+        "eslint": "^7.14.0",
+        "prettier": "2.2.0"
+    }
 }

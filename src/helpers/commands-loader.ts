@@ -10,8 +10,8 @@ import * as fs from "fs";
 export const loadCommands = async function (commands: Command[]) {
     const files = await fs.promises.readdir("./src/commands");
     for (const file of files) {
-        const command = (await import(`commands/${file}`)).default as Command;
-        if (typeof command.name !== "string") {
+        const command = (await import(`commands/${file}`))?.default as Command;
+        if (typeof command?.name !== "string") {
             console.log(`Malformed command: ${file}`);
         } else {
             if (command.category === "Staff") {

@@ -3,10 +3,20 @@
  */
 
 import { Message, MessageEmbed, TextChannel } from "discord.js";
+import { Connection } from "typeorm";
 
 export class CommandError extends Error {}
 
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info";
+
+export interface CommandMessage extends Message {
+    // The command used (no prefix)
+    command: string;
+    // All arguments (excluding command) in an array
+    args: string[];
+    // All arguments (excluding command) as a string
+    argsString: string;
+}
 
 interface ICommand {
     name: string;
@@ -15,7 +25,7 @@ interface ICommand {
     usage: string;
     example: string;
     prereqs?: Array<(msg: Message) => boolean>;
-    cmd: (msg: Message, args: string[], argsString: string) => Promise<void>;
+    cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
 }
 
 export class Command implements ICommand {
@@ -25,19 +35,22 @@ export class Command implements ICommand {
     public usage: string;
     public example: string;
     public prereqs: Array<(msg: Message) => boolean>;
-    public cmd: (msg: Message, args: string[], argsString: string) => Promise<void>;
+    public cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
+
     constructor(opts: ICommand) {
         this.prereqs = opts.prereqs || [];
         Object.assign(this, opts);
     }
 
-    async execute(msg: Message): Promise<boolean> {
+    async execute(msg: Message, connection: Connection): Promise<boolean> {
         const args = msg.content.split(" ");
         args.shift(); // Remove command
         const argsString = args.join(" ");
 
+        const pMsg = { ...msg, args, argsString } as CommandMessage;
+
         try {
-            await this.cmd(msg, args, argsString);
+            await this.cmd(pMsg, connection);
             return true;
         } catch (e) {
             if (e instanceof CommandError) await this.sendHelp(msg.channel as TextChannel, e.message);

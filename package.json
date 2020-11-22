@@ -10,7 +10,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "canvas": "^2.6.1",
         "discord.js": "^12.5.0",
+        "sqlite3": "^5.0.0",
         "typeorm": "^0.2.29",
         "typescript": "^4.2.0-dev.20201122"
     },
@@ -19,6 +21,7 @@
         "@typescript-eslint/eslint-plugin": "^4.8.1",
         "eslint": "^7.14.0",
         "prettier": "2.2.0",
+        "reflect-metadata": "^0.1.13",
         "ts-node-dev": "^1.0.0",
         "tsconfig-paths": "^3.9.0"
     }

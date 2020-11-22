@@ -1,5 +1,7 @@
 import { Message, MessageEmbed, TextChannel } from "discord.js";
 
+export class CommandError extends Error {}
+
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info";
 
 interface ICommand {
@@ -8,7 +10,7 @@ interface ICommand {
     category: CommandCategory;
     usage: string;
     example: string;
-    cmd: (args: string[], argsString: string) => Promise<boolean>;
+    cmd: (args: string[], argsString: string) => Promise<void>;
 }
 
 export class Command implements ICommand {
@@ -17,7 +19,7 @@ export class Command implements ICommand {
     public category: CommandCategory;
     public usage: string;
     public example: string;
-    public cmd: (args: string[], argsString: string) => Promise<boolean>;
+    public cmd: (args: string[], argsString: string) => Promise<void>;
     constructor(opts: ICommand) {
         Object.assign(this, opts);
     }
@@ -27,14 +29,24 @@ export class Command implements ICommand {
         args.shift(); // Remove command
         const argsString = args.join(" ");
 
-        const success = await this.cmd(args, argsString);
-        if (!success) await this.sendHelp(msg.channel as TextChannel);
-        return success;
+        try {
+            await this.cmd(args, argsString);
+            return true;
+        } catch (e) {
+            if (typeof e !== typeof CommandError) {
+                console.log("Uncaught Error in Command: ", e);
+            } else await this.sendHelp(msg.channel as TextChannel, e.message);
+            return false;
+        }
     }
 
-    async sendHelp(channel: TextChannel): Promise<void> {
+    async sendHelp(channel: TextChannel, text?: string): Promise<void> {
         const embed = new MessageEmbed();
         embed.setTitle(this.name);
+        if (text) {
+            embed.setDescription(text);
+            embed.addField("\u200b", "\u200b");
+        }
         embed.addField("Description", this.description);
         embed.addField("Usage", this.usage);
         embed.addField("Example", this.example);

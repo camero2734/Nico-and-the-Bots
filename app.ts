@@ -13,4 +13,4 @@ client.on("message", (msg) => {
     }
 });
 
-client.login(config.bots.nico);
+client.login(secrets.tokens.nico);

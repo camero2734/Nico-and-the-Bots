@@ -1,4 +1,6 @@
+import { roles } from "configuration/config";
 import { Command } from "configuration/definitions";
+import { Message } from "discord.js";
 import * as fs from "fs";
 
 /**
@@ -11,6 +13,13 @@ export const loadCommands = async function (commands: Command[]) {
         const command = (await import(`commands/${file}`)).default as Command;
         if (typeof command.name !== "string") {
             console.log(`Malformed command: ${file}`);
-        } else commands.push(command);
+        } else {
+            if (command.category === "Staff") {
+                command.prereqs.push((msg: Message): boolean => {
+                    return !!msg.member?.roles.cache.has(roles.staff);
+                });
+            }
+            commands.push(command);
+        }
     }
 };

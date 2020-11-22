@@ -10,6 +10,7 @@
         "outDir": "dist",
         "strict": true,
         "strictPropertyInitialization": false,
+        "experimentalDecorators": true
         // "paths": {
         //     "src/*": [ "./src/*" ],
         // }

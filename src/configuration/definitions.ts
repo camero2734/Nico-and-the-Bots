@@ -14,6 +14,7 @@ interface ICommand {
     category: CommandCategory;
     usage: string;
     example: string;
+    prereqs?: Array<(msg: Message) => boolean>;
     cmd: (msg: Message, args: string[], argsString: string) => Promise<void>;
 }
 
@@ -23,8 +24,10 @@ export class Command implements ICommand {
     public category: CommandCategory;
     public usage: string;
     public example: string;
+    public prereqs: Array<(msg: Message) => boolean>;
     public cmd: (msg: Message, args: string[], argsString: string) => Promise<void>;
     constructor(opts: ICommand) {
+        this.prereqs = opts.prereqs || [];
         Object.assign(this, opts);
     }
 

@@ -1,3 +1,4 @@
 secrets.json*
 node_modules
 dist
+discord.sqlite

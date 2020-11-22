@@ -1,32 +1,38 @@
-import {
-    DiscordAPIError,
-    Message,
-    MessageEmbed,
-    TextChannel
-} from "discord.js";
+import { Message, MessageEmbed, TextChannel } from "discord.js";
 
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info";
 
-export class Command {
-    constructor(
-        public name: string,
-        public description: string,
-        public category: CommandCategory,
-        public usage: string,
-        public example: string,
-        public cmd: (args: string[], argsString: string) => Promise<boolean>
-    ) {}
+interface ICommand {
+    name: string;
+    description: string;
+    category: CommandCategory;
+    usage: string;
+    example: string;
+    cmd: (args: string[], argsString: string) => Promise<boolean>;
+}
 
-    async execute(msg: Message) {
+export class Command implements ICommand {
+    public name: string;
+    public description: string;
+    public category: CommandCategory;
+    public usage: string;
+    public example: string;
+    public cmd: (args: string[], argsString: string) => Promise<boolean>;
+    constructor(opts: ICommand) {
+        Object.assign(this, opts);
+    }
+
+    async execute(msg: Message): Promise<boolean> {
         const args = msg.content.split(" ");
         args.shift(); // Remove command
         const argsString = args.join(" ");
 
         const success = await this.cmd(args, argsString);
-        if (!success) return this.sendHelp(msg.channel as TextChannel);
+        if (!success) await this.sendHelp(msg.channel as TextChannel);
+        return success;
     }
 
-    async sendHelp(channel: TextChannel) {
+    async sendHelp(channel: TextChannel): Promise<void> {
         const embed = new MessageEmbed();
         embed.setTitle(this.name);
         embed.addField("Description", this.description);

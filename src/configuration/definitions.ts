@@ -37,20 +37,19 @@ export class Command implements ICommand {
             await this.cmd(msg, args, argsString);
             return true;
         } catch (e) {
-            if (typeof e !== typeof CommandError) {
-                console.log("Uncaught Error in Command: ", e);
-            } else await this.sendHelp(msg.channel as TextChannel, e.message);
+            if (e instanceof CommandError) await this.sendHelp(msg.channel as TextChannel, e.message);
+            else console.log("Uncaught Error in Command: ", e);
             return false;
         }
     }
 
     async sendHelp(channel: TextChannel, text?: string): Promise<void> {
         const embed = new MessageEmbed();
-        embed.setTitle(this.name);
+
         if (text) {
-            embed.setDescription(text);
-            embed.addField("\u200b", "\u200b");
-        }
+            embed.setTitle("Error!");
+            embed.setDescription(`**${text}**\n\nHere's some help on how to use this command:`);
+        } else embed.setTitle(this.name);
         embed.addField("Description", this.description);
         embed.addField("Usage", this.usage);
         embed.addField("Example", this.example);

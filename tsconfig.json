@@ -13,6 +13,5 @@
         // "paths": {
         //     "src/*": [ "./src/*" ],
         // }
-    },
-    "compileOnSave": true
+    }
 }

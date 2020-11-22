@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "module": "ES2020",
+      "moduleResolution": "node",
+      "noImplicitAny": true,
+      "removeComments": true
+    }
+}

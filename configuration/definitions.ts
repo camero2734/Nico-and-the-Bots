@@ -10,7 +10,7 @@ interface ICommand {
     category: CommandCategory;
     usage: string;
     example: string;
-    cmd: (args: string[], argsString: string) => Promise<void>;
+    cmd: (msg: Message, args: string[], argsString: string) => Promise<void>;
 }
 
 export class Command implements ICommand {
@@ -19,7 +19,7 @@ export class Command implements ICommand {
     public category: CommandCategory;
     public usage: string;
     public example: string;
-    public cmd: (args: string[], argsString: string) => Promise<void>;
+    public cmd: (msg: Message, args: string[], argsString: string) => Promise<void>;
     constructor(opts: ICommand) {
         Object.assign(this, opts);
     }
@@ -30,7 +30,7 @@ export class Command implements ICommand {
         const argsString = args.join(" ");
 
         try {
-            await this.cmd(args, argsString);
+            await this.cmd(msg, args, argsString);
             return true;
         } catch (e) {
             if (typeof e !== typeof CommandError) {

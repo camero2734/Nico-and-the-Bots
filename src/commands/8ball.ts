@@ -1,6 +1,6 @@
-import { Message } from "discord.js";
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Connection } from "typeorm";
+import { TextChannel } from "discord.js";
+import { MessageTools } from "helpers";
 
 export default new Command({
     name: "8ball",
@@ -8,7 +8,7 @@ export default new Command({
     category: "Games",
     usage: "!8ball [question]",
     example: "!8ball Is Clear the best song?",
-    async cmd(msg: CommandMessage, connection: Connection) {
+    async cmd(msg: CommandMessage) {
         if (msg.args.length < 1) throw new CommandError("You didn't include a question!");
         const responses = [
             "Yes",
@@ -26,6 +26,17 @@ export default new Command({
 
         const response = responses[Math.floor(Math.random() * responses.length)];
 
-        await msg.channel.send(response);
+        const embed = MessageTools.textEmbed("Thinking...");
+
+        await MessageTools.timeMessages(msg.channel as TextChannel, [
+            {
+                content: embed,
+                waitBefore: 0
+            },
+            {
+                content: MessageTools.textEmbed(`**The Wise Nico Says:** ${response}`, embed.hexColor || undefined),
+                waitBefore: 3000
+            }
+        ]);
     }
 });

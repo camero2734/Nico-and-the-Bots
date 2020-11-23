@@ -6,6 +6,7 @@ import { Message, MessageEmbed, TextChannel } from "discord.js";
 import { Connection } from "typeorm";
 import * as chalk from "chalk";
 import { prefix } from "./config";
+import { MessageTools } from "helpers";
 
 export class CommandError extends Error {}
 
@@ -67,8 +68,14 @@ export class Command implements ICommand {
             await this.cmd(pMsg, connection);
             return true;
         } catch (e) {
-            if (e instanceof CommandError) await this.sendHelp(msg.channel as TextChannel, e.message);
-            else console.log("Uncaught Error in Command: ", e);
+            const channel = msg.channel as TextChannel;
+            if (e instanceof CommandError) await this.sendHelp(channel, e.message);
+            else {
+                console.log("Uncaught Error in Command: ", e);
+                await channel.send(
+                    MessageTools.textEmbed(`I encountered an error in \`!${pMsg.command}\`. It's not your fault.`)
+                );
+            }
             return false;
         }
     }

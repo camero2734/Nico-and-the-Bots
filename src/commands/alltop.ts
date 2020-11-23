@@ -5,11 +5,11 @@ import { MessageAttachment } from "discord.js";
 import { Connection } from "typeorm";
 
 export default new Command({
-    name: "top",
-    description: "Displays a leaderboard highlighting who has earned the most points *this month*",
+    name: "alltop",
+    description: "Displays a leaderboard highlighting who has earned the most points *of all time*",
     category: "Info",
-    usage: "!top (page #)",
-    example: "!top 5",
+    usage: "!alltop (page #)",
+    example: "!alltop 5",
     async cmd(msg: CommandMessage, connection: Connection): Promise<void> {
         // Canvas Initialization
         const canvas = createCanvas(500, 600);
@@ -38,7 +38,7 @@ export default new Command({
         const economies = await connection
             .getRepository(Economy)
             .createQueryBuilder("e")
-            .orderBy("e.monthlyScore", "DESC")
+            .orderBy("e.alltimeScore", "DESC")
             .limit(10)
             .offset(10 * page - 10)
             .getMany();
@@ -85,11 +85,11 @@ export default new Command({
             //Level and points
             ctx.font = "16px futura";
             ctx.fillStyle = "white";
-            ctx.fillText("Level: " + ec.monthlyLevel, 300, startY + 43 + 45.9 * diff);
-            ctx.fillText("Points: " + ec.monthlyScore, 165, startY + 43 + 46.1 * diff);
+            ctx.fillText("Level: " + ec.alltimeLevel, 300, startY + 43 + 45.9 * diff);
+            ctx.fillText("Points: " + ec.alltimeScore, 165, startY + 43 + 46.1 * diff);
 
             //Time hehe
-            const hours = (ec.monthlyScore / 300).toFixed(2);
+            const hours = (ec.alltimeScore / 300).toFixed(2);
             ctx.fillStyle = "#00ff00";
             ctx.fillText(`(${hours} hrs)`, 380, startY + 43 + 45.9 * diff);
 

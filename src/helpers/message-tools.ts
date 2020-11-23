@@ -1,4 +1,5 @@
-import { APIMessageContentResolvable, Message, MessageEmbed, TextChannel, User } from "discord.js";
+import { CommandMessage } from "configuration/definitions";
+import { APIMessageContentResolvable, GuildMember, Message, MessageEmbed, TextChannel, User } from "discord.js";
 
 export interface TimedMessage {
     // The thing to send
@@ -8,6 +9,13 @@ export interface TimedMessage {
 }
 
 export const MessageTools = {
+    async getMentionedMember(msg: CommandMessage): Promise<GuildMember | null> {
+        const user = this.getMentionedUser(msg);
+        if (!user) return null;
+
+        const member = await msg.guild.members.fetch(user.id).catch(() => null);
+        return member;
+    },
     getMentionedUser(msg: Message): User | null {
         const user = msg.mentions?.users?.first() || null;
         return user;

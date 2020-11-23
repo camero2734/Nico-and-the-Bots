@@ -72,6 +72,8 @@ export const userIDs = {
 };
 export const roles = {
     staff: "330877657132564480",
+    muted: "278225702455738368",
+    banditos: "269660541738418176",
     albums: {
         TRENCH: "466627343520104449",
         BF: "319620325224480768",

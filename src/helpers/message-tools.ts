@@ -36,5 +36,16 @@ export const MessageTools = {
                 prevMessage.edit(msg.content);
             }
         }
+    },
+    async awaitMessage(msg: Message, timeMS: number): Promise<Message | null> {
+        const filter = (m: Message) => m.author.id === msg.author.id;
+        try {
+            const collected = await msg.channel.awaitMessages(filter, { max: 1, time: timeMS, errors: ["time"] });
+            const awaitedMessage = collected.first();
+
+            return awaitedMessage || null;
+        } catch (e) {
+            return null;
+        }
     }
 };

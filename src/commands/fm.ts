@@ -47,7 +47,7 @@ interface RecentTracks {
     track: Track[];
 }
 
-interface RecentTracksResponse {
+export interface RecentTracksResponse {
     recenttracks: RecentTracks;
 }
 

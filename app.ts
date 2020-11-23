@@ -37,7 +37,10 @@ client.on("message", (msg) => {
 
     if (msg.content.startsWith(config.prefix)) {
         const commandName = msg.content.split(" ")[0].substring(config.prefix.length).toLowerCase();
-        const command = commands.find((c) => c.name === commandName);
+        const command = commands.find((c) => {
+            if (c.name === commandName) return true;
+            else return c.aliases.some((a) => a === commandName);
+        });
         if (!command) return msg.channel.send("I couldn't find that command!");
 
         command.execute(msg, connection);

@@ -27,6 +27,7 @@ interface ICommand {
     category: CommandCategory;
     usage: string;
     example: string;
+    aliases?: string[];
     prereqs?: Array<(msg: Message) => boolean>;
     cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
 }
@@ -37,11 +38,13 @@ export class Command implements ICommand {
     public category: CommandCategory;
     public usage: string;
     public example: string;
+    public aliases: string[];
     public prereqs: Array<(msg: Message) => boolean>;
     public cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
 
     constructor(opts: ICommand) {
         this.prereqs = opts.prereqs || [];
+        this.aliases = opts.aliases || [];
         Object.assign(this, opts);
     }
 

@@ -9,7 +9,7 @@ let ready = false;
 const commands: Command[] = [];
 let connection: Connection;
 
-const client = new Discord.Client();
+const client = new Discord.Client({ fetchAllMembers: true });
 
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);

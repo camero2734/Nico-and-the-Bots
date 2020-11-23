@@ -9,7 +9,7 @@ import { prefix } from "./config";
 
 export class CommandError extends Error {}
 
-export type CommandCategory = "Staff" | "Games" | "Economy" | "Info";
+export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles";
 
 export interface CommandMessage extends Message {
     // The command used (no prefix)
@@ -49,12 +49,16 @@ export class Command implements ICommand {
         const cmd = args.shift()?.substring(prefix.length); // Remove command
         const argsString = args.join(" ");
 
+        const member = msg.member || (await msg.guild?.members.fetch(msg.author.id));
+        const guild = msg.guild || member?.guild;
+
         const pMsg = {
             ...msg,
             args,
             argsString,
             command: cmd,
-            guild: msg.guild || msg.member?.guild
+            member,
+            guild
         } as CommandMessage;
 
         this.logToConsole(pMsg);

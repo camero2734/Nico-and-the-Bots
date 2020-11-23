@@ -28,7 +28,7 @@
 		  "    category: \"$3\",",
 		  "    usage: \"!$1 $4\",",
 		  "    example: \"!$1 $5\",",
-		  "    async cmd(msg: CommandMessage, connection: Connection) {",
+		  "    async cmd(msg: CommandMessage, connection: Connection): Promise<void> {",
 		  "        $0",
 		  "    }",
 		  "});",

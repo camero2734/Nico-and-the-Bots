@@ -28,7 +28,7 @@ interface ICommand {
     usage: string;
     example: string;
     aliases?: string[];
-    prereqs?: Array<(msg: Message) => boolean>;
+    prereqs?: Array<(msg: CommandMessage) => boolean>;
     cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
 }
 
@@ -39,7 +39,7 @@ export class Command implements ICommand {
     public usage: string;
     public example: string;
     public aliases: string[];
-    public prereqs: Array<(msg: Message) => boolean>;
+    public prereqs: Array<(msg: CommandMessage) => boolean>;
     public cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
 
     constructor(opts: ICommand) {
@@ -56,7 +56,7 @@ export class Command implements ICommand {
         const member = msg.member || (await msg.guild?.members.fetch(msg.author.id));
         const guild = msg.guild || member?.guild;
 
-        const pMsg = {
+        const cmsg = {
             ...msg,
             args,
             argsString,
@@ -65,10 +65,13 @@ export class Command implements ICommand {
             guild
         } as CommandMessage;
 
-        this.logToConsole(pMsg);
+        this.logToConsole(cmsg);
 
         try {
-            await this.cmd(pMsg, connection);
+            for (const passes of this.prereqs) {
+                if (!passes(cmsg)) throw new CommandError("You do not have permission to use this command");
+            }
+            await this.cmd(cmsg, connection);
             return true;
         } catch (e) {
             const channel = msg.channel as TextChannel;
@@ -76,7 +79,7 @@ export class Command implements ICommand {
             else {
                 console.log("Uncaught Error in Command: ", e);
                 await channel.send(
-                    MessageTools.textEmbed(`I encountered an error in \`!${pMsg.command}\`. It's not your fault.`)
+                    MessageTools.textEmbed(`I encountered an error in \`!${cmsg.command}\`. It's not your fault.`)
                 );
             }
             return false;
@@ -98,11 +101,11 @@ export class Command implements ICommand {
         await channel.send(embed);
     }
 
-    logToConsole(pMsg: CommandMessage): void {
+    logToConsole(cmsg: CommandMessage): void {
         const { red, gray, yellow } = chalk;
-        console.log(red(`!${pMsg.command}`) + ":");
-        console.log(`\t${gray("Args:")} ${yellow(`[${pMsg.args}]`)}`);
-        console.log(`\t${gray("From:")} ${yellow(pMsg.author.username)}`);
-        console.log(`\t${gray("In:")} ${yellow((pMsg.channel as TextChannel).name)}`);
+        console.log(red(`!${cmsg.command}`) + ":");
+        console.log(`\t${gray("Args:")} ${yellow(`[${cmsg.args}]`)}`);
+        console.log(`\t${gray("From:")} ${yellow(cmsg.author.username)}`);
+        console.log(`\t${gray("In:")} ${yellow((cmsg.channel as TextChannel).name)}`);
     }
 }

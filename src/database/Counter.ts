@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, BaseEntity} from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
 
 @Entity()
 export class Counter extends BaseEntity {
@@ -17,7 +17,7 @@ export class Counter extends BaseEntity {
     @Column("int")
     lastUpdated: number;
 
-    constructor(params: { id: string, title: string, count: number, lastUpdated: number }) {
+    constructor(params: { id: string; title: string; count?: number; lastUpdated?: number }) {
         super();
         if (params) {
             this.id = params.id;

@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryColumn, BaseEntity} from "typeorm";
+import { Entity, Column, PrimaryColumn, BaseEntity } from "typeorm";
 
 @Entity()
 export class Economy extends BaseEntity {
@@ -41,7 +41,21 @@ export class Economy extends BaseEntity {
     @Column("int")
     alltimeLevel: number;
 
-    constructor(params: { id: string, blurrytokens: number, steals: number, blocks: number, ingots: number, trophies: number, credits: number, lastDaily: number, dailyCount: number, monthlyScore: number, alltimeScore: number, monthlyLevel: number, alltimeLevel: number}) {
+    constructor(params: {
+        id: string;
+        blurrytokens?: number;
+        steals?: number;
+        blocks?: number;
+        ingots?: number;
+        trophies?: number;
+        credits?: number;
+        lastDaily?: number;
+        dailyCount?: number;
+        monthlyScore?: number;
+        alltimeScore?: number;
+        monthlyLevel?: number;
+        alltimeLevel?: number;
+    }) {
         super();
         if (params) {
             this.id = params.id;
@@ -57,7 +71,6 @@ export class Economy extends BaseEntity {
             this.alltimeScore = params.alltimeScore || 0;
             this.monthlyLevel = params.monthlyLevel || 0;
             this.alltimeLevel = params.alltimeLevel || 0;
-
         }
     }
 }

@@ -1,11 +1,11 @@
-import { Message } from "discord.js";
-import { Command, CommandError, PlusMessage } from "configuration/definitions";
+import { createCanvas, loadImage, registerFont } from "canvas";
 import { roles } from "configuration/config";
-import { createCanvas, loadImage, Image, registerFont } from "canvas";
-import { MessageTools } from "helpers";
+import { Command, CommandError, CommandMessage } from "configuration/definitions";
 import { Counter } from "database/Counter";
 import { Economy } from "database/Economy";
-import { Connection } from "typeorm";
+import { MessageAttachment } from "discord.js";
+import { badgeLoader, MessageTools } from "helpers";
+import { Connection, MoreThan } from "typeorm";
 
 export default new Command({
     name: "score",
@@ -13,30 +13,34 @@ export default new Command({
     category: "Info",
     usage: "!score (@user)",
     example: "!score",
-    async cmd(msg: PlusMessage, connection: Connection): Promise<void> {
-        let albumsArray = Object.values(roles.albums);
+    async cmd(msg: CommandMessage, connection: Connection): Promise<void> {
+        const albumRoles = roles.albums;
 
         const user = MessageTools.getMentionedUser(msg);
 
-        if (user && user.bot) {
-            // prettier-ignore
-            msg.channel.send(MessageTools.textEmbed("Bots scores are confidential. Please provide an access card to Area 51 to continue."));
-            return;
-        }
+        if (user && user.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
         // Determine which id to pull data from (mention or self)
         const userID = user ? user.id : msg.author.id;
+        const member = await msg.guild?.members.fetch(userID);
 
+        if (!member) throw new CommandError("Could not find mention to get score for");
+
+        // Fetch user's information
         let userGold = await connection.getRepository(Counter).findOne({ id: userID, title: "GoldCount" });
+        if (!userGold) userGold = new Counter({ id: userID, title: "GoldCount" });
         let userEconomy = await connection.getRepository(Economy).findOne({ id: userID });
         if (!userEconomy) userEconomy = new Economy({ id: userID });
-        let economies = await connection
-            .getRepository(Economy)
-            .find({ monthlyScore: typeorm.MoreThan(userEconomy.monthlyScore) });
-        let placeNum = economies.length + 1;
 
-        let getBadges = require("./badges.js");
-        let badges = await getBadges(msg.guild.members.get(userID), Image, userGold, placeNum);
+        // Calculate a users place
+        const economies = await connection
+            .getRepository(Economy)
+            .find({ monthlyScore: MoreThan(userEconomy.monthlyScore) });
+        const placeNum = economies.length + 1;
+
+        // Get images to place on card as badges
+        const badges = await badgeLoader(member, userGold, placeNum, connection);
+
         //CALCULATE POINTS TO NEXT LEVEL
         let rq = 100;
         let totalscore = 0;
@@ -48,62 +52,47 @@ export default new Command({
             rq = rq + 21 - Math.pow(1.001450824, rq);
             cL++;
         }
-        var rem = Math.floor(totalscore - userEconomy.alltimeScore) + 1; //REMAINING TO NEXT LEVEL
-        let diff = Math.floor(totalscore - previousScore); //TOTAL TO NEXT LEVEL
-        let percent = (1 - rem / diff).toFixed(3); //RATIO OF REMAINING TO TOTAL
+        const rem = Math.floor(totalscore - userEconomy.alltimeScore) + 1; //REMAINING TO NEXT LEVEL
+        const diff = Math.floor(totalscore - previousScore); //TOTAL TO NEXT LEVEL
+        const percent = (1 - rem / diff).toFixed(3); //RATIO OF REMAINING TO TOTAL
 
         //LOAD FONTS
-        registerFont("./assets/fonts/h.ttf", { family: "futura" });
-        registerFont("./assets/fonts/f.ttf", { family: "futura" });
-        registerFont("./assets/fonts/NotoEmoji-Regular.ttf", { family: "futura" });
-        registerFont("./assets/fonts/a.ttf", { family: "futura" });
-        registerFont("./assets/fonts/j.ttf", { family: "futura" });
-        registerFont("./assets/fonts/c.ttf", { family: "futura" });
-        registerFont("./assets/fonts/br.ttf", { family: "futura" });
+        const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
+        for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
 
         //FIND USER ALBUM ROLE (TRENCH => DEFAULT)
-        let src = albumsArray.find((id) => msg.guild.members.get(userID).roles.get(id)) || TRENCH;
+        const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.TRENCH;
 
         //changes font color based on background color
-        let invertedRoles = [VSL, NPI, RAB, ST];
-        let inverted = false;
-        if (invertedRoles.indexOf(src) !== -1) inverted = true;
-
-        //INITIALIZE IMAGES
-        var img = new Image();
-        var background = new Image();
-        var goldcircle = new Image();
+        const invertedRoles = [albumRoles.VSL, albumRoles.NPI, albumRoles.RAB, albumRoles.ST];
+        const inverted = invertedRoles.indexOf(src) !== -1;
 
         //Create canvas
-        var canvas = createCanvas(500, 500);
-        var ctx = canvas.getContext("2d");
+        const canvas = createCanvas(500, 500);
+        const ctx = canvas.getContext("2d");
 
-        //BACKGROUND SRC
-        background.src = "./albums/" + src + ".png";
+        // Get images
+        let avatar_url = member.user.avatarURL({ format: "png", size: 512 });
+        if (!avatar_url) avatar_url = `https://ui-avatars.com/api/?background=random&name=${member.displayName}`;
 
-        //IMG SRC
-        let avatar_url = msg.guild.members.get(userID).user.displayAvatarURL.split("?").reverse().pop();
-        let avt_r = await snekfetch.get(avatar_url);
-        img.src = avt_r.body;
-
-        //GOLD SRC
-        goldcircle.src = "./badges/goldcircle.png";
+        const img = await loadImage(avatar_url);
+        const goldcircle = await loadImage("./src/assets/badges/goldcircle.png");
+        const background = await loadImage(`./src/assets/albums/${src}.png`);
 
         //FIND SHORTEST NAME FOR USER
-        var username = msg.guild.members.get(userID).displayName;
-        if (msg.guild.members.get(userID).user.username.length < username.length)
-            username = msg.guild.members.get(userID).user.username;
+        let username = member.displayName;
+        if (member.user.username.length < username.length) username = member.user.username;
 
         //MAKE TEXT FIT
-        let maxWidth = 210;
-        let maxHeight = 50;
+        const maxWidth = 210;
+        const maxHeight = 50;
         let measuredTextWidth = 1000;
         let measuredTextHeight = 1000;
         let checkingSize = 100;
         while ((measuredTextWidth > maxWidth || measuredTextHeight > maxHeight) && checkingSize > 5) {
             checkingSize--;
             ctx.font = checkingSize + "px futura";
-            let textInfo = ctx.measureText(username);
+            const textInfo = ctx.measureText(username);
             measuredTextWidth = textInfo.width;
             measuredTextHeight = textInfo.emHeightAscent + textInfo.emHeightDescent;
         }
@@ -114,35 +103,35 @@ export default new Command({
         //USERNAME
         ctx.font = checkingSize + "px futura";
         ctx.textAlign = "start";
-        ctx.fillStyle = src === TRENCH ? "black" : inverted ? "black" : "white";
+        ctx.fillStyle = src === albumRoles.TRENCH ? "black" : inverted ? "black" : "white";
         ctx.fillText(username, 177, 90);
         //POINTS
         ctx.font = "30px futura";
         ctx.fillStyle = inverted ? "black" : "white";
         ctx.fillText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 17, 258);
         //LEVEL
-        ctx.fillText(userEconomy.alltimeLevel, 17, 193);
+        ctx.fillText(`${userEconomy.alltimeLevel}`, 17, 193);
         //LEVEL UP BAR / POINTS TO NEXT LEVEL
-        let colorsArray = ["#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];
+        const colorsArray = ["#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];
         ctx.save();
         ctx.fillStyle = "#555555"; //BACKGROUND BAR
         ctx.fillRect(20, 360, 186, 30);
-        ctx.fillStyle = colorsArray[albumsArray.indexOf(src)];
-        ctx.fillRect(20, 360, 186 * percent, 30);
+        ctx.fillStyle = colorsArray[Object.values(albumRoles).indexOf(src)];
+        ctx.fillRect(20, 360, 186 * Number(percent), 30);
         ctx.textAlign = "center";
         ctx.fillStyle = "white";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 3;
-        ctx.strokeText(rem, 113, 387);
-        ctx.fillText(rem, 113, 387);
+        ctx.strokeText(`${rem}`, 113, 387);
+        ctx.fillText(`${rem}`, 113, 387);
         ctx.restore();
         //CREDITS
-        ctx.fillText(userEconomy.credits, 17, 322);
+        ctx.fillText(`${userEconomy.credits}`, 17, 322);
         //GOLD
-        let goldx = 15;
-        let goldy = 394;
+        const goldx = 15;
+        const goldy = 394;
         ctx.drawImage(goldcircle, goldx, goldy, 30, 30);
-        let goldnum = userGold && userGold.count ? userGold.count : 0;
+        const goldnum = userGold && userGold.count ? userGold.count : 0;
         ctx.textAlign = "start";
         ctx.fillStyle = inverted ? "black" : "white";
         ctx.fillText("x" + goldnum, goldx + 35, goldy + 26);
@@ -150,13 +139,13 @@ export default new Command({
         if (badges.length > 0) {
             for (let i = 0; i < badges.length; i++) {
                 //Initial x value
-                var y_val = 158;
+                const y_val = 158;
                 //Num. of badges in each column
-                var maxbadges = 3;
+                const maxbadges = 3;
                 //Calculate y value depending on i #
-                var x_val = 80 * (i % maxbadges) + 241;
+                const x_val = 80 * (i % maxbadges) + 241;
                 //Calculate x shift
-                let shift = Math.floor(i / maxbadges) * 80;
+                const shift = Math.floor(i / maxbadges) * 80;
                 //Draw the badges!
                 ctx.drawImage(badges[i], x_val, y_val + shift, 75, 75);
             }
@@ -164,8 +153,10 @@ export default new Command({
         //MONTHLY RANKING
         ctx.font = "30px futura";
         ctx.textAlign = "start";
-        ctx.fillStyle = src === TRENCH ? "black" : inverted ? "black" : "white";
-        ctx.fillText(placeNum, 41, 50);
-        await msg.channel.send({ file: canvas.toBuffer() });
+        ctx.fillStyle = src === albumRoles.TRENCH ? "black" : inverted ? "black" : "white";
+        ctx.fillText(`${placeNum}`, 41, 50);
+
+        const attachment = new MessageAttachment(canvas.toBuffer(), "score.png");
+        await msg.channel.send(attachment);
     }
 });

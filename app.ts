@@ -6,7 +6,7 @@ import * as helpers from "helpers";
 import { Connection } from "typeorm";
 
 let ready = false;
-let commands: Command[] = [];
+const commands: Command[] = [];
 let connection: Connection;
 
 const client = new Discord.Client();
@@ -18,10 +18,17 @@ client.on("ready", async () => {
     await Promise.all([
         //
         helpers.loadCommands(commands),
-        helpers.connectToDatabase(connection)
+        new Promise((resolve) => {
+            helpers.connectToDatabase().then((c) => {
+                connection = c;
+                resolve(true);
+            });
+        })
     ]);
 
     ready = true;
+
+    console.log("Bot initialized");
 });
 
 client.on("message", (msg) => {

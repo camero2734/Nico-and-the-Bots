@@ -12,7 +12,7 @@ export const MessageTools = {
         const user = msg.mentions?.users?.first() || null;
         return user;
     },
-    textEmbed(text: string, color?: string): MessageEmbed {
+    textEmbed(text: string, color?: string | null): MessageEmbed {
         const embed = new MessageEmbed();
         embed.setDescription(text);
         embed.setColor(color || "RANDOM");

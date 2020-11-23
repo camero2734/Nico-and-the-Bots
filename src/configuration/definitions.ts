@@ -2,7 +2,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Message, MessageEmbed, TextChannel } from "discord.js";
+import { GuildMember, Message, MessageEmbed, TextChannel } from "discord.js";
 import { Connection } from "typeorm";
 import * as chalk from "chalk";
 import { prefix } from "./config";
@@ -19,6 +19,8 @@ export interface CommandMessage extends Message {
     args: string[];
     // All arguments (excluding command) as a string
     argsString: string;
+    // This is required, unlike Message itself
+    member: GuildMember;
 }
 
 interface ICommand {
@@ -79,7 +81,9 @@ export class Command implements ICommand {
             else {
                 console.log("Uncaught Error in Command: ", e);
                 await channel.send(
-                    MessageTools.textEmbed(`I encountered an error in \`!${cmsg.command}\`. It's not your fault.`)
+                    MessageTools.textEmbed(
+                        `I encountered an error in \`${prefix}${cmsg.command}\`. It's not your fault.`
+                    )
                 );
             }
             return false;

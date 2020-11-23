@@ -2,7 +2,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { GuildMember, Message, MessageEmbed, TextChannel } from "discord.js";
+import { Guild, GuildMember, Message, MessageEmbed, TextChannel } from "discord.js";
 import { Connection } from "typeorm";
 import * as chalk from "chalk";
 import { prefix } from "./config";
@@ -21,6 +21,8 @@ export interface CommandMessage extends Message {
     argsString: string;
     // This is required, unlike Message itself
     member: GuildMember;
+    // This is required, unlike Message itself
+    guild: Guild;
 }
 
 interface ICommand {

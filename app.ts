@@ -47,4 +47,4 @@ client.on("message", (msg) => {
     }
 });
 
-client.login(secrets.tokens.nico);
+client.login(secrets.bots.nico);

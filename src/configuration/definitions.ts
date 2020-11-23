@@ -10,7 +10,7 @@ import { MessageTools } from "helpers";
 
 export class CommandError extends Error {}
 
-export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles";
+export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social";
 
 export interface CommandMessage extends Message {
     // The command used (no prefix)

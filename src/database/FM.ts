@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryColumn, BaseEntity} from "typeorm";
+import { Entity, Column, PrimaryColumn, BaseEntity } from "typeorm";
 
 @Entity()
 export class FM extends BaseEntity {
@@ -23,7 +23,15 @@ export class FM extends BaseEntity {
     @Column("int")
     time: number;
 
-    constructor(params: { id: string, message_id: string, track: string, album: string, artist: string, stars: number, time: number }) {
+    constructor(params: {
+        id: string;
+        message_id: string;
+        track: string;
+        album: string;
+        artist: string;
+        stars?: number;
+        time?: number;
+    }) {
         super();
         if (params) {
             this.id = params.id;

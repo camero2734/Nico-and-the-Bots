@@ -23,6 +23,8 @@ export interface CommandMessage extends Message {
     member: GuildMember;
     // This is required, unlike Message itself
     guild: Guild;
+    // Run another command
+    runCommand: (m: Message) => ReturnType<Command["execute"]>;
 }
 
 interface ICommand {
@@ -57,17 +59,13 @@ export class Command implements ICommand {
         const cmd = args.shift()?.substring(prefix.length) || ""; // Remove command
         const argsString = args.join(" ");
 
-        // const member = msg.member || (await msg.guild?.members.fetch(msg.author.id));
-        // const guild = msg.guild || member?.guild;
-
         const cmsg = msg as CommandMessage;
         cmsg.args = args;
         cmsg.argsString = argsString;
         cmsg.command = cmd;
-
-        console.log(typeof msg.client, /BEFORE/);
-
-        console.log(typeof cmsg.client, /AFTER/);
+        cmsg.runCommand = async (m: Message) => {
+            return await this.execute(m, connection);
+        };
 
         this.logToConsole(cmsg);
 

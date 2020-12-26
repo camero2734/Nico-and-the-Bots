@@ -27,7 +27,7 @@ export const MessageTools = {
         return embed;
     },
     async timeMessages(channel: TextChannel, msgs: TimedMessage[], sendSeparate = false): Promise<void> {
-        let prevMessage = (null as unknown) as Message;
+        let prevMessage = (undefined as unknown) as Message;
         for (const msg of msgs) {
             await new Promise((resolve) => setTimeout(resolve, msg.waitBefore));
             if (sendSeparate || !prevMessage) {

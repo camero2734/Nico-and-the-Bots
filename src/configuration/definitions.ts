@@ -54,20 +54,20 @@ export class Command implements ICommand {
 
     async execute(msg: Message, connection: Connection): Promise<boolean> {
         const args = msg.content.split(" ");
-        const cmd = args.shift()?.substring(prefix.length); // Remove command
+        const cmd = args.shift()?.substring(prefix.length) || ""; // Remove command
         const argsString = args.join(" ");
 
-        const member = msg.member || (await msg.guild?.members.fetch(msg.author.id));
-        const guild = msg.guild || member?.guild;
+        // const member = msg.member || (await msg.guild?.members.fetch(msg.author.id));
+        // const guild = msg.guild || member?.guild;
 
-        const cmsg = {
-            ...msg,
-            args,
-            argsString,
-            command: cmd,
-            member,
-            guild
-        } as CommandMessage;
+        const cmsg = msg as CommandMessage;
+        cmsg.args = args;
+        cmsg.argsString = argsString;
+        cmsg.command = cmd;
+
+        console.log(typeof msg.client, /BEFORE/);
+
+        console.log(typeof cmsg.client, /AFTER/);
 
         this.logToConsole(cmsg);
 

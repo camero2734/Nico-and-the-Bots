@@ -16,7 +16,7 @@ client.on("ready", async () => {
 
     // Initialize everything
     await Promise.all([
-        //
+        // Wait until commands are loaded, connected to database, etc.
         helpers.loadCommands(commands),
         new Promise((resolve) => {
             helpers.connectToDatabase().then((c) => {
@@ -32,7 +32,6 @@ client.on("ready", async () => {
 });
 
 client.on("message", (msg) => {
-    // Wait until commands are loaded, connected to database, etc.
     if (!ready) return;
 
     if (msg.content.startsWith(config.prefix)) {

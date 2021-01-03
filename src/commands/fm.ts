@@ -1,11 +1,11 @@
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Item } from "database/Item";
+import { Item } from "database/entities/Item";
 import { MessageTools } from "helpers";
 import { Connection, MoreThan } from "typeorm";
 import fetch from "node-fetch";
 import * as secrets from "configuration/secrets.json";
 import { MessageEmbed } from "discord.js";
-import { FM } from "database/FM";
+import { FM } from "database/entities/FM";
 
 interface TrackDate {
     uts: string;

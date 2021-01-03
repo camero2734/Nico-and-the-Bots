@@ -1,9 +1,9 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
 import { channelIDs, roles } from "configuration/config";
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Counter } from "database/Counter";
-import { Economy } from "database/Economy";
-import { Item } from "database/Item";
+import { Counter } from "database/entities/Counter";
+import { Economy } from "database/entities/Economy";
+import { Item } from "database/entities/Item";
 import { MessageAttachment, MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
 import { Connection } from "typeorm";

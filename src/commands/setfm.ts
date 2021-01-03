@@ -1,6 +1,6 @@
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
-import { Item } from "database/Item";
+import { Item } from "database/entities/Item";
 import { MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
 import fetch from "node-fetch";

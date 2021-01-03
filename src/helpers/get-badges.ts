@@ -1,6 +1,6 @@
 import { Image, loadImage } from "canvas";
-import { Counter } from "database/Counter";
-import { Item } from "database/Item";
+import { Counter } from "database/entities/Counter";
+import { Item } from "database/entities/Item";
 import { GuildMember } from "discord.js";
 import { Connection } from "typeorm";
 

@@ -1,6 +1,6 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
 import { Command, CommandMessage } from "configuration/definitions";
-import { Economy } from "database/Economy";
+import { Economy } from "database/entities/Economy";
 import { MessageAttachment } from "discord.js";
 import { Connection } from "typeorm";
 

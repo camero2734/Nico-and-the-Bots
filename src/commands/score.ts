@@ -1,8 +1,8 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
 import { roles } from "configuration/config";
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Counter } from "database/Counter";
-import { Economy } from "database/Economy";
+import { Counter } from "database/entities/Counter";
+import { Economy } from "database/entities/Economy";
 import { MessageAttachment } from "discord.js";
 import { badgeLoader, MessageTools } from "helpers";
 import { Connection, MoreThan } from "typeorm";

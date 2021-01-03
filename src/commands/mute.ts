@@ -1,6 +1,6 @@
 import { roles } from "configuration/config";
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Item } from "database/Item";
+import { Item } from "database/entities/Item";
 import { MessageTools } from "helpers";
 import parseDuration from "parse-duration";
 import { Connection } from "typeorm";

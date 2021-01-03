@@ -1,6 +1,6 @@
 import { userIDs } from "configuration/config";
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Item } from "database/Item";
+import { Item } from "database/entities/Item";
 import { Role } from "discord.js";
 import { MessageTools } from "helpers";
 import * as FuzzySearch from "fuzzy-search";

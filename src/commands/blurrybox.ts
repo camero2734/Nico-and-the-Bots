@@ -1,6 +1,6 @@
 import { channelIDs, userIDs } from "configuration/config";
 import { Command, CommandError, CommandMessage } from "configuration/definitions";
-import { Economy } from "database/Economy";
+import { Economy } from "database/entities/Economy";
 import { MessageTools } from "helpers";
 import { Connection } from "typeorm";
 

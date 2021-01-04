@@ -2,6 +2,7 @@ import { prefix } from "configuration/config";
 import { Command, CommandMessage } from "configuration/definitions";
 import { Message, MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
+import { Connection } from "typeorm";
 
 export default new Command({
     name: "pronoun",
@@ -9,7 +10,7 @@ export default new Command({
     category: "Roles",
     usage: "!pronoun [pronoun]",
     example: "!pronoun they/them",
-    async cmd(msg: CommandMessage): Promise<void> {
+    async cmd(msg: CommandMessage, connection: Connection): Promise<void> {
         const pronouns = {
             "724816436304019536": ["he", "him", "his"],
             "724816755809058826": ["she", "her", "hers"],
@@ -41,7 +42,6 @@ export default new Command({
 
         async function handleNotFound(): Promise<void> {
             const willGive = giving.length > 0;
-            console.log(willGive, giving, /GIVE/);
             let embed = new MessageEmbed()
                 .setAuthor(msg.member.displayName, msg.author.displayAvatarURL())
                 .setDescription(
@@ -213,9 +213,22 @@ export default new Command({
 
         async function sendRequestToStaff(roles: string[]) {
             // Hooks into !suggest to send a suggestion
-            const m = new Message(msg.client, {}, msg.channel);
-            m.content = `${prefix}suggest [AUTO] Add pronoun roles: \`${roles.join("`, `")}\``;
-            await msg.runCommand(m);
+            const m = new Message(
+                msg.client,
+                {
+                    content: `${prefix}suggest [AUTO] Add pronoun roles: \`${roles.join("`, `")}\``,
+                    type: `DEFAULT`,
+                    author: msg.author,
+                    embeds: [],
+                    attachments: [],
+                    mentions: [],
+                    timestamp: Date.now(),
+                    id: msg.id
+                },
+                msg.channel
+            );
+
+            await Command.runCommand(m, connection);
         }
     }
 });

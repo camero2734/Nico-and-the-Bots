@@ -2,7 +2,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Guild, GuildMember, Message, MessageEmbed, TextChannel } from "discord.js";
+import { Guild, GuildMember, Message, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import { Connection } from "typeorm";
 import * as chalk from "chalk";
 import { prefix } from "./config";
@@ -23,10 +23,7 @@ export interface CommandMessage extends Message {
     member: GuildMember;
     // This is required, unlike Message itself
     guild: Guild;
-    // Run another command
-    runCommand: (m: Message) => ReturnType<Command["execute"]>;
 }
-
 interface ICommand {
     name: string;
     description: string;
@@ -34,19 +31,42 @@ interface ICommand {
     usage: string;
     example: string;
     aliases?: string[];
-    prereqs?: Array<(msg: CommandMessage) => boolean>;
+    prereqs?: Array<(msg: Message, member?: GuildMember) => boolean>;
     cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
+
+    // Determines whether a message/reaction is in response to this command
+    interactiveFilter?: (msg: Message, reaction?: MessageReaction, reactionUser?: User) => Promise<boolean>;
+    // Handler for that interactive message
+    interactiveHandler?: (
+        msg: Message,
+        connection: Connection,
+        reaction?: MessageReaction,
+        reactionUser?: User
+    ) => Promise<void>;
 }
 
 export class Command implements ICommand {
+    // Maintain reference to all other commands
+    private static commands: Command[];
+
     public name: string;
     public description: string;
     public category: CommandCategory;
     public usage: string;
     public example: string;
     public aliases: string[];
-    public prereqs: Array<(msg: CommandMessage) => boolean>;
+    public prereqs: Array<(msg: Message, member?: GuildMember) => boolean>;
     public cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
+
+    // Determines whether a message/reaction is in response to this command
+    public interactiveFilter?: (msg: Message, reaction?: MessageReaction, reactionUser?: User) => Promise<boolean>;
+    // Handler for that interactive message
+    public interactiveHandler?: (
+        msg: Message,
+        connection: Connection,
+        reaction?: MessageReaction,
+        reactionUser?: User
+    ) => Promise<void>;
 
     constructor(opts: ICommand) {
         this.prereqs = opts.prereqs || [];
@@ -63,16 +83,12 @@ export class Command implements ICommand {
         cmsg.args = args;
         cmsg.argsString = argsString;
         cmsg.command = cmd;
-        cmsg.runCommand = async (m: Message) => {
-            return await this.execute(m, connection);
-        };
 
         this.logToConsole(cmsg);
 
         try {
-            for (const passes of this.prereqs) {
-                if (!passes(cmsg)) throw new CommandError("You do not have permission to use this command");
-            }
+            const passes = this.checkPrereqs(cmsg, cmsg.member);
+            if (!passes) throw new CommandError("You do not have permission to use this command");
             await this.cmd(cmsg, connection);
             return true;
         } catch (e) {
@@ -105,11 +121,40 @@ export class Command implements ICommand {
         await channel.send(embed);
     }
 
+    checkPrereqs(msg: Message, member: GuildMember): boolean {
+        for (const passes of this.prereqs) {
+            if (!passes(msg, member)) return false;
+        }
+        return true;
+    }
+
     logToConsole(cmsg: CommandMessage): void {
         const { red, gray, yellow } = chalk;
         console.log(red(`!${cmsg.command}`) + ":");
         console.log(`\t${gray("Args:")} ${yellow(`[${cmsg.args}]`)}`);
         console.log(`\t${gray("From:")} ${yellow(cmsg.author.username)}`);
         console.log(`\t${gray("In:")} ${yellow((cmsg.channel as TextChannel).name)}`);
+    }
+
+    static setCommands(commands: Command[]): void {
+        this.commands = commands;
+    }
+
+    static findCommand(msg: Message): Command | undefined {
+        if (msg.content.startsWith(prefix)) {
+            const commandName = msg.content.split(" ")[0].substring(prefix.length).toLowerCase();
+            const command = this.commands.find((c) => {
+                if (c.name === commandName) return true;
+                else return c.aliases.some((a) => a === commandName);
+            });
+            return command;
+        }
+    }
+
+    static async runCommand(msg: Message, connection: Connection): Promise<void> {
+        const command = this.findCommand(msg);
+        if (!command) throw new Error("Unable to find command");
+
+        await command.execute(msg, connection);
     }
 }

@@ -1,6 +1,6 @@
 import { roles } from "configuration/config";
 import { Command } from "configuration/definitions";
-import { Message } from "discord.js";
+import { GuildMember, Message } from "discord.js";
 import * as fs from "fs";
 
 /**
@@ -16,11 +16,12 @@ export const loadCommands = async function (commands: Command[]): Promise<void> 
         } else {
             if (command.category === "Staff") {
                 // Require all Staff commands to be used by... Staff
-                command.prereqs.push((msg: Message): boolean => {
-                    return !!msg.member?.roles.cache.has(roles.staff);
+                command.prereqs.push((_msg: Message, member?: GuildMember): boolean => {
+                    return !!member?.roles.cache.has(roles.staff);
                 });
             }
             commands.push(command);
         }
     }
+    Command.setCommands(commands);
 };

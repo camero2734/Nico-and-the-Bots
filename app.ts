@@ -35,14 +35,25 @@ client.on("message", (msg) => {
     if (!ready) return;
 
     if (msg.content.startsWith(config.prefix)) {
-        const commandName = msg.content.split(" ")[0].substring(config.prefix.length).toLowerCase();
-        const command = commands.find((c) => {
-            if (c.name === commandName) return true;
-            else return c.aliases.some((a) => a === commandName);
+        Command.runCommand(msg, connection).catch(() => {
+            msg.channel.send("I couldn't find that command!");
         });
-        if (!command) return msg.channel.send("I couldn't find that command!");
+    }
+});
 
-        command.execute(msg, connection);
+client.on("messageReactionAdd", async (reaction, u) => {
+    // Only care about user's reactions on bot's messages
+    const msg = reaction.message;
+    if (!msg.author.bot || u.bot) return;
+
+    const user = await u.fetch();
+
+    for (const c of commands) {
+        if (c.interactiveFilter && c.interactiveHandler) {
+            const passes = await c.interactiveFilter(msg, reaction, user);
+            if (passes) await c.interactiveHandler(msg, connection, reaction, user).catch(console.log);
+            return;
+        }
     }
 });
 

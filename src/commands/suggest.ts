@@ -13,6 +13,7 @@ export default new Command({
     usage: "!suggest [something]",
     example: "!suggest Add a command that gives everyone $1 million",
     async cmd(msg: CommandMessage, connection: Connection): Promise<void> {
+        console.log("here1");
         const channel = msg.guild.channels.cache.get(channelIDs.submittedsuggestions) as TextChannel;
         const embed = new MessageEmbed().setColor("RANDOM");
         const member = await msg.member.fetch();
@@ -22,6 +23,7 @@ export default new Command({
         const title = msg.argsString;
 
         const entry = new Item({ id: member.id, type: "Suggestion", title, data: "0" });
+        console.log("here2");
 
         embed.setTitle("New suggestion submitted");
         embed.setAuthor(member.displayName, member.user.displayAvatarURL());
@@ -29,6 +31,7 @@ export default new Command({
         embed.setDescription(title);
 
         await connection.manager.save(entry);
+        console.log("here3");
 
         await channel.send(embed);
         await msg.channel.send(MessageTools.textEmbed("Your suggestion has been submitted!"));

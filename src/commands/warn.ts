@@ -1,5 +1,5 @@
 import { prefix } from "configuration/config";
-import { Command, CommandError, CommandMessage } from "configuration/definitions";
+import { Command, CommandError, CommandMessage, WarningData } from "configuration/definitions";
 import { Item } from "database/entities/Item";
 import { GuildMember, Message, MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
@@ -141,7 +141,7 @@ export default new Command({
             }
 
             //INSERT WARNING TO DATABASE
-            const warnData = {
+            const warnData: WarningData = {
                 edited: false,
                 given: msg.author.id,
                 channel: msg.channel.id,
@@ -193,7 +193,7 @@ export default new Command({
                 msg.channel
             );
 
-            await Command.runCommand(m, connection);
+            await Command.runCommand(m, connection, { autojail: true });
         }
     }
 });

@@ -2,29 +2,45 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Guild, GuildMember, Message, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
-import { Connection } from "typeorm";
 import * as chalk from "chalk";
-import { prefix } from "./config";
+import { Snowflake } from "discord.js";
+import {
+    DMChannel,
+    Guild,
+    GuildMember,
+    Message,
+    MessageEmbed,
+    MessageReaction,
+    TextBasedChannel,
+    TextChannel,
+    User
+} from "discord.js";
 import { MessageTools } from "helpers";
+import { Connection } from "typeorm";
+import { prefix } from "./config";
 
 export class CommandError extends Error {}
 
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social";
 
-export interface CommandMessage extends Message {
+export interface CommandMessage<T = unknown> extends Message {
     // The command used (no prefix)
     command: string;
     // All arguments (excluding command) in an array
     args: string[];
     // All arguments (excluding command) as a string
     argsString: string;
+    // Optional props, mostly used for commands calling other commands
+    props: T;
+
     // This is required, unlike Message itself
     member: GuildMember;
     // This is required, unlike Message itself
     guild: Guild;
+    // Narrow channel typedef
+    channel: TextChannel;
 }
-interface ICommand {
+interface ICommand<T = unknown> {
     name: string;
     description: string;
     category: CommandCategory;
@@ -32,7 +48,7 @@ interface ICommand {
     example: string;
     aliases?: string[];
     prereqs?: Array<(msg: Message, member?: GuildMember) => boolean>;
-    cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
+    cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
 
     // Determines whether a message/reaction is in response to this command
     interactiveFilter?: (msg: Message, reaction?: MessageReaction, reactionUser?: User) => Promise<boolean>;
@@ -45,7 +61,7 @@ interface ICommand {
     ) => Promise<void>;
 }
 
-export class Command implements ICommand {
+export class Command<T = unknown> implements ICommand<T> {
     // Maintain reference to all other commands
     private static commands: Command[];
 
@@ -56,7 +72,7 @@ export class Command implements ICommand {
     public example: string;
     public aliases: string[];
     public prereqs: Array<(msg: Message, member?: GuildMember) => boolean>;
-    public cmd: (msg: CommandMessage, connection: Connection) => Promise<void>;
+    public cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
 
     // Determines whether a message/reaction is in response to this command
     public interactiveFilter?: (msg: Message, reaction?: MessageReaction, reactionUser?: User) => Promise<boolean>;
@@ -68,21 +84,22 @@ export class Command implements ICommand {
         reactionUser?: User
     ) => Promise<void>;
 
-    constructor(opts: ICommand) {
+    constructor(opts: ICommand<T>) {
         this.prereqs = opts.prereqs || [];
         this.aliases = opts.aliases || [];
         Object.assign(this, opts);
     }
 
-    async execute(msg: Message, connection: Connection): Promise<boolean> {
+    async execute(msg: Message, connection: Connection, props: T): Promise<boolean> {
         const args = msg.content.split(" ");
         const cmd = args.shift()?.substring(prefix.length) || ""; // Remove command
         const argsString = args.join(" ");
 
-        const cmsg = msg as CommandMessage;
+        const cmsg = msg as CommandMessage<T>;
         cmsg.args = args;
         cmsg.argsString = argsString;
         cmsg.command = cmd;
+        cmsg.props = props;
 
         this.logToConsole(cmsg);
 
@@ -141,8 +158,11 @@ export class Command implements ICommand {
     }
 
     static findCommand(msg: Message): Command | undefined {
+        console.log("\tprefix?");
         if (msg.content.startsWith(prefix)) {
+            console.log("\tit does");
             const commandName = msg.content.split(" ")[0].substring(prefix.length).toLowerCase();
+            console.log(`\tname: ${commandName}`);
             const command = this.commands.find((c) => {
                 if (c.name === commandName) return true;
                 else return c.aliases.some((a) => a === commandName);
@@ -151,10 +171,35 @@ export class Command implements ICommand {
         }
     }
 
-    static async runCommand(msg: Message, connection: Connection): Promise<void> {
+    static async runCommand<T>(msg: Message, connection: Connection, props: T = {} as T): Promise<void> {
         const command = this.findCommand(msg);
         if (!command) throw new Error("Unable to find command");
 
-        await command.execute(msg, connection);
+        await command.execute(msg, connection, props);
     }
 }
+
+export interface WarningData {
+    edited: boolean;
+    given: Snowflake;
+    channel: Snowflake;
+    rule?: string;
+    severity: number;
+    content: string;
+}
+
+declare module "discord.js" {
+    interface TextChannel {
+        embed(text: string, color?: string): Promise<Message>;
+    }
+    interface DMChannel {
+        embed(text: string, color?: string): Promise<Message>;
+    }
+}
+
+TextChannel.prototype.embed = function (text: string, color?: string) {
+    const msg = this.send(MessageTools.textEmbed(text, color));
+    return msg;
+};
+
+DMChannel.prototype.embed = TextChannel.prototype.embed;

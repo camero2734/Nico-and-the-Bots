@@ -66,6 +66,9 @@ export const channelIDs = {
     tourcategory: "600868166612287500",
     lvlcnrn: "721047257029279844"
 };
+export const categoryIDs = {
+    chilltown: "625524136785215498"
+};
 
 export const userIDs = {
     me: "221465443297263618"
@@ -74,6 +77,11 @@ export const roles = {
     staff: "330877657132564480",
     muted: "278225702455738368",
     banditos: "269660541738418176",
+    bots: "275114879248236544",
+    deatheaters: "283272728084086784",
+    jailedDE: "656918036053491780",
+    gold: "386969744709910530",
+    hideallchannels: "574731157061632000",
     albums: {
         TRENCH: "466627343520104449",
         BF: "319620325224480768",

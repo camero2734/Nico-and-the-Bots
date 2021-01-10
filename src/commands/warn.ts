@@ -4,6 +4,7 @@ import { Item } from "database/entities/Item";
 import { GuildMember, Message, MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
 import { Connection, MoreThan } from "typeorm";
+import { JailProps } from "./jail";
 
 export default new Command({
     name: "warn",
@@ -193,7 +194,7 @@ export default new Command({
                 msg.channel
             );
 
-            await Command.runCommand(m, connection, { autojail: true });
+            await Command.runCommand<JailProps>(m, connection, { autojail: true });
         }
     }
 });

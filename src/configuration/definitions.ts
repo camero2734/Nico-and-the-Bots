@@ -3,7 +3,6 @@
  */
 
 import * as chalk from "chalk";
-import { Snowflake } from "discord.js";
 import {
     DMChannel,
     Guild,
@@ -11,7 +10,7 @@ import {
     Message,
     MessageEmbed,
     MessageReaction,
-    TextBasedChannel,
+    Snowflake,
     TextChannel,
     User
 } from "discord.js";
@@ -40,14 +39,12 @@ export interface CommandMessage<T = unknown> extends Message {
     // Narrow channel typedef
     channel: TextChannel;
 }
-interface ICommand<T = unknown> {
+interface ICommandBase<T = unknown> {
     name: string;
     description: string;
     category: CommandCategory;
     usage: string;
     example: string;
-    // Persists across command calls
-    persistent?: unknown;
     aliases?: string[];
     prereqs?: Array<(msg: Message, member?: GuildMember) => boolean>;
     cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
@@ -63,7 +60,10 @@ interface ICommand<T = unknown> {
     ) => Promise<void>;
 }
 
-export class Command<T = unknown> implements ICommand<T> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+type ICommand<T = unknown, U = void> = ICommandBase<T> & (U extends void ? {} : { persistent: U });
+
+export class Command<T = unknown, U = void> implements ICommandBase<T> {
     // Maintain reference to all other commands
     private static commands: Command[];
 
@@ -72,7 +72,7 @@ export class Command<T = unknown> implements ICommand<T> {
     public category: CommandCategory;
     public usage: string;
     public example: string;
-    public persistent: unknown;
+    public persistent: NonNullable<U>;
     public aliases: string[];
     public prereqs: Array<(msg: Message, member?: GuildMember) => boolean>;
     public cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
@@ -87,7 +87,7 @@ export class Command<T = unknown> implements ICommand<T> {
         reactionUser?: User
     ) => Promise<void>;
 
-    constructor(opts: ICommand<T>) {
+    constructor(opts: ICommand<T, U>) {
         this.prereqs = opts.prereqs || [];
         this.aliases = opts.aliases || [];
         Object.assign(this, opts);

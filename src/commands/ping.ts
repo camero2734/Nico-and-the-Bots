@@ -13,12 +13,12 @@ export default new Command({
     usage: "!ping",
     example: "!ping",
 
-    persistent: [],
+    persistent: [] as Ping[],
 
     async cmd(msg: CommandMessage): Promise<void> {
         const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
 
-        const pings = this.persistent as Ping[];
+        const pings = this.persistent;
 
         const m = await msg.channel.send("Ping?");
         await m.delete();

@@ -5,7 +5,7 @@ import { OverwriteResolvable } from "discord.js";
 import { MessageTools } from "helpers";
 import { Connection } from "typeorm";
 
-interface JailProps {
+export interface JailProps {
     autojail: boolean;
 }
 
@@ -16,6 +16,7 @@ export default new Command({
     category: "Staff",
     usage: "!jail [@user] (@user)...",
     example: "!jail @poot",
+
     async cmd(msg: CommandMessage<JailProps>, connection: Connection): Promise<void> {
         const IS_DE = false;
         if (!msg.member.roles.cache.get(roles.staff) && !msg.props.autojail) return;

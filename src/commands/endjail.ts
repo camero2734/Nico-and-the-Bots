@@ -66,7 +66,7 @@ export default new Command({
             //Log file
             const jailLogChan = msg.guild.channels.cache.get(channelIDs.jaillog) as TextChannel;
             if (!jailLogChan) throw new Error();
-            await jailLogChan.embed("Jail ended: " + members.map((_m) => `<@${_m}>`));
+            await jailLogChan.embed("Jail ended: " + members.map((_m) => `<@${_m}>`).join(" "));
             await jailLogChan.send(attachment);
 
             //DM users

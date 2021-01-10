@@ -46,6 +46,8 @@ interface ICommand<T = unknown> {
     category: CommandCategory;
     usage: string;
     example: string;
+    // Persists across command calls
+    persistent?: unknown;
     aliases?: string[];
     prereqs?: Array<(msg: Message, member?: GuildMember) => boolean>;
     cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
@@ -70,6 +72,7 @@ export class Command<T = unknown> implements ICommand<T> {
     public category: CommandCategory;
     public usage: string;
     public example: string;
+    public persistent: unknown;
     public aliases: string[];
     public prereqs: Array<(msg: Message, member?: GuildMember) => boolean>;
     public cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;

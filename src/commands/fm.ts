@@ -1,4 +1,4 @@
-import { Command, CommandError, CommandMessage } from "configuration/definitions";
+import { Command, CommandError, CommandMessage, InteractiveError } from "configuration/definitions";
 import { Item } from "database/entities/Item";
 import { MessageTools } from "helpers";
 import { Connection, MoreThan } from "typeorm";
@@ -6,6 +6,8 @@ import fetch from "node-fetch";
 import * as secrets from "configuration/secrets.json";
 import { MessageEmbed } from "discord.js";
 import { FM } from "database/entities/FM";
+
+const FM_REACT = "⭐";
 
 interface TrackDate {
     uts: string;
@@ -198,7 +200,7 @@ export default new Command({
         if (recentlyScrobbled && recentlyScrobbled.length > 0) return;
 
         // React and save to database
-        await fm_m.react("⭐");
+        await fm_m.react(FM_REACT);
         const fm_item = new FM({
             id: msg.author.id,
             message_id: fm_m.id,
@@ -208,5 +210,32 @@ export default new Command({
             stars: 0
         });
         await connection.manager.save(fm_item);
+    },
+
+    async interactive(msg, connection, reaction) {
+        /** VERIFY INTERACTION BELONGS TO MESSAGE */
+        const embed = msg.embeds[0];
+        if (!embed) throw new InteractiveError("No embed");
+
+        // prettier-ignore
+        if (!embed.title?.endsWith("'s FM") || reaction.data.emoji.name !== FM_REACT) throw new InteractiveError("Failed to match");
+
+        /** PERFORM ACTION */
+        // Find FM entry in DB
+        const fmItem = await connection.getRepository(FM).findOne({ message_id: msg.id });
+        if (!fmItem) throw new Error("Unable to find FM item");
+
+        if (fmItem.id === reaction.user.id) throw new Error("Trying to star own FM");
+
+        console.log(fmItem);
+
+        // Log star to DB
+        const users = (await reaction.data.users.fetch())
+            .array()
+            .filter((u) => !u.bot)
+            .map((u) => u.id);
+
+        fmItem.stars = users.length;
+        await fmItem.save();
     }
 });

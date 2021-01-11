@@ -1,9 +1,12 @@
 import * as Discord from "discord.js";
 import * as config from "configuration/config";
-import { Command } from "configuration/definitions";
+import { Command, InteractiveError } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as helpers from "helpers";
 import { Connection } from "typeorm";
+import { MessageReaction } from "discord.js";
+import { User } from "discord.js";
+import { PartialUser } from "discord.js";
 
 let ready = false;
 const commands: Command[] = [];
@@ -42,20 +45,32 @@ client.on("message", (msg) => {
     }
 });
 
-client.on("messageReactionAdd", async (reaction, u) => {
+async function handleReactions(data: MessageReaction, u: User | PartialUser, added: boolean) {
     // Only care about user's reactions on bot's messages
-    const msg = reaction.message;
+    const msg = data.message;
     if (!msg.author.bot || u.bot) return;
 
     const user = await u.fetch();
 
+    console.log("Got reaction");
+
     for (const c of commands) {
-        if (c.interactiveFilter && c.interactiveHandler) {
-            const passes = await c.interactiveFilter(msg, reaction, user);
-            if (passes) await c.interactiveHandler(msg, connection, reaction, user).catch(console.log);
-            return;
+        if (c.interactive) {
+            console.log(`\tTrying ${c.name}`);
+            try {
+                await c.interactive(msg, connection, { data, user, added });
+                return; // This one worked, no need to try any more
+            } catch (e) {
+                if (!(e instanceof InteractiveError)) {
+                    console.log(e);
+                    return; // Some uncaught error, don't try any more
+                }
+            }
         }
     }
-});
+}
+
+client.on("messageReactionAdd", async (data, u) => handleReactions(data, u, true));
+client.on("messageReactionRemove", async (data, u) => handleReactions(data, u, true));
 
 client.login(secrets.bots.nico);

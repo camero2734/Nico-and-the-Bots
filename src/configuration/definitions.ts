@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /** DEFINITIONS.TS
  * Contains types, classes, interfaces, etc.
  */
@@ -19,8 +20,15 @@ import { Connection } from "typeorm";
 import { prefix } from "./config";
 
 export class CommandError extends Error {}
+export class InteractiveError extends Error {}
 
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social";
+
+export interface Reaction {
+    data: MessageReaction;
+    user: User;
+    added: boolean;
+}
 
 export interface CommandMessage<T = unknown> extends Message {
     // The command used (no prefix)
@@ -45,22 +53,12 @@ interface ICommandBase<T = unknown> {
     category: CommandCategory;
     usage: string;
     example: string;
+    interactive?: (msg: Message, connection: Connection, reaction: Reaction) => Promise<void>;
     aliases?: string[];
     prereqs?: Array<(msg: Message, member?: GuildMember) => boolean>;
     cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
-
-    // Determines whether a message/reaction is in response to this command
-    interactiveFilter?: (msg: Message, reaction?: MessageReaction, reactionUser?: User) => Promise<boolean>;
-    // Handler for that interactive message
-    interactiveHandler?: (
-        msg: Message,
-        connection: Connection,
-        reaction?: MessageReaction,
-        reactionUser?: User
-    ) => Promise<void>;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type ICommand<T = unknown, U = void> = ICommandBase<T> & (U extends void ? {} : { persistent: U });
 
 export class Command<T = unknown, U = void> implements ICommandBase<T> {
@@ -77,15 +75,7 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
     public prereqs: Array<(msg: Message, member?: GuildMember) => boolean>;
     public cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
 
-    // Determines whether a message/reaction is in response to this command
-    public interactiveFilter?: (msg: Message, reaction?: MessageReaction, reactionUser?: User) => Promise<boolean>;
-    // Handler for that interactive message
-    public interactiveHandler?: (
-        msg: Message,
-        connection: Connection,
-        reaction?: MessageReaction,
-        reactionUser?: User
-    ) => Promise<void>;
+    public interactive?: (msg: Message, connection: Connection, reaction?: Reaction) => Promise<void>;
 
     constructor(opts: ICommand<T, U>) {
         this.prereqs = opts.prereqs || [];

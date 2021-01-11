@@ -1,4 +1,4 @@
-import { Command, CommandError, CommandMessage } from "configuration/definitions";
+import { Command, CommandError, CommandMessage, InteractiveError } from "configuration/definitions";
 import { Item } from "database/entities/Item";
 import { MessageEmbed } from "discord.js";
 import { Connection, FindConditions, LessThanOrEqual, Not } from "typeorm";
@@ -63,24 +63,22 @@ export default new Command({
             await new Promise((resolve) => setTimeout(resolve, 500));
         }
     },
-    async interactiveFilter(msg, reaction, reactionUser): Promise<boolean> {
+    async interactive(msg, connection, reaction) {
+        /** VERIFY INTERACTION BELONGS TO MESSAGE */
         const cmd = <Command>this;
-        if (!reaction || !reactionUser) return false;
 
-        const member = await msg.guild?.members.fetch(reactionUser.id);
-        if (!member || !cmd.checkPrereqs?.(msg, member)) return false;
+        const member = await msg.guild?.members.fetch(reaction.user.id);
+        if (!member || !cmd.checkPrereqs?.(msg, member)) throw new InteractiveError("No member");
 
         const [embed] = msg.embeds || [];
-        if (!embed) return false;
+        if (!embed) throw new InteractiveError("No embed");
 
-        return (
-            !!embed.author?.name?.startsWith("Suggestion from") && !!embed.footer?.text?.toLowerCase().includes("react")
-        );
-    },
-    async interactiveHandler(msg, connection, reaction): Promise<void> {
-        const [embed] = msg.embeds;
+        // prettier-ignore
+        if (!embed.author?.name?.startsWith("Suggestion from") || !embed.footer?.text?.toLowerCase().includes("react")) throw new InteractiveError("Embed doesn't match");
+
+        /** PERFORM ACTION */
         const title = embed.description;
-        if (!title || !reaction) throw new Error("no title or reaction");
+        if (!title) throw new Error("No title");
 
         const suggestion = await connection.getRepository(Item).findOne({ type: "Suggestion", title });
 
@@ -93,7 +91,7 @@ export default new Command({
             "❌": SuggestionStatus["Not Planned"]
         };
 
-        const reactionEmoji = reaction.emoji.name;
+        const reactionEmoji = reaction.data.emoji.name;
         const status = reactions[reactionEmoji];
         const statusName = Object.keys(SuggestionStatus).find((n) => SuggestionStatus[status] === n) || "";
 
@@ -114,10 +112,10 @@ export default new Command({
 
         await msg.edit(embed);
 
-        const member = await msg.guild?.members.fetch(suggestion.id);
-        if (!member) return;
+        const suggester = await msg.guild?.members.fetch(suggestion.id);
+        if (!suggester) return;
 
-        const dm = await member.createDM();
+        const dm = await suggester.createDM();
         if (!dm) return;
 
         embed.setAuthor(`Your suggestion was marked as ${statusName}`, msg.client.user?.displayAvatarURL());

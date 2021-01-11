@@ -35,5 +35,16 @@
 		  ""
 		],
 		"description": "Create a command for the bot"
+	},
+	"Add interactive part": {
+		"prefix": "interactive",
+		"body": [
+		  "async interactive(msg, connection, reaction) {",
+		  "    /** VERIFY INTERACTION BELONGS TO MESSAGE */",
+		  "    $0",
+		  "    /** PERFORM ACTION */",
+		  "}"
+		],
+		"description": "Add interactive function to command"
 	  }
 }

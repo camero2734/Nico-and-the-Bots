@@ -179,7 +179,7 @@ export default new Command({
 
         async function autoJail(member: GuildMember) {
             // Hooks into !suggest to send a suggestion
-            const m = new Message(
+            const m = new CommandMessage(
                 msg.client,
                 {
                     content: `${prefix}jail ${member}`,

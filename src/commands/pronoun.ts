@@ -213,7 +213,7 @@ export default new Command({
 
         async function sendRequestToStaff(roles: string[]) {
             // Hooks into !suggest to send a suggestion
-            const m = new Message(
+            const m = new CommandMessage(
                 msg.client,
                 {
                     content: `${prefix}suggest [AUTO] Add pronoun roles: \`${roles.join("`, `")}\``,

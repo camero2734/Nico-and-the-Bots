@@ -1,12 +1,14 @@
 import * as Discord from "discord.js";
 import * as config from "configuration/config";
-import { Command, InteractiveError } from "configuration/definitions";
+import { Command, CommandMessage, InteractiveError } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as helpers from "helpers";
 import { Connection } from "typeorm";
 import { MessageReaction } from "discord.js";
 import { User } from "discord.js";
 import { PartialUser } from "discord.js";
+import { Client } from "discord.js";
+import { Message } from "discord.js";
 
 let ready = false;
 const commands: Command[] = [];
@@ -34,8 +36,8 @@ client.on("ready", async () => {
     console.log("Bot initialized");
 });
 
-client.on("message", (msg) => {
-    if (!ready) return;
+client.on("message", (msg: Message) => {
+    if (!ready || !(msg instanceof CommandMessage)) return;
 
     if (msg.content.startsWith(config.prefix)) {
         Command.runCommand(msg, connection).catch((e) => {
@@ -47,7 +49,7 @@ client.on("message", (msg) => {
 
 async function handleReactions(data: MessageReaction, u: User | PartialUser, added: boolean) {
     // Only care about user's reactions on bot's messages
-    const msg = data.message;
+    const msg = data.message as CommandMessage;
     if (!msg.author.bot || u.bot) return;
 
     const user = await u.fetch();

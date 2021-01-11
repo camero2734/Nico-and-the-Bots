@@ -4,6 +4,8 @@
  */
 
 import chalk from "chalk";
+import { Client } from "discord.js";
+import { Channel } from "discord.js";
 import {
     DMChannel,
     Guild,
@@ -13,7 +15,8 @@ import {
     MessageReaction,
     Snowflake,
     TextChannel,
-    User
+    User,
+    Structures
 } from "discord.js";
 import { MessageTools } from "helpers";
 import { Connection } from "typeorm";
@@ -22,7 +25,7 @@ import { prefix } from "./config";
 export class CommandError extends Error {}
 export class InteractiveError extends Error {}
 
-export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social";
+export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social" | "Utility";
 
 export interface Reaction {
     data: MessageReaction;
@@ -30,32 +33,51 @@ export interface Reaction {
     added: boolean;
 }
 
-export interface CommandMessage<T = unknown> extends Message {
+interface CommandData<T = unknown> {
     // The command used (no prefix)
     command: string;
-    // All arguments (excluding command) in an array
-    args: string[];
-    // All arguments (excluding command) as a string
-    argsString: string;
     // Optional props, mostly used for commands calling other commands
     props: T;
+}
+
+export class CommandMessage<T = unknown> extends Message {
+    // The command used (no prefix)
+    public command: string;
+    // Optional props, mostly used for commands calling other commands
+    public props: T;
 
     // This is required, unlike Message itself
-    member: GuildMember;
+    public member: GuildMember;
     // This is required, unlike Message itself
-    guild: Guild;
+    public guild: Guild;
     // Narrow channel typedef
-    channel: TextChannel;
+    public channel: TextChannel;
+
+    addCommandData(data: CommandData<T>): void {
+        this.command = data.command;
+        this.props = data.props;
+    }
+
+    get args(): string[] {
+        return this.content.split(" ").slice(1);
+    }
+
+    get argsString(): string {
+        return this.args.join(" ");
+    }
 }
+
+Structures.extend("Message", () => CommandMessage);
+
 interface ICommandBase<T = unknown> {
     name: string;
     description: string;
     category: CommandCategory;
     usage: string;
     example: string;
-    interactive?: (msg: Message, connection: Connection, reaction: Reaction) => Promise<void>;
+    interactive?: (msg: CommandMessage, connection: Connection, reaction: Reaction) => Promise<void>;
     aliases?: string[];
-    prereqs?: Array<(msg: Message, member?: GuildMember) => boolean>;
+    prereqs?: Array<(msg: CommandMessage, member?: GuildMember) => boolean>;
     cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
 }
 
@@ -72,10 +94,10 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
     public example: string;
     public persistent: NonNullable<U>;
     public aliases: string[];
-    public prereqs: Array<(msg: Message, member?: GuildMember) => boolean>;
+    public prereqs: Array<(msg: CommandMessage, member?: GuildMember) => boolean>;
     public cmd: (msg: CommandMessage<T>, connection: Connection) => Promise<void>;
 
-    public interactive?: (msg: Message, connection: Connection, reaction?: Reaction) => Promise<void>;
+    public interactive?: (msg: CommandMessage, connection: Connection, reaction?: Reaction) => Promise<void>;
 
     constructor(opts: ICommand<T, U>) {
         this.prereqs = opts.prereqs || [];
@@ -83,23 +105,19 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
         Object.assign(this, opts);
     }
 
-    async execute(msg: Message, connection: Connection, props: T): Promise<boolean> {
+    async execute(msg: CommandMessage<T>, connection: Connection, props: T): Promise<boolean> {
         const args = msg.content.split(" ");
         const cmd = args.shift()?.substring(prefix.length) || ""; // Remove command
         const argsString = args.join(" ");
 
-        const cmsg = msg as CommandMessage<T>;
-        cmsg.args = args;
-        cmsg.argsString = argsString;
-        cmsg.command = cmd;
-        cmsg.props = props;
+        msg.addCommandData({ command: cmd, props });
 
-        this.logToConsole(cmsg);
+        this.logToConsole(msg);
 
         try {
-            const passes = this.checkPrereqs(cmsg, cmsg.member);
+            const passes = this.checkPrereqs(msg, msg.member);
             if (!passes) throw new CommandError("You do not have permission to use this command");
-            await this.cmd(cmsg, connection);
+            await this.cmd(msg, connection);
             return true;
         } catch (e) {
             const channel = msg.channel as TextChannel;
@@ -108,7 +126,7 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
                 console.log("Uncaught Error in Command: ", e);
                 await channel.send(
                     MessageTools.textEmbed(
-                        `I encountered an error in \`${prefix}${cmsg.command}\`. It's not your fault.`
+                        `I encountered an error in \`${prefix}${msg.command}\`. It's not your fault.`
                     )
                 );
             }
@@ -131,7 +149,7 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
         await channel.send(embed);
     }
 
-    checkPrereqs(msg: Message, member: GuildMember): boolean {
+    checkPrereqs(msg: CommandMessage, member: GuildMember): boolean {
         for (const passes of this.prereqs) {
             if (!passes(msg, member)) return false;
         }
@@ -150,7 +168,7 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
         this.commands = commands;
     }
 
-    static findCommandFromMessage(msg: Message): Command | undefined {
+    static findCommandFromMessage(msg: CommandMessage): Command | undefined {
         console.log("\tprefix?");
         if (msg.content.startsWith(prefix)) {
             console.log("\tit does");
@@ -168,7 +186,7 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
         });
     }
 
-    static async runCommand<T>(msg: Message, connection: Connection, props: T = {} as T): Promise<void> {
+    static async runCommand<T>(msg: CommandMessage, connection: Connection, props: T = {} as T): Promise<void> {
         const command = this.findCommandFromMessage(msg);
         if (!command) throw new Error("Unable to find command");
 

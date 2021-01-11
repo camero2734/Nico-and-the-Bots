@@ -160,22 +160,26 @@ export class Command<T = unknown, U = void> implements ICommandBase<T> {
         this.commands = commands;
     }
 
-    static findCommand(msg: Message): Command | undefined {
+    static findCommandFromMessage(msg: Message): Command | undefined {
         console.log("\tprefix?");
         if (msg.content.startsWith(prefix)) {
             console.log("\tit does");
             const commandName = msg.content.split(" ")[0].substring(prefix.length).toLowerCase();
             console.log(`\tname: ${commandName}`);
-            const command = this.commands.find((c) => {
-                if (c.name === commandName) return true;
-                else return c.aliases.some((a) => a === commandName);
-            });
+            const command = this.findCommandFromName(commandName);
             return command;
         }
     }
 
+    static findCommandFromName(name: string): Command | undefined {
+        return this.commands.find((c) => {
+            if (c.name === name) return true;
+            else return c.aliases.some((a) => a === name);
+        });
+    }
+
     static async runCommand<T>(msg: Message, connection: Connection, props: T = {} as T): Promise<void> {
-        const command = this.findCommand(msg);
+        const command = this.findCommandFromMessage(msg);
         if (!command) throw new Error("Unable to find command");
 
         await command.execute(msg, connection, props);

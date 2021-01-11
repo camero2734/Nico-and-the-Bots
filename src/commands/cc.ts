@@ -3,7 +3,7 @@ import { Command, CommandError, CommandMessage } from "configuration/definitions
 import { Item } from "database/entities/Item";
 import { Role } from "discord.js";
 import { MessageTools } from "helpers";
-import * as FuzzySearch from "fuzzy-search";
+import FuzzySearch from "fuzzy-search";
 import { Connection } from "typeorm";
 
 export default new Command({

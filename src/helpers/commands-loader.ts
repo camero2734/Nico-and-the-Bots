@@ -12,7 +12,7 @@ export const loadCommands = async function (commands: Command[]): Promise<void> 
     for (const file of files) {
         const command = (await import(`commands/${file}`))?.default as Command;
         if (typeof command?.name !== "string") {
-            console.log(`Malformed command: ${file}`);
+            console.log(`Malformed command: ${file}`, command);
         } else {
             if (command.category === "Staff") {
                 // Require all Staff commands to be used by... Staff

@@ -12,6 +12,7 @@
         "strictPropertyInitialization": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
+        "esModuleInterop": true
         // "paths": {
         //     "src/*": [ "./src/*" ],
         // }

@@ -3,7 +3,7 @@ import { Item } from "database/entities/Item";
 import { CollectorFilter, GuildMember, MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
 import { Connection, MoreThan } from "typeorm";
-import * as ago from "s-ago";
+import ago from "s-ago";
 
 export default new Command({
     name: "chkwarn",

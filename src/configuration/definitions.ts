@@ -2,7 +2,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import * as chalk from "chalk";
+import chalk from "chalk";
 import {
     DMChannel,
     Guild,

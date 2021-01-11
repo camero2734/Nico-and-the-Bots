@@ -35,7 +35,8 @@ client.on("message", (msg) => {
     if (!ready) return;
 
     if (msg.content.startsWith(config.prefix)) {
-        Command.runCommand(msg, connection).catch(() => {
+        Command.runCommand(msg, connection).catch((e) => {
+            console.log(e);
             msg.channel.send("I couldn't find that command!");
         });
     }

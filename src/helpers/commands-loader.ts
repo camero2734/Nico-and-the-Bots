@@ -1,21 +1,13 @@
-import { roles } from "configuration/config";
 import { Command, CommandOptions, CommandRunner, GeneralCommandRunner, SubcommandRunner } from "configuration/definitions";
-import { GuildMember, Message } from "discord.js";
-import * as path from "path"
-import {promisify} from "util";
-import {resolve, join, sep} from "path";
 import * as fs from "fs";
+import { join, resolve, sep } from "path";
 import { CommandOptionType, SlashCreator } from "slash-create";
 
-const readdir = promisify(fs.readdir);
-const stat = promisify(fs.stat);
-
-async function getFiles(dir: string): Promise<string[]> {
-    const subdirs = await readdir(dir);
+async function getFilesRecursive(dir: string): Promise<string[]> {
+    const subdirs = await fs.promises.readdir(dir);
     const files = await Promise.all(subdirs.map(async (subdir) => {
         const res = resolve(dir, subdir);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        return (await stat(res)).isDirectory() ? getFiles(res) : res;
+        return (await fs.promises.stat(res)).isDirectory() ? getFilesRecursive(res) : res;
     }));
     return files.flat();
 }
@@ -27,7 +19,7 @@ async function getFiles(dir: string): Promise<string[]> {
  */
 export const loadCommands = async function (commands: Command<GeneralCommandRunner>[], creator: SlashCreator): Promise<void> {
     const commandsPath = join(__dirname, "../slashcommands");
-    const fileNames = await getFiles(commandsPath);
+    const fileNames = await getFilesRecursive(commandsPath);
     const filePaths = fileNames.map(f => f.replace(commandsPath, "").split(sep).filter(a => a));
 
     const subCommands: Record<string, string | Record<string, string>> = {};
@@ -66,7 +58,6 @@ export const loadCommands = async function (commands: Command<GeneralCommandRunn
                 SubcommandExecutor[subcommand] = Executor;
             }
 
-            console.log(options, /SUBCOMMAND_GROUP/);
             commands.push(new Command(creator, key, options, value["help"], SubcommandExecutor));
         }
     }

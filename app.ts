@@ -1,28 +1,34 @@
-import * as Discord from "discord.js";
-import * as config from "configuration/config";
-import { Command, CommandMessage, InteractiveError } from "configuration/definitions";
+import { Command } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
+import * as Discord from "discord.js";
 import * as helpers from "helpers";
+import * as path from "path";
+import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
-import { MessageReaction } from "discord.js";
-import { User } from "discord.js";
-import { PartialUser } from "discord.js";
-import { Client } from "discord.js";
-import { Message } from "discord.js";
 
-let ready = false;
-const commands: Command[] = [];
+
+
+// let ready = false;
 let connection: Connection;
 
 const client = new Discord.Client({ fetchAllMembers: true });
 
+const interactions = new SlashCreator({
+    applicationID: "470410168186699788",
+    token: secrets.bots.nico
+});
+
+client.login(secrets.bots.nico);
+
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
+
+    const commands: Command[] = [];
 
     // Initialize everything
     await Promise.all([
         // Wait until commands are loaded, connected to database, etc.
-        helpers.loadCommands(commands),
+        helpers.loadCommands(commands, interactions),
         new Promise((resolve) => {
             helpers.connectToDatabase().then((c) => {
                 connection = c;
@@ -31,48 +37,61 @@ client.on("ready", async () => {
         })
     ]);
 
-    ready = true;
+    interactions
+        .withServer(new GatewayServer((handler) => client.ws.on("INTERACTION_CREATE" as Discord.WSEventType, handler)))
+        .registerCommands(commands, false)
+        .syncCommands();
 
-    console.log("Bot initialized");
+
+    // Set the database connection on each command
+    const loadedCommands = interactions.commands as Discord.Collection<string, Command>;
+    loadedCommands.forEach((c) => {
+        c.setConnectionClient(connection, client);
+    });
+
+    console.log(`Bot initialized with ${loadedCommands.size} commands`);
 });
 
-client.on("message", (msg: Message) => {
-    if (!ready || !(msg instanceof CommandMessage)) return;
+interactions.on("error", console.log);
+// interactions.on("commandRegister", console.log);
 
-    if (msg.content.startsWith(config.prefix)) {
-        Command.runCommand(msg, connection).catch((e) => {
-            console.log(e);
-            msg.channel.send("I couldn't find that command!");
-        });
-    }
-});
+// client.on("message", (msg: Message) => {
+//     if (!ready || !(msg instanceof CommandMessage)) return;
 
-async function handleReactions(data: MessageReaction, u: User | PartialUser, added: boolean) {
-    // Only care about user's reactions on bot's messages
-    const msg = data.message as CommandMessage;
-    if (!msg.author.bot || u.bot) return;
+//     if (msg.content.startsWith(config.prefix)) {
+//         Command.runCommand(msg, connection).catch((e) => {
+//             console.log(e);
+//             msg.channel.send("I couldn't find that command!");
+//         });
+//     }
+// });
 
-    const user = await u.fetch();
+// async function handleReactions(data: MessageReaction, u: User | PartialUser, added: boolean) {
+//     // Only care about user's reactions on bot's messages
+//     const msg = data.message as CommandMessage;
+//     if (!msg.author.bot || u.bot) return;
 
-    console.log("Got reaction");
+//     const user = await u.fetch();
 
-    for (const c of commands) {
-        if (c.interactive) {
-            console.log(`\tTrying ${c.name}`);
-            try {
-                await c.interactive(msg, connection, { data, user, added });
-                return; // This one worked, no need to try any more
-            } catch (e) {
-                if (!(e instanceof InteractiveError)) {
-                    console.log(e);
-                    return; // Some uncaught error, don't try any more
-                }
-            }
-        }
-    }
-}
+//     console.log("Got reaction");
 
-client.on("messageReactionAdd", async (data, u) => handleReactions(data, u, true));
-client.on("messageReactionRemove", async (data, u) => handleReactions(data, u, true));
+//     for (const c of commands) {
+//         if (c.interactive) {
+//             console.log(`\tTrying ${c.name}`);
+//             try {
+//                 await c.interactive(msg, connection, { data, user, added });
+//                 return; // This one worked, no need to try any more
+//             } catch (e) {
+//                 if (!(e instanceof InteractiveError)) {
+//                     console.log(e);
+//                     return; // Some uncaught error, don't try any more
+//                 }
+//             }
+//         }
+//     }
+// }
 
-client.login(secrets.bots.nico);
+// client.on("messageReactionAdd", async (data, u) => handleReactions(data, u, true));
+// client.on("messageReactionRemove", async (data, u) => handleReactions(data, u, true));
+
+

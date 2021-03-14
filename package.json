@@ -5,11 +5,13 @@
     "main": "app.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "ts-node-dev -r tsconfig-paths/register app.ts"
+        "dev": "ts-node-dev -r tsconfig-paths/register app.ts",
+        "slash": "ts-node-dev -r tsconfig-paths/register slash.ts"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@types/require-all": "^3.0.1",
         "canvas": "^2.6.1",
         "chalk": "^4.1.0",
         "chrono-node": "^2.1.10",
@@ -19,10 +21,14 @@
         "leven": "^3.1.0",
         "node-fetch": "^2.6.1",
         "parse-duration": "^0.4.4",
+        "require-all": "^3.0.0",
         "s-ago": "^2.2.0",
+        "slash-commands": "^1.4.0",
+        "slash-create": "^2.1.1",
         "sqlite3": "^5.0.0",
         "typeorm": "^0.2.29",
-        "typescript": "^4.2.0-dev.20201122"
+        "typescript": "^4.2.0-dev.20201122",
+        "wokcommands": "^1.2.8"
     },
     "devDependencies": {
         "@types/fuzzy-search": "^2.1.0",

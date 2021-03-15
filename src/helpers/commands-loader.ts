@@ -69,7 +69,7 @@ export const loadCommands = async function (
                 options.options?.push({ ...Options, name: subcommand, type: CommandOptionType.SUB_COMMAND });
                 SubcommandExecutor[subcommand] = Executor;
             }
-            console.log(key, /COMMAND_NAME/);
+
             commands.push(new Command(creator, key, options, value["help"], SubcommandExecutor));
         }
     }

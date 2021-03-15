@@ -119,7 +119,7 @@ export const Executor: CommandRunner = async (ctx) => {
         selfFM = true;
     }
 
-    await ctx.acknowledge(true);
+    await ctx.acknowledge();
 
     const getFMURL = createFMMethod(username);
 
@@ -127,7 +127,10 @@ export const Executor: CommandRunner = async (ctx) => {
     const response = (await (await fetch(url)).json()) as RecentTracksResponse;
 
     const info = response.recenttracks;
-    const total = info["@attr"].total;
+    const total = info?.["@attr"].total;
+
+    if (!total)
+        throw new CommandError(`Unable to get your recent tracks. Are you sure your username ${username} is correct?`);
 
     const track = {
         album: info.track[0].album["#text"],

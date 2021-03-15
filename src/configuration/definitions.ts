@@ -3,7 +3,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Client, MessageEmbed } from "discord.js";
+import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
 import { CommandContext, Message, SlashCommand, SlashCommandOptions, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
 
@@ -26,15 +26,15 @@ export type CommandOptions = Pick<SlashCommandOptions, "options"> & {
 };
 
 export type ExtendedContext = CommandContext & {
-    embed(discordEmbed: MessageEmbed): Promise<Message | boolean>;
+    embed(discordEmbed: MessageEmbed, includeSource?: boolean): Promise<Message | boolean>;
     client: Client;
     connection: Connection;
 };
 
 function extendContext(ctx: CommandContext, client: Client, connection: Connection): ExtendedContext {
     const extendedContext = ctx as ExtendedContext;
-    extendedContext.embed = (discordEmbed: MessageEmbed): Promise<Message | boolean> => {
-        return ctx.send({ embeds: [discordEmbed.toJSON()] });
+    extendedContext.embed = (discordEmbed: MessageEmbed, includeSource = false): Promise<Message | boolean> => {
+        return ctx.send({ embeds: [discordEmbed.toJSON()], includeSource });
     };
     extendedContext.client = client;
     extendedContext.connection = connection;
@@ -43,10 +43,15 @@ function extendContext(ctx: CommandContext, client: Client, connection: Connecti
 
 const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
     if (e instanceof CommandError) {
-        ectx.send(`An error occurred:\n${e.message}`, { includeSource: true });
+        const embed = new MessageEmbed()
+            .setDescription(`\`\`\`cpp\n${e.message}\n\`\`\``)
+            .setTitle("An error occurred!")
+            .setFooter("DEMA internet broke");
+        ectx.embed(embed, true);
     } else {
         console.log(e);
-        ectx.send(`An unknown error occurred.`, { includeSource: true });
+        const embed = new MessageEmbed().setTitle("An unknown error occurred!").setFooter("DEMA internet really broke");
+        ectx.embed(embed, true);
     }
 };
 

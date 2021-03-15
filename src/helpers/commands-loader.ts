@@ -1,26 +1,36 @@
-import { Command, CommandOptions, CommandRunner, GeneralCommandRunner, SubcommandRunner } from "configuration/definitions";
+import {
+    Command,
+    CommandOptions,
+    CommandRunner,
+    GeneralCommandRunner,
+    SubcommandRunner
+} from "configuration/definitions";
 import * as fs from "fs";
 import { join, resolve, sep } from "path";
 import { CommandOptionType, SlashCreator } from "slash-create";
 
 async function getFilesRecursive(dir: string): Promise<string[]> {
     const subdirs = await fs.promises.readdir(dir);
-    const files = await Promise.all(subdirs.map(async (subdir) => {
-        const res = resolve(dir, subdir);
-        return (await fs.promises.stat(res)).isDirectory() ? getFilesRecursive(res) : res;
-    }));
+    const files = await Promise.all(
+        subdirs.map(async (subdir) => {
+            const res = resolve(dir, subdir);
+            return (await fs.promises.stat(res)).isDirectory() ? getFilesRecursive(res) : res;
+        })
+    );
     return files.flat();
 }
-
 
 /**
  * Loads all command modules from ./commands
  * @param commands Command array to populate
  */
-export const loadCommands = async function (commands: Command<GeneralCommandRunner>[], creator: SlashCreator): Promise<void> {
+export const loadCommands = async function (
+    commands: Command<GeneralCommandRunner>[],
+    creator: SlashCreator
+): Promise<void> {
     const commandsPath = join(__dirname, "../slashcommands");
     const fileNames = await getFilesRecursive(commandsPath);
-    const filePaths = fileNames.map(f => f.replace(commandsPath, "").split(sep).filter(a => a));
+    const filePaths = fileNames.map(f => f.replace(commandsPath, "").split(sep).filter(a => a)); // prettier-ignore
 
     const subCommands: Record<string, string | Record<string, string>> = {};
 
@@ -39,25 +49,27 @@ export const loadCommands = async function (commands: Command<GeneralCommandRunn
             category[commandName] = file;
         } else throw new Error("Only sub commands with a depth of 1 are currently supported");
     }
-    
+
     // Create commands
     for (const [key, value] of Object.entries(subCommands)) {
         if (typeof value === "string") {
             // Single command
-            const { Executor, Options }: {Executor: CommandRunner, Options: CommandOptions}  = await import(value);
+            const { Executor, Options }: { Executor: CommandRunner; Options: CommandOptions } = await import(value);
             commands.push(new Command(creator, key, Options, value, Executor));
         } else {
             // Subcommand
-            const options: CommandOptions = {description: key, options: []};
-            
+            const options: CommandOptions = { description: key, options: [] };
+
             const SubcommandExecutor: SubcommandRunner = {};
 
             for (const [subcommand, fileName] of Object.entries(value)) {
-                const { Executor, Options }: {Executor: CommandRunner, Options: CommandOptions}  = await import(fileName);
-                options.options?.push({ ...Options, name: subcommand, type: CommandOptionType.SUB_COMMAND});
+                const { Executor, Options }: { Executor: CommandRunner; Options: CommandOptions } = await import(
+                    fileName
+                );
+                options.options?.push({ ...Options, name: subcommand, type: CommandOptionType.SUB_COMMAND });
                 SubcommandExecutor[subcommand] = Executor;
             }
-
+            console.log(key, /COMMAND_NAME/);
             commands.push(new Command(creator, key, options, value["help"], SubcommandExecutor));
         }
     }

@@ -7,7 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "ts-node-dev -r tsconfig-paths/register app.ts",
         "slash": "ts-node-dev -r tsconfig-paths/register slash.ts",
-        "update": "npm-check -u"
+        "update": "npm-check -u",
+        "postinstall": "patch-package"
     },
     "author": "",
     "license": "ISC",
@@ -23,6 +24,7 @@
         "node-fetch": "^2.6.1",
         "npm-check": "^5.9.2",
         "parse-duration": "^0.4.4",
+        "patch-package": "^6.4.7",
         "require-all": "^3.0.0",
         "s-ago": "^2.2.0",
         "slash-commands": "^1.4.0",

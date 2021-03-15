@@ -5,6 +5,8 @@
 // Commands will be used like =command arg1 arg2
 export const prefix = "=";
 
+export const guildID = "269657133673349120";
+
 export const channelIDs = {
     commands: "470331990231744512",
     memes: "470335805697556480",

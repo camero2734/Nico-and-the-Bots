@@ -14,7 +14,7 @@ export const Options: CommandOptions = {
     options: [{ name: "test", description: "This is a test option", required: false, type: CommandOptionType.BOOLEAN }]
 };
 
-export const Executor: CommandRunner = async (ctx, { client }) => {
+export const Executor: CommandRunner = async (ctx) => {
     const receivedAt = Date.now();
     const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
 
@@ -41,6 +41,6 @@ export const Executor: CommandRunner = async (ctx, { client }) => {
 
     const average = Math.floor(pingSum / pingCount);
 
-    const embed = new MessageEmbed().setColor("RANDOM").setDescription(`Heartbeat: ${Math.floor(client.ws.ping)}ms\nAverage Ping (${pingCount}): ${average}ms\nCurrent Ping: ${currentPing}ms`);
+    const embed = new MessageEmbed().setColor("RANDOM").setDescription(`Heartbeat: ${Math.floor(ctx.client.ws.ping)}ms\nAverage Ping (${pingCount}): ${average}ms\nCurrent Ping: ${currentPing}ms`);
     await ctx.embed(embed);
 };

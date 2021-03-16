@@ -41,6 +41,7 @@ export default new Command({
                     .setColor("RANDOM")
                     .addField("Reason", banMessage === "" ? "No reason provided" : banMessage)
                     .addField("Timestamp", new Date().toString())
+                    .addField("Appeal", "[Click Here to Appeal](https://www.discordclique.com/appeals)")
             );
         } catch (e) {
             console.log(e, /DM BAN ERROR/);

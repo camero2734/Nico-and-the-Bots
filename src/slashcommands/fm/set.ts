@@ -7,8 +7,6 @@ import * as secrets from "configuration/secrets.json";
 import fetch from "node-fetch";
 import { RecentTracksResponse } from "./now";
 
-type OptionsType = { username: string };
-
 export const Options: CommandOptions = {
     description: "Sets your lastfm username for use with other /fm commands",
     options: [
@@ -16,8 +14,8 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner = async (ctx) => {
-    const options = ctx.options[ctx.subcommands[0]] as OptionsType;
+export const Executor: CommandRunner<{ username: string }> = async (ctx) => {
+    const options = ctx.opts;
     const { client, connection } = ctx;
 
     if (!options.username) {

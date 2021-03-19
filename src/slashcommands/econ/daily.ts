@@ -6,8 +6,6 @@ import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
 import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 
-type OptionsType = { username: string };
-
 export const Options: CommandOptions = {
     description: "Claims your daily credits",
     options: []

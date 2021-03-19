@@ -1,6 +1,6 @@
+import { CommandOptions, CommandRunner } from "configuration/definitions";
+import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, TextChannel } from "discord.js";
 
 export const Options: CommandOptions = {
     description: "Dusts off the old 8-ball and gives you an answer to your most burning yes/no questions",

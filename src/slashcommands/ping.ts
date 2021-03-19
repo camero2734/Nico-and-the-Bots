@@ -11,7 +11,7 @@ const previousPings: Ping[] = [];
 
 export const Options: CommandOptions = {
     description: "Checks the bot's ping",
-    options: [{ name: "test", description: "This is a test option", required: false, type: CommandOptionType.BOOLEAN }]
+    options: []
 };
 
 export const Executor: CommandRunner = async (ctx) => {

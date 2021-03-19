@@ -22,7 +22,7 @@ export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" |
 export interface CommandOption {
     [key: string]: ConvertedOption;
 }
-export type CommandRunner<T extends CommandOption> = (ctx: ExtendedContext<T>) => ReturnType<SlashCommand["run"]>;
+export type CommandRunner<T extends CommandOption = {}> = (ctx: ExtendedContext<T>) => ReturnType<SlashCommand["run"]>;
 export type SubcommandRunner<T extends CommandOption, U extends string = string> = Record<U, CommandRunner<T>>;
 export type GeneralCommandRunner<T extends CommandOption> = CommandRunner<T> | SubcommandRunner<T>;
 export type CommandOptions = Pick<SlashCommandOptions, "options"> & {

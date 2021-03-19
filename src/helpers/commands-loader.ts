@@ -70,7 +70,7 @@ export const loadCommands = async function (
                 SubcommandExecutor[subcommand] = Executor;
             }
 
-            commands.push(new Command(creator, key, options, value["help"], SubcommandExecutor));
+            commands.push(new Command(creator, key, options, "", SubcommandExecutor));
         }
     }
 };

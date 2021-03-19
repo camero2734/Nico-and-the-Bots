@@ -85,8 +85,6 @@ const createFMMethod = (username: string) => {
     };
 };
 
-type OptionsType = { username?: string; user?: string };
-
 export const Options: CommandOptions = {
     description: "Displays now playing on last.fm",
     options: [
@@ -95,8 +93,8 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner = async (ctx) => {
-    const options = ctx.options[ctx.subcommands[0]] as OptionsType;
+export const Executor: CommandRunner<{ username?: string; user?: string }> = async (ctx) => {
+    const options = ctx.opts;
     const { client, connection } = ctx;
 
     let username: string;

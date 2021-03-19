@@ -8,8 +8,6 @@ import { Economy } from "database/entities/Economy";
 import { MoreThan } from "typeorm";
 import { createCanvas, loadImage, registerFont } from "canvas";
 
-type OptionsType = { user: string };
-
 export const Options: CommandOptions = {
     description: "the score",
     options: [
@@ -17,9 +15,9 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner = async (ctx) => {
+export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
     const albumRoles = roles.albums;
-    const options = ctx.options[ctx.subcommands[0]] as OptionsType;
+    const options = ctx.opts;
     const { client, connection } = ctx;
 
     console.log(options, /OPTIONS/);

@@ -1,6 +1,6 @@
 import { CommandOptionType } from "slash-create";
 import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { DiscordAPIError, MessageEmbed } from "discord.js";
+import { MessageEmbed } from "discord.js";
 
 interface Ping {
     ping: number;
@@ -22,7 +22,6 @@ export const Executor: CommandRunner = async (ctx) => {
     const sentAt = Date.now();
     await res.delete();
 
-    
     const currentPing = sentAt - receivedAt;
 
     previousPings.push({ ping: currentPing, time: Date.now() });
@@ -41,6 +40,12 @@ export const Executor: CommandRunner = async (ctx) => {
 
     const average = Math.floor(pingSum / pingCount);
 
-    const embed = new MessageEmbed().setColor("RANDOM").setDescription(`Heartbeat: ${Math.floor(ctx.client.ws.ping)}ms\nAverage Ping (${pingCount}): ${average}ms\nCurrent Ping: ${currentPing}ms`);
+    const embed = new MessageEmbed()
+        .setColor("RANDOM")
+        .setDescription(
+            `Heartbeat: ${Math.floor(
+                ctx.client.ws.ping
+            )}ms\nAverage Ping (${pingCount}): ${average}ms\nCurrent Ping: ${currentPing}ms`
+        );
     await ctx.embed(embed);
 };

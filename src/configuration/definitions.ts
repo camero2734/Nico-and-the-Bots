@@ -4,7 +4,14 @@
  */
 
 import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
-import { CommandContext, Message, SlashCommand, SlashCommandOptions, SlashCreator } from "slash-create";
+import {
+    CommandContext,
+    ConvertedOption,
+    Message,
+    SlashCommand,
+    SlashCommandOptions,
+    SlashCreator
+} from "slash-create";
 import { Connection } from "typeorm";
 
 export class CommandError extends Error {}
@@ -12,32 +19,36 @@ export class InteractiveError extends Error {}
 
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social" | "Utility";
 
-// export interface Reaction {
-//     data: MessageReaction;
-//     user: User;
-//     added: boolean;
-// }
-
-export type CommandRunner = (ctx: ExtendedContext) => ReturnType<SlashCommand["run"]>;
-export type SubcommandRunner<U extends string = string> = Record<U, CommandRunner>;
-export type GeneralCommandRunner = CommandRunner | SubcommandRunner;
+export interface CommandOption {
+    [key: string]: ConvertedOption;
+}
+export type CommandRunner<T extends CommandOption> = (ctx: ExtendedContext<T>) => ReturnType<SlashCommand["run"]>;
+export type SubcommandRunner<T extends CommandOption, U extends string = string> = Record<U, CommandRunner<T>>;
+export type GeneralCommandRunner<T extends CommandOption> = CommandRunner<T> | SubcommandRunner<T>;
 export type CommandOptions = Pick<SlashCommandOptions, "options"> & {
     description: string;
 };
 
-export type ExtendedContext = CommandContext & {
+export type ExtendedContext<T extends CommandOption = {}> = Omit<CommandContext, "options"> & {
     embed(discordEmbed: MessageEmbed, includeSource?: boolean): Promise<Message | boolean>;
+    opts: T;
     client: Client;
     connection: Connection;
 };
 
-function extendContext(ctx: CommandContext, client: Client, connection: Connection): ExtendedContext {
-    const extendedContext = ctx as ExtendedContext;
+function extendContext<T extends CommandOption>(
+    ctx: CommandContext,
+    client: Client,
+    connection: Connection
+): ExtendedContext<T> {
+    const extendedContext = (ctx as unknown) as ExtendedContext<T>;
     extendedContext.embed = (discordEmbed: MessageEmbed, includeSource = false): Promise<Message | boolean> => {
         return ctx.send({ embeds: [discordEmbed.toJSON()], includeSource });
     };
+
     extendedContext.client = client;
     extendedContext.connection = connection;
+    extendedContext.opts = ctx.options[extendedContext.subcommands[0]] as T;
     return extendedContext;
 }
 
@@ -55,7 +66,10 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
     }
 };
 
-export class Command<Q extends GeneralCommandRunner = CommandRunner> extends SlashCommand {
+export class Command<
+    T extends CommandOption = {},
+    Q extends GeneralCommandRunner<T> = CommandRunner<T>
+> extends SlashCommand {
     private connection: Connection;
     private client: Client;
     constructor(
@@ -72,15 +86,15 @@ export class Command<Q extends GeneralCommandRunner = CommandRunner> extends Sla
         this.connection = connection;
         this.client = client;
     }
-    hasNoSubCommands(): this is Command<CommandRunner> {
+    hasNoSubCommands(): this is Command<T, CommandRunner<T>> {
         return typeof this.executor === "function";
     }
     run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
-        const ectx = extendContext(ctx, this.client, this.connection);
+        const ectx = extendContext<T>(ctx, this.client, this.connection);
 
         if (this.hasNoSubCommands()) return this.executor(ectx).catch((e) => ErrorHandler(e, ectx));
         const [subcommand] = ctx.subcommands || [];
-        const executor = this.executor as SubcommandRunner;
+        const executor = this.executor as SubcommandRunner<T>;
 
         if (!subcommand) return executor.default(ectx).catch((e) => ErrorHandler(e, ectx));
         else return executor[subcommand](ectx).catch((e) => ErrorHandler(e, ectx));

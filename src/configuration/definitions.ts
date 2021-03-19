@@ -3,7 +3,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
+import { Client, DiscordAPIError, MessageEmbed, TextChannel } from "discord.js";
 import {
     CommandContext,
     ConvertedOption,
@@ -31,9 +31,11 @@ export type CommandOptions = Pick<SlashCommandOptions, "options"> & {
 
 export type ExtendedContext<T extends CommandOption = {}> = Omit<CommandContext, "options"> & {
     embed(discordEmbed: MessageEmbed, includeSource?: boolean): Promise<Message | boolean>;
+    channel: TextChannel;
     opts: T;
     client: Client;
     connection: Connection;
+    isExtended: boolean;
 };
 
 function extendContext<T extends CommandOption>(
@@ -46,6 +48,13 @@ function extendContext<T extends CommandOption>(
         return ctx.send({ embeds: [discordEmbed.toJSON()], includeSource });
     };
 
+    extendedContext.isExtended = true;
+
+    extendedContext.channel = client.guilds.cache
+        .get(ctx.guildID + "")
+        ?.channels.cache.get(ctx.channelID) as TextChannel;
+    if (!extendedContext) throw new Error("Unable to extend context");
+
     extendedContext.client = client;
     extendedContext.connection = connection;
     extendedContext.opts = ctx.options[extendedContext.subcommands[0]] as T;
@@ -53,6 +62,11 @@ function extendContext<T extends CommandOption>(
 }
 
 const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
+    if (!ectx.isExtended) {
+        console.log(e);
+        return;
+    }
+
     if (e instanceof CommandError) {
         const embed = new MessageEmbed()
             .setDescription(`\`\`\`cpp\n${e.message}\n\`\`\``)
@@ -89,14 +103,20 @@ export class Command<
     hasNoSubCommands(): this is Command<T, CommandRunner<T>> {
         return typeof this.executor === "function";
     }
-    run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
-        const ectx = extendContext<T>(ctx, this.client, this.connection);
+    async run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
+        let ectx = (null as unknown) as ExtendedContext<T>;
+        try {
+            ectx = extendContext<T>(ctx, this.client, this.connection);
 
-        if (this.hasNoSubCommands()) return this.executor(ectx).catch((e) => ErrorHandler(e, ectx));
-        const [subcommand] = ctx.subcommands || [];
-        const executor = this.executor as SubcommandRunner<T>;
+            if (this.hasNoSubCommands()) return this.executor(ectx);
 
-        if (!subcommand) return executor.default(ectx).catch((e) => ErrorHandler(e, ectx));
-        else return executor[subcommand](ectx).catch((e) => ErrorHandler(e, ectx));
+            const [subcommand] = ctx.subcommands || [];
+            const executor = this.executor as SubcommandRunner<T>;
+
+            if (!subcommand) return executor.default(ectx);
+            else return executor[subcommand](ectx);
+        } catch (e) {
+            ErrorHandler(e, ectx || ctx);
+        }
     }
 }

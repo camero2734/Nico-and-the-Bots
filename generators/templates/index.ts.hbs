@@ -1,0 +1,25 @@
+import { Command, CommandError, CommandMessage } from "configuration/definitions";
+import { Connection } from "typeorm";
+
+interface {{pascalCase name}} {
+  word: string
+}
+
+export default new Command({
+    name: "{{name}}",
+    description: "{{name}} description",
+    category: "{{name}}",
+    usage: "!{{name}}",
+    example: "!{{name}}",
+
+    persistent: [] as {{pascalCase name}}[],
+
+    async cmd(msg: CommandMessage): Promise<void> {
+      // Enter command to {{name}}
+      const word = {{name}}
+
+      await msg.channel.embed(
+            `${word}`
+        );
+    }
+});

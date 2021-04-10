@@ -1,5 +1,6 @@
 import {
     Command,
+    CommandOption,
     CommandOptions,
     CommandRunner,
     GeneralCommandRunner,
@@ -25,7 +26,7 @@ async function getFilesRecursive(dir: string): Promise<string[]> {
  * @param commands Command array to populate
  */
 export const loadCommands = async function (
-    commands: Command<GeneralCommandRunner>[],
+    commands: Command<CommandOption, GeneralCommandRunner>[],
     creator: SlashCreator
 ): Promise<void> {
     const commandsPath = join(__dirname, "../slashcommands");

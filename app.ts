@@ -6,8 +6,6 @@ import * as path from "path";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
 
-
-
 // let ready = false;
 let connection: Connection;
 
@@ -15,7 +13,8 @@ const client = new Discord.Client({ fetchAllMembers: true });
 
 const interactions = new SlashCreator({
     applicationID: "470410168186699788",
-    token: secrets.bots.nico
+    token: secrets.bots.nico,
+    defaultImageFormat: "png"
 });
 
 client.login(secrets.bots.nico);
@@ -40,8 +39,8 @@ client.on("ready", async () => {
     interactions
         .withServer(new GatewayServer((handler) => client.ws.on("INTERACTION_CREATE" as Discord.WSEventType, handler)))
         .registerCommands(commands, false)
-        .syncCommands();
-
+        .syncCommands()
+        .syncGlobalCommands();
 
     // Set the database connection on each command
     const loadedCommands = interactions.commands as Discord.Collection<string, Command>;
@@ -93,5 +92,3 @@ interactions.on("error", console.log);
 
 // client.on("messageReactionAdd", async (data, u) => handleReactions(data, u, true));
 // client.on("messageReactionRemove", async (data, u) => handleReactions(data, u, true));
-
-

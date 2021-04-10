@@ -29,7 +29,7 @@ export const Executor: CommandRunner = async (ctx) => {
         throw new CommandError(`You have already used !daily today! You have ${hours} hours and ${mins} until the next one`); // prettier-ignore
     }
 
-    ctx.acknowledge(true);
+    await ctx.defer(true);
 
     //DAILY COUNTER
     userEconomy.dailyCount++;

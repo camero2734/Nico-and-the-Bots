@@ -95,7 +95,7 @@ export const Options: CommandOptions = {
 
 export const Executor: CommandRunner<{ username?: string; user?: string }> = async (ctx) => {
     const options = ctx.opts;
-    const { client, connection } = ctx;
+    const { connection } = ctx;
 
     let username: string;
     let selfFM = false;
@@ -116,8 +116,6 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
         else username = mentionedItem.title;
         selfFM = true;
     }
-
-    await ctx.acknowledge();
 
     const getFMURL = createFMMethod(username);
 
@@ -193,10 +191,10 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
         `https://www.last.fm/user/${username}`
     );
 
-    const channel = client.guilds.cache.get(ctx.guildID || "")?.channels.cache.get(ctx.channelID) as TextChannel;
-    const fm_m = await channel.send(embed);
+    const embed_res = await ctx.embed(embed);
 
-    if (!selfFM) return;
+    if (!selfFM || typeof embed_res === "boolean") return;
+    const fm_m = await ctx.channel.messages.fetch(embed_res.id);
 
     // Don't react if recently scrobbled same song
     const TIME_LIMIT = 10; // Minutes

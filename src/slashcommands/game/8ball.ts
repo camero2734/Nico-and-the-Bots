@@ -10,6 +10,7 @@ export const Options: CommandOptions = {
 };
 
 export const Executor: CommandRunner<{ question: string }> = async (ctx) => {
+    await ctx.defer();
     const responses = [
         "Yes",
         "Most likely",
@@ -26,11 +27,7 @@ export const Executor: CommandRunner<{ question: string }> = async (ctx) => {
 
     const response = responses[Math.floor(Math.random() * responses.length)];
 
-    const embed = new MessageEmbed().setDescription("Thinking...").setColor("RANDOM");
-
-    await ctx.acknowledge();
-
-    const m = await ctx.channel.send(embed);
+    const embed = new MessageEmbed();
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -38,5 +35,5 @@ export const Executor: CommandRunner<{ question: string }> = async (ctx) => {
     embed.setTitle(ctx.opts.question);
     embed.setDescription(`**The Wise Nico Says:** ${response}`);
 
-    await m.edit(embed);
+    await ctx.embed(embed);
 };

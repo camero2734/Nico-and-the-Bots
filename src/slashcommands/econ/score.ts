@@ -29,7 +29,7 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
     if (!member) throw new CommandError("Unable to fetch that member");
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
-    await ctx.acknowledge(true); // At this point, we should be able to provide a valid response
+    await ctx.defer(true); // At this point, we should be able to provide a valid response
 
     // Fetch user's information
     let userGold = await connection.getRepository(Counter).findOne({ id: userID, title: "GoldCount" });
@@ -70,7 +70,7 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
 
     //changes font color based on background color
     const invertedRoles = [albumRoles.VSL, albumRoles.NPI, albumRoles.RAB, albumRoles.ST];
-    const inverted = invertedRoles.indexOf(src) !== -1;
+    const inverted = invertedRoles.indexOf(src as string) !== -1;
 
     //Create canvas
     const canvas = createCanvas(500, 500);

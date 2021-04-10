@@ -3,7 +3,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Client, DiscordAPIError, MessageEmbed, TextChannel } from "discord.js";
+import { Client, GuildMember, MessageEmbed, TextChannel } from "discord.js";
 import {
     CommandContext,
     ConvertedOption,
@@ -23,29 +23,36 @@ export interface CommandOption {
     [key: string]: ConvertedOption;
 }
 export type CommandRunner<T extends CommandOption = {}> = (ctx: ExtendedContext<T>) => ReturnType<SlashCommand["run"]>;
-export type SubcommandRunner<T extends CommandOption, U extends string = string> = Record<U, CommandRunner<T>>;
-export type GeneralCommandRunner<T extends CommandOption> = CommandRunner<T> | SubcommandRunner<T>;
+export type SubcommandRunner<T extends CommandOption = {}, U extends string = string> = Record<U, CommandRunner<T>>;
+export type GeneralCommandRunner<T extends CommandOption = {}> = CommandRunner<T> | SubcommandRunner<T>;
 export type CommandOptions = Pick<SlashCommandOptions, "options"> & {
     description: string;
 };
 
-export type ExtendedContext<T extends CommandOption = {}> = Omit<CommandContext, "options"> & {
-    embed(discordEmbed: MessageEmbed, includeSource?: boolean): Promise<Message | boolean>;
+export type ExtendedContext<T extends CommandOption = {}> = Omit<CommandContext, "options" | "member"> & {
+    embed(discordEmbed: MessageEmbed): Promise<Message | boolean>;
+    acknowledge(): Promise<void>;
     channel: TextChannel;
+    member: GuildMember;
     opts: T;
     client: Client;
     connection: Connection;
     isExtended: boolean;
 };
 
-function extendContext<T extends CommandOption>(
+async function extendContext<T extends CommandOption>(
     ctx: CommandContext,
     client: Client,
     connection: Connection
-): ExtendedContext<T> {
+): Promise<ExtendedContext<T>> {
     const extendedContext = (ctx as unknown) as ExtendedContext<T>;
-    extendedContext.embed = (discordEmbed: MessageEmbed, includeSource = false): Promise<Message | boolean> => {
-        return ctx.send({ embeds: [discordEmbed.toJSON()], includeSource });
+    extendedContext.embed = (discordEmbed: MessageEmbed): Promise<Message | boolean> => {
+        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [discordEmbed.toJSON()] });
+        return ctx.send({ embeds: [discordEmbed.toJSON()] });
+    };
+
+    extendedContext.acknowledge = async () => {
+        await extendedContext.embed(new MessageEmbed().setDescription("Command executed"));
     };
 
     extendedContext.isExtended = true;
@@ -54,6 +61,8 @@ function extendContext<T extends CommandOption>(
         .get(ctx.guildID + "")
         ?.channels.cache.get(ctx.channelID) as TextChannel;
     if (!extendedContext) throw new Error("Unable to extend context");
+
+    extendedContext.member = await extendedContext.channel.guild.members.fetch(extendedContext.user.id);
 
     extendedContext.client = client;
     extendedContext.connection = connection;
@@ -72,11 +81,11 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
             .setDescription(`\`\`\`cpp\n${e.message}\n\`\`\``)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet broke");
-        ectx.embed(embed, true);
+        ectx.embed(embed);
     } else {
         console.log(e);
         const embed = new MessageEmbed().setTitle("An unknown error occurred!").setFooter("DEMA internet really broke");
-        ectx.embed(embed, true);
+        ectx.embed(embed);
     }
 };
 
@@ -93,7 +102,7 @@ export class Command<
         filePath: string,
         private executor: Q
     ) {
-        super(creator, { name: commandName, ...options, guildIDs: ["269657133673349120"] });
+        super(creator, { name: commandName, ...options, guildIDs: "269657133673349120" });
         this.filePath = filePath;
     }
     setConnectionClient(connection: Connection, client: Client): void {
@@ -106,7 +115,7 @@ export class Command<
     async run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
         let ectx = (null as unknown) as ExtendedContext<T>;
         try {
-            ectx = extendContext<T>(ctx, this.client, this.connection);
+            ectx = await extendContext<T>(ctx, this.client, this.connection);
 
             if (this.hasNoSubCommands()) return this.executor(ectx);
 

@@ -39,16 +39,10 @@ export const Executor: CommandRunner<OptsType> = async (ctx) => {
 
     // Remove any pronoun roles not mentioned
     const toRemove = R.difference(Object.values(roles.pronouns), pronounRoles);
-    for (const role of toRemove) {
-        await ctx.member.roles.remove(role);
-        await new Promise((next) => setTimeout(next, 600));
-    }
+    await ctx.member.roles.remove(toRemove);
 
     // Give the pronoun roles mentioned
-    for (const role of pronounRoles) {
-        await ctx.member.roles.add(role);
-        await new Promise((next) => setTimeout(next, 600));
-    }
+    await ctx.member.roles.add(pronounRoles);
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.user.avatarURL)

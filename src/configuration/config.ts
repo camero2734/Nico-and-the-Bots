@@ -99,7 +99,7 @@ export const roles = {
     },
     topfeed: {
         divider: "534949349818499082",
-        actual: {
+        selectable: <const>{
             tyler: "534890883016032257",
             josh: "534890899323224064",
             band: "534890910526472202",

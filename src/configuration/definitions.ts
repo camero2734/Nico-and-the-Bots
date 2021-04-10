@@ -3,7 +3,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Client, GuildMember, MessageEmbed, TextChannel } from "discord.js";
+import { Client, GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import {
     CommandContext,
     ConvertedOption,
@@ -46,9 +46,20 @@ async function extendContext<T extends CommandOption>(
     connection: Connection
 ): Promise<ExtendedContext<T>> {
     const extendedContext = (ctx as unknown) as ExtendedContext<T>;
-    extendedContext.embed = (discordEmbed: MessageEmbed): Promise<Message | boolean> => {
-        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [discordEmbed.toJSON()] });
-        return ctx.send({ embeds: [discordEmbed.toJSON()] });
+    extendedContext.embed = (embed: MessageEmbed): Promise<Message | boolean> => {
+        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON()] });
+        else if (embed.files) {
+            const messageOptions = {
+                embeds: [embed.toJSON()],
+                file: (<MessageAttachment[]>embed.files).map((f) => ({
+                    name: f.name as string,
+                    file: f.attachment as Buffer
+                }))
+            };
+            return ctx.sendFollowUp(messageOptions);
+        }
+
+        return ctx.send({ embeds: [embed.toJSON()] });
     };
 
     extendedContext.acknowledge = async () => {

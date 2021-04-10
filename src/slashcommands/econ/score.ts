@@ -1,7 +1,7 @@
-import { Command, CommandOptionType } from "slash-create";
+import { Command, CommandOptionType, Message } from "slash-create";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { badgeLoader } from "helpers";
-import { MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { DiscordAPIError, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import { roles } from "configuration/config";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
@@ -28,8 +28,6 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
 
     if (!member) throw new CommandError("Unable to fetch that member");
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
-
-    await ctx.defer(true); // At this point, we should be able to provide a valid response
 
     // Fetch user's information
     let userGold = await connection.getRepository(Counter).findOne({ id: userID, title: "GoldCount" });
@@ -143,16 +141,16 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
     //BADGES
     if (badges.length > 0) {
         for (let i = 0; i < badges.length; i++) {
-            //Initial x value
+            //Initial y value
             const y_val = 158;
             //Num. of badges in each column
-            const maxbadges = 3;
-            //Calculate y value depending on i #
-            const x_val = 80 * (i % maxbadges) + 241;
+            const maxbadges = 4;
+            //Calculate x value depending on i #
+            const x_val = (240 / maxbadges) * (i % maxbadges) + 241;
             //Calculate x shift
-            const shift = Math.floor(i / maxbadges) * 80;
+            const shift = (Math.floor(i / maxbadges) * 240) / maxbadges;
             //Draw the badges!
-            cctx.drawImage(badges[i], x_val, y_val + shift, 75, 75);
+            cctx.drawImage(badges[i], x_val, y_val + shift, 225 / maxbadges, 225 / maxbadges);
         }
     }
     //MONTHLY RANKING
@@ -161,7 +159,7 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
     cctx.fillStyle = src === albumRoles.TRENCH ? "black" : inverted ? "black" : "white";
     cctx.fillText(`${placeNum}`, 41, 50);
 
-    const attachment = new MessageAttachment(canvas.toBuffer(), "score.png");
-    const channel = client.channels.cache.get(ctx.channelID) as TextChannel;
-    await channel.send(attachment);
+    await ctx.sendFollowUp("\u200b", {
+        file: [{ name: "score.png", file: canvas.toBuffer() }]
+    });
 };

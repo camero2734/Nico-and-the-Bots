@@ -29,8 +29,6 @@ export const Executor: CommandRunner = async (ctx) => {
         throw new CommandError(`You have already used !daily today! You have ${hours} hours and ${mins} until the next one`); // prettier-ignore
     }
 
-    await ctx.defer(true);
-
     //DAILY COUNTER
     userEconomy.dailyCount++;
     let dailyCounter = await connection.getRepository(Counter).findOne({ id: ctx.user.id, title: "ConsecutiveDaily" });
@@ -195,5 +193,5 @@ export const Executor: CommandRunner = async (ctx) => {
     embed.addField("Blurrytokens Earned", tokenMessage);
     embed.attachFiles([new MessageAttachment(canvas.toBuffer(), "daily.png")]);
     embed.setImage("attachment://daily.png");
-    await channel.send(embed);
+    await ctx.embed(embed);
 };

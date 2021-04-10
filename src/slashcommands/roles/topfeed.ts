@@ -27,14 +27,19 @@ export const Executor: CommandRunner<OptsType> = async (ctx) => {
     // Remove the roles the user didn't request
     await ctx.member.roles.remove(remove);
 
-    // Add the roles they did
-    await ctx.member.roles.add(toGive);
+    const embed = new MessageEmbed().setAuthor(ctx.member.displayName, ctx.user.avatarURL);
 
-    const embed = new MessageEmbed()
-        .setAuthor(ctx.member.displayName, ctx.user.avatarURL)
-        .setDescription(
+    if (toGive.length > 0) {
+        // Add the roles they selected and the divider role
+        await ctx.member.roles.add([roles.topfeed.divider, ...toGive]);
+        embed.setDescription(
             `Your topfeed roles have been updated to ${chosenRoles.map((c) => "`" + c[0] + "`").join(", ")}!`
         );
+    } else {
+        // Remove the divider role since no more topfeed roles
+        await ctx.member.roles.remove(roles.topfeed.divider);
+        embed.setDescription("Removed all of your topfeed roles.");
+    }
 
     await ctx.embed(embed);
 };

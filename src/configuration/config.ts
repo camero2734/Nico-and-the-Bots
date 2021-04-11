@@ -113,5 +113,5 @@ export const roles = {
 };
 
 export const constants = {
-    xpDelayMins: 10 // How long to delay actually giving users credits for
+    xpDelayMS: 10 * 60 * 1000 // How long to delay actually giving users credits for
 };

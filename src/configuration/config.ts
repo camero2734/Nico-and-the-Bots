@@ -4,7 +4,6 @@
 
 // Commands will be used like =command arg1 arg2
 export const prefix = "=";
-
 export const guildID = "269657133673349120";
 
 export const channelIDs = {
@@ -111,4 +110,8 @@ export const roles = {
             other: "534890940343779328"
         }
     }
+};
+
+export const constants = {
+    xpDelayMins: 10 // How long to delay actually giving users credits for
 };

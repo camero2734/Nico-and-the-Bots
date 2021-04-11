@@ -39,8 +39,7 @@ client.on("ready", async () => {
     interactions
         .withServer(new GatewayServer((handler) => client.ws.on("INTERACTION_CREATE" as Discord.WSEventType, handler)))
         .registerCommands(commands, false)
-        .syncCommands()
-        .syncGlobalCommands();
+        .syncCommands();
 
     // Set the database connection on each command
     const loadedCommands = interactions.commands as Discord.Collection<string, Command>;
@@ -54,16 +53,9 @@ client.on("ready", async () => {
 interactions.on("error", console.log);
 // interactions.on("commandRegister", console.log);
 
-// client.on("message", (msg: Message) => {
-//     if (!ready || !(msg instanceof CommandMessage)) return;
-
-//     if (msg.content.startsWith(config.prefix)) {
-//         Command.runCommand(msg, connection).catch((e) => {
-//             console.log(e);
-//             msg.channel.send("I couldn't find that command!");
-//         });
-//     }
-// });
+client.on("message", (msg: Discord.Message) => {
+    // addToScore(msg); // Add to score
+});
 
 // async function handleReactions(data: MessageReaction, u: User | PartialUser, added: boolean) {
 //     // Only care about user's reactions on bot's messages

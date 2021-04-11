@@ -113,7 +113,7 @@ export class Command<
         filePath: string,
         private executor: Q
     ) {
-        super(creator, { name: commandName, ...options, guildIDs: "269657133673349120" });
+        super(creator, { name: commandName, ...options, guildIDs: ["269657133673349120"] });
         this.filePath = filePath;
     }
     setConnectionClient(connection: Connection, client: Client): void {
@@ -128,14 +128,15 @@ export class Command<
         try {
             ectx = await extendContext<T>(ctx, this.client, this.connection);
 
-            if (this.hasNoSubCommands()) return this.executor(ectx);
+            if (this.hasNoSubCommands()) return await this.executor(ectx);
 
             const [subcommand] = ctx.subcommands || [];
             const executor = this.executor as SubcommandRunner<T>;
 
-            if (!subcommand) return executor.default(ectx);
-            else return executor[subcommand](ectx);
+            if (!subcommand) return await executor.default(ectx);
+            else return await executor[subcommand](ectx);
         } catch (e) {
+            console.log("got error");
             ErrorHandler(e, ectx || ctx);
         }
     }

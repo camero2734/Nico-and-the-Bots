@@ -57,7 +57,6 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
     };
 
     const userLevel = getLevel(userEconomy.alltimeScore);
-    console.log(userLevel, userEconomy.alltimeLevel);
     if (userLevel > userEconomy.alltimeLevel) {
         // User has "leveled up"
         const hasPerk = await connection

@@ -151,3 +151,12 @@ export class Command<
         }
     }
 }
+
+export interface WarningData {
+    edited: boolean;
+    given: string;
+    channel: string;
+    rule: string;
+    severity: number;
+    content: string;
+}

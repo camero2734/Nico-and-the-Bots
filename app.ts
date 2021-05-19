@@ -2,6 +2,7 @@ import { Command, CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
+import { updateUserScore } from "helpers";
 import * as path from "path";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
@@ -56,7 +57,9 @@ interactions.on("error", console.log);
 // interactions.on("commandRegister", console.log);
 
 client.on("message", (msg: Discord.Message) => {
-    // addToScore(msg); // Add to score
+    if (!connection) return;
+
+    updateUserScore(msg, connection); // Add to score
 });
 
 //Manually emit an event for reactions on messages sent before the bot was turned on

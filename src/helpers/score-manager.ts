@@ -24,7 +24,7 @@ export const addToScore = async (msg: Message, connection: Connection): Promise<
 
     // Time to update their score
 
-    // Inherently, 1 message = 1 point. To reduce spam, this is scaled down as a users sends more msgs/min
+    // Inherently, 1 message = 1 point. To reduce spam, this is scaled down as a user sends more msgs/min
     const delayMins = constants.xpDelayMS / (1000 * 60);
     const lowerMsgsMin = 5 * delayMins;
     const upperMsgsMin = 20 * delayMins;

@@ -3,7 +3,7 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Client, GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { Client, GuildMember, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import {
     CommandContext,
     ConvertedOption,
@@ -28,6 +28,15 @@ export type GeneralCommandRunner<T extends CommandOption = {}> = CommandRunner<T
 export type CommandOptions = Pick<SlashCommandOptions, "options"> & {
     description: string;
 };
+
+/**
+ * @returns Boolean of whether this handler handled the reaction
+ */
+export type CommandReactionHandler = (args: {
+    reaction: MessageReaction;
+    user: User;
+    connection: Connection;
+}) => Promise<boolean>;
 
 export type ExtendedContext<T extends CommandOption = {}> = Omit<CommandContext, "options" | "member"> & {
     embed(discordEmbed: MessageEmbed): Promise<Message | boolean>;
@@ -111,7 +120,8 @@ export class Command<
         commandName: string,
         options: CommandOptions,
         filePath: string,
-        private executor: Q
+        private executor: Q,
+        public reactionHandler?: CommandReactionHandler
     ) {
         super(creator, { name: commandName, ...options, guildIDs: ["269657133673349120"] });
         this.filePath = filePath;

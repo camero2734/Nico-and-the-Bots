@@ -2,6 +2,7 @@ import {
     Command,
     CommandOption,
     CommandOptions,
+    CommandReactionHandler,
     CommandRunner,
     GeneralCommandRunner,
     SubcommandRunner
@@ -23,10 +24,12 @@ async function getFilesRecursive(dir: string): Promise<string[]> {
 
 /**
  * Loads all command modules from ./commands
- * @param commands Command array to populate
+ * @param commands - Command array to populate
+ * @param reactionHandlers - Reaction handlers array to populate
  */
 export const loadCommands = async function (
     commands: Command<CommandOption, GeneralCommandRunner>[],
+    reactionHandlers: CommandReactionHandler[],
     creator: SlashCreator
 ): Promise<void> {
     const commandsPath = join(__dirname, "../slashcommands");
@@ -55,7 +58,17 @@ export const loadCommands = async function (
     for (const [key, value] of Object.entries(subCommands)) {
         if (typeof value === "string") {
             // Single command
-            const { Executor, Options }: { Executor: CommandRunner; Options: CommandOptions } = await import(value);
+            const {
+                Executor,
+                Options,
+                ReactionHandler
+            }: {
+                Executor: CommandRunner;
+                Options: CommandOptions;
+                ReactionHandler?: CommandReactionHandler;
+            } = await import(value);
+
+            if (ReactionHandler) reactionHandlers.push(ReactionHandler);
             commands.push(new Command(creator, key, Options, value, Executor));
         } else {
             // Subcommand
@@ -64,10 +77,18 @@ export const loadCommands = async function (
             const SubcommandExecutor: SubcommandRunner = {};
 
             for (const [subcommand, fileName] of Object.entries(value)) {
-                const { Executor, Options }: { Executor: CommandRunner; Options: CommandOptions } = await import(
-                    fileName
-                );
+                const {
+                    Executor,
+                    Options,
+                    ReactionHandler
+                }: {
+                    Executor: CommandRunner;
+                    Options: CommandOptions;
+                    ReactionHandler?: CommandReactionHandler;
+                } = await import(fileName);
                 options.options?.push({ ...Options, name: subcommand, type: CommandOptionType.SUB_COMMAND });
+
+                if (ReactionHandler) reactionHandlers.push(ReactionHandler);
                 SubcommandExecutor[subcommand] = Executor;
             }
 

@@ -1,10 +1,10 @@
 import { CommandOptionType } from "slash-create";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
 import { MessageEmbed, MessageReaction, TextChannel, Message } from "discord.js";
 import * as ytdl from "youtube-dl";
 import dayjs from "dayjs";
 import { Item } from "database/entities/Item";
-import { channelIDs } from "configuration/config";
+import { channelIDs, roles } from "configuration/config";
 import { Connection } from "typeorm";
 
 export const Options: CommandOptions = {
@@ -67,24 +67,28 @@ export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
     await ctx.embed(new MessageEmbed().setColor("#111111").setDescription("Sent video to staff for approval!"));
 };
 
-export const ReactionListener = async (reaction: MessageReaction, connection: Connection): Promise<boolean> => {
+export const ReactionHandler: CommandReactionHandler = async ({ reaction }): Promise<boolean> => {
     const msg = reaction.message;
 
+    // Verify reaction is to this command
     if (msg.channel.id !== channelIDs.interviewsubmissions || !msg.author?.bot || !msg.embeds[0]?.footer) return false;
 
     const accepting = reaction.emoji.name === "✅";
 
     await msg.reactions.removeAll();
 
+    // Do something
     const newEmbed = new MessageEmbed(msg.embeds[0]);
     newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
     msg.edit(newEmbed);
 
     if (accepting) {
-        await msg.guild?.roles.cache.get("595478773487501376")?.setMentionable(true);
+        await msg.guild?.roles.cache.get(roles.topfeed.selectable.interviews)?.setMentionable(true);
         const m = await (<TextChannel>(
             msg.guild?.channels.cache.get(channelIDs.interviews)
-        ))?.send("<@&595478773487501376>", { embed: newEmbed });
+        ))?.send(`<@&${roles.topfeed.selectable.interviews}>`, { embed: newEmbed });
         await m.react("📺");
     }
+
+    return true;
 };

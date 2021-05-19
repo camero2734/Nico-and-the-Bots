@@ -1,4 +1,4 @@
-import { Command } from "configuration/definitions";
+import { Command, CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
@@ -17,6 +17,8 @@ const interactions = new SlashCreator({
     defaultImageFormat: "png"
 });
 
+const reactionHandlers: CommandReactionHandler[] = [];
+
 client.login(secrets.bots.nico);
 
 client.on("ready", async () => {
@@ -27,7 +29,7 @@ client.on("ready", async () => {
     // Initialize everything
     await Promise.all([
         // Wait until commands are loaded, connected to database, etc.
-        helpers.loadCommands(commands, interactions),
+        helpers.loadCommands(commands, reactionHandlers, interactions),
         new Promise((resolve) => {
             helpers.connectToDatabase().then((c) => {
                 connection = c;
@@ -57,30 +59,33 @@ client.on("message", (msg: Discord.Message) => {
     // addToScore(msg); // Add to score
 });
 
-// async function handleReactions(data: MessageReaction, u: User | PartialUser, added: boolean) {
-//     // Only care about user's reactions on bot's messages
-//     const msg = data.message as CommandMessage;
-//     if (!msg.author.bot || u.bot) return;
+//Manually emit an event for reactions on messages sent before the bot was turned on
+const reaction_events = <const>{
+    MESSAGE_REACTION_ADD: "messageReactionAdd",
+    MESSAGE_REACTION_REMOVE: "messageReactionRemove"
+};
+client.on("raw", async (event) => {
+    // eslint-disable-next-line no-prototype-builtins
+    if (reaction_events.hasOwnProperty(event.t)) {
+        const eventT = event.t as keyof typeof reaction_events;
+        const { d: data } = event;
+        const user = await client.users.fetch(data.user_id);
+        const channel = ((await client.channels.fetch(data.channel_id)) as Discord.TextChannel) || (await user.createDM()); // prettier-ignore
+        if (channel.messages.cache.has(data.message_id)) return;
+        const message = await channel.messages.fetch(data.message_id);
+        const emojiKey = data.emoji.id ? `${data.emoji.name}:${data.emoji.id}` : data.emoji.name;
+        const reaction = message.reactions.cache.get(emojiKey) as Discord.MessageReaction;
+        client.emit(reaction_events[eventT], reaction, user);
+    }
+});
 
-//     const user = await u.fetch();
+client.on("messageReactionAdd", async (reaction, user) => {
+    if (!reaction) return;
 
-//     console.log("Got reaction");
-
-//     for (const c of commands) {
-//         if (c.interactive) {
-//             console.log(`\tTrying ${c.name}`);
-//             try {
-//                 await c.interactive(msg, connection, { data, user, added });
-//                 return; // This one worked, no need to try any more
-//             } catch (e) {
-//                 if (!(e instanceof InteractiveError)) {
-//                     console.log(e);
-//                     return; // Some uncaught error, don't try any more
-//                 }
-//             }
-//         }
-//     }
-// }
-
-// client.on("messageReactionAdd", async (data, u) => handleReactions(data, u, true));
-// client.on("messageReactionRemove", async (data, u) => handleReactions(data, u, true));
+    const fullUser = user.partial ? await user.fetch() : user;
+    for (const reactionHandler of reactionHandlers) {
+        // If a command's handler returns true, it handled the reaction; no need to continue
+        const retVal = await reactionHandler({ reaction, user: fullUser, connection });
+        if (retVal) return;
+    }
+});

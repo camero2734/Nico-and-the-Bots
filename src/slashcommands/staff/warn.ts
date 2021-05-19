@@ -38,13 +38,14 @@ export const Executor: CommandRunner<{ user: string; rule: string; severity: num
 
     const rules = ["Bothering Others", "Drama", "Spam", "NSFW/Slurs", "Other"];
 
-    const ruleBroken = rules.find((r) => r.startsWith(rule.toUpperCase()));
+    const ruleBroken = rules.find((r) => r.startsWith(rule[0].toUpperCase()));
 
     if (!ruleBroken) throw new CommandError(`Invalid rule given. Please choose one of:\n- ${rules.join("\n- ")}`);
     if (severity < 1 || severity > 10) throw new CommandError("Invalid severity. Must be between 1 and 10.");
 
     const confirmationEmbed = new MessageEmbed();
     confirmationEmbed.setTitle("Would you like to submit this warning?");
+    confirmationEmbed.addField("User", `<@${user}>`);
     confirmationEmbed.addField("Explanation", explanation);
     confirmationEmbed.addField("Rule Broken", ruleBroken);
     confirmationEmbed.addField("Severity", severity);

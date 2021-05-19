@@ -1,13 +1,9 @@
-import { XPDelay } from "database/entities/XPDelay";
-import { Message, MessageEmbed } from "discord.js";
-import { Connection } from "typeorm";
-import { constants } from "configuration/config";
-import { MessageLog } from "database/entities/MessageLog";
-import * as R from "ramda";
-import F from "helpers/funcs";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
 import { LevelToken } from "database/entities/LevelToken";
+import { XPDelay } from "database/entities/XPDelay";
+import { Message, MessageEmbed } from "discord.js";
+import { Connection } from "typeorm";
 
 export const updateUserScore = async (msg: Message, connection: Connection): Promise<void> => {
     const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
@@ -74,7 +70,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
         const lvlEmbed = new MessageEmbed({ description: `LEVEL UP: You are now level ${userLevel}!` }).setColor(
             "RANDOM"
         );
-        if (perkStr) lvlEmbed.addField("Perk Bonus", hasPerk);
+        if (perkStr) lvlEmbed.addField("Perk Bonus", perkStr);
         if (levelTokens > 0) lvlEmbed.addField("Level Tokens", `You gained ${levelTokens} level tokens!`);
         await msg.channel.send(msg.member, { embed: lvlEmbed });
     }

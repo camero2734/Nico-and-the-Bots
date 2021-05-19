@@ -1,12 +1,11 @@
-import { Command, CommandOptionType, Message } from "slash-create";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { badgeLoader } from "helpers";
-import { DiscordAPIError, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { createCanvas, loadImage, registerFont } from "canvas";
 import { roles } from "configuration/config";
+import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
+import { badgeLoader } from "helpers";
+import { CommandOptionType } from "slash-create";
 import { MoreThan } from "typeorm";
-import { createCanvas, loadImage, registerFont } from "canvas";
 
 export const Options: CommandOptions = {
     description: "the score",
@@ -49,8 +48,8 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
     let totalscore = 0;
     let cL = 0;
     let previousScore = 0;
-    while (cL < userEconomy.alltimeLevel + 1) {
-        if (cL === userEconomy.alltimeLevel) previousScore = totalscore;
+    while (cL < userEconomy.level + 1) {
+        if (cL === userEconomy.level) previousScore = totalscore;
         totalscore += rq;
         rq = rq + 21 - Math.pow(1.001450824, rq);
         cL++;
@@ -113,7 +112,7 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
     cctx.fillStyle = inverted ? "black" : "white";
     cctx.fillText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 17, 258);
     //LEVEL
-    cctx.fillText(`${userEconomy.alltimeLevel}`, 17, 193);
+    cctx.fillText(`${userEconomy.level}`, 17, 193);
     //LEVEL UP BAR / POINTS TO NEXT LEVEL
     const colorsArray = ["#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];
     cctx.save();

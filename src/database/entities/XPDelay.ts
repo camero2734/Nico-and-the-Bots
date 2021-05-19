@@ -1,18 +1,17 @@
-import { Entity, Column, PrimaryColumn, BaseEntity } from "typeorm";
+import { Entity, Column, ObjectIdColumn } from "typeorm";
 
 @Entity()
-export class XPDelay extends BaseEntity {
-    @PrimaryColumn("text")
+export class XPDelay {
+    @ObjectIdColumn()
     id: string;
 
-    @Column("int")
+    @Column()
     messageCount: number;
 
-    @Column("int")
+    @Column()
     nextTime: number;
 
     constructor(params: { id: string; messageCount: number; nextTime: number }) {
-        super();
         if (params) {
             this.id = params.id;
             this.messageCount = params.messageCount || 0;

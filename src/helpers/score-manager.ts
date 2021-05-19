@@ -53,7 +53,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
     };
 
     const userLevel = getLevel(userEconomy.alltimeScore);
-    if (userLevel > userEconomy.alltimeLevel) {
+    if (userLevel > userEconomy.level) {
         // User has "leveled up"
         const hasPerk = await connection
             .getRepository(Item)
@@ -65,7 +65,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
             perkStr = `You gained ${randomReward} credits for leveling up!`;
             userEconomy.credits += randomReward;
         }
-        userEconomy.alltimeLevel = userLevel;
+        userEconomy.level = userLevel;
         const levelTokens = await updateTokens(msg, connection, userLevel);
         const lvlEmbed = new MessageEmbed({ description: `LEVEL UP: You are now level ${userLevel}!` }).setColor(
             "RANDOM"

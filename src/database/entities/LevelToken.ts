@@ -1,18 +1,17 @@
-import {Entity, Column, PrimaryColumn, BaseEntity} from "typeorm";
+import { Column, Entity, ObjectIdColumn } from "typeorm";
 
 @Entity()
-export class LevelToken extends BaseEntity {
-    @PrimaryColumn("text")
+export class LevelToken {
+    @ObjectIdColumn()
     id: string;
 
-    @Column("int")
+    @Column()
     value: number;
 
-    @Column("int")
+    @Column()
     lastLevel: number;
 
-    constructor(params: { id: string, value: number, lastLevel: number }) {
-        super();
+    constructor(params: { id: string; value: number; lastLevel: number }) {
         if (params) {
             this.id = params.id;
             this.value = params.value || 0;

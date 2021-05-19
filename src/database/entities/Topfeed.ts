@@ -1,25 +1,24 @@
-import {Entity, Column, PrimaryGeneratedColumn, BaseEntity} from "typeorm";
+import { Entity, Column, ObjectIdColumn, ObjectID } from "typeorm";
 
 @Entity()
-export class Topfeed extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    c: number;
+export class Topfeed {
+    @ObjectIdColumn()
+    c: ObjectID;
 
-    @Column("text")
+    @Column()
     type: string;
 
-    @Column("text")
+    @Column()
     link: string;
 
-    @Column("int")
-    date: number;
+    @Column()
+    date: Date;
 
-    constructor(params: { type: string, link: string, date: number }) {
-        super();
+    constructor(params: { type: string; link: string; date: Date }) {
         if (params) {
             this.type = params.type;
             this.link = params.link;
-            this.date = params.date || Date.now();
+            this.date = params.date || new Date();
         }
     }
 }

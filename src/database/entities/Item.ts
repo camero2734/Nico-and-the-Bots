@@ -1,27 +1,26 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
+import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
 @Entity()
-export class Item extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    c: number;
+export class Item {
+    @ObjectIdColumn()
+    c: ObjectID;
 
-    @Column("text")
+    @Column()
     id: string;
 
-    @Column("text")
+    @Column()
     title: string;
 
-    @Column("text")
+    @Column()
     type: string;
 
-    @Column("text", { nullable: true })
+    @Column()
     data?: string;
 
-    @Column("int")
+    @Column()
     time: number;
 
     constructor(params: { id: string; title: string; type: string; data?: string; time?: number }) {
-        super();
         if (params) {
             this.id = params.id;
             this.title = params.title;

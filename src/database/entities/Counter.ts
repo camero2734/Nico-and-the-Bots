@@ -1,24 +1,23 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
+import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
 @Entity()
-export class Counter extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    c: number;
+export class Counter {
+    @ObjectIdColumn()
+    c: ObjectID;
 
-    @Column("text")
+    @Column()
     id: string;
 
-    @Column("text")
+    @Column()
     title: string;
 
-    @Column("int")
+    @Column()
     count: number;
 
-    @Column("int")
+    @Column()
     lastUpdated: number;
 
     constructor(params: { id: string; title: string; count?: number; lastUpdated?: number }) {
-        super();
         if (params) {
             this.id = params.id;
             this.title = params.title;

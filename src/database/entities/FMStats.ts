@@ -1,18 +1,20 @@
-import {Entity, Column, PrimaryColumn, BaseEntity} from "typeorm";
+import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
 @Entity()
-export class FMStats extends BaseEntity {
-    @PrimaryColumn("text")
+export class FMStats {
+    @ObjectIdColumn()
+    id: ObjectID;
+
+    @Column()
     fmuser: string;
 
-    @PrimaryColumn("text")
+    @Column()
     artist: string;
 
-    @Column("int")
+    @Column()
     playcount: number;
 
-    constructor(params: { fmuser: string, artist: string, playcount: number }) {
-        super();
+    constructor(params: { fmuser: string; artist: string; playcount?: number }) {
         if (params) {
             this.fmuser = params.fmuser;
             this.artist = params.artist;

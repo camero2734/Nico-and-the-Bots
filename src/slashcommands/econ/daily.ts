@@ -19,18 +19,18 @@ export const Executor: CommandRunner = async (ctx) => {
 
     //CALCULATE TIME REMAINING
     const curdate = Date.now();
-    const timeremain = (86400000 - (curdate - userEconomy.lastDaily)) / 3600000;
+    const timeremain = (86400000 - (curdate - userEconomy.dailyBox.lastDaily)) / 3600000;
     const remain = {
         hours: Math.floor(timeremain),
         mins: Math.floor((timeremain - Math.floor(timeremain)) * 60)
     };
-    if (curdate - userEconomy.lastDaily < 86400000 && ctx.user.id !== userIDs.me) {
+    if (curdate - userEconomy.dailyBox.lastDaily < 86400000 && ctx.user.id !== userIDs.me) {
         const { hours, mins } = remain;
         throw new CommandError(`You have already used !daily today! You have ${hours} hours and ${mins} until the next one`); // prettier-ignore
     }
 
     //DAILY COUNTER
-    userEconomy.dailyCount++;
+    userEconomy.dailyBox.dailyCount++;
     let dailyCounter = await connection.getRepository(Counter).findOne({ id: ctx.user.id, title: "ConsecutiveDaily" });
 
     if (!dailyCounter)
@@ -40,10 +40,10 @@ export const Executor: CommandRunner = async (ctx) => {
             count: 0,
             lastUpdated: curdate
         });
-    if (curdate - userEconomy.lastDaily <= 86400000 * 2) {
+    if (curdate - userEconomy.dailyBox.lastDaily <= 86400000 * 2) {
         dailyCounter.count++;
     } else (dailyCounter.count = 1), (dailyCounter.lastUpdated = curdate);
-    userEconomy.lastDaily = curdate;
+    userEconomy.dailyBox.lastDaily = curdate;
 
     //FIXME: Weekly consecutive bonus
     if (dailyCounter.count % 7 === 0) {
@@ -132,9 +132,9 @@ export const Executor: CommandRunner = async (ctx) => {
         .findOne({ id: ctx.user.id, type: "Perk", title: "blurryboxinc" });
     const bTokensToGive = hasTokenInc ? 2 : 1;
 
-    const before = userEconomy.blurrytokens;
-    const after = Math.min(userEconomy.blurrytokens + bTokensToGive, 5); //LIMIT TO 5
-    userEconomy.blurrytokens = after;
+    const before = userEconomy.dailyBox.tokens;
+    const after = Math.min(before + bTokensToGive, 5); //LIMIT TO 5
+    userEconomy.dailyBox.tokens = after;
 
     let tokenMessage = "None";
 

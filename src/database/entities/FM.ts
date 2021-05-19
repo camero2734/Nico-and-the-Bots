@@ -1,26 +1,26 @@
-import { Entity, Column, PrimaryColumn, BaseEntity } from "typeorm";
+import { Column, Entity, ObjectIdColumn } from "typeorm";
 
 @Entity()
-export class FM extends BaseEntity {
-    @Column("text")
-    id: string;
-
-    @PrimaryColumn("text")
+export class FM {
+    @ObjectIdColumn()
     message_id: string;
 
-    @Column("text")
+    @Column()
+    id: string;
+
+    @Column()
     track: string;
 
-    @Column("text")
+    @Column()
     album: string;
 
-    @Column("text")
+    @Column()
     artist: string;
 
-    @Column("int")
+    @Column()
     stars: number;
 
-    @Column("int")
+    @Column()
     time: number;
 
     constructor(params: {
@@ -32,7 +32,6 @@ export class FM extends BaseEntity {
         stars?: number;
         time?: number;
     }) {
-        super();
         if (params) {
             this.id = params.id;
             this.message_id = params.message_id;

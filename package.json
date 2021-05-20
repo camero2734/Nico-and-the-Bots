@@ -16,6 +16,7 @@
         "@types/ramda": "^0.27.40",
         "@types/require-all": "^3.0.2",
         "@types/youtube-dl": "^3.0.0",
+        "async-mutex": "^0.3.1",
         "canvas": "^2.8.0",
         "chalk": "^4.1.1",
         "chrono-node": "^2.2.6",

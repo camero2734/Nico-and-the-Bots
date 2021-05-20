@@ -89,7 +89,7 @@ async function extendContext<T extends CommandOption>(
 
     extendedContext.client = client;
     extendedContext.connection = connection;
-    extendedContext.opts = ctx.options[extendedContext.subcommands[0]] as T;
+    extendedContext.opts = (ctx.options[extendedContext.subcommands[0]] || ctx.options) as T;
     return extendedContext;
 }
 
@@ -130,18 +130,32 @@ export class Command<
             name: commandName,
             ...options,
             guildIDs: ["269657133673349120"],
-            defaultPermission: commandName === "staff" ? false : true,
-            permissions: {
-                [guildID]: [
-                    {
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: roles.staff,
-                        permission: true
-                    }
-                ]
-            }
+            ...(commandName === "staff"
+                ? {
+                      defaultPermission: false,
+                      permissions: {
+                          [guildID]: [
+                              {
+                                  type: ApplicationCommandPermissionType.ROLE,
+                                  id: roles.staff,
+                                  permission: true
+                              }
+                          ]
+                      }
+                  }
+                : {
+                      defaultPermission: true,
+                      permissions: {
+                          [guildID]: [
+                              {
+                                  type: ApplicationCommandPermissionType.ROLE,
+                                  id: roles.banditos,
+                                  permission: true
+                              }
+                          ]
+                      }
+                  })
         });
-        console.log(this.defaultPermission, this.options, commandName);
         this.filePath = filePath;
     }
     setConnectionClient(connection: Connection, client: Client): void {

@@ -69,7 +69,10 @@ export const loadCommands = async function (
             } = await import(value);
 
             if (ReactionHandler) reactionHandlers.push(ReactionHandler);
-            commands.push(new Command(creator, key, Options, value, Executor));
+
+            const command = new Command(creator, key, Options, value, Executor);
+            command.onError = console.log;
+            commands.push(command);
         } else {
             // Subcommand
             const options: CommandOptions = { description: key, options: [] };
@@ -96,7 +99,10 @@ export const loadCommands = async function (
                 SubcommandExecutor[subcommand] = Executor;
             }
 
-            commands.push(new Command(creator, key, options, "", SubcommandExecutor));
+            const command = new Command(creator, key, options, "", SubcommandExecutor);
+            command.onError = console.log;
+
+            commands.push(command);
         }
     }
 };

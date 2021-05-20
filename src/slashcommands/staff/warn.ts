@@ -1,8 +1,9 @@
 import { CommandError, CommandOptions, CommandRunner, WarningData } from "configuration/definitions";
+import { roles, guildID } from "configuration/config";
 import { Item } from "database/entities/Item";
 import { GuildMember, MessageEmbed } from "discord.js";
 import { MessageTools } from "helpers";
-import { CommandOptionType } from "slash-create";
+import { ApplicationCommandPermissionType, CommandOptionType } from "slash-create";
 import { MoreThan } from "typeorm";
 
 export const Options: CommandOptions = {

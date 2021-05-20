@@ -5,6 +5,7 @@
 
 import { Client, GuildMember, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import {
+    ApplicationCommandPermissionType,
     CommandContext,
     ConvertedOption,
     Message,
@@ -13,6 +14,7 @@ import {
     SlashCreator
 } from "slash-create";
 import { Connection } from "typeorm";
+import { guildID, roles } from "./config";
 
 export class CommandError extends Error {}
 export class InteractiveError extends Error {}
@@ -27,6 +29,7 @@ export type SubcommandRunner<T extends CommandOption = {}, U extends string = st
 export type GeneralCommandRunner<T extends CommandOption = {}> = CommandRunner<T> | SubcommandRunner<T>;
 export type CommandOptions = Pick<SlashCommandOptions, "options"> & {
     description: string;
+    staffOnly?: boolean;
 };
 
 /**
@@ -98,7 +101,7 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
 
     if (e instanceof CommandError) {
         const embed = new MessageEmbed()
-            .setDescription(`\`\`\`cpp\n${e.message}\n\`\`\``)
+            .setDescription(`\`\`\`\n${e.message}\n\`\`\``)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet broke");
         ectx.embed(embed);
@@ -123,7 +126,22 @@ export class Command<
         private executor: Q,
         public reactionHandler?: CommandReactionHandler
     ) {
-        super(creator, { name: commandName, ...options, guildIDs: ["269657133673349120"] });
+        super(creator, {
+            name: commandName,
+            ...options,
+            guildIDs: ["269657133673349120"],
+            defaultPermission: commandName === "staff" ? false : true,
+            permissions: {
+                [guildID]: [
+                    {
+                        type: ApplicationCommandPermissionType.ROLE,
+                        id: roles.staff,
+                        permission: true
+                    }
+                ]
+            }
+        });
+        console.log(this.defaultPermission, this.options, commandName);
         this.filePath = filePath;
     }
     setConnectionClient(connection: Connection, client: Client): void {

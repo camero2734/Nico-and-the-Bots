@@ -86,7 +86,11 @@ export const loadCommands = async function (
                     Options: CommandOptions;
                     ReactionHandler?: CommandReactionHandler;
                 } = await import(fileName);
-                options.options?.push({ ...Options, name: subcommand, type: CommandOptionType.SUB_COMMAND });
+                options.options?.push({
+                    ...Options,
+                    name: subcommand,
+                    type: CommandOptionType.SUB_COMMAND
+                });
 
                 if (ReactionHandler) reactionHandlers.push(ReactionHandler);
                 SubcommandExecutor[subcommand] = Executor;

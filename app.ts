@@ -42,7 +42,8 @@ client.on("ready", async () => {
     interactions
         .withServer(new GatewayServer((handler) => client.ws.on("INTERACTION_CREATE" as Discord.WSEventType, handler)))
         .registerCommands(commands, false)
-        .syncCommands();
+        .syncCommands()
+        .syncCommandPermissions();
 
     // Set the database connection on each command
     const loadedCommands = (interactions.commands as unknown) as Discord.Collection<string, Command>;

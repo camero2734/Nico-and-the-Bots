@@ -23,6 +23,7 @@
         "chalk": "^4.1.1",
         "chrono-node": "^2.2.6",
         "discord.js": "^12.5.3",
+        "fastify": "^3.15.1",
         "fuse.js": "^6.4.6",
         "fuzzy-search": "^3.2.1",
         "leven": "^3.1.0",
@@ -36,8 +37,10 @@
         "slash-commands": "^1.4.0",
         "slash-create": "^3.1.0",
         "sqlite3": "^5.0.2",
+        "ts-node": "^9.1.1",
+        "ts-node-dev": "^1.1.6",
         "typeorm": "^0.2.32",
-        "typescript": "^4.2.4",
+        "typescript": "^4.4.0-dev.20210521",
         "wokcommands": "^1.2.8",
         "youtube-dl": "^3.5.0",
         "youtube-info-streams": "^1.0.5"
@@ -52,7 +55,6 @@
         "eslint": "^7.26.0",
         "prettier": "^2.3.0",
         "reflect-metadata": "^0.1.13",
-        "ts-node-dev": "^1.1.6",
         "tsconfig-paths": "^3.9.0"
     }
 }

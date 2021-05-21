@@ -16,12 +16,8 @@
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "paths": {
-            "@/*": ["src/*"],
-            "src/*": [ "./src/*" ],
-            "configuration/*": ["./src/configuration/*"],
-            "helpers/*": ["./src/helpers/*"],
-            "assets/*": ["./src/assets/*"]
+            "*": ["*", "./src/*"]
         },
-        
-    }
+    },
+    "include": ["**/*.ts"]
 }

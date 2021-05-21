@@ -13,8 +13,11 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
-        // "paths": {
-        //     "src/*": [ "./src/*" ],
-        // }
+        "allowSyntheticDefaultImports": true,
+        "paths": {
+            "@/*": ["src/*"],
+            "src/*": [ "./src/*" ],
+        },
+        
     }
 }

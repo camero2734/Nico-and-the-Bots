@@ -75,8 +75,6 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user }
     const buffer = Buffer.from(footerBase64.split("Metadata: ")[1], "utf16le");
     const footer = buffer.toString("utf-8");
 
-    console.log(footer, /FOOTER/);
-
     if (!footer || !footer?.startsWith("reactforrole:")) return false;
 
     try {
@@ -90,7 +88,6 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user }
         const member = await reaction.message.guild?.members.fetch(user.id);
         if (!member) return true; // Handled, but member doesn't exist (somehow)
 
-        console.log(roleID, /roleID/);
         if (reaction.emoji.name === "❌") await member.roles.remove(roleID.trim());
         else await member.roles.add(roleID.trim());
     } catch (e) {

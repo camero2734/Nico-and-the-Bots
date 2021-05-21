@@ -97,3 +97,10 @@ client.on("messageReactionAdd", async (reaction, user) => {
         if (retVal) return;
     }
 });
+
+process.on("unhandledRejection", (err) => {
+    console.log("unhandledRejection", err);
+});
+process.on("uncaughtException", (err) => {
+    console.log("uncaughtException: ", err);
+});

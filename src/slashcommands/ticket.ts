@@ -39,7 +39,7 @@ export const Executor: CommandRunner<{ number: number }> = async (ctx) => {
 
         const canvas = createCanvas(width, height);
         const cctx = canvas.getContext("2d");
-        cctx.font = "200px FiraCode";
+        cctx.font = ticketNum > 999 ? "150px FiraCode" : "200px FiraCode";
 
         const img = await loadImage("./src/assets/images/livestream_ticket.png");
 

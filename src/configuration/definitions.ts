@@ -7,7 +7,6 @@ import { Client, GuildMember, MessageAttachment, MessageEmbed, MessageReaction, 
 import {
     ApplicationCommandPermissionType,
     CommandContext,
-    ConvertedOption,
     Message,
     SlashCommand,
     SlashCommandOptions,
@@ -22,7 +21,7 @@ export class InteractiveError extends Error {}
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social" | "Utility";
 
 export interface CommandOption {
-    [key: string]: ConvertedOption;
+    [key: string]: string | number | boolean;
 }
 export type CommandRunner<T extends CommandOption = {}> = (ctx: ExtendedContext<T>) => ReturnType<SlashCommand["run"]>;
 export type SubcommandRunner<T extends CommandOption = {}, U extends string = string> = Record<U, CommandRunner<T>>;
@@ -57,7 +56,7 @@ async function extendContext<T extends CommandOption>(
     client: Client,
     connection: Connection
 ): Promise<ExtendedContext<T>> {
-    const extendedContext = (ctx as unknown) as ExtendedContext<T>;
+    const extendedContext = ctx as unknown as ExtendedContext<T>;
     extendedContext.embed = (embed: MessageEmbed): Promise<Message | boolean> => {
         if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON()] });
         else if (embed.files) {
@@ -166,7 +165,7 @@ export class Command<
         return typeof this.executor === "function";
     }
     async run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
-        let ectx = (null as unknown) as ExtendedContext<T>;
+        let ectx = null as unknown as ExtendedContext<T>;
         try {
             ectx = await extendContext<T>(ctx, this.client, this.connection);
 

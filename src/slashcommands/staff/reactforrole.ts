@@ -1,6 +1,7 @@
 import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
 import { Message, MessageEmbed, TextChannel } from "discord.js";
-import { CommandOptionType } from "slash-create";
+import { ButtonStyle, CommandOptionType, ComponentType } from "slash-create";
+import F from "helpers/funcs";
 
 export const Options: CommandOptions = {
     description: "Creates a message that users can react to to receive a role",
@@ -13,15 +14,9 @@ export const Options: CommandOptions = {
         },
         {
             name: "role",
-            description: "The role the reaction should give",
+            description: "The role the interaction should give",
             required: true,
             type: CommandOptionType.ROLE
-        },
-        {
-            name: "reaction",
-            description: "The emoji the user should react with to receive the role",
-            required: true,
-            type: CommandOptionType.STRING
         },
         {
             name: "channel",
@@ -40,60 +35,88 @@ export const Executor: CommandRunner<{ channel?: string; text: string; role: str
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");
 
-    const footerPlain = `reactforrole:${reaction}|||${roleObj.id}|||`;
-    const footerBuffer = Buffer.from(footerPlain, "utf-8");
+    await ctx.defer();
 
-    const embed = new MessageEmbed();
-    embed.setTitle(`React with ${reaction} for the ${roleObj.name} role!`);
-    embed.setDescription(`${text}\n\nTo remove the role, react with ❌.`);
-    embed.setColor(roleObj.hexColor);
-    embed.setFooter(`Metadata: ${footerBuffer.toString("utf16le")}`);
+    await ctx.send(text, {
+        components: [
+            {
+                type: ComponentType.ACTION_ROW,
+                components: [
+                    {
+                        type: ComponentType.BUTTON,
+                        style: ButtonStyle.SUCCESS,
+                        label: `Get the ${roleObj.name} role`,
+                        custom_id: `add_role`,
+                        emoji: {
+                            name: "😎"
+                        }
+                    },
+                    {
+                        type: ComponentType.BUTTON,
+                        style: ButtonStyle.DESTRUCTIVE,
+                        label: `Remove the ${roleObj.name} role`,
+                        custom_id: `remove_role`,
+                        emoji: {
+                            name: "😔"
+                        }
+                    }
+                ]
+            }
+        ]
+    });
 
-    const channelID = channel ? channel.replace(/[<>#]/g, "") : ctx.channel.id;
-    const chan = ctx.channel.guild.channels.cache.get(channelID) as TextChannel;
+    ctx.registerComponent(`add_role`, async (btnCtx) => {
+        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id);
+        if (!member) return;
 
-    if (!chan) throw new CommandError("Invalid channel");
+        const embed = new MessageEmbed().setDescription(`You now have the ${roleObj.name} role!`);
 
-    const m = await chan.send(embed);
-    await m.react(reaction);
-    await m.react("❌");
+        await member.roles.add(roleObj.id);
+        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
+    });
 
-    await ctx.send({
-        embeds: [embed.setDescription("Message sent!")]
+    ctx.registerComponent(`remove_role`, async (btnCtx) => {
+        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id);
+        if (!member) return;
+
+        const embed = new MessageEmbed().setDescription(`You no longer have the ${roleObj.name} role!`);
+
+        await member.roles.remove(roleObj.id);
+        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
     });
 };
 
-export const ReactionHandler: CommandReactionHandler = async ({ reaction, user }): Promise<boolean> => {
-    const msg = reaction.message;
+// export const ReactionHandler: CommandReactionHandler = async ({ reaction, user }): Promise<boolean> => {
+//     const msg = reaction.message;
 
-    if (user.bot) return false;
+//     if (user.bot) return false;
 
-    // Verify reaction is to this command
-    const footerBase64 = msg?.embeds?.[0]?.footer?.text;
-    if (!footerBase64 || !footerBase64.startsWith("Metadata: ")) return false;
+//     // Verify reaction is to this command
+//     const footerBase64 = msg?.embeds?.[0]?.footer?.text;
+//     if (!footerBase64 || !footerBase64.startsWith("Metadata: ")) return false;
 
-    const buffer = Buffer.from(footerBase64.split("Metadata: ")[1], "utf16le");
-    const footer = buffer.toString("utf-8");
+//     const buffer = Buffer.from(footerBase64.split("Metadata: ")[1], "utf16le");
+//     const footer = buffer.toString("utf-8");
 
-    if (!footer || !footer?.startsWith("reactforrole:")) return false;
+//     if (!footer || !footer?.startsWith("reactforrole:")) return false;
 
-    try {
-        const [emoji, tempRoleID] = footer.split("reactforrole:")[1].split("|||");
-        const roleID = tempRoleID.split("|")[0];
-        // prettier-ignore
-        if (!emoji.includes(reaction.emoji.identifier) && reaction.emoji.name !== emoji && reaction.emoji.name !== "❌") {
-            return true; // Not the correct emoji
-        }
+//     try {
+//         const [emoji, tempRoleID] = footer.split("reactforrole:")[1].split("|||");
+//         const roleID = tempRoleID.split("|")[0];
+//         // prettier-ignore
+//         if (!emoji.includes(reaction.emoji.identifier) && reaction.emoji.name !== emoji && reaction.emoji.name !== "❌") {
+//             return true; // Not the correct emoji
+//         }
 
-        const member = await reaction.message.guild?.members.fetch(user.id);
-        if (!member) return true; // Handled, but member doesn't exist (somehow)
+//         const member = await reaction.message.guild?.members.fetch(user.id);
+//         if (!member) return true; // Handled, but member doesn't exist (somehow)
 
-        if (reaction.emoji.name === "❌") await member.roles.remove(roleID.trim());
-        else await member.roles.add(roleID.trim());
-    } catch (e) {
-        console.log(e, /REACTION_HANDLE_ERR/);
-        return true;
-    }
+//         if (reaction.emoji.name === "❌") await member.roles.remove(roleID.trim());
+//         else await member.roles.add(roleID.trim());
+//     } catch (e) {
+//         console.log(e, /REACTION_HANDLE_ERR/);
+//         return true;
+//     }
 
-    return true;
-};
+//     return true;
+// };

@@ -1,4 +1,13 @@
 import * as R from "ramda";
+import {
+    AnyComponentButton,
+    ButtonStyle,
+    ComponentActionRow,
+    ComponentButton,
+    ComponentButtonLink,
+    ComponentType,
+    PartialEmoji
+} from "slash-create";
 
 /**
  * Just some commonly used short functions

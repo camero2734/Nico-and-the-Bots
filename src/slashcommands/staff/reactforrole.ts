@@ -1,7 +1,6 @@
-import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
-import { Message, MessageEmbed, TextChannel } from "discord.js";
+import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { MessageEmbed } from "discord.js";
 import { ButtonStyle, CommandOptionType, ComponentType } from "slash-create";
-import F from "helpers/funcs";
 
 export const Options: CommandOptions = {
     description: "Creates a message that users can react to to receive a role",
@@ -27,10 +26,8 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ channel?: string; text: string; role: string; reaction: string }> = async (
-    ctx
-) => {
-    const { channel, text, role, reaction } = ctx.opts;
+export const Executor: CommandRunner<{ text: string; role: string }> = async (ctx) => {
+    const { text, role } = ctx.opts;
 
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");

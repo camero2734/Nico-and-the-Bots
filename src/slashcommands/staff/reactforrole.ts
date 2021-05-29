@@ -85,38 +85,3 @@ export const Executor: CommandRunner<{ channel?: string; text: string; role: str
         btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
     });
 };
-
-// export const ReactionHandler: CommandReactionHandler = async ({ reaction, user }): Promise<boolean> => {
-//     const msg = reaction.message;
-
-//     if (user.bot) return false;
-
-//     // Verify reaction is to this command
-//     const footerBase64 = msg?.embeds?.[0]?.footer?.text;
-//     if (!footerBase64 || !footerBase64.startsWith("Metadata: ")) return false;
-
-//     const buffer = Buffer.from(footerBase64.split("Metadata: ")[1], "utf16le");
-//     const footer = buffer.toString("utf-8");
-
-//     if (!footer || !footer?.startsWith("reactforrole:")) return false;
-
-//     try {
-//         const [emoji, tempRoleID] = footer.split("reactforrole:")[1].split("|||");
-//         const roleID = tempRoleID.split("|")[0];
-//         // prettier-ignore
-//         if (!emoji.includes(reaction.emoji.identifier) && reaction.emoji.name !== emoji && reaction.emoji.name !== "❌") {
-//             return true; // Not the correct emoji
-//         }
-
-//         const member = await reaction.message.guild?.members.fetch(user.id);
-//         if (!member) return true; // Handled, but member doesn't exist (somehow)
-
-//         if (reaction.emoji.name === "❌") await member.roles.remove(roleID.trim());
-//         else await member.roles.add(roleID.trim());
-//     } catch (e) {
-//         console.log(e, /REACTION_HANDLE_ERR/);
-//         return true;
-//     }
-
-//     return true;
-// };

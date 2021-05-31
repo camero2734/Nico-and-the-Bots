@@ -22,6 +22,8 @@ const reactionHandlers: CommandReactionHandler[] = [];
 
 client.login(secrets.bots.nico);
 
+console.log("Script started");
+
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
@@ -46,7 +48,7 @@ client.on("ready", async () => {
         .syncCommandPermissions();
 
     // Set the database connection on each command
-    const loadedCommands = (interactions.commands as unknown) as Discord.Collection<string, Command>;
+    const loadedCommands = interactions.commands as unknown as Discord.Collection<string, Command>;
     loadedCommands.forEach((c) => {
         c.setConnectionClient(connection, client);
     });

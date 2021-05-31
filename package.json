@@ -5,7 +5,7 @@
     "main": "app.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "ts-node-dev --trace-warnings -r tsconfig-paths/register app.ts",
+        "dev": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register app.ts",
         "build": "tsc",
         "start": "ts-node -r tsconfig-paths/register app.ts",
         "slash": "ts-node-dev -r tsconfig-paths/register slash.ts",

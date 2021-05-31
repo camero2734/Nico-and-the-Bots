@@ -129,7 +129,7 @@ export class Command<
             name: commandName,
             ...options,
             guildIDs: ["269657133673349120"],
-            ...(commandName === "staff"
+            ...(commandName === "staff" || commandName === "shop"
                 ? {
                       defaultPermission: false,
                       permissions: {

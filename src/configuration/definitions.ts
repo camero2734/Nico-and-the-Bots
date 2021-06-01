@@ -13,9 +13,14 @@ import {
     SlashCreator
 } from "slash-create";
 import { Connection } from "typeorm";
-import { guildID, roles } from "./config";
+import { channelIDs, guildID, roles } from "./config";
 
-export class CommandError extends Error {}
+export class CommandError extends Error {
+    constructor(message?: string, public sendEphemeral = false) {
+        super(message);
+    }
+}
+
 export class InteractiveError extends Error {}
 
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social" | "Utility";
@@ -100,10 +105,10 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
 
     if (e instanceof CommandError) {
         const embed = new MessageEmbed()
-            .setDescription(`\`\`\`\n${e.message}\n\`\`\``)
+            .setDescription(e.message)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet broke");
-        ectx.embed(embed);
+        ectx.send({ embeds: [embed.toJSON()], ephemeral: e.sendEphemeral });
     } else {
         console.log(e);
         const embed = new MessageEmbed().setTitle("An unknown error occurred!").setFooter("DEMA internet really broke");
@@ -170,6 +175,18 @@ export class Command<
             ectx = await extendContext<T>(ctx, this.client, this.connection);
 
             if (this.hasNoSubCommands()) return await this.executor(ectx);
+
+            // Determine if command is valid in this channel
+            const anyCommandsAllowedIn = [channelIDs.bottest, channelIDs.staff, channelIDs.laxstaff];
+            if (!anyCommandsAllowedIn.includes(ectx.channel.id)) {
+                const commandsAllowedIn = [channelIDs.commands, channelIDs.shop];
+                // Only allow commands in commands channel
+                if (!commandsAllowedIn.includes(ectx.channel.id)) throw new CommandError(`Please use commands in <#${channelIDs.commands}>`); // prettier-ignore
+                // Only allow shop command in shop channel
+                if (this.commandName !== "shop" && ectx.channel.id === channelIDs.shop)
+                    throw new CommandError(`Please use any non-shop commands in <#${channelIDs.commands}>`, true);
+                if (this.commandName === "shop" && ectx.channel.id !== channelIDs.shop) throw new CommandError(`Please use shop commands in <#${channelIDs.shop}>`); // prettier-ignore
+            }
 
             const [subcommand] = ctx.subcommands || [];
             const executor = this.executor as SubcommandRunner<T>;

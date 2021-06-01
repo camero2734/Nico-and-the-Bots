@@ -5,11 +5,13 @@ import * as helpers from "helpers";
 import { updateUserScore } from "helpers";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
+import { KeonsBot } from "./shop";
 
 // let ready = false;
 let connection: Connection;
 
 const client = new Discord.Client({ fetchAllMembers: false });
+const keonsBot = new KeonsBot();
 
 const interactions = new SlashCreator({
     applicationID: "470410168186699788",
@@ -51,6 +53,8 @@ client.on("ready", async () => {
     loadedCommands.forEach((c) => {
         c.setConnectionClient(connection, client);
     });
+
+    keonsBot.setupShop();
 
     console.log(`Bot initialized with ${loadedCommands.size} commands`);
 });

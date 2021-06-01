@@ -65,14 +65,18 @@ export const channelIDs = {
     josh: "534882732820529174",
     band: "534882758770688031",
     tourcategory: "600868166612287500",
-    lvlcnrn: "721047257029279844"
+    lvlcnrn: "721047257029279844",
+    demacouncil: "849323629388627978"
 };
 export const categoryIDs = {
     chilltown: "625524136785215498"
 };
 
 export const userIDs = {
-    me: "221465443297263618"
+    me: "221465443297263618",
+    keons: "470412382456381471",
+    sacarver: "470691679712706570",
+    lisden: "470705413885788160"
 };
 export const roles = {
     staff: "330877657132564480",

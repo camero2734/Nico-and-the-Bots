@@ -3,14 +3,13 @@ import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
 import { updateUserScore } from "helpers";
-import * as path from "path";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
 
 // let ready = false;
 let connection: Connection;
 
-const client = new Discord.Client({ fetchAllMembers: true });
+const client = new Discord.Client({ fetchAllMembers: false });
 
 const interactions = new SlashCreator({
     applicationID: "470410168186699788",
@@ -101,7 +100,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 });
 
 process.on("unhandledRejection", (err) => {
-    console.log("unhandledRejection", err);
+    console.log("unhandledRejection: ", err);
 });
 process.on("uncaughtException", (err) => {
     console.log("uncaughtException: ", err);

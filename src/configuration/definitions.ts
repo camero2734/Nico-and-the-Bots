@@ -134,7 +134,7 @@ export class Command<
             name: commandName,
             ...options,
             guildIDs: ["269657133673349120"],
-            ...(commandName === "staff" || commandName === "shop"
+            ...(commandName !== "Fix later" //commandName === "staff" || commandName === "shop"
                 ? {
                       defaultPermission: false,
                       permissions: {
@@ -177,16 +177,10 @@ export class Command<
             if (this.hasNoSubCommands()) return await this.executor(ectx);
 
             // Determine if command is valid in this channel
-            const anyCommandsAllowedIn = [channelIDs.bottest, channelIDs.staff, channelIDs.laxstaff];
-            if (!anyCommandsAllowedIn.includes(ectx.channel.id)) {
-                const commandsAllowedIn = [channelIDs.commands, channelIDs.shop];
-                // Only allow commands in commands channel
-                if (!commandsAllowedIn.includes(ectx.channel.id)) throw new CommandError(`Please use commands in <#${channelIDs.commands}>`); // prettier-ignore
-                // Only allow shop command in shop channel
-                if (this.commandName !== "shop" && ectx.channel.id === channelIDs.shop)
-                    throw new CommandError(`Please use any non-shop commands in <#${channelIDs.commands}>`, true);
-                if (this.commandName === "shop" && ectx.channel.id !== channelIDs.shop) throw new CommandError(`Please use shop commands in <#${channelIDs.shop}>`); // prettier-ignore
-            }
+
+            // Only allow shop command in shop channel
+            if (this.commandName !== "shop" && ectx.channel.id === channelIDs.shop) throw new CommandError(`Please use any non-shop commands in <#${channelIDs.commands}>`, true); // prettier-ignore
+            if (this.commandName === "shop" && ectx.channel.id !== channelIDs.shop) throw new CommandError(`Please use shop commands in <#${channelIDs.shop}>`); // prettier-ignore
 
             const [subcommand] = ctx.subcommands || [];
             const executor = this.executor as SubcommandRunner<T>;

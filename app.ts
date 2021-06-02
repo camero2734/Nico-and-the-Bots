@@ -10,7 +10,7 @@ import { KeonsBot } from "./shop";
 // let ready = false;
 let connection: Connection;
 
-const client = new Discord.Client({ fetchAllMembers: false });
+const client = new Discord.Client({ intents: Discord.Intents.ALL });
 const keonsBot = new KeonsBot();
 
 const interactions = new SlashCreator({
@@ -98,7 +98,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
     const fullUser = user.partial ? await user.fetch() : user;
     for (const reactionHandler of reactionHandlers) {
         // If a command's handler returns true, it handled the reaction; no need to continue
-        const retVal = await reactionHandler({ reaction, user: fullUser, connection });
+        const retVal = await reactionHandler({ reaction, user: fullUser, connection, interactions });
         if (retVal) return;
     }
 });

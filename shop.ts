@@ -1,4 +1,4 @@
-import { Client, MessageEmbed, TextChannel } from "discord.js";
+import { Client, Intents, MessageEmbed, TextChannel } from "discord.js";
 import * as secrets from "configuration/secrets.json";
 import { channelIDs, guildID } from "configuration/config";
 
@@ -6,7 +6,7 @@ export class KeonsBot {
     client: Client;
     ready: Promise<void>;
     constructor() {
-        this.client = new Client();
+        this.client = new Client({ intents: Intents.ALL });
         this.client.login(secrets.bots.keons);
 
         this.ready = new Promise((resolve) => {

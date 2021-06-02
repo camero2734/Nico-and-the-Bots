@@ -27,7 +27,7 @@ export const Executor: CommandRunner = async (ctx) => {
         public credits: number;
         public level: number;
         public roles: Role[];
-        constructor(roleIDs: string[], opts: Partial<{ level: number; credits: number; DE: boolean }>) {
+        constructor(roleIDs: `${bigint}`[], opts: Partial<{ level: number; credits: number; DE: boolean }>) {
             this.level = opts.level || 0;
             this.credits = opts.credits || 0;
             this.requiresDE = opts.DE || false;
@@ -126,11 +126,11 @@ export const Executor: CommandRunner = async (ctx) => {
         MenuEmbed.addField(name, item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063");
     }
 
-    await ctx.send({ components: MenuComponents, embeds: [MenuEmbed.toJSON()] });
+    await ctx.send({ components: MenuComponents, embeds: [MenuEmbed.toJSON() as Record<string, unknown>] });
 
     // If a button with custom_id "MainMenu" is pressed, the main menu is resent
     ctx.registerComponent("MainMenu", (btnCtx) => {
-        btnCtx.editOriginal({ components: MenuComponents, embeds: [MenuEmbed.toJSON()] });
+        btnCtx.editOriginal({ components: MenuComponents, embeds: [MenuEmbed.toJSON() as Record<string, unknown>] });
     });
 
     // Add button press listeners for the categories
@@ -142,7 +142,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 .setTitle(name)
                 .setColor("#D07A21")
                 .setDescription(`*${item.description}*\n`)
-                .addField("Credits", item.data.credits)
+                .addField("Credits", `${item.data.credits}`)
                 .addField("\u200b", item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063")
                 .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
@@ -168,7 +168,7 @@ export const Executor: CommandRunner = async (ctx) => {
 
             const components: ComponentActionRow[] = MessageTools.allocateButtonsIntoRows(categoryButtons);
 
-            btnCtx.editParent({ embeds: [embed.toJSON()], components });
+            btnCtx.editParent({ embeds: [embed.toJSON() as Record<string, unknown>], components });
         });
 
         // Add button press listeners for the color items themselves
@@ -189,7 +189,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 .setTitle(role.name)
                 .setColor(role.hexColor)
                 .setDescription(`Would you like to purchase this item?`)
-                .addField("Cost", item.data.credits, true)
+                .addField("Cost", `${item.data.credits}`, true)
                 .addField("Your credits", `${userEconomy.credits} → ${userEconomy.credits - item.data.credits}`, true)
                 .setFooter(footer); // prettier-ignore
 
@@ -218,7 +218,10 @@ export const Executor: CommandRunner = async (ctx) => {
 
             // Listen for role being pressed in subcategory
             ctx.registerComponent(role.id, async (btnCtx) => {
-                btnCtx.editOriginal({ embeds: [roleEmbed.toJSON()], components: roleComponents });
+                btnCtx.editOriginal({
+                    embeds: [roleEmbed.toJSON() as Record<string, unknown>],
+                    components: roleComponents
+                });
             });
 
             // When someone clicks "Purchase"
@@ -252,7 +255,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 } finally {
                     roleEmbed.fields = [];
                     roleEmbed.description += ` This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}` // prettier-ignore
-                    btnCtx.editOriginal({ embeds: [roleEmbed.toJSON()], components: [] });
+                    btnCtx.editOriginal({ embeds: [roleEmbed.toJSON() as Record<string, unknown>], components: [] });
                 }
 
                 if (contraband) sendContrabandMessage(ctx, role.name);

@@ -17,7 +17,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ role?: string }> = async (ctx) => {
+export const Executor: CommandRunner<{ role?: `${bigint}` }> = async (ctx) => {
     const role = ctx.opts.role;
 
     const userRoles = (await ctx.connection.getRepository(Item).find({ id: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
@@ -35,7 +35,7 @@ export const Executor: CommandRunner<{ role?: string }> = async (ctx) => {
                 `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles color <@&${userRoles[0]}>`
             );
 
-        return ctx.send({ embeds: [embed.toJSON()] });
+        return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
     }
 
     // User has valid roles and requested one
@@ -59,11 +59,11 @@ export const Executor: CommandRunner<{ role?: string }> = async (ctx) => {
     // If they requested a role they already had, leave them with no color roles
     if (currentlyEquippedRoles.includes(role)) {
         const embed = new MessageEmbed().setTitle("Success!").setDescription("Removed your color role");
-        return ctx.send({ embeds: [embed.toJSON()] });
+        return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
     }
 
     // Otherwise add the role they requested
     await ctx.member.roles.add(role);
     const embed = new MessageEmbed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
-    return ctx.send({ embeds: [embed.toJSON()] });
+    return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
 };

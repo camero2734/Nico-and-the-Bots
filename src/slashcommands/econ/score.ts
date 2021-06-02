@@ -14,14 +14,14 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
+export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
     const albumRoles = roles.albums;
     const options = ctx.opts;
     const { client, connection } = ctx;
 
     console.log(options, /OPTIONS/);
 
-    const userID = options.user || ctx.user.id;
+    const userID = options.user || (ctx.user.id as `${bigint}`);
 
     const member = await client.guilds.cache.get(ctx.guildID || "")?.members.fetch(userID);
 
@@ -67,7 +67,7 @@ export const Executor: CommandRunner<{ user: string }> = async (ctx) => {
 
     //changes font color based on background color
     const invertedRoles = [albumRoles.VSL, albumRoles.NPI, albumRoles.RAB, albumRoles.ST];
-    const inverted = invertedRoles.indexOf(src as string) !== -1;
+    const inverted = invertedRoles.indexOf(<any>src) !== -1;
 
     //Create canvas
     const canvas = createCanvas(500, 500);

@@ -26,7 +26,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ text: string; role: string }> = async (ctx) => {
+export const Executor: CommandRunner<{ text: string; role: `${bigint}` }> = async (ctx) => {
     const { text, role } = ctx.opts;
 
     const roleObj = await ctx.channel.guild.roles.fetch(role);
@@ -63,22 +63,22 @@ export const Executor: CommandRunner<{ text: string; role: string }> = async (ct
     });
 
     ctx.registerComponent(`add_role`, async (btnCtx) => {
-        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id);
+        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as `${bigint}`);
         if (!member) return;
 
         const embed = new MessageEmbed().setDescription(`You now have the ${roleObj.name} role!`);
 
         await member.roles.add(roleObj.id);
-        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
+        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON() as Record<string, unknown>] });
     });
 
     ctx.registerComponent(`remove_role`, async (btnCtx) => {
-        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id);
+        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as `${bigint}`);
         if (!member) return;
 
         const embed = new MessageEmbed().setDescription(`You no longer have the ${roleObj.name} role!`);
 
         await member.roles.remove(roleObj.id);
-        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
+        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON() as Record<string, unknown>] });
     });
 };

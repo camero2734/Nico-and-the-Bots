@@ -6,7 +6,7 @@
 export const prefix = "=";
 export const guildID = "269657133673349120";
 
-export const channelIDs = {
+export const channelIDs = <const>{
     commands: "470331990231744512",
     memes: "470335805697556480",
     staffcommandlog: "488076541499277333",
@@ -68,17 +68,22 @@ export const channelIDs = {
     lvlcnrn: "721047257029279844",
     demacouncil: "849323629388627978"
 };
-export const categoryIDs = {
+export const categoryIDs = <const>{
     chilltown: "625524136785215498"
 };
 
-export const userIDs = {
+export const userIDs = <const>{
     me: "221465443297263618",
     keons: "470412382456381471",
     sacarver: "470691679712706570",
     lisden: "470705413885788160"
 };
-export const roles = {
+
+export const emojiIDs = <const>{
+    gold: "389216023141941249"
+};
+
+export const roles = <const>{
     staff: "330877657132564480",
     muted: "278225702455738368",
     banditos: "269660541738418176",

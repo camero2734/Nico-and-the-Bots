@@ -43,11 +43,17 @@ export type CommandReactionHandler = (args: {
     reaction: MessageReaction;
     user: User;
     connection: Connection;
+    interactions: SlashCreator;
 }) => Promise<boolean>;
 
-export type ExtendedContext<T extends CommandOption = {}> = Omit<CommandContext, "options" | "member"> & {
+export type ExtendedContext<T extends CommandOption = {}> = Omit<
+    CommandContext,
+    "options" | "member" | "guildID" | "channelID"
+> & {
     embed(discordEmbed: MessageEmbed): Promise<Message | boolean>;
     acknowledge(): Promise<void>;
+    guildID: `${bigint}`;
+    channelID: `${bigint}`;
     channel: TextChannel;
     member: GuildMember;
     opts: T;

@@ -100,7 +100,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
         }))
     );
 
-    await ctx.send({ embeds: [embed.toJSON()], components });
+    await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>], components });
 
     // Generate handlers for buttons
     for (let i = 0; i < parsedOptions.length; i++) {
@@ -115,7 +115,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
 
             embed.fields = generateStatsDescription(poll, parsedOptions);
 
-            btnCtx.editOriginal({ embeds: [embed.toJSON()] });
+            btnCtx.editOriginal({ embeds: [embed.toJSON() as Record<string, unknown>] });
         });
     }
 };

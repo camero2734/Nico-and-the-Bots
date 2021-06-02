@@ -65,7 +65,9 @@ export const Executor: CommandRunner = async (ctx) => {
     let creditsToGive = 200;
     let badgeLogo = null;
 
-    const member = client.guilds.cache.get(ctx.guildID || "")?.members.cache.get(ctx.user.id) as GuildMember;
+    const member = client.guilds.cache
+        .get((ctx.guildID || "") as `${bigint}`)
+        ?.members.cache.get(ctx.user.id as `${bigint}`) as GuildMember;
 
     if (member?.roles.cache.get("332021614256455690")) {
         creditsToGive = 300;

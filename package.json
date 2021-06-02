@@ -22,7 +22,7 @@
         "canvas": "^2.8.0",
         "chalk": "^4.1.1",
         "chrono-node": "^2.2.6",
-        "discord.js": "^12.5.3",
+        "discord.js": "github:discordjs/discord.js",
         "emoji-regex": "^7.0.3",
         "fastify": "^3.15.1",
         "fuse.js": "^6.4.6",

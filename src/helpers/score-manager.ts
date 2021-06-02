@@ -72,7 +72,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
         );
         if (perkStr) lvlEmbed.addField("Perk Bonus", perkStr);
         if (levelTokens > 0) lvlEmbed.addField("Level Tokens", `You gained ${levelTokens} level tokens!`);
-        await msg.channel.send(msg.member, { embed: lvlEmbed });
+        await msg.reply({ embed: lvlEmbed });
     }
 
     await connection.manager.save(userEconomy);

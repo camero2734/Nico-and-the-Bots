@@ -10,7 +10,7 @@ import { KeonsBot } from "./shop";
 // let ready = false;
 let connection: Connection;
 
-const client = new Discord.Client({ intents: Discord.Intents.ALL });
+const client = new Discord.Client({ intents: Discord.Intents.ALL, partials: ["REACTION", "USER", "MESSAGE"] });
 const keonsBot = new KeonsBot();
 
 const interactions = new SlashCreator({
@@ -68,37 +68,12 @@ client.on("message", (msg: Discord.Message) => {
     updateUserScore(msg, connection); // Add to score
 });
 
-//Manually emit an event for reactions on messages sent before the bot was turned on
-const reaction_events = <const>{
-    MESSAGE_REACTION_ADD: "messageReactionAdd",
-    MESSAGE_REACTION_REMOVE: "messageReactionRemove"
-};
-client.on("raw", async (event) => {
-    try {
-        // eslint-disable-next-line no-prototype-builtins
-        if (reaction_events.hasOwnProperty(event.t)) {
-            const eventT = event.t as keyof typeof reaction_events;
-            const { d: data } = event;
-            const user = await client.users.fetch(data.user_id);
-            const channel = ((await client.channels.fetch(data.channel_id)) as Discord.TextChannel) || (await user.createDM()); // prettier-ignore
-            if (channel.messages.cache.has(data.message_id)) return;
-            const message = await channel.messages.fetch(data.message_id);
-            const emojiKey = data.emoji.id ? `${data.emoji.name}:${data.emoji.id}` : data.emoji.name;
-            const reaction = message.reactions.cache.get(emojiKey) as Discord.MessageReaction;
-            client.emit(reaction_events[eventT], reaction, user);
-        }
-    } catch (e) {
-        //
-    }
-});
-
 client.on("messageReactionAdd", async (reaction, user) => {
-    if (!reaction) return;
-
+    const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
     const fullUser = user.partial ? await user.fetch() : user;
     for (const reactionHandler of reactionHandlers) {
         // If a command's handler returns true, it handled the reaction; no need to continue
-        const retVal = await reactionHandler({ reaction, user: fullUser, connection, interactions });
+        const retVal = await reactionHandler({ reaction: fullReaction, user: fullUser, connection, interactions });
         if (retVal) return;
     }
 });

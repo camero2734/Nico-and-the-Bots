@@ -34,6 +34,7 @@ export const channelIDs = <const>{
     positivity: "470451678294835200",
     bottest: "470406597860917249",
     houseofgold: "470339161967165440",
+    houseofgoldtest: "849374517460467722",
     hiatusmemes: "470434533884297216",
     halloffame: "470335826321211393",
     creations: "470335772084666389",

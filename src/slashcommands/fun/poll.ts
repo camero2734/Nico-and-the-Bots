@@ -1,9 +1,9 @@
-import { CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandComponentListener, CommandOptions, CommandRunner, CustomIDPattern } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
-import { EmbedField, MessageEmbed } from "discord.js";
+import { EmbedField, Message, MessageEmbed } from "discord.js";
 import EmojiReg from "emoji-regex";
 import { MessageTools } from "helpers";
-import { ApplicationCommandOption, ButtonStyle, CommandOptionType, ComponentType } from "slash-create";
+import { ApplicationCommandOption, ButtonStyle, CommandOptionType, ComponentType, PartialEmoji } from "slash-create";
 import progressBar from "string-progressbar";
 
 const REQUIRED_OPTIONS = <const>[1, 2];
@@ -35,6 +35,44 @@ export const Options: CommandOptions = {
         )
     ]
 };
+
+// prettier-ignore
+const answerListener = new CommandComponentListener("pollresponse", <const>["index", "pollID"], async (interaction, connection, args) => {
+    const { index, pollID } = args;
+
+    console.log(args, /ARGS/);
+
+    const msg = interaction.message as Message;
+    const poll = await connection.getRepository(Poll).findOne({id: pollID});
+
+    if (!poll) return;
+
+    // Ensure user hasn't voted
+    const userVote = poll.votes.find((vote) => vote.userid === interaction.user.id);
+
+    // Editing
+    if (userVote) userVote.index = +index;
+    // Cast new vote
+    else poll.votes.push({ index: +index, userid: interaction.user.id });
+
+    await connection.manager.save(poll);
+
+    const parsedOptions: ParsedOption[] = [];
+    for (const actionRow of msg.components) {
+        for (const button of actionRow.components) {
+            const emoji = button.emoji as PartialEmoji | undefined;
+            parsedOptions.push({text: button.label as string, emoji: emoji?.name, emojiID: emoji?.id });
+        }
+    }
+
+    const embed = msg.embeds[0];
+
+    embed.fields = generateStatsDescription(poll, parsedOptions);
+
+    await msg.edit({embed});
+});
+
+export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
 type ParsedOption = { text: string; emoji?: string; emojiID?: string };
 export const Executor: CommandRunner<OptType> = async (ctx) => {
@@ -78,8 +116,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
         userid: ctx.user.id
     });
 
-    // TODO: No real point in saving it since the bot doesn't respond to old interactions
-    // await ctx.connection.manager.save(poll);
+    await ctx.connection.manager.save(poll);
 
     const embed = new MessageEmbed()
         .setTitle(title)
@@ -95,29 +132,12 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
             type: ComponentType.BUTTON,
             style: ButtonStyle.PRIMARY,
             label: opt.text,
-            custom_id: `option${idx + 1}`,
+            custom_id: answerListener.generateCustomID({ index: `${idx}`, pollID: ctx.interactionID }),
             emoji: { name: opt.emoji, id: opt.emojiID }
         }))
     );
 
     await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>], components });
-
-    // Generate handlers for buttons
-    for (let i = 0; i < parsedOptions.length; i++) {
-        ctx.registerComponent(`option${i + 1}`, async (btnCtx) => {
-            // Ensure user hasn't voted
-            const userVote = poll.votes.find((vote) => vote.userid === btnCtx.user.id);
-
-            // Editing
-            if (userVote) userVote.index = i;
-            // Cast new vote
-            else poll.votes.push({ index: i, userid: btnCtx.user.id });
-
-            embed.fields = generateStatsDescription(poll, parsedOptions);
-
-            btnCtx.editOriginal({ embeds: [embed.toJSON() as Record<string, unknown>] });
-        });
-    }
 };
 
 function generateStatsDescription(poll: Poll, parsedOptions: ParsedOption[]): EmbedField[] {

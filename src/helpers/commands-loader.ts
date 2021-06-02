@@ -1,5 +1,6 @@
 import {
     Command,
+    CommandComponentListener,
     CommandOption,
     CommandOptions,
     CommandReactionHandler,
@@ -26,10 +27,12 @@ async function getFilesRecursive(dir: string): Promise<string[]> {
  * Loads all command modules from ./commands
  * @param commands - Command array to populate
  * @param reactionHandlers - Reaction handlers array to populate
+ * @param interactionHandlers - Interaction handlers array to populate
  */
 export const loadCommands = async function (
     commands: Command<CommandOption, GeneralCommandRunner>[],
     reactionHandlers: CommandReactionHandler[],
+    interactionHandlers: CommandComponentListener[],
     creator: SlashCreator
 ): Promise<void> {
     const commandsPath = join(__dirname, "../slashcommands");
@@ -61,14 +64,17 @@ export const loadCommands = async function (
             const {
                 Executor,
                 Options,
-                ReactionHandler
+                ReactionHandler,
+                ComponentListeners
             }: {
                 Executor: CommandRunner;
                 Options: CommandOptions;
                 ReactionHandler?: CommandReactionHandler;
+                ComponentListeners?: CommandComponentListener[];
             } = await import(value);
 
             if (ReactionHandler) reactionHandlers.push(ReactionHandler);
+            if (ComponentListeners) interactionHandlers.push(...ComponentListeners);
 
             const command = new Command(creator, key, Options, value, Executor);
             command.onError = console.log;
@@ -83,11 +89,13 @@ export const loadCommands = async function (
                 const {
                     Executor,
                     Options,
-                    ReactionHandler
+                    ReactionHandler,
+                    ComponentListeners
                 }: {
                     Executor: CommandRunner;
                     Options: CommandOptions;
                     ReactionHandler?: CommandReactionHandler;
+                    ComponentListeners?: CommandComponentListener[];
                 } = await import(fileName);
                 options.options?.push({
                     ...Options,
@@ -96,6 +104,7 @@ export const loadCommands = async function (
                 });
 
                 if (ReactionHandler) reactionHandlers.push(ReactionHandler);
+                if (ComponentListeners) interactionHandlers.push(...ComponentListeners);
                 SubcommandExecutor[subcommand] = Executor;
             }
 

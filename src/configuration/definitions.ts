@@ -3,7 +3,18 @@
  * Contains types, classes, interfaces, etc.
  */
 
-import { Client, GuildMember, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
+import {
+    Client,
+    GuildMember,
+    Interaction,
+    MessageAttachment,
+    MessageComponentInteraction,
+    MessageEmbed,
+    MessageReaction,
+    TextChannel,
+    User
+} from "discord.js";
+import F from "helpers/funcs";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -46,6 +57,43 @@ export type CommandReactionHandler = (args: {
     interactions: SlashCreator;
 }) => Promise<boolean>;
 
+export class CustomIDPattern<T extends Readonly<string[]>> {
+    constructor(public args: T, public delimiter = ":") {}
+    toDict(input: string): { [K in T[number]]: string } {
+        const [name, ...parts] = input.split(this.delimiter);
+        const dict = {} as { [K in T[number]]: string };
+        for (let i = 0; i < parts.length; i++) {
+            const key: T[number] = this.args[i];
+            dict[key] = parts[i];
+        }
+        return dict;
+    }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export class CommandComponentListener<T extends Readonly<string[]> = any> {
+    pattern: CustomIDPattern<T>;
+    name: string;
+    constructor(
+        name: string,
+        patternArr: T,
+        public handler: (
+            interaction: MessageComponentInteraction,
+            connection: Connection,
+            args: ReturnType<CustomIDPattern<T>["toDict"]>
+        ) => Promise<void>
+    ) {
+        this.pattern = new CustomIDPattern(patternArr);
+        this.name = Buffer.from(name, "utf-8").toString("base64");
+    }
+    generateCustomID(args: ReturnType<CustomIDPattern<T>["toDict"]>): string {
+        // Ensure order is preserved
+        const ordered = F.entries(args).sort(([key1], [key2]) => this.pattern.args.indexOf(key1) - this.pattern.args.indexOf(key2)); // prettier-ignore
+        const values = ordered.map((a) => a[1]);
+        return [this.name, ...values].join(this.pattern.delimiter);
+    }
+}
+
 export type ExtendedContext<T extends CommandOption = {}> = Omit<
     CommandContext,
     "options" | "member" | "guildID" | "channelID"
@@ -69,10 +117,10 @@ async function extendContext<T extends CommandOption>(
 ): Promise<ExtendedContext<T>> {
     const extendedContext = ctx as unknown as ExtendedContext<T>;
     extendedContext.embed = (embed: MessageEmbed): Promise<Message | boolean> => {
-        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON()] });
+        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON() as Record<string, unknown>] });
         else if (embed.files) {
             const messageOptions = {
-                embeds: [embed.toJSON()],
+                embeds: [embed.toJSON() as Record<string, unknown>],
                 file: (<MessageAttachment[]>embed.files).map((f) => ({
                     name: f.name as string,
                     file: f.attachment as Buffer
@@ -81,7 +129,7 @@ async function extendContext<T extends CommandOption>(
             return ctx.sendFollowUp(messageOptions);
         }
 
-        return ctx.send({ embeds: [embed.toJSON()] });
+        return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
     };
 
     extendedContext.acknowledge = async () => {
@@ -91,11 +139,11 @@ async function extendContext<T extends CommandOption>(
     extendedContext.isExtended = true;
 
     extendedContext.channel = client.guilds.cache
-        .get(ctx.guildID + "")
-        ?.channels.cache.get(ctx.channelID) as TextChannel;
+        .get(ctx.guildID as `${bigint}`)
+        ?.channels.cache.get(ctx.channelID as `${bigint}`) as TextChannel;
     if (!extendedContext) throw new Error("Unable to extend context");
 
-    extendedContext.member = await extendedContext.channel.guild.members.fetch(extendedContext.user.id);
+    extendedContext.member = await extendedContext.channel.guild.members.fetch(extendedContext.user.id as `${bigint}`);
 
     extendedContext.client = client;
     extendedContext.connection = connection;
@@ -114,7 +162,7 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
             .setDescription(e.message)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet broke");
-        ectx.send({ embeds: [embed.toJSON()], ephemeral: e.sendEphemeral });
+        ectx.send({ embeds: [embed.toJSON() as Record<string, unknown>], ephemeral: e.sendEphemeral });
     } else {
         console.log(e);
         const embed = new MessageEmbed().setTitle("An unknown error occurred!").setFooter("DEMA internet really broke");

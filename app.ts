@@ -1,4 +1,4 @@
-import { Command, CommandReactionHandler } from "configuration/definitions";
+import { Command, CommandComponentListener, CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
@@ -20,6 +20,7 @@ const interactions = new SlashCreator({
 });
 
 const reactionHandlers: CommandReactionHandler[] = [];
+const interactionHandlers: CommandComponentListener[] = [];
 
 client.login(secrets.bots.nico);
 
@@ -33,7 +34,7 @@ client.on("ready", async () => {
     // Initialize everything
     await Promise.all([
         // Wait until commands are loaded, connected to database, etc.
-        helpers.loadCommands(commands, reactionHandlers, interactions),
+        helpers.loadCommands(commands, reactionHandlers, interactionHandlers, interactions),
         new Promise((resolve) => {
             helpers.connectToDatabase().then((c) => {
                 connection = c;
@@ -76,6 +77,18 @@ client.on("messageReactionAdd", async (reaction, user) => {
         const retVal = await reactionHandler({ reaction: fullReaction, user: fullUser, connection, interactions });
         if (retVal) return;
     }
+});
+
+client.on("interaction", (interaction) => {
+    if (!interaction.isMessageComponent()) return;
+
+    const id = interaction.customID;
+
+    const interactionComponent = interactionHandlers.find((handler) => id.startsWith(handler.name));
+
+    if (!interactionComponent) return;
+
+    interactionComponent.handler(interaction, connection, interactionComponent.pattern.toDict(id));
 });
 
 process.on("unhandledRejection", (err) => {

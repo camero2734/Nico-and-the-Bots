@@ -48,6 +48,9 @@ export function MessageContext(msg: Message) {
 
             collector.on("collect", handler);
             collector.on("end", () => console.log(`${customID} collector ended`));
+        },
+        getLink(): string {
+            return `https://discord.com/channels/${msg.guild?.id}/${msg.channel.id}/${msg.id}`;
         }
     };
 }

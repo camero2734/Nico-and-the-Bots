@@ -3,6 +3,7 @@ import { Command, CommandComponentListener, CommandReactionHandler } from "confi
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
+import SlurFilter from "helpers/slur-filter";
 import { updateUserScore } from "helpers";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
@@ -65,8 +66,11 @@ client.on("ready", async () => {
 interactions.on("error", console.log);
 // interactions.on("commandRegister", console.log);
 
-client.on("message", (msg: Discord.Message) => {
+client.on("message", async (msg: Discord.Message) => {
     if (!connection) return;
+
+    const wasSlur = await SlurFilter(msg);
+    if (wasSlur) return;
 
     updateUserScore(msg, connection); // Add to score
 });

@@ -35,7 +35,7 @@ export const badgeLoader = async (
         });
     });
 
-    await createBadge("deatheaters.png", async function () {
+    await createBadge("firebreather.png", async function () {
         return new Promise((resolve) => {
             resolve(member.roles.cache.has("283272728084086784"));
         });
@@ -141,12 +141,12 @@ export const badgeLoader = async (
         return hasRole;
     });
 
-    await createBadge("poothatesthegays.png", async function () {
+    await createBadge("lgbt.png", async function () {
         const hasRole = await connection.getRepository(Item).findOne({ id: member.id, type: "Badge", title: "PHTG" });
         return hasRole;
     });
 
-    await createBadge("teamWinner.png", async function () {
+    await createBadge("teamwinner.png", async function () {
         return new Promise((resolve) => {
             resolve(member.roles.cache.has("503645677574684683"));
         });
@@ -172,6 +172,24 @@ export const badgeLoader = async (
         return new Promise((resolve) => {
             if (member.roles.cache.has("449654670357692416")) resolve(true);
             else resolve(false);
+        });
+    });
+
+    await createBadge("gold100.png", async function () {
+        return new Promise((resolve) => {
+            if (userGold && userGold.count >= 100) {
+                ignore.push(wrap("gold10"), wrap("gold5"));
+                resolve(true);
+            } else resolve(false);
+        });
+    });
+
+    await createBadge("gold50.png", async function () {
+        return new Promise((resolve) => {
+            if (userGold && userGold.count >= 50) {
+                ignore.push(wrap("gold10"), wrap("gold5"));
+                resolve(true);
+            } else resolve(false);
         });
     });
 
@@ -212,8 +230,7 @@ export const badgeLoader = async (
         });
     });
 
-    // Only return 12 badges
-    return badges.slice(0, 12);
+    return badges;
 
     async function createBadge(file: string, hasBadge: () => Promise<unknown>) {
         file = "./src/assets/badges/" + file;

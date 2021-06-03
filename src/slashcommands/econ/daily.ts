@@ -1,10 +1,10 @@
-import { createCanvas, loadImage, registerFont } from "canvas";
+import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles, userIDs } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
-import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { GuildMember, MessageAttachment, MessageEmbed } from "discord.js";
 
 export const Options: CommandOptions = {
     description: "Claims your daily credits",

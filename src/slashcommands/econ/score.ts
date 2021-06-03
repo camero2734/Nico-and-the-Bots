@@ -1,11 +1,10 @@
-import { createCanvas, loadImage, registerFont } from "canvas";
+import { createCanvas, loadImage } from "canvas";
 import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
 import { badgeLoader } from "helpers";
 import { CommandOptionType } from "slash-create";
-import { MoreThan } from "typeorm";
 
 export const Options: CommandOptions = {
     description: "the score",
@@ -17,7 +16,7 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
     const albumRoles = roles.albums;
     const options = ctx.opts;
-    const { client, connection } = ctx;
+    const { connection } = ctx;
 
     console.log(options, /OPTIONS/);
 
@@ -171,11 +170,11 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
     //BADGES
     cctx.restore();
     if (badges.length > 0) {
-        for (let i = 0; i < badges.length; i++) {
-            //Initial y value
-            const y_val = 306;
-            //Num. of badges in each column
-            const maxbadges = 4;
+        //Initial y value
+        const y_val = 306;
+        //Num. of badges in each column
+        const maxbadges = 4;
+        for (let i = 0; i < Math.min(badges.length, maxbadges ** 2); i++) {
             //Calculate x value depending on i #
             const x_val = (480 / maxbadges) * (i % maxbadges) + 482;
             //Calculate x shift

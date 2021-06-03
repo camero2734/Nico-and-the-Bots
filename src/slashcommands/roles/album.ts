@@ -1,8 +1,6 @@
 import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
 import { MessageEmbed } from "discord.js";
-import ago from "s-ago";
 import { CommandOptionType } from "slash-create";
 
 const { SAI, TRENCH, BF, VSL, RAB, ST } = roles.albums;

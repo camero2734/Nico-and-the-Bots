@@ -1,10 +1,7 @@
-import { CommandError, CommandOptions, CommandRunner, WarningData } from "configuration/definitions";
-import { roles, guildID, channelIDs } from "configuration/config";
-import { Item } from "database/entities/Item";
-import { GuildMember, MessageEmbed, TextChannel } from "discord.js";
-import { MessageTools } from "helpers";
-import { ApplicationCommandPermissionType, CommandOptionType, EmbedFooter } from "slash-create";
-import { MoreThan } from "typeorm";
+import { channelIDs, roles } from "configuration/config";
+import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { MessageEmbed, TextChannel } from "discord.js";
+import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
     description: "Approves or denies a user's application for Firebreathers",
@@ -50,10 +47,7 @@ export const Executor: CommandRunner<{ applicationid: `${bigint}`; approve: "app
         if (!role) throw new CommandError("Unable to find FB role");
 
         const dm = await member.createDM();
-        if (!dm)
-            await chan.send(
-                `Unable to DM <@${member.user.id}>. Please inform them manually that they were ${approve}.`
-            );
+        if (!dm) await chan.send(`Unable to DM <@${member.user.id}>. Please inform them manually that they were ${approve}.`); // prettier-ignore
         else {
             const embed = new MessageEmbed()
                 .setColor(role.hexColor)

@@ -51,8 +51,6 @@ client.on("ready", async () => {
         .syncCommands()
         .syncCommandPermissions();
 
-    await interactions.syncGlobalCommands();
-
     // Set the database connection on each command
     const loadedCommands = interactions.commands as unknown as Discord.Collection<string, Command>;
     loadedCommands.forEach((c) => {

@@ -188,33 +188,9 @@ export class Command<
     ) {
         super(creator, {
             name: commandName,
-            ...options,
             guildIDs: ["269657133673349120"],
-            ...(commandName !== "Fix later" //commandName === "staff" || commandName === "shop"
-                ? {
-                      defaultPermission: false,
-                      permissions: {
-                          [guildID]: [
-                              {
-                                  type: ApplicationCommandPermissionType.ROLE,
-                                  id: roles.staff,
-                                  permission: true
-                              }
-                          ]
-                      }
-                  }
-                : {
-                      defaultPermission: true,
-                      permissions: {
-                          [guildID]: [
-                              {
-                                  type: ApplicationCommandPermissionType.ROLE,
-                                  id: roles.banditos,
-                                  permission: true
-                              }
-                          ]
-                      }
-                  })
+            ...options,
+            ...determineCommandPermissions(commandName)
         });
         this.filePath = filePath;
     }
@@ -248,6 +224,35 @@ export class Command<
             ErrorHandler(e, ectx || ctx);
         }
     }
+}
+
+function determineCommandPermissions(commandName: string): any {
+    if (commandName === "staff" || commandName !== "apfply")
+        return {
+            defaultPermission: false,
+            permissions: {
+                [guildID]: [
+                    {
+                        type: ApplicationCommandPermissionType.ROLE,
+                        id: roles.staff,
+                        permission: true
+                    }
+                ]
+            }
+        };
+    else
+        return {
+            defaultPermission: true,
+            permissions: {
+                [guildID]: [
+                    {
+                        type: ApplicationCommandPermissionType.ROLE,
+                        id: roles.banditos,
+                        permission: true
+                    }
+                ]
+            }
+        };
 }
 
 export interface WarningData {

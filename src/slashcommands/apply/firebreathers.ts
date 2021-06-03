@@ -1,16 +1,9 @@
 import { channelIDs, roles } from "configuration/config";
-import {
-    CommandComponentListener,
-    CommandError,
-    CommandOptions,
-    CommandRunner,
-    ExtendedContext
-} from "configuration/definitions";
+import { CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
 import { DMChannel, EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { MessageTools } from "helpers/message-tools";
-import { ComponentActionRow, ComponentContext } from "slash-create";
+import { ComponentActionRow } from "slash-create";
 
 export const Options: CommandOptions = {
     description: "Opens an application to the Firebreathers role",
@@ -18,8 +11,6 @@ export const Options: CommandOptions = {
 };
 
 export const Executor: CommandRunner = async (ctx) => {
-    const channel = ctx.channel as TextChannel | DMChannel;
-
     const application = await withContext(ctx);
 
     await ctx.defer(true);

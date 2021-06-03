@@ -38,9 +38,8 @@ const filter = async (msg: Message): Promise<boolean> => {
         .setDescription(msg.content)
         .addField("Word detected", `\`${slur.replace(/[aeiou]/g, "*")}\``);
 
-    const url = MessageContext(msg).getLink();
     const actionRow = new MessageActionRow();
-    actionRow.addComponents([new MessageButton({ label: "View context", style: "LINK", url })]);
+    actionRow.addComponents([new MessageButton({ label: "View context", style: "LINK", url: msg.url })]);
 
     await slurLog.send({ embed: staffEmbed, components: [actionRow] });
 

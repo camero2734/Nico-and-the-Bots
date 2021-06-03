@@ -18,8 +18,6 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
     const options = ctx.opts;
     const { connection } = ctx;
 
-    console.log(options, /OPTIONS/);
-
     const userID = options.user || (ctx.user.id as `${bigint}`);
 
     const member = await ctx.member.guild.members.fetch(userID);
@@ -173,7 +171,7 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
         //Initial y value
         const y_val = 306;
         //Num. of badges in each column
-        const maxbadges = 4;
+        const maxbadges = Math.min(3, Math.ceil(Math.sqrt(badges.length)));
         for (let i = 0; i < Math.min(badges.length, maxbadges ** 2); i++) {
             //Calculate x value depending on i #
             const x_val = (480 / maxbadges) * (i % maxbadges) + 482;

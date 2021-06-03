@@ -5,7 +5,7 @@ import { GuildMember } from "discord.js";
 import { Connection } from "typeorm";
 
 function wrap(text: string, noPNG = false) {
-    return "./badges/" + text + (noPNG ? "" : ".png");
+    return `./src/assets/badges/${text}${noPNG ? "" : ".png"}`;
 }
 
 export const badgeLoader = async (
@@ -178,7 +178,7 @@ export const badgeLoader = async (
     await createBadge("gold100.png", async function () {
         return new Promise((resolve) => {
             if (userGold && userGold.count >= 100) {
-                ignore.push(wrap("gold10"), wrap("gold5"));
+                ignore.push(...[50, 25, 10, 5].map((n) => wrap(`gold${n}`)));
                 resolve(true);
             } else resolve(false);
         });
@@ -187,7 +187,7 @@ export const badgeLoader = async (
     await createBadge("gold50.png", async function () {
         return new Promise((resolve) => {
             if (userGold && userGold.count >= 50) {
-                ignore.push(wrap("gold10"), wrap("gold5"));
+                ignore.push(...[25, 10, 5].map((n) => wrap(`gold${n}`)));
                 resolve(true);
             } else resolve(false);
         });
@@ -196,7 +196,7 @@ export const badgeLoader = async (
     await createBadge("gold25.png", async function () {
         return new Promise((resolve) => {
             if (userGold && userGold.count >= 25) {
-                ignore.push(wrap("gold10"), wrap("gold5"));
+                ignore.push(...[10, 5].map((n) => wrap(`gold${n}`)));
                 resolve(true);
             } else resolve(false);
         });
@@ -233,7 +233,7 @@ export const badgeLoader = async (
     return badges;
 
     async function createBadge(file: string, hasBadge: () => Promise<unknown>) {
-        file = "./src/assets/badges/" + file;
+        file = wrap(file, true);
         const result = await hasBadge();
         if (result && ignore.indexOf(file) === -1) {
             const img = await loadImage(file);

@@ -11,6 +11,8 @@ export const Options: CommandOptions = {
     options: []
 };
 
+const albumRoles = roles.albums;
+
 export const Executor: CommandRunner = async (ctx) => {
     const { client, connection } = ctx;
 
@@ -79,27 +81,32 @@ export const Executor: CommandRunner = async (ctx) => {
     }
     userEconomy.credits += creditsToGive;
 
-    //CHANGE BACKGROUND BASED ON ALBUM ROLE
-    let album = "default";
-    if (member.roles.cache.get(roles.albums.TRENCH)) album = "t";
-    else if (member.roles.cache.get(roles.albums.BF)) album = "b";
-    else if (member.roles.cache.get(roles.albums.VSL)) album = "v";
-    else if (member.roles.cache.get(roles.albums.RAB)) album = "r";
-    else if (member.roles.cache.get(roles.albums.ST)) album = "s";
-    else if (member.roles.cache.get(roles.albums.NPI)) album = "n";
-
-    //LOAD FONTS
-    const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
-    for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
-
-    const img = await loadImage("./src/assets/albums/" + album + ".png");
+    // CHANGE BACKGROUND BASED ON ALBUM ROLE
+    // prettier-ignore
+    const src = Object.values(albumRoles).find(r => ctx.member.roles.cache.has(r));
+    const backgroundName = (() => {
+        switch (src) {
+            case albumRoles.ST:
+                return "self_titled";
+            case albumRoles.RAB:
+                return "rab";
+            case albumRoles.VSL:
+                return "vessel";
+            case albumRoles.BF:
+                return "blurryface";
+            case albumRoles.TRENCH:
+                return "trench";
+            default:
+                return "sai";
+        }
+    })();
+    const background = await loadImage(`./src/assets/images/daily_cards/${backgroundName}.png`);
     const cf = await loadImage("./src/assets/badges/cflogo.png");
     const dd = await loadImage("./src/assets/badges/dd.png");
-    const img2 = await loadImage("./src/assets/albums/" + album + "2.png");
 
     const canvas = createCanvas(500, 162);
     const cctx = canvas.getContext("2d");
-    cctx.drawImage(img, 0, 0);
+    cctx.drawImage(background, 0, 0);
 
     //MAKE TEXT FIT
     const maxWidth = 300;
@@ -126,7 +133,6 @@ export const Executor: CommandRunner = async (ctx) => {
     cctx.fillText(`Got ${creditsToGive} credits!`, 120, 120);
     if (badgeLogo === "cf") cctx.drawImage(cf, 408, 91, 30, 30);
     else if (badgeLogo === "dd") cctx.drawImage(dd, 408, 91, 30, 30);
-    cctx.drawImage(img2, 30, 44); //ALBUM LOGO
 
     //GIVE BLURRYTOKEN
     const hasTokenInc = await connection
@@ -165,26 +171,22 @@ export const Executor: CommandRunner = async (ctx) => {
     }
 
     const facts = [
-        "If you're going to a concert, there are concert channels! Simply say `!concert CityName` to join yours.",
-        "You can create a custom profile with `!createprofile`.",
-        "If you boost the server with nitro, you can add a custom emoji! Use the `!boostemoji` command.",
-        `You can buy color roles from <#${channelIDs.shop}>! To see the colors of the available roles, use the \`!cr\` command.\n\n To view and equip your color roles, say \`!cc\`.`,
-        "The `!createtag` command can be used to add a snippet of text that you can later make the bot send with the `!tag` command!",
-        `You can submit an interview to <#${channelIDs.interviews}> with the \`!interview\` command.`,
-        "Use the `!topfeed` command to get a ping when Tyler or Josh post on social media, as well as when dmaorg.info updates!",
-        "You can use the `!commands` command to view a list of commands (sorted into categories).",
+        // "If you're going to a concert, there are concert channels! Simply say `!concert CityName` to join yours.",
+        // "If you boost the server with nitro, you can add a custom emoji! Use the `!boostemoji` command.",
+        `You can buy color roles from <#${channelIDs.shop}>! To view and equip your color roles, use the \`/roles colors\` command.`,
+        // "The `!createtag` command can be used to add a snippet of text that you can later make the bot send with the `!tag` command!",
+        `You can submit an interview to <#${channelIDs.interviews}> with the \`/submit interview\` command.`,
+        "Use the `/roles topfeed` command to get a ping when Tyler or Josh post on social media, as well as when dmaorg.info updates!",
         "You can follow us on [Twitter](https://twitter.com/discordclique) or on [Instagram](https://www.instagram.com/discordclique/)!",
-        "We have a music bot - <@470705413885788160>! You can use `!play Clear twenty one pilots` to play the best song in existence.",
-        `We have theory channels for talking about dmaorg.info/leaks/new stuff! <#${channelIDs.leakstheories}> is available to everyone, and <#${channelIDs.verifiedtheories}> is available to anyone who passes a short quiz!\nUse \`!appeal\` to take the quiz!`,
+        // "We have a music bot - <@470705413885788160>! You can use `!play Clear twenty one pilots` to play the best song in existence.",
+        `We have theory channels for talking about dmaorg.info/new stuff! <#${channelIDs.leakstheories}> is available to everyone, and <#${channelIDs.verifiedtheories}> is available to anyone who passes a short quiz!\nUse \`/apply verified\` to take the quiz!`,
         `Check out <#${channelIDs.creations}> and <#${channelIDs.bestcreations}> to see user-submitted art!`,
         `Check out <#${channelIDs.positivity}> for cute pets and words of encouragement!`,
-        `Check out <#${channelIDs.hiatusmemes}> for era-related memes!`,
+        // `Check out <#${channelIDs.hiatusmemes}> for era-related memes!`,
         `Check out <#${channelIDs.polls}> to vote on polls created by staff members!`,
         `Head over to <#${channelIDs.suggestions}> to submit a suggestion about the server!`,
-        `Find a message really funny, or a piece of art really amazing? React with :gold: to give them gold! (Costs 5000 credits). \n\nTheir message will show up in <#${channelIDs.houseofgold}>!`
+        `Find a message really funny, or a piece of art really amazing? React with :gold: to give them gold. \n\nTheir message will show up in <#${channelIDs.houseofgold}>!`
     ];
-
-    const channel = client.guilds.cache.get(ctx.guildID || "")?.channels.cache.get(ctx.channelID) as TextChannel;
 
     const randomFact = facts[Math.floor(Math.random() * facts.length)];
     const embed = new MessageEmbed()

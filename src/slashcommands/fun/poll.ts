@@ -36,42 +36,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-// prettier-ignore
-const answerListener = new CommandComponentListener("pollresponse", <const>["index", "pollID"], async (interaction, connection, args) => {
-    const { index, pollID } = args;
-
-    console.log(args, /ARGS/);
-
-    const msg = interaction.message as Message;
-    const poll = await connection.getRepository(Poll).findOne({id: pollID});
-
-    if (!poll) return;
-
-    // Ensure user hasn't voted
-    const userVote = poll.votes.find((vote) => vote.userid === interaction.user.id);
-
-    // Editing
-    if (userVote) userVote.index = +index;
-    // Cast new vote
-    else poll.votes.push({ index: +index, userid: interaction.user.id });
-
-    await connection.manager.save(poll);
-
-    const parsedOptions: ParsedOption[] = [];
-    for (const actionRow of msg.components) {
-        for (const button of actionRow.components) {
-            const emoji = button.emoji as PartialEmoji | undefined;
-            parsedOptions.push({text: button.label as string, emoji: emoji?.name, emojiID: emoji?.id });
-        }
-    }
-
-    const embed = msg.embeds[0];
-
-    embed.fields = generateStatsDescription(poll, parsedOptions);
-
-    await msg.edit({embed});
-});
-
+const answerListener = new CommandComponentListener("pollresponse", <const>["index", "pollID"]);
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
 type ParsedOption = { text: string; emoji?: string; emojiID?: string };
@@ -162,3 +127,37 @@ function generateStatsDescription(poll: Poll, parsedOptions: ParsedOption[]): Em
 
     return tempEmbed.fields;
 }
+
+// Button handler
+answerListener.handler = async (interaction, connection, args) => {
+    const { index, pollID } = args;
+
+    const msg = interaction.message as Message;
+    const poll = await connection.getRepository(Poll).findOne({ id: pollID });
+
+    if (!poll) return;
+
+    // Ensure user hasn't voted
+    const userVote = poll.votes.find((vote) => vote.userid === interaction.user.id);
+
+    // Editing
+    if (userVote) userVote.index = +index;
+    // Cast new vote
+    else poll.votes.push({ index: +index, userid: interaction.user.id });
+
+    await connection.manager.save(poll);
+
+    const parsedOptions: ParsedOption[] = [];
+    for (const actionRow of msg.components) {
+        for (const button of actionRow.components) {
+            const emoji = button.emoji as PartialEmoji | undefined;
+            parsedOptions.push({ text: button.label as string, emoji: emoji?.name, emojiID: emoji?.id });
+        }
+    }
+
+    const embed = msg.embeds[0];
+
+    embed.fields = generateStatsDescription(poll, parsedOptions);
+
+    await msg.edit({ embed });
+};

@@ -23,9 +23,9 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
 
     const userID = options.user || (ctx.user.id as `${bigint}`);
 
-    const member = await client.guilds.cache.get(ctx.guildID || "")?.members.fetch(userID);
+    const member = await ctx.member.guild.members.fetch(userID);
 
-    if (!member) throw new CommandError("Unable to fetch that member");
+    if (!member) throw new CommandError("Unable to find that member");
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
     // Fetch user's information
@@ -35,10 +35,8 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
     if (!userEconomy) userEconomy = new Economy({ id: userID });
 
     // Calculate a users place
-    const economies = await connection
-        .getRepository(Economy)
-        .find({ monthlyScore: MoreThan(userEconomy.monthlyScore) });
-    const placeNum = economies.length + 1;
+    const placeNum =
+        (await connection.getMongoRepository(Economy).count({ monthlyScore: { $gt: userEconomy.monthlyScore } })) + 1;
 
     // Get images to place on card as badges
     const badges = await badgeLoader(member, userGold, placeNum, connection);
@@ -48,29 +46,28 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
     let totalscore = 0;
     let cL = 0;
     let previousScore = 0;
+
+    console.log(userEconomy.level);
     while (cL < userEconomy.level + 1) {
         if (cL === userEconomy.level) previousScore = totalscore;
         totalscore += rq;
-        rq = rq + 21 - Math.pow(1.001450824, rq);
+        rq += 21 - Math.pow(1.001450824, rq);
         cL++;
     }
+
     const rem = Math.floor(totalscore - userEconomy.alltimeScore) + 1; //REMAINING TO NEXT LEVEL
     const diff = Math.floor(totalscore - previousScore); //TOTAL TO NEXT LEVEL
-    const percent = (1 - rem / diff).toFixed(3); //RATIO OF REMAINING TO TOTAL
+    const percent = Math.max(0, 1 - rem / diff).toFixed(3); //RATIO OF REMAINING TO TOTAL
 
-    //LOAD FONTS
-    const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
-    for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
+    //FIND USER ALBUM ROLE (SAI => DEFAULT)
+    const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.SAI;
 
-    //FIND USER ALBUM ROLE (TRENCH => DEFAULT)
-    const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.TRENCH;
+    // Changes font color based on background color
+    const invertedRoles: string[] = [albumRoles.RAB, albumRoles.ST];
+    const inverted = invertedRoles.indexOf(src) !== -1;
 
-    //changes font color based on background color
-    const invertedRoles = [albumRoles.VSL, albumRoles.NPI, albumRoles.RAB, albumRoles.ST];
-    const inverted = invertedRoles.indexOf(<any>src) !== -1;
-
-    //Create canvas
-    const canvas = createCanvas(500, 500);
+    // Create canvas
+    const canvas = createCanvas(1000, 1000);
     const cctx = canvas.getContext("2d");
 
     // Get images
@@ -79,84 +76,117 @@ export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
 
     const img = await loadImage(avatar_url);
     const goldcircle = await loadImage("./src/assets/badges/goldcircle.png");
-    const background = await loadImage(`./src/assets/albums/${src}.png`);
+
+    // prettier-ignore
+    const backgroundName = (() => {
+        switch(src) {
+            case albumRoles.ST: return "self_titled";
+            case albumRoles.RAB: return "rab";
+            case albumRoles.VSL: return "vessel"
+            case albumRoles.BF: return "blurryface";
+            case albumRoles.TRENCH: return "trench";
+            default: return "sai";
+        }
+    })();
+    const background = await loadImage(`./src/assets/images/score_cards/${backgroundName}.png`);
 
     //FIND SHORTEST NAME FOR USER
     let username = member.displayName;
     if (member.user.username.length < username.length) username = member.user.username;
 
     //MAKE TEXT FIT
-    const maxWidth = 210;
-    const maxHeight = 50;
+    const maxWidth = 420;
+    const maxHeight = 100;
     let measuredTextWidth = 1000;
     let measuredTextHeight = 1000;
     let checkingSize = 100;
     while ((measuredTextWidth > maxWidth || measuredTextHeight > maxHeight) && checkingSize > 5) {
         checkingSize--;
-        cctx.font = checkingSize + "px futura";
+        cctx.font = checkingSize + "px Futura";
         const textInfo = cctx.measureText(username);
         measuredTextWidth = textInfo.width;
         measuredTextHeight = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
     }
 
-    //DRAW AND WRITE
-    cctx.drawImage(background, 0, 0, 500, 500);
-    cctx.drawImage(img, 388, 14, 98, 101);
-    //USERNAME
-    cctx.font = checkingSize + "px futura";
-    cctx.textAlign = "start";
-    cctx.fillStyle = src === albumRoles.TRENCH ? "black" : inverted ? "black" : "white";
-    cctx.fillText(username, 177, 90);
-    //POINTS
-    cctx.font = "30px futura";
+    cctx.strokeStyle = "black";
     cctx.fillStyle = inverted ? "black" : "white";
-    cctx.fillText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 17, 258);
+    cctx.lineWidth = inverted ? 0 : 6;
+
+    // Background and avatar
+    cctx.drawImage(background, 0, 0, 1000, 1000);
+    cctx.drawImage(img, 776, 20, 200, 200);
+
+    cctx.save();
+    cctx.translate(325, 170);
+
+    //USERNAME
+    cctx.font = "bold " + checkingSize + "px Futura";
+    cctx.textAlign = "start";
+    cctx.strokeText(username, 0, 0);
+    cctx.fillText(username, 0, 0);
+
     //LEVEL
-    cctx.fillText(`${userEconomy.level}`, 17, 193);
+    cctx.restore();
+    cctx.font = "bold 60px Futura";
+    cctx.save();
+
+    cctx.translate(35, 380);
+    cctx.strokeText(`${userEconomy.level}`, 0, 0);
+    cctx.fillText(`${userEconomy.level}`, 0, 0);
+
+    //POINTS
+    cctx.translate(0, 130);
+    cctx.strokeText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 0, 0);
+    cctx.fillText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 0, 0);
+
+    //CREDITS
+    cctx.translate(0, 130);
+    cctx.strokeText(`${userEconomy.credits}`, 0, 0);
+    cctx.fillText(`${userEconomy.credits}`, 0, 0);
+
     //LEVEL UP BAR / POINTS TO NEXT LEVEL
-    const colorsArray = ["#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];
+    cctx.translate(0, 130);
+    const colorsArray = ["#F18BB0", "#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];
     cctx.save();
     cctx.fillStyle = "#555555"; //BACKGROUND BAR
-    cctx.fillRect(20, 360, 186, 30);
+    cctx.fillRect(0, -54, 372, 60);
     cctx.fillStyle = colorsArray[Object.values(albumRoles).indexOf(src)];
-    cctx.fillRect(20, 360, 186 * Number(percent), 30);
+    cctx.fillRect(0, -54, 372 * Number(percent), 60);
     cctx.textAlign = "center";
     cctx.fillStyle = "white";
     cctx.strokeStyle = "black";
     cctx.lineWidth = 3;
-    cctx.strokeText(`${rem}`, 113, 387);
-    cctx.fillText(`${rem}`, 113, 387);
+    cctx.strokeText(`${rem}`, 186, 0);
+    cctx.fillText(`${rem}`, 186, 0);
     cctx.restore();
-    //CREDITS
-    cctx.fillText(`${userEconomy.credits}`, 17, 322);
+
     //GOLD
-    const goldx = 15;
-    const goldy = 394;
-    cctx.drawImage(goldcircle, goldx, goldy, 30, 30);
-    const goldnum = userGold && userGold.count ? userGold.count : 0;
+    const goldnum = userGold?.count || 0;
     cctx.textAlign = "start";
-    cctx.fillStyle = inverted ? "black" : "white";
-    cctx.fillText("x" + goldnum, goldx + 35, goldy + 26);
+    cctx.translate(0, 65);
+    cctx.drawImage(goldcircle, 0, -50, 60, 60);
+    cctx.strokeText(`x${goldnum}`, 70, 0);
+    cctx.fillText(`x${goldnum}`, 70, 0);
+
     //BADGES
+    cctx.restore();
     if (badges.length > 0) {
         for (let i = 0; i < badges.length; i++) {
             //Initial y value
-            const y_val = 158;
+            const y_val = 306;
             //Num. of badges in each column
             const maxbadges = 4;
             //Calculate x value depending on i #
-            const x_val = (240 / maxbadges) * (i % maxbadges) + 241;
+            const x_val = (480 / maxbadges) * (i % maxbadges) + 482;
             //Calculate x shift
-            const shift = (Math.floor(i / maxbadges) * 240) / maxbadges;
+            const shift = (Math.floor(i / maxbadges) * 480) / maxbadges;
             //Draw the badges!
-            cctx.drawImage(badges[i], x_val, y_val + shift, 225 / maxbadges, 225 / maxbadges);
+            cctx.drawImage(badges[i], x_val, y_val + shift, 450 / maxbadges, 450 / maxbadges);
         }
     }
     //MONTHLY RANKING
-    cctx.font = "30px futura";
-    cctx.textAlign = "start";
-    cctx.fillStyle = src === albumRoles.TRENCH ? "black" : inverted ? "black" : "white";
-    cctx.fillText(`${placeNum}`, 41, 50);
+    cctx.strokeText(`${placeNum}`, 85, 100);
+    cctx.fillText(`${placeNum}`, 85, 100);
 
     await ctx.sendFollowUp("\u200b", {
         file: [{ name: "score.png", file: canvas.toBuffer() }]

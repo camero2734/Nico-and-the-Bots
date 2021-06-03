@@ -81,7 +81,9 @@ export class CommandComponentListener<T extends Readonly<string[]> = any> {
             interaction: MessageComponentInteraction,
             connection: Connection,
             args: ReturnType<CustomIDPattern<T>["toDict"]>
-        ) => Promise<void>
+        ) => Promise<void> = async () => {
+            return;
+        }
     ) {
         this.pattern = new CustomIDPattern(patternArr);
         this.name = Buffer.from(name, "utf-8").toString("base64");

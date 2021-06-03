@@ -1,3 +1,4 @@
+import { registerFont } from "canvas";
 import { Command, CommandComponentListener, CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
@@ -56,6 +57,7 @@ client.on("ready", async () => {
     });
 
     keonsBot.setupShop();
+    setup();
 
     console.log(`Bot initialized with ${loadedCommands.size} commands`);
 });
@@ -90,6 +92,14 @@ client.on("interaction", (interaction) => {
 
     interactionComponent.handler(interaction, connection, interactionComponent.pattern.toDict(id));
 });
+
+function setup() {
+    //LOAD FONTS
+    const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
+    for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
+
+    registerFont(`./src/assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
+}
 
 process.on("unhandledRejection", (err) => {
     console.log("unhandledRejection: ", err);

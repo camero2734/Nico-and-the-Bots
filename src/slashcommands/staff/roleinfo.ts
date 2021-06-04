@@ -26,5 +26,5 @@ export const Executor: CommandRunner<{ role: Snowflake }> = async (ctx) => {
     embed.addField("Created", `${role.createdAt}`);
     embed.addField("ID", role.id);
 
-    await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+    await ctx.send({ embeds: [embed.toJSON()] });
 };

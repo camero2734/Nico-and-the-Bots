@@ -35,7 +35,7 @@ export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
                 `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles color <@&${userRoles[0]}>`
             );
 
-        return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+        return ctx.send({ embeds: [embed.toJSON()] });
     }
 
     // User has valid roles and requested one
@@ -59,11 +59,11 @@ export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
     // If they requested a role they already had, leave them with no color roles
     if (currentlyEquippedRoles.includes(role)) {
         const embed = new MessageEmbed().setTitle("Success!").setDescription("Removed your color role");
-        return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+        return ctx.send({ embeds: [embed.toJSON()] });
     }
 
     // Otherwise add the role they requested
     await ctx.member.roles.add(role);
     const embed = new MessageEmbed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
-    return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+    return ctx.send({ embeds: [embed.toJSON()] });
 };

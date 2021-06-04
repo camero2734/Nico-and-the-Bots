@@ -3,7 +3,7 @@ import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } f
 import { Poll } from "database/entities/Poll";
 import { EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { MessageContext } from "helpers";
-import { Command, CommandOptionType } from "slash-create";
+import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
     description: `Gives a message gold. Must be used in #house-of-gold`,
@@ -34,7 +34,7 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         .setDescription(msg.content)
         .setColor("#FCE300");
 
-    await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+    await ctx.send({ embeds: [embed.toJSON()] });
 };
 
 // Give command to copy and paste if someone reacts with :gold:

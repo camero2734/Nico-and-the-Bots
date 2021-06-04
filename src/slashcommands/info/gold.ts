@@ -34,5 +34,5 @@ export const Executor: CommandRunner<{ user?: Snowflake }> = async (ctx) => {
 
     console.log(ctx.data, /CTX_DATA/);
 
-    await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+    await ctx.send({ embeds: [embed.toJSON()] });
 };

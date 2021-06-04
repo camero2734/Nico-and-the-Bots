@@ -75,5 +75,5 @@ export const Executor: CommandRunner<{ applicationid: Snowflake; approve: "appro
             .setTitle(`${member.displayName} was ${approve} for Firebreathers`)
             .addField("By", `<@${ctx.user.id}>`)
             .addField("Reason", reason);
-        await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+        await ctx.send({ embeds: [embed.toJSON()] });
     };

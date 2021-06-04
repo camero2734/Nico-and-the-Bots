@@ -69,7 +69,7 @@ export const Executor: CommandRunner<{ text: string; role: Snowflake }> = async 
         const embed = new MessageEmbed().setDescription(`You now have the ${roleObj.name} role!`);
 
         await member.roles.add(roleObj.id);
-        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON() as Record<string, unknown>] });
+        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
     });
 
     ctx.registerComponent(`remove_role`, async (btnCtx) => {
@@ -79,6 +79,6 @@ export const Executor: CommandRunner<{ text: string; role: Snowflake }> = async 
         const embed = new MessageEmbed().setDescription(`You no longer have the ${roleObj.name} role!`);
 
         await member.roles.remove(roleObj.id);
-        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON() as Record<string, unknown>] });
+        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
     });
 };

@@ -79,7 +79,7 @@ export const Executor: CommandRunner = async (ctx) => {
         new MessageButton({ label: "Submit", customID: "submit", style: "SUCCESS" })
     ]);
     await ctx.editOriginal({
-        embeds: [confirmationEmbed.toJSON() as Record<string, unknown>],
+        embeds: [confirmationEmbed.toJSON()],
         components: [(<unknown>actionRow) as ComponentActionRow]
     });
 
@@ -97,7 +97,7 @@ export const Executor: CommandRunner = async (ctx) => {
         const sentEmbed = new MessageEmbed().setDescription(
             "Submitted to the staff team!\n\nWe will get back to you as soon as possible."
         );
-        ctx.editOriginal({ embeds: [sentEmbed.toJSON() as Record<string, unknown>], components: [] });
+        ctx.editOriginal({ embeds: [sentEmbed.toJSON()], components: [] });
         ctx.unregisterComponent("submit");
     });
 };
@@ -125,7 +125,7 @@ const withContext = async (ctx: ExtendedContext) => {
             actionRow.addComponents([new MessageButton({ label: "Continue", customID: "continue", style: "PRIMARY" })]);
 
             await ctx.editOriginal({
-                embeds: [embed.toJSON() as Record<string, unknown>],
+                embeds: [embed.toJSON()],
                 components: [(<unknown>actionRow) as ComponentActionRow]
             });
 
@@ -138,7 +138,7 @@ const withContext = async (ctx: ExtendedContext) => {
                 field.value = "```\n" + m.content + "```";
 
                 await ctx.editOriginal({
-                    embeds: [embed.toJSON() as Record<string, unknown>],
+                    embeds: [embed.toJSON()],
                     components: [(<unknown>actionRow) as ComponentActionRow]
                 });
                 await m.delete();
@@ -150,7 +150,7 @@ const withContext = async (ctx: ExtendedContext) => {
                     if (requiresAnswer && field.value === NO_RESPONSE) {
                         embed.setColor("FF0000");
                         ctx.editOriginal({
-                            embeds: [embed.toJSON() as Record<string, unknown>],
+                            embeds: [embed.toJSON()],
                             components: [(<unknown>actionRow) as ComponentActionRow]
                         });
                         return;

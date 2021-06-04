@@ -7,6 +7,7 @@ import * as secrets from "configuration/secrets.json";
 import { FM } from "database/entities/FM";
 import { MoreThan } from "typeorm";
 import fetch from "node-fetch";
+import { Snowflake } from "discord.js";
 
 const FM_REACT = "⭐";
 
@@ -194,7 +195,7 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
     const embed_res = await ctx.embed(embed);
 
     if (!selfFM || typeof embed_res === "boolean") return;
-    const fm_m = await ctx.channel.messages.fetch(embed_res.id);
+    const fm_m = await ctx.channel.messages.fetch(embed_res.id as Snowflake);
 
     // Don't react if recently scrobbled same song
     const TIME_LIMIT = 10; // Minutes

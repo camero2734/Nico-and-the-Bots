@@ -102,7 +102,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
         }))
     );
 
-    await ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>], components });
+    await ctx.send({ embeds: [embed.toJSON()], components });
 };
 
 function generateStatsDescription(poll: Poll, parsedOptions: ParsedOption[]): EmbedField[] {

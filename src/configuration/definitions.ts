@@ -121,10 +121,10 @@ async function extendContext<T extends CommandOption>(
 ): Promise<ExtendedContext<T>> {
     const extendedContext = ctx as unknown as ExtendedContext<T>;
     extendedContext.embed = (embed: MessageEmbed): Promise<Message | boolean> => {
-        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON() as Record<string, unknown>] });
+        if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON()] });
         else if (embed.files) {
             const messageOptions = {
-                embeds: [embed.toJSON() as Record<string, unknown>],
+                embeds: [embed.toJSON()],
                 file: (<MessageAttachment[]>embed.files).map((f) => ({
                     name: f.name as string,
                     file: f.attachment as Buffer
@@ -133,7 +133,7 @@ async function extendContext<T extends CommandOption>(
             return ctx.sendFollowUp(messageOptions);
         }
 
-        return ctx.send({ embeds: [embed.toJSON() as Record<string, unknown>] });
+        return ctx.send({ embeds: [embed.toJSON()] });
     };
 
     extendedContext.acknowledge = async () => {
@@ -147,7 +147,7 @@ async function extendContext<T extends CommandOption>(
         ?.channels.cache.get(ctx.channelID as Snowflake) as TextChannel;
     if (!extendedContext) throw new Error("Unable to extend context");
 
-    extendedContext.member = await extendedContext.channel.guild.members.fetch(extendedContext.user.id as `${bigint}`);
+    extendedContext.member = await extendedContext.channel.guild.members.fetch(extendedContext.user.id as Snowflake);
 
     extendedContext.client = client;
     extendedContext.connection = connection;
@@ -174,7 +174,7 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
             .setDescription(e.message)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet broke");
-        ectx.send({ embeds: [embed.toJSON() as Record<string, unknown>], ephemeral: e.sendEphemeral });
+        ectx.send({ embeds: [embed.toJSON()], ephemeral: e.sendEphemeral });
     } else {
         console.log(e);
         const embed = new MessageEmbed().setTitle("An unknown error occurred!").setFooter("DEMA internet really broke");

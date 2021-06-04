@@ -1,6 +1,6 @@
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import ago from "s-ago";
 import { CommandOptionType } from "slash-create";
 
@@ -16,8 +16,8 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ user?: `${bigint}` }> = async (ctx) => {
-    const userID = ctx.opts.user || (ctx.user.id as `${bigint}`);
+export const Executor: CommandRunner<{ user?: Snowflake }> = async (ctx) => {
+    const userID = ctx.opts.user || (ctx.user.id as Snowflake);
 
     const member = await ctx.channel.guild.members.fetch(userID);
     if (!member) throw new CommandError("Unable to find member.");

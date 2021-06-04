@@ -1,6 +1,6 @@
 import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
 
 const { SAI, TRENCH, BF, VSL, RAB, ST } = roles.albums;
@@ -29,7 +29,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ album: `${bigint}` }> = async (ctx) => {
+export const Executor: CommandRunner<{ album: Snowflake }> = async (ctx) => {
     const roleID = ctx.opts.album;
 
     const idList = Object.values(albumRoles);

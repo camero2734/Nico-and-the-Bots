@@ -11,6 +11,7 @@ import {
     MessageComponentInteraction,
     MessageEmbed,
     MessageReaction,
+    Snowflake,
     TextChannel,
     User
 } from "discord.js";
@@ -102,8 +103,9 @@ export type ExtendedContext<T extends CommandOption = {}> = Omit<
 > & {
     embed(discordEmbed: MessageEmbed): Promise<Message | boolean>;
     acknowledge(): Promise<void>;
-    guildID: `${bigint}`;
-    channelID: `${bigint}`;
+    runCommand<T extends CommandOption>(executor: CommandRunner<T>, opts: T): Promise<void>;
+    guildID: Snowflake;
+    channelID: Snowflake;
     channel: TextChannel;
     member: GuildMember;
     opts: T;
@@ -141,8 +143,8 @@ async function extendContext<T extends CommandOption>(
     extendedContext.isExtended = true;
 
     extendedContext.channel = client.guilds.cache
-        .get(ctx.guildID as `${bigint}`)
-        ?.channels.cache.get(ctx.channelID as `${bigint}`) as TextChannel;
+        .get(ctx.guildID as Snowflake)
+        ?.channels.cache.get(ctx.channelID as Snowflake) as TextChannel;
     if (!extendedContext) throw new Error("Unable to extend context");
 
     extendedContext.member = await extendedContext.channel.guild.members.fetch(extendedContext.user.id as `${bigint}`);
@@ -150,6 +152,14 @@ async function extendContext<T extends CommandOption>(
     extendedContext.client = client;
     extendedContext.connection = connection;
     extendedContext.opts = (ctx.options[extendedContext.subcommands[0]] || ctx.options) as T;
+
+    extendedContext.runCommand = async (executor, opts) => {
+        {
+            const newCtx = { ...extendedContext, opts };
+            return await executor(newCtx);
+        }
+    };
+
     return extendedContext;
 }
 

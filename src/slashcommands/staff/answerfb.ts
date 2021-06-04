@@ -1,6 +1,6 @@
 import { channelIDs, roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, TextChannel } from "discord.js";
+import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
@@ -31,12 +31,12 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ applicationid: `${bigint}`; approve: "approved" | "denied"; reason: string }> =
+export const Executor: CommandRunner<{ applicationid: Snowflake; approve: "approved" | "denied"; reason: string }> =
     async (ctx) => {
         const { applicationid, approve, reason } = ctx.opts;
         const chan = ctx.member.guild.channels.cache.get(channelIDs.deapplications) as TextChannel;
         const m = (await chan.messages.fetch({ around: applicationid, limit: 1 })).first();
-        const userID = m?.embeds[0].footer?.text as `${bigint}`;
+        const userID = m?.embeds[0].footer?.text as Snowflake;
 
         if (!m || !userID) throw new CommandError("Invalid applicationid");
 

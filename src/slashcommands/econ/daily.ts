@@ -4,7 +4,7 @@ import { CommandError, CommandOptions, CommandRunner } from "configuration/defin
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
-import { GuildMember, MessageAttachment, MessageEmbed } from "discord.js";
+import { GuildMember, MessageAttachment, MessageEmbed, Snowflake } from "discord.js";
 
 export const Options: CommandOptions = {
     description: "Claims your daily credits",
@@ -68,8 +68,8 @@ export const Executor: CommandRunner = async (ctx) => {
     let badgeLogo = null;
 
     const member = client.guilds.cache
-        .get((ctx.guildID || "") as `${bigint}`)
-        ?.members.cache.get(ctx.user.id as `${bigint}`) as GuildMember;
+        .get((ctx.guildID || "") as Snowflake)
+        ?.members.cache.get(ctx.user.id as Snowflake) as GuildMember;
 
     if (member?.roles.cache.get("332021614256455690")) {
         creditsToGive = 300;

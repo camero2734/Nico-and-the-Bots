@@ -33,6 +33,7 @@
         "parse-duration": "^0.4.4",
         "patch-package": "^6.4.7",
         "ramda": "^0.27.1",
+        "remove": "^0.1.5",
         "require-all": "^3.0.0",
         "s-ago": "^2.2.0",
         "slash-commands": "^1.4.0",

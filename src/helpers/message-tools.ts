@@ -1,4 +1,5 @@
 import { constants } from "configuration/config";
+import { CommandOption, CommandRunner, ExtendedContext } from "configuration/definitions";
 import { CollectorFilter, Interaction, Message, MessageComponentInteraction, TextChannel } from "discord.js";
 import { ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
 

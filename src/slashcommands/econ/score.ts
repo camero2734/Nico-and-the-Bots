@@ -3,6 +3,7 @@ import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
+import { Snowflake } from "discord.js";
 import { badgeLoader } from "helpers";
 import { CommandOptionType } from "slash-create";
 
@@ -13,12 +14,12 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ user: `${bigint}` }> = async (ctx) => {
+export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     const albumRoles = roles.albums;
     const options = ctx.opts;
     const { connection } = ctx;
 
-    const userID = options.user || (ctx.user.id as `${bigint}`);
+    const userID = options.user || (ctx.user.id as Snowflake);
 
     const member = await ctx.member.guild.members.fetch(userID);
 

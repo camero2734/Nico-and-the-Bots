@@ -1,5 +1,5 @@
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
@@ -14,7 +14,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ role: `${bigint}` }> = async (ctx) => {
+export const Executor: CommandRunner<{ role: Snowflake }> = async (ctx) => {
     const role = ctx.channel.guild.roles.cache.get(ctx.opts.role);
     if (!role) throw new CommandError("A valid role was not provided.");
 

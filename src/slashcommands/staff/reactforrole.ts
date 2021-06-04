@@ -1,5 +1,5 @@
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import { ButtonStyle, CommandOptionType, ComponentType } from "slash-create";
 
 export const Options: CommandOptions = {
@@ -26,7 +26,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ text: string; role: `${bigint}` }> = async (ctx) => {
+export const Executor: CommandRunner<{ text: string; role: Snowflake }> = async (ctx) => {
     const { text, role } = ctx.opts;
 
     const roleObj = await ctx.channel.guild.roles.fetch(role);
@@ -63,7 +63,7 @@ export const Executor: CommandRunner<{ text: string; role: `${bigint}` }> = asyn
     });
 
     ctx.registerComponent(`add_role`, async (btnCtx) => {
-        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as `${bigint}`);
+        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as Snowflake);
         if (!member) return;
 
         const embed = new MessageEmbed().setDescription(`You now have the ${roleObj.name} role!`);
@@ -73,7 +73,7 @@ export const Executor: CommandRunner<{ text: string; role: `${bigint}` }> = asyn
     });
 
     ctx.registerComponent(`remove_role`, async (btnCtx) => {
-        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as `${bigint}`);
+        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as Snowflake);
         if (!member) return;
 
         const embed = new MessageEmbed().setDescription(`You no longer have the ${roleObj.name} role!`);

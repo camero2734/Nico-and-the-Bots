@@ -1,7 +1,7 @@
 import { channelIDs, emojiIDs, roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
-import { EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { MessageContext } from "helpers";
 import { Command, CommandOptionType } from "slash-create";
 
@@ -20,7 +20,7 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     const hex = Buffer.from(ctx.opts.code, "base64").toString("hex");
     const uniqueID = BigInt(`0x${hex}`).toString();
-    const [messageid, channelid] = [uniqueID.slice(0, 18), uniqueID.slice(18)] as `${bigint}`[];
+    const [messageid, channelid] = [uniqueID.slice(0, 18), uniqueID.slice(18)] as Snowflake[];
 
     const channel = ctx.channel.guild.channels.cache.get(channelid) as TextChannel;
     if (!channel) throw new CommandError("Unable to find channel");

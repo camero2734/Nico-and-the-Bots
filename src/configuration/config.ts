@@ -90,6 +90,7 @@ export const roles = <const>{
     banditos: "269660541738418176",
     bots: "275114879248236544",
     deatheaters: "283272728084086784",
+    formerde: "498702380007686146",
     jailedDE: "656918036053491780",
     gold: "386969744709910530",
     hideallchannels: "574731157061632000",

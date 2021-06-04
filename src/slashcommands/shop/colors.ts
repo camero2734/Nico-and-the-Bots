@@ -2,7 +2,7 @@ import { channelIDs, roles, userIDs } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
-import { GuildMember, MessageAttachment, MessageEmbed, Role, TextChannel } from "discord.js";
+import { GuildMember, MessageAttachment, MessageEmbed, Role, Snowflake, TextChannel } from "discord.js";
 import { MessageTools } from "helpers";
 import F from "helpers/funcs";
 import { ButtonStyle, ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
@@ -27,7 +27,7 @@ export const Executor: CommandRunner = async (ctx) => {
         public credits: number;
         public level: number;
         public roles: Role[];
-        constructor(roleIDs: `${bigint}`[], opts: Partial<{ level: number; credits: number; DE: boolean }>) {
+        constructor(roleIDs: Snowflake[], opts: Partial<{ level: number; credits: number; DE: boolean }>) {
             this.level = opts.level || 0;
             this.credits = opts.credits || 0;
             this.requiresDE = opts.DE || false;

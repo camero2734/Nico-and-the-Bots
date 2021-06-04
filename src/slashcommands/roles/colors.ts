@@ -1,6 +1,6 @@
 import { CommandOptionType } from "slash-create";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "configuration/config";
 import { Item } from "database/entities/Item";
@@ -17,7 +17,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-export const Executor: CommandRunner<{ role?: `${bigint}` }> = async (ctx) => {
+export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
     const role = ctx.opts.role;
 
     const userRoles = (await ctx.connection.getRepository(Item).find({ id: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore

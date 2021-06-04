@@ -1,6 +1,15 @@
 import { constants } from "configuration/config";
 import { CommandOption, CommandRunner, ExtendedContext } from "configuration/definitions";
-import { CollectorFilter, Interaction, Message, MessageComponentInteraction, TextChannel } from "discord.js";
+import {
+    Collection,
+    CollectorFilter,
+    Interaction,
+    Message,
+    MessageComponentInteraction,
+    MessageComponentInteractionCollector,
+    Snowflake,
+    TextChannel
+} from "discord.js";
 import { ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
 
 export const MessageTools = {
@@ -32,12 +41,32 @@ export const MessageTools = {
         }
 
         return components;
+    },
+
+    async fetchAllMessages(channel: TextChannel, num = Infinity): Promise<Collection<Snowflake, Message>> {
+        const MAX_MESSAGES_FETCH = 100;
+        let before: Snowflake | undefined = undefined;
+
+        let allMessages: Collection<Snowflake, Message> = new Collection();
+
+        while (allMessages.size < num) {
+            const previousSize = allMessages.size;
+            const msgs: Collection<Snowflake, Message> = await channel.messages.fetch({ limit: MAX_MESSAGES_FETCH, before }); // prettier-ignore
+            allMessages = allMessages.concat(msgs);
+
+            if (allMessages.size === previousSize) break; // No new messages
+
+            before = msgs.last()?.id;
+        }
+
+        return allMessages;
     }
 };
 
 /** Things that extend a Message object */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function MessageContext(msg: Message) {
+    const listeners: Collection<string, MessageComponentInteractionCollector> = new Collection();
     return {
         msg,
         // Copying the functionality of slash create for use with discord.js
@@ -46,9 +75,18 @@ export function MessageContext(msg: Message) {
             const collector = msg.createMessageComponentInteractionCollector(filter);
 
             console.log("Created collector");
+            listeners.set(customID, collector);
 
             collector.on("collect", handler);
             collector.on("end", () => console.log(`${customID} collector ended`));
+        },
+        unregisterComponent(customID: string): boolean {
+            const collector = listeners.get(customID);
+            if (!collector) return false;
+
+            collector.stop();
+            listeners.delete(customID);
+            return true;
         }
     };
 }

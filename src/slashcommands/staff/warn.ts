@@ -5,6 +5,7 @@ import { GuildMember, MessageEmbed, Snowflake } from "discord.js";
 import { MessageTools } from "helpers";
 import { ApplicationCommandPermissionType, CommandOptionType } from "slash-create";
 import { MoreThan } from "typeorm";
+import * as jail from "./jail";
 
 const rules = <const>["Bothering Others", "Drama", "Spam", "NSFW/Slurs", "Other"];
 
@@ -107,18 +108,19 @@ export const Executor: CommandRunner<{
     } else throw new CommandError("Warning cancelled. Use !warn to start again.");
 
     async function autoJailCheck(member: GuildMember) {
-        const allWarns = await ctx.connection.getRepository(Item).find({
+        const ONE_YEAR = 1000 * 60 * 60 * 24 * 365;
+        const recentWarns = await ctx.connection.getMongoRepository(Item).count({
             id: member.id,
             type: "Warning",
-            time: MoreThan(new Date("16 March 2020 22:00").getTime())
+            time: { $gt: Date.now() - ONE_YEAR }
         });
-        if (allWarns.length >= 3) autoJail(member);
+        if (recentWarns >= 3) autoJail(member);
         else {
             const embed = new MessageEmbed();
             embed.setColor("#FF0000");
             embed.setDescription(
-                `${Math.max(0, 3 - allWarns.length)} more warning${
-                    allWarns.length === 1 ? "" : "s"
+                `${Math.max(0, 3 - recentWarns)} more warning${
+                    recentWarns === 1 ? "" : "s"
                 } until this user is auto-jailed.`
             );
             await ctx.channel.send(embed);
@@ -128,20 +130,9 @@ export const Executor: CommandRunner<{
     async function autoJail(member: GuildMember) {
         // TODO: Fix
         // Hooks into !jail to jail user
-        // const m = new CommandMessage(
-        //     msg.client,
-        //     {
-        //         content: `${prefix}jail ${member}`,
-        //         type: `DEFAULT`,
-        //         author: msg.author,
-        //         embeds: [],
-        //         attachments: [],
-        //         mentions: [member.user],
-        //         timestamp: Date.now(),
-        //         id: msg.id
-        //     },
-        //     msg.channel
-        // );
-        // await Command.runCommand<JailProps>(m, connection, { autojail: true });
+        ctx.runCommand(jail.Executor, {
+            user: member.user.id,
+            explanation: "[Autojail] You were automatically jailed for receiving multiple warnings."
+        });
     }
 };

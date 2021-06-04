@@ -39,8 +39,8 @@ const closeChannel = new CommandComponentListener("jailclose", <const>["base64id
 export const ComponentListeners: CommandComponentListener[] = [unmuteAllUsers, muteAllUsers, closeChannel];
 
 type users = "user2" | "user3" | "user4" | "user5";
-type RequiredTypes = { user: Snowflake; explanation: string };
-type OptionalTypes = Partial<Record<users, Snowflake>>;
+type RequiredTypes = { user: Snowflake };
+type OptionalTypes = Partial<Record<users, Snowflake> & { explanation: string }>;
 
 export const Executor: CommandRunner<RequiredTypes & OptionalTypes> = async (ctx) => {
     const { explanation, ...usersDict } = ctx.opts;

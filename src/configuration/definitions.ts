@@ -236,7 +236,7 @@ export class Command<
     }
 }
 
-function determineCommandPermissions(commandName: string): any {
+function determineCommandPermissions(commandName: string): Partial<SlashCommandOptions> {
     if (commandName === "staff" || commandName !== "apfply")
         return {
             defaultPermission: false,

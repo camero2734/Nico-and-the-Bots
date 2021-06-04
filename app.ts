@@ -90,6 +90,8 @@ client.on("interaction", (interaction) => {
 
     const id = interaction.customID;
 
+    console.log(`[interaction] ${id}`);
+
     const interactionComponent = interactionHandlers.find((handler) => id.startsWith(handler.name));
 
     if (!interactionComponent) return;

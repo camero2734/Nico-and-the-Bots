@@ -1,8 +1,13 @@
+import { Snowflake } from "discord.js";
 import * as R from "ramda";
+import radix64Setup from "radix-64";
+import * as bigintConversion from "bigint-conversion";
 
 /**
  * Just some commonly used short functions
  */
+
+const radix64 = radix64Setup();
 
 const F = {
     titleCase: R.pipe(R.split(""), R.adjust(0, R.toUpper), R.join("")),
@@ -27,7 +32,13 @@ const F = {
         }
         return newStr.join("");
     },
-    wait: (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+    wait: (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms)),
+    snowflakeToRadix64: (id: Snowflake): string => {
+        return radix64.encodeBuffer(bigintConversion.bigintToBuf(BigInt(id)) as Buffer);
+    },
+    radix64toSnowflake: (encoded: string): Snowflake => {
+        return bigintConversion.bufToBigint(radix64.decodeToBuffer(encoded)).toString() as Snowflake;
+    }
 };
 
 export default F;

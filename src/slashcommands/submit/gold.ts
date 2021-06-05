@@ -8,9 +8,8 @@ import {
 } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
-import { Item } from "database/entities/Item";
 import { Poll } from "database/entities/Poll";
-import { EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
+import { Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { generateUpvoteDownvoteListener, MessageContext } from "helpers";
 import { CommandOptionType } from "slash-create";
 import { Connection } from "typeorm";
@@ -85,7 +84,11 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user, 
         new MessageButton({ customID: "cancel", style: "DANGER", label: "Cancel" })
     ]);
 
-    const m = await msg.reply({ embed, components: [actionRow], allowedMentions: { repliedUser: false } });
+    const m = await msg.reply(member.toString(), {
+        embed,
+        components: [actionRow],
+        allowedMentions: { repliedUser: false, users: [member.user.id] }
+    });
 
     const dtx = MessageContext(m);
 

@@ -47,6 +47,7 @@ export const channelIDs = <const>{
     twitterfeed: "470440353640742914",
     resourcesupdates: "470335316805287936",
     hometown: "470330055063633920",
+    slowtown: "470330688235765770",
     welcome: "470695120828891138",
     welcometest: "850575320838307860",
     musicvc: "470336762376355840",
@@ -66,9 +67,11 @@ export const channelIDs = <const>{
     tyler: "470428804695851008",
     josh: "534882732820529174",
     band: "534882758770688031",
+    dmaorg: "534882770619465731",
     tourcategory: "600868166612287500",
     lvlcnrn: "721047257029279844",
-    demacouncil: "849323629388627978"
+    demacouncil: "849323629388627978",
+    mulberrystreet: "759830064518266880"
 };
 export const categoryIDs = <const>{
     chilltown: "625524136785215498"

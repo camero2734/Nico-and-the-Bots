@@ -1,27 +1,24 @@
+import { Mutex } from "async-mutex";
+import { createCanvas } from "canvas";
+import { channelIDs, roles } from "configuration/config";
+import * as secrets from "configuration/secrets.json";
+import { Counter } from "database/entities/Counter";
 import {
     Client,
-    Intents,
-    MessageEmbed,
-    TextChannel,
     GuildMember,
-    MessageAttachment,
+    Intents,
     MessageActionRow,
+    MessageAttachment,
     MessageButton,
+    MessageComponentInteraction,
+    MessageEmbed,
     Snowflake,
-    MessageComponentInteraction
+    TextChannel
 } from "discord.js";
-import * as secrets from "configuration/secrets.json";
-import { channelIDs, guildID, roles, userIDs } from "configuration/config";
-import { createCanvas } from "canvas";
-import { Mutex } from "async-mutex";
-import { Connection, ReturningStatementNotSupportedError } from "typeorm";
-import { Counter } from "database/entities/Counter";
-import { MessageTools } from "helpers";
-import { ComponentButton, PartialEmoji } from "slash-create";
+import { Connection } from "typeorm";
 
 const ANNOUNCEMENTS_ID = "?announcements";
 
-const chanToURL = (id: string) => `https://discord.com/channels/${guildID}/${id}/`;
 const emoji = (name: string, id: Snowflake | null = null): { emoji: { name: string; id: Snowflake } } => ({
     emoji: { name, id: id as Snowflake }
 });
@@ -63,23 +60,57 @@ export class SacarverBot {
         memberCount.count++;
         await this.connection.manager.save(memberCount);
 
-        const canvas = createCanvas(500, 500);
+        const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
         ctx.fillStyle = "#FCE300";
-        ctx.fillRect(0, 0, 500, 500);
+        ctx.fillRect(0, 0, 1000, 500);
         const attachment = new MessageAttachment(canvas.toBuffer(), "welcome.png");
+
+        const noteworthyChannels = [
+            {
+                emoji: "📜",
+                title: "Rules",
+                text: `Make sure you've read our server's <#${channelIDs.rules}> before hopping into anything!`
+            },
+            {
+                emoji: "🏠",
+                title: "General chats",
+                text: `For general discussion, check out <#${channelIDs.hometown}> and <#${channelIDs.slowtown}>`
+            },
+            { emoji: "🤖", title: "Our bots", text: `Use our custom bots in <#${channelIDs.commands}>` },
+            {
+                emoji: "<:THEORY:404458118299254785>",
+                title: "Theories",
+                text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theorylist}>`
+            },
+            {
+                emoji: "🧑‍🎨",
+                title: "Creations",
+                text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.mulberrystreet}>`
+            },
+            {
+                emoji: "🥁",
+                title: "Topfeed",
+                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>`
+            }
+        ];
 
         const embed = new MessageEmbed()
             .setTitle("Welcome to the twenty one pilots Discord server!")
             .setAuthor(member.displayName, member.user.displayAvatarURL())
             .setDescription(
-                "Curious to explore the server? Click one of the options below to be redirected to a channel.\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button `Sign up for #announcements` button below"
+                "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n"
             )
             .attachFiles([attachment])
             .setImage("attachment://welcome.png");
 
+        embed.addField("\u200b", "\u200b");
+        for (const { emoji, title, text } of noteworthyChannels) {
+            embed.addField(`${emoji} ${title}`, text);
+        }
+
         // Functions
-        const actionRow1 = new MessageActionRow().addComponents([
+        const actionRow = new MessageActionRow().addComponents([
             new MessageButton({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",
@@ -88,41 +119,7 @@ export class SacarverBot {
             })
         ]);
 
-        // Links
-        const actionRow2 = new MessageActionRow().addComponents([
-            new MessageButton({
-                style: "LINK",
-                label: "Check out #hometown",
-                url: chanToURL(channelIDs.hometown),
-                ...emoji("🏠")
-            }),
-            new MessageButton({
-                style: "LINK",
-                label: "Use bots in #commands",
-                url: chanToURL(channelIDs.commands),
-                ...emoji("🤖")
-            }),
-            new MessageButton({
-                style: "LINK",
-                label: "Discuss theories in #theories",
-                url: chanToURL(channelIDs.leakstheories),
-                ...emoji("THEORY", "404458118299254785")
-            }),
-            new MessageButton({
-                style: "LINK",
-                label: "Check out our community's #creations",
-                url: chanToURL(channelIDs.creations),
-                ...emoji("🧑‍🎨")
-            }),
-            new MessageButton({
-                style: "LINK",
-                label: "Stay up to date with the band's posts",
-                url: chanToURL(channelIDs.band),
-                ...emoji("🥁")
-            })
-        ]);
-
-        await welcomeChan.send(member.toString(), { embed, components: [actionRow1, actionRow2] });
+        await welcomeChan.send(member.toString(), { embed, components: [actionRow] });
     }
 
     async giveAnnouncementsRole(interaction: MessageComponentInteraction): Promise<void> {

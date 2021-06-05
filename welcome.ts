@@ -40,7 +40,7 @@ export class SacarverBot {
     async beginWelcomingMembers(): Promise<void> {
         await this.ready; // Wait until the bot is logged in
 
-        this.client.on("guildMemberAdd", this.welcomeMember);
+        this.client.on("guildMemberAdd", (member) => this.welcomeMember(member));
 
         this.client.on("interaction", (interaction) => {
             if (!interaction.isMessageComponent()) return;
@@ -71,6 +71,7 @@ export class SacarverBot {
         await member.roles.add(roles.banditos);
 
         const memberNum = await this.getMemberNumber(member.guild);
+        console.log(`Member #${memberNum} joined`);
 
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");

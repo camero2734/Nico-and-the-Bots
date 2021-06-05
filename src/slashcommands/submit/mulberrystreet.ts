@@ -4,7 +4,8 @@ import FileType from "file-type";
 import { CommandOptionType, ComponentActionRow } from "slash-create";
 import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs, roles } from "configuration/config";
-import e from "express";
+import { Counter } from "database/entities/Counter";
+import ago from "s-ago";
 
 export const Options: CommandOptions = {
     description: "Submits an image, video, or audio file to #mulberry-street",
@@ -26,6 +27,7 @@ export const Options: CommandOptions = {
 
 export const Executor: CommandRunner<{ title: string; url: string }> = async (ctx) => {
     const MAX_FILE_SIZE = 50000000; // 50MB
+    const MS_24_HOURS = 1000 * 60 * 60 * 24; // 24 hours in ms
     const { title, url } = ctx.opts;
 
     const chan = ctx.channel.guild.channels.cache.get(channelIDs.mulberrystreet) as TextChannel;
@@ -37,6 +39,28 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
 
     await ctx.defer(true);
 
+    // Only allow submissions once/day
+    let submissionsCounter = await ctx.connection
+        .getRepository(Counter)
+        .findOne({ id: ctx.user.id, title: "MulberryCreations" });
+
+    if (!submissionsCounter) {
+        submissionsCounter = new Counter({ id: ctx.user.id, title: "MulberryCreations", lastUpdated: 0 });
+        submissionsCounter.lastUpdated = 0;
+    }
+
+    console.log(submissionsCounter.lastUpdated, /LAST_UPDATED/);
+
+    if (Date.now() - submissionsCounter.lastUpdated < MS_24_HOURS) {
+        const msRemaining = submissionsCounter.lastUpdated + MS_24_HOURS - Date.now();
+        const timeRemaining = ago(new Date(Date.now() + msRemaining), "hour");
+        throw new CommandError(`You need to wait ${timeRemaining} before submitting another creation!`);
+    }
+
+    submissionsCounter.count++;
+    submissionsCounter.lastUpdated = Date.now();
+
+    // Validate and fetch url
     if (!isValidURL(url)) throw new CommandError("Invalid URL given");
 
     const res = await fetch(url, { size: MAX_FILE_SIZE }).catch(() => {
@@ -73,6 +97,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
     await ctx.send({ embeds: [embed.toJSON()], components: [componentActionRow] });
 
     ctx.registerComponent("submit-mulberry", async (btnCtx) => {
+        await ctx.connection.manager.save(submissionsCounter);
         embed.setDescription("Submitted.");
         const doneEmbed = embed.toJSON();
 

@@ -1,11 +1,10 @@
-import { CommandOptionType } from "slash-create";
-import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, MessageReaction, TextChannel, Message } from "discord.js";
-import * as ytdl from "youtube-dl";
-import dayjs from "dayjs";
-import { Item } from "database/entities/Item";
 import { channelIDs, roles } from "configuration/config";
-import { Connection } from "typeorm";
+import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
+import { Item } from "database/entities/Item";
+import dayjs from "dayjs";
+import { MessageEmbed, TextChannel } from "discord.js";
+import { CommandOptionType } from "slash-create";
+import * as ytdl from "youtube-dl";
 
 export const Options: CommandOptions = {
     description: "Submits an interview to the interview channel",
@@ -33,7 +32,7 @@ export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
     await ctx.embed(embed);
 
     const info: Record<string, string> = await new Promise((resolve) =>
-        ytdl.getInfo(id, (_error, output) => resolve((output as unknown) as Record<string, string>))
+        ytdl.getInfo(id, (_error, output) => resolve(output as unknown as Record<string, string>))
     );
 
     const { channel, view_count, fulltitle, thumbnail, upload_date, description } = info;
@@ -84,9 +83,10 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction }): Pro
 
     if (accepting) {
         await msg.guild?.roles.cache.get(roles.topfeed.selectable.interviews)?.setMentionable(true);
-        const m = await (<TextChannel>(
-            msg.guild?.channels.cache.get(channelIDs.interviews)
-        ))?.send(`<@&${roles.topfeed.selectable.interviews}>`, { embed: newEmbed });
+        const m = await (<TextChannel>msg.guild?.channels.cache.get(channelIDs.interviews))?.send(
+            `<@&${roles.topfeed.selectable.interviews}>`,
+            { embed: newEmbed }
+        );
         await m.react("📺");
     }
 

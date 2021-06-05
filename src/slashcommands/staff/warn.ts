@@ -1,10 +1,8 @@
 import { CommandError, CommandOptions, CommandRunner, WarningData } from "configuration/definitions";
-import { roles, guildID } from "configuration/config";
 import { Item } from "database/entities/Item";
 import { GuildMember, MessageEmbed, Snowflake } from "discord.js";
 import { MessageTools } from "helpers";
-import { ApplicationCommandPermissionType, CommandOptionType } from "slash-create";
-import { MoreThan } from "typeorm";
+import { CommandOptionType } from "slash-create";
 import * as jail from "./jail";
 
 const rules = <const>["Bothering Others", "Drama", "Spam", "NSFW/Slurs", "Other"];

@@ -1,0 +1,32 @@
+import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { MessageEmbed, Snowflake } from "discord.js";
+import { CommandOptionType } from "slash-create";
+
+const rules = <const>["Bothering Others", "Drama", "Spam", "NSFW/Slurs", "Other"];
+
+export const Options: CommandOptions = {
+    description: "Submits a warning for a user",
+    options: [
+        { name: "user", description: "The user to warn", required: true, type: CommandOptionType.USER },
+        {
+            name: "purge",
+            description: "Whether to delete all messages or not",
+            required: false,
+            type: CommandOptionType.BOOLEAN
+        },
+        { name: "reason", description: "Reason for banning", required: false, type: CommandOptionType.STRING }
+    ]
+};
+
+export const Executor: CommandRunner<{
+    user: Snowflake;
+    purge: boolean;
+}> = async (ctx) => {
+    const { user, purge } = ctx.opts;
+    const member = await ctx.member.guild.members.fetch(user);
+    if (!member) throw new CommandError("Could not find this member. They may have already been banned or left.");
+
+    await member.ban({ days: purge ? 7 : 0 });
+
+    await ctx.send({ embeds: [new MessageEmbed({ description: `${member.toString()} was banned.` }).toJSON()] });
+};

@@ -8,12 +8,14 @@ import { updateUserScore } from "helpers";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
 import { KeonsBot } from "./shop";
+import { SacarverBot } from "./welcome";
 
 // let ready = false;
 let connection: Connection;
 
 const client = new Discord.Client({ intents: Discord.Intents.ALL, partials: ["REACTION", "USER", "MESSAGE"] });
 const keonsBot = new KeonsBot();
+let sacarverBot: SacarverBot;
 
 const interactions = new SlashCreator({
     applicationID: "470410168186699788",
@@ -57,6 +59,9 @@ client.on("ready", async () => {
         c.setConnectionClient(connection, client);
     });
 
+    sacarverBot = new SacarverBot(connection);
+
+    sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
 

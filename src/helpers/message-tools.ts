@@ -5,6 +5,8 @@ import {
     CollectorFilter,
     Interaction,
     Message,
+    MessageActionRow,
+    MessageButton,
     MessageComponentInteraction,
     MessageComponentInteractionCollector,
     Snowflake,
@@ -26,15 +28,15 @@ export const MessageTools = {
     },
 
     /** Takes an array of buttons and places them into an array of Action Row components */
-    allocateButtonsIntoRows(buttons: ComponentButton[]): ComponentActionRow[] {
-        const components: ComponentActionRow[] = [];
+    allocateButtonsIntoRows<T extends ComponentActionRow | MessageActionRow>(buttons: T["components"][number][]): T[] {
+        const components: T[] = [];
 
         if (buttons.length > constants.ACTION_ROW_MAX_ITEMS * constants.MAX_ACTION_ROWS)
             throw new Error("Too many buttons");
 
         for (let i = 0; i < buttons.length; i += constants.ACTION_ROW_MAX_ITEMS) {
             const slicedButtons = buttons.slice(i, i + constants.ACTION_ROW_MAX_ITEMS);
-            components.push({
+            components.push(<T>{
                 type: ComponentType.ACTION_ROW,
                 components: slicedButtons
             });

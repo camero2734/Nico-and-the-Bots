@@ -48,6 +48,7 @@ export const channelIDs = <const>{
     resourcesupdates: "470335316805287936",
     hometown: "470330055063633920",
     welcome: "470695120828891138",
+    welcometest: "850575320838307860",
     musicvc: "470336762376355840",
     trench: "470330491816509449",
     fairlyannouncements: "470796768720846858",
@@ -75,9 +76,12 @@ export const categoryIDs = <const>{
 
 export const userIDs = <const>{
     me: "221465443297263618",
-    keons: "470412382456381471",
-    sacarver: "470691679712706570",
-    lisden: "470705413885788160"
+    bots: {
+        keons: "470412382456381471",
+        sacarver: "470691679712706570",
+        lisden: "470705413885788160",
+        nico: "470410168186699788"
+    }
 };
 
 export const emojiIDs = <const>{
@@ -94,6 +98,7 @@ export const roles = <const>{
     jailedDE: "656918036053491780",
     gold: "386969744709910530",
     hideallchannels: "574731157061632000",
+    announcements: "357682068785856514",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",

@@ -44,13 +44,13 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
         new MessageButton({
             style: "SUCCESS",
             label: "0",
-            emoji: { name: "👍", id: null },
+            emoji: { name: "upvote_pink2", id: "850586748765077514" },
             customID: answerListener.generateCustomID({ index: "1", theoryID: ctx.interactionID })
         }),
         new MessageButton({
             style: "DANGER",
             label: "0",
-            emoji: { name: "👎", id: null },
+            emoji: { name: "downvote_blue2", id: "850586787805265990" },
             customID: answerListener.generateCustomID({ index: "0", theoryID: ctx.interactionID })
         })
     ]);

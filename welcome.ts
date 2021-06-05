@@ -5,6 +5,7 @@ import * as secrets from "configuration/secrets.json";
 import { Counter } from "database/entities/Counter";
 import {
     Client,
+    Guild,
     GuildMember,
     Intents,
     MessageActionRow,
@@ -39,9 +40,7 @@ export class SacarverBot {
     async beginWelcomingMembers(): Promise<void> {
         await this.ready; // Wait until the bot is logged in
 
-        this.client.on("guildMemberAdd", (member) =>
-            this.mutex.runExclusive(async () => await this.welcomeMember(member))
-        );
+        this.client.on("guildMemberAdd", this.welcomeMember);
 
         this.client.on("interaction", (interaction) => {
             if (!interaction.isMessageComponent()) return;
@@ -49,16 +48,29 @@ export class SacarverBot {
         });
     }
 
+    async getMemberNum(guild: Guild): Promise<number> {
+        let memberNum = 0;
+        await this.mutex.runExclusive(async () => {
+            // Get member number
+            const memberCount =
+                (await this.connection.getRepository(Counter).findOne({ id: "MemberCount", title: "MemberCount" })) ||
+                new Counter({ id: "MemberCount", title: "MemberCount", count: guild.memberCount - 1 });
+
+            memberCount.count++;
+            await this.connection.manager.save(memberCount);
+
+            memberNum = memberCount.count;
+        });
+
+        return memberNum;
+    }
+
     async welcomeMember(member: GuildMember): Promise<void> {
         const welcomeChan = member.guild.channels.cache.get(channelIDs.welcometest) as TextChannel;
 
-        // Get member number
-        const memberCount =
-            (await this.connection.getRepository(Counter).findOne({ id: "MemberCount", title: "MemberCount" })) ||
-            new Counter({ id: "MemberCount", title: "MemberCount", count: member.guild.memberCount - 1 });
+        await member.roles.add(roles.banditos);
 
-        memberCount.count++;
-        await this.connection.manager.save(memberCount);
+        const memberNum = await this.getMemberNum(member.guild);
 
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");

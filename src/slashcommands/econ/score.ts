@@ -19,6 +19,8 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     const options = ctx.opts;
     const { connection } = ctx;
 
+    await ctx.defer();
+
     const userID = options.user || (ctx.user.id as Snowflake);
 
     const member = await ctx.member.guild.members.fetch(userID);
@@ -186,7 +188,8 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     cctx.strokeText(`${placeNum}`, 85, 100);
     cctx.fillText(`${placeNum}`, 85, 100);
 
-    await ctx.sendFollowUp("\u200b", {
+    await ctx.send({
+        embeds: [],
         file: [{ name: "score.png", file: canvas.toBuffer() }]
     });
 };

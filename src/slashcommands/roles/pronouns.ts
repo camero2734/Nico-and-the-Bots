@@ -7,6 +7,8 @@ import { channelIDs, roles } from "configuration/config";
 const pronounOptsList = <const>["pronoun1", "pronoun2", "pronoun3"];
 type OptsType = Record<typeof pronounOptsList[number], string>;
 
+const pronounRoles = roles.pronouns;
+
 export const Options: CommandOptions = {
     description: "Overwrites all of your pronoun roles with up to three that you specify",
     options: pronounOptsList.map((name, i) => ({
@@ -15,10 +17,8 @@ export const Options: CommandOptions = {
         required: i === 0,
         type: CommandOptionType.STRING,
         choices: [
-            { name: "he/him", value: "724816436304019536" },
-            { name: "she/her", value: "724816755809058826" },
-            { name: "they/them", value: "724816785290821893" },
-            { name: "I don't see mine", value: "notExist" }
+            ...Object.entries(pronounRoles).map(([name, value]) => ({ name, value })),
+            { name: "I'd like to suggest a pronoun be added to the list", value: "notExist" }
         ]
     }))
 };
@@ -39,10 +39,10 @@ export const Executor: CommandRunner<OptsType> = async (ctx) => {
 
     // Remove any pronoun roles not mentioned
     const toRemove = R.difference(Object.values(roles.pronouns), pronounRoles);
-    await ctx.member.roles.remove(toRemove);
+    for (const r of toRemove) await ctx.member.roles.remove(r);
 
     // Give the pronoun roles mentioned
-    await ctx.member.roles.add(pronounRoles);
+    for (const r of pronounRoles) await ctx.member.roles.add(r);
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.user.avatarURL)

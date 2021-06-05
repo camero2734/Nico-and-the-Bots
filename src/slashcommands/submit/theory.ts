@@ -2,6 +2,9 @@ import { channelIDs } from "configuration/config";
 import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
 import Discord, { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { generateUpvoteDownvoteListener } from "helpers";
+import F from "helpers/funcs";
+import { last } from "ramda";
 import { CommandOptionType, ComponentActionRow } from "slash-create";
 
 export const Options: CommandOptions = {
@@ -18,7 +21,7 @@ export const Options: CommandOptions = {
     ]
 };
 
-const answerListener = new CommandComponentListener("theoryresponse", <const>["index", "theoryID"]);
+const answerListener = generateUpvoteDownvoteListener("theoryResponse");
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
 export const Executor: CommandRunner<{ title: string; theory: string; imageurl?: string }> = async (ctx) => {
@@ -42,16 +45,16 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
 
     const actionRow = new MessageActionRow().addComponents([
         new MessageButton({
-            style: "SUCCESS",
+            style: "SECONDARY",
             label: "0",
             emoji: { name: "upvote_pink2", id: "850586748765077514" },
-            customID: answerListener.generateCustomID({ index: "1", theoryID: ctx.interactionID })
+            customID: answerListener.generateCustomID({ index: "1", pollID: ctx.interactionID })
         }),
         new MessageButton({
-            style: "DANGER",
+            style: "SECONDARY",
             label: "0",
             emoji: { name: "downvote_blue2", id: "850586787805265990" },
-            customID: answerListener.generateCustomID({ index: "0", theoryID: ctx.interactionID })
+            customID: answerListener.generateCustomID({ index: "0", pollID: ctx.interactionID })
         })
     ]);
 
@@ -66,43 +69,3 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
         components: [(<unknown>responseActionRow) as ComponentActionRow]
     });
 };
-
-answerListener.handler = async (interaction, connection, args) => {
-    const { index, theoryID } = args;
-    const m = interaction.message as Discord.Message;
-
-    const poll = await connection.getRepository(Poll).findOne({ id: theoryID });
-    if (!poll) return;
-
-    const vote = poll.votes.find((v) => v.userid === interaction.user.id);
-    if (vote) vote.index = +index;
-    else poll.votes.push({ index: +index, userid: interaction.user.id });
-
-    await connection.manager.save(poll);
-
-    await updateTheoryMessage(m, poll);
-};
-
-async function updateTheoryMessage(msg: Discord.Message, poll: Poll) {
-    const [actionRow] = msg.components;
-
-    let upvotes = 0;
-    for (const vote of poll.votes) {
-        if (vote.index === 1) upvotes++;
-    }
-    const downvotes = poll.votes.length - upvotes;
-
-    // If the post is heavily downvoted
-    if (downvotes >= Math.max(5, upvotes)) {
-        await msg.delete();
-    }
-
-    const upvoteButton = actionRow.components.find((c) => c.style === "SUCCESS");
-    const downvoteButton = actionRow.components.find((c) => c.style === "DANGER");
-    if (!upvoteButton || !downvoteButton) return;
-
-    upvoteButton.label = `${upvotes}`;
-    downvoteButton.label = `${downvotes}`;
-
-    await msg.edit({ components: [actionRow] });
-}

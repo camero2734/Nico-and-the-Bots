@@ -1,5 +1,7 @@
+import { Mutex } from "async-mutex";
 import { constants } from "configuration/config";
-import { CommandOption, CommandRunner, ExtendedContext } from "configuration/definitions";
+import { CommandComponentListener, CommandOption, CommandRunner, ExtendedContext } from "configuration/definitions";
+import { Poll } from "database/entities/Poll";
 import {
     Collection,
     CollectorFilter,
@@ -13,6 +15,7 @@ import {
     TextChannel
 } from "discord.js";
 import { ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
+import F from "./funcs";
 
 export const MessageTools = {
     async awaitMessage(userID: string, channel: TextChannel, timeMS: number): Promise<Message | null> {
@@ -91,4 +94,68 @@ export function MessageContext(msg: Message) {
             return true;
         }
     };
+}
+
+/**
+ * Returns a CommandComponentListener that handles upvote/downvote presses
+ * Deletes the original message if too many downvotes
+ * @param name The name passed to the CommandComponentListener
+ */
+export function generateUpvoteDownvoteListener(name: string): CommandComponentListener {
+    const answerListener = new CommandComponentListener(name, <const>["isUpvote", "pollID"]);
+    const mutex = new Mutex();
+
+    answerListener.handler = async (interaction, connection, args) => {
+        mutex.runExclusive(async () => {
+            const { isUpvote, pollID } = args;
+            const m = interaction.message as Message;
+
+            const poll = await connection.getRepository(Poll).findOne({ id: pollID });
+            if (!poll) return;
+
+            const vote = poll.votes.find((v) => v.userid === interaction.user.id);
+            if (vote) vote.index = +isUpvote;
+            else poll.votes.push({ index: +isUpvote, userid: interaction.user.id });
+
+            await connection.manager.save(poll);
+
+            await updateMessage(m, poll, +isUpvote);
+        });
+    };
+
+    async function updateMessage(msg: Message, poll: Poll, lastVote: number) {
+        const [actionRow] = msg.components;
+
+        let upvotes = 0;
+        for (const vote of poll.votes) {
+            if (vote.index === 1) upvotes++;
+        }
+        const downvotes = poll.votes.length - upvotes;
+
+        // If the post is heavily downvoted
+        if (downvotes >= Math.max(5, upvotes)) {
+            await msg.delete();
+        }
+
+        const upvoteButton = actionRow.components.find((c) => typeof c.emoji !== "string" && c.emoji?.name?.startsWith("upvote")); // prettier-ignore
+        const downvoteButton = actionRow.components.find((c) => typeof c.emoji !== "string" && c.emoji?.name?.startsWith("downvote")); // prettier-ignore
+        if (!upvoteButton || !downvoteButton) return;
+
+        if (lastVote === 0) downvoteButton.setStyle("DANGER");
+        else upvoteButton.setStyle("SUCCESS");
+
+        upvoteButton.label = `${upvotes}`;
+        downvoteButton.label = `${downvotes}`;
+
+        await msg.edit({ components: [actionRow] });
+
+        await F.wait(1000);
+
+        upvoteButton.setStyle("SECONDARY");
+        downvoteButton.setStyle("SECONDARY");
+
+        await msg.edit({ components: [actionRow] });
+    }
+
+    return answerListener;
 }

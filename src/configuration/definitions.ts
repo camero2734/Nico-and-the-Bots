@@ -173,11 +173,13 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
         const embed = new MessageEmbed()
             .setDescription(e.message)
             .setTitle("An error occurred!")
-            .setFooter("DEMA internet broke");
+            .setFooter("DEMA internet machine broke");
         ectx.send({ embeds: [embed.toJSON()], ephemeral: e.sendEphemeral });
     } else {
         console.log(e);
-        const embed = new MessageEmbed().setTitle("An unknown error occurred!").setFooter("DEMA internet really broke");
+        const embed = new MessageEmbed()
+            .setTitle("An unknown error occurred!")
+            .setFooter("DEMA internet machine really broke");
         ectx.embed(embed);
     }
 };

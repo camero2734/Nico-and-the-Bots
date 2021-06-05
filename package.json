@@ -26,6 +26,7 @@
         "discord.js": "github:monbrey/discord.js#message-components",
         "emoji-regex": "^7.0.3",
         "fastify": "^3.15.1",
+        "file-type": "^16.5.0",
         "fuse.js": "^6.4.6",
         "fuzzy-search": "^3.2.1",
         "leven": "^3.1.0",

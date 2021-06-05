@@ -102,6 +102,7 @@ export const roles = <const>{
     gold: "386969744709910530",
     hideallchannels: "574731157061632000",
     announcements: "357682068785856514",
+    artistmusician: "341029793954922496",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",

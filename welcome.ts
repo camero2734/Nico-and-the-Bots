@@ -48,7 +48,7 @@ export class SacarverBot {
         });
     }
 
-    async getMemberNum(guild: Guild): Promise<number> {
+    async getMemberNumber(guild: Guild): Promise<number> {
         let memberNum = 0;
         await this.mutex.runExclusive(async () => {
             // Get member number
@@ -70,7 +70,7 @@ export class SacarverBot {
 
         await member.roles.add(roles.banditos);
 
-        const memberNum = await this.getMemberNum(member.guild);
+        const memberNum = await this.getMemberNumber(member.guild);
 
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");

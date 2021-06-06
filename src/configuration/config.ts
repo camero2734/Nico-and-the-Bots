@@ -38,6 +38,7 @@ export const channelIDs = <const>{
     hiatusmemes: "470434533884297216",
     halloffame: "470335826321211393",
     creations: "470335772084666389",
+    musiccreations: "693592071012876349",
     bestcreations: "470435393167163412",
     polls: "470435970089615360",
     collections: "470335792729030668",

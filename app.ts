@@ -4,6 +4,7 @@ import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
 import SlurFilter from "helpers/slur-filter";
+import AutoReact from "helpers/auto-react";
 import { updateUserScore } from "helpers";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
@@ -77,6 +78,7 @@ client.on("message", async (msg: Discord.Message) => {
     const wasSlur = await SlurFilter(msg);
     if (wasSlur) return;
 
+    AutoReact(msg);
     updateUserScore(msg, connection); // Add to score
 });
 

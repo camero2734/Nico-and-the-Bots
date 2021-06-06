@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import FileType from "file-type";
 import { CommandOptionType, ComponentActionRow } from "slash-create";
 import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { channelIDs, roles } from "configuration/config";
+import { channelIDs, roles, userIDs } from "configuration/config";
 import { Counter } from "database/entities/Counter";
 import ago from "s-ago";
 
@@ -51,7 +51,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
 
     console.log(submissionsCounter.lastUpdated, /LAST_UPDATED/);
 
-    if (Date.now() - submissionsCounter.lastUpdated < MS_24_HOURS) {
+    if (Date.now() - submissionsCounter.lastUpdated < MS_24_HOURS && ctx.user.id !== userIDs.me) {
         const msRemaining = submissionsCounter.lastUpdated + MS_24_HOURS - Date.now();
         const timeRemaining = ago(new Date(Date.now() + msRemaining), "hour");
         throw new CommandError(`You need to wait ${timeRemaining} before submitting another creation!`);
@@ -112,7 +112,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
 
         const m = await chan.send({ embed, files: [attachment] });
 
-        m.react("💖");
+        m.react("💙");
 
         const newActionRow = (<unknown>(
             new MessageActionRow().addComponents([new MessageButton({ style: "LINK", label: "View post", url: m.url })])

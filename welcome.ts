@@ -82,8 +82,8 @@ export class SacarverBot {
         const noteworthyChannels = [
             {
                 emoji: "📜",
-                title: "Rules",
-                text: `Make sure you've read our server's <#${channelIDs.rules}> before hopping into anything!`
+                title: "Rules & Announcements",
+                text: `Make sure you've read our server's <#${channelIDs.rules}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related announcements.`
             },
             {
                 emoji: "🏠",
@@ -104,7 +104,7 @@ export class SacarverBot {
             {
                 emoji: "🥁",
                 title: "Topfeed",
-                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>`
+                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command.`
             }
         ];
 

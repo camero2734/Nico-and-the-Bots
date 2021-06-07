@@ -1,8 +1,11 @@
-import { Column, Entity, ObjectIdColumn } from "typeorm";
+import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
 @Entity()
 export class FM {
     @ObjectIdColumn()
+    id: ObjectID;
+
+    @Column()
     message_id: string;
 
     @Column()

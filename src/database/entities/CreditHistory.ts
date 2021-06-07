@@ -7,6 +7,9 @@ import { startOfDay } from "date-fns";
 @Entity()
 export class CreditHistory {
     @ObjectIdColumn()
+    id: ObjectID;
+
+    @Column()
     date: Date;
 
     @Column()

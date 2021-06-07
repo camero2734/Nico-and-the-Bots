@@ -3,7 +3,7 @@ import { Entity, Column, ObjectIdColumn, ObjectID } from "typeorm";
 @Entity()
 export class Topfeed {
     @ObjectIdColumn()
-    c: ObjectID;
+    id: ObjectID;
 
     @Column()
     type: string;

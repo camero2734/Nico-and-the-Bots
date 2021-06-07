@@ -1,10 +1,13 @@
 import { Snowflake } from "discord.js";
-import { Column, Entity, ObjectIdColumn } from "typeorm";
+import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 import { DailyBox } from "./DailyBox";
 
 @Entity()
 export class Economy {
     @ObjectIdColumn()
+    id: ObjectID;
+
+    @Column()
     userid: Snowflake;
 
     @Column()

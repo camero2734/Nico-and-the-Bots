@@ -3,7 +3,7 @@ import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 @Entity()
 export class Item {
     @ObjectIdColumn()
-    c: ObjectID;
+    id: ObjectID;
 
     @Column()
     identifier: string;

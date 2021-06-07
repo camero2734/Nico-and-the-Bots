@@ -9,6 +9,9 @@ interface Vote {
 @Entity()
 export class Poll {
     @ObjectIdColumn()
+    id: ObjectID;
+
+    @Column()
     identifier: string;
 
     @Column()

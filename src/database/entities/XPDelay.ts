@@ -1,8 +1,11 @@
-import { Entity, Column, ObjectIdColumn } from "typeorm";
+import { Entity, Column, ObjectIdColumn, ObjectID } from "typeorm";
 
 @Entity()
 export class XPDelay {
     @ObjectIdColumn()
+    id: ObjectID;
+
+    @Column()
     userid: string;
 
     @Column()

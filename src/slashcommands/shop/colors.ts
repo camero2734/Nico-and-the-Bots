@@ -57,9 +57,10 @@ export const Executor: CommandRunner = async (ctx) => {
     const DExclusive = new ColorCategory(Object.values(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
 
     const userEconomy =
-        (await ctx.connection.getRepository(Economy).findOne({ id: ctx.user.id })) || new Economy({ id: ctx.user.id });
+        (await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id })) ||
+        new Economy({ userid: ctx.member.id });
 
-    const userRoles = (await ctx.connection.getRepository(Item).find({ id: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
+    const userRoles = (await ctx.connection.getRepository(Item).find({ identifier: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
 
     const categories = {
         "The Scaled Back Collection": {
@@ -232,7 +233,7 @@ export const Executor: CommandRunner = async (ctx) => {
 
                 // Add role to user's color roles list
                 if (userRoles.some((r) => r === role.id)) throw new CommandError("You already have this role!");
-                const colorRoleItem = new Item({ id: ctx.user.id, type: "ColorRole", title: role.id });
+                const colorRoleItem = new Item({ identifier: ctx.user.id, type: "ColorRole", title: role.id });
                 await ctx.connection.manager.save(colorRoleItem);
 
                 // Update user's economy
@@ -275,8 +276,8 @@ async function sendContrabandMessage(ctx: ExtendedContext, rolePurchased: string
 
     // Use a mutex to ensure each contraband message is assigned a unique number
     mutex.runExclusive(async () => {
-        let counter = await counters.findOne({ id: "ContrabandCounter", title: "ContrabandCounter" });
-        if (!counter) counter = new Counter({ id: "ContrabandCounter", title: "ContrabandCounter" });
+        let counter = await counters.findOne({ identifier: "ContrabandCounter", title: "ContrabandCounter" });
+        if (!counter) counter = new Counter({ identifier: "ContrabandCounter", title: "ContrabandCounter" });
 
         const infractionNo = ++counter.count;
         const bishop = F.randomValueInArray(["Nico", "Reisdro", "Sacarver", "Nills", "Keons", "Lisden", "Andre", "Vetomo", "Listo"]); // prettier-ignore

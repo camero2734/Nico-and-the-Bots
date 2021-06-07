@@ -53,8 +53,10 @@ export class SacarverBot {
         await this.mutex.runExclusive(async () => {
             // Get member number
             const memberCount =
-                (await this.connection.getRepository(Counter).findOne({ id: "MemberCount", title: "MemberCount" })) ||
-                new Counter({ id: "MemberCount", title: "MemberCount", count: guild.memberCount - 1 });
+                (await this.connection
+                    .getRepository(Counter)
+                    .findOne({ identifier: "MemberCount", title: "MemberCount" })) ||
+                new Counter({ identifier: "MemberCount", title: "MemberCount", count: guild.memberCount - 1 });
 
             memberCount.count++;
             await this.connection.manager.save(memberCount);

@@ -16,8 +16,8 @@ const albumRoles = roles.albums;
 export const Executor: CommandRunner = async (ctx) => {
     const { client, connection } = ctx;
 
-    let userEconomy = await connection.getRepository(Economy).findOne({ id: ctx.user.id });
-    if (!userEconomy) userEconomy = new Economy({ id: ctx.user.id });
+    let userEconomy = await connection.getRepository(Economy).findOne({ userid: ctx.member.id });
+    if (!userEconomy) userEconomy = new Economy({ userid: ctx.member.id });
 
     //CALCULATE TIME REMAINING
     const curdate = Date.now();
@@ -33,11 +33,13 @@ export const Executor: CommandRunner = async (ctx) => {
 
     //DAILY COUNTER
     userEconomy.dailyBox.dailyCount++;
-    let dailyCounter = await connection.getRepository(Counter).findOne({ id: ctx.user.id, title: "ConsecutiveDaily" });
+    let dailyCounter = await connection
+        .getRepository(Counter)
+        .findOne({ identifier: ctx.member.id, title: "ConsecutiveDaily" });
 
     if (!dailyCounter)
         dailyCounter = new Counter({
-            id: ctx.user.id,
+            identifier: ctx.member.id,
             title: "ConsecutiveDaily",
             count: 0,
             lastUpdated: curdate
@@ -63,7 +65,7 @@ export const Executor: CommandRunner = async (ctx) => {
     //DOUBLEDAILY / GIVE CREDITS
     const hasDouble = await connection
         .getRepository(Item)
-        .findOne({ id: ctx.user.id, type: "Perk", title: "doubledaily" });
+        .findOne({ identifier: ctx.user.id, type: "Perk", title: "doubledaily" });
     let creditsToGive = 200;
     let badgeLogo = null;
 
@@ -137,7 +139,7 @@ export const Executor: CommandRunner = async (ctx) => {
     //GIVE BLURRYTOKEN
     const hasTokenInc = await connection
         .getRepository(Item)
-        .findOne({ id: ctx.user.id, type: "Perk", title: "blurryboxinc" });
+        .findOne({ identifier: ctx.user.id, type: "Perk", title: "blurryboxinc" });
     const bTokensToGive = hasTokenInc ? 2 : 1;
 
     const before = userEconomy.dailyBox.tokens;

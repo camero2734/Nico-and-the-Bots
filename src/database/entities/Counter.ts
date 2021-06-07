@@ -6,7 +6,7 @@ export class Counter {
     c: ObjectID;
 
     @Column()
-    id: string;
+    identifier: string;
 
     @Column()
     title: string;
@@ -17,9 +17,9 @@ export class Counter {
     @Column()
     lastUpdated: number;
 
-    constructor(params: { id: string; title: string; count?: number; lastUpdated?: number }) {
+    constructor(params: { identifier: string; title: string; count?: number; lastUpdated?: number }) {
         if (params) {
-            this.id = params.id;
+            this.identifier = params.identifier;
             this.title = params.title;
             this.count = params.count || 0;
             this.lastUpdated = params.lastUpdated || Date.now();

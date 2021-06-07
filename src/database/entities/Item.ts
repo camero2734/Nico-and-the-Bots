@@ -6,7 +6,7 @@ export class Item {
     c: ObjectID;
 
     @Column()
-    id: string;
+    identifier: string;
 
     @Column()
     title: string;
@@ -20,9 +20,9 @@ export class Item {
     @Column()
     time: number;
 
-    constructor(params: { id: string; title: string; type: string; data?: string; time?: number }) {
+    constructor(params: { identifier: string; title: string; type: string; data?: string; time?: number }) {
         if (params) {
-            this.id = params.id;
+            this.identifier = params.identifier;
             this.title = params.title;
             this.type = params.type;
             this.data = params.data;

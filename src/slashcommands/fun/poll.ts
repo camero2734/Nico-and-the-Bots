@@ -3,7 +3,14 @@ import { Poll } from "database/entities/Poll";
 import { EmbedField, Message, MessageEmbed } from "discord.js";
 import EmojiReg from "emoji-regex";
 import { MessageTools } from "helpers";
-import { ApplicationCommandOption, ButtonStyle, CommandOptionType, ComponentType, PartialEmoji } from "slash-create";
+import {
+    ApplicationCommandOption,
+    ButtonStyle,
+    CommandOptionType,
+    ComponentActionRow,
+    ComponentType,
+    PartialEmoji
+} from "slash-create";
 import progressBar from "string-progressbar";
 
 const REQUIRED_OPTIONS = <const>[1, 2];
@@ -77,7 +84,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
     }
 
     const poll = new Poll({
-        id: ctx.interactionID,
+        identifier: ctx.interactionID,
         userid: ctx.user.id
     });
 
@@ -92,7 +99,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
-    const components = MessageTools.allocateButtonsIntoRows(
+    const components = MessageTools.allocateButtonsIntoRows<ComponentActionRow>(
         parsedOptions.map((opt, idx) => ({
             type: ComponentType.BUTTON,
             style: ButtonStyle.PRIMARY,
@@ -133,7 +140,7 @@ answerListener.handler = async (interaction, connection, args) => {
     const { index, pollID } = args;
 
     const msg = interaction.message as Message;
-    const poll = await connection.getRepository(Poll).findOne({ id: pollID });
+    const poll = await connection.getRepository(Poll).findOne({ identifier: pollID });
 
     if (!poll) return;
 

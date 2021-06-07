@@ -6,7 +6,7 @@ export class FM {
     message_id: string;
 
     @Column()
-    id: string;
+    userid: string;
 
     @Column()
     track: string;
@@ -24,7 +24,7 @@ export class FM {
     time: number;
 
     constructor(params: {
-        id: string;
+        userid: string;
         message_id: string;
         track: string;
         album: string;
@@ -33,7 +33,7 @@ export class FM {
         time?: number;
     }) {
         if (params) {
-            this.id = params.id;
+            this.userid = params.userid;
             this.message_id = params.message_id;
             this.track = params.track;
             this.album = params.album;

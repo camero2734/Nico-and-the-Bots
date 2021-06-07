@@ -23,8 +23,8 @@ export const Executor: CommandRunner<{ user?: Snowflake }> = async (ctx) => {
     if (!member) throw new CommandError("Unable to find member.");
 
     const golds =
-        (await ctx.connection.getRepository(Counter).findOne({ id: userID, title: "GoldCount" })) ||
-        new Counter({ id: userID, title: "GoldCount" });
+        (await ctx.connection.getRepository(Counter).findOne({ identifier: userID, title: "GoldCount" })) ||
+        new Counter({ identifier: userID, title: "GoldCount" });
 
     const embed = new MessageEmbed()
         .setAuthor(member.displayName, member.user.displayAvatarURL())

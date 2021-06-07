@@ -122,22 +122,22 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user, 
 async function giveGold(msg: Message, connection: Connection): Promise<Message | null> {
     // Give user gold
     const golds =
-        (await connection.getRepository(Counter).findOne({ id: msg.author.id, title: "GoldCount" })) ||
-        new Counter({ id: msg.author.id, title: "GoldCount" });
+        (await connection.getRepository(Counter).findOne({ identifier: msg.author.id, title: "GoldCount" })) ||
+        new Counter({ identifier: msg.author.id, title: "GoldCount" });
 
     golds.count++;
     golds.lastUpdated = Date.now();
     await connection.manager.save(golds);
 
     // Take away credits
-    const userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
+    const userEconomy = await connection.getRepository(Economy).findOne({ userid: msg.author.id });
     if (!userEconomy || userEconomy.credits < 5000) throw new CommandError("You don't have enough credits to give gold!"); // prettier-ignore
 
     userEconomy.credits -= 5000;
     await connection.manager.save(userEconomy);
 
     // Create poll object to save votes
-    const poll = new Poll({ id: msg.id, userid: msg.author.id });
+    const poll = new Poll({ identifier: msg.id, userid: msg.author.id });
     await connection.manager.save(poll);
 
     // Create embed

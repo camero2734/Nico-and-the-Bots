@@ -29,14 +29,13 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
     // Fetch user's information
-    let userGold = await connection.getRepository(Counter).findOne({ id: userID, title: "GoldCount" });
-    if (!userGold) userGold = new Counter({ id: userID, title: "GoldCount" });
-    let userEconomy = await connection.getRepository(Economy).findOne({ id: userID });
-    if (!userEconomy) userEconomy = new Economy({ id: userID });
+    let userGold = await connection.getRepository(Counter).findOne({ identifier: userID, title: "GoldCount" });
+    if (!userGold) userGold = new Counter({ identifier: userID, title: "GoldCount" });
+    let userEconomy = await connection.getRepository(Economy).findOne({ userid: userID });
+    if (!userEconomy) userEconomy = new Economy({ userid: userID });
 
     // Calculate a users place
-    const placeNum =
-        (await connection.getMongoRepository(Economy).count({ monthlyScore: { $gt: userEconomy.monthlyScore } })) + 1;
+    const placeNum = (await connection.getMongoRepository(Economy).count({ score: { $gt: userEconomy.score } })) + 1;
 
     // Get images to place on card as badges
     const badges = await badgeLoader(member, userGold, placeNum, connection);
@@ -55,7 +54,7 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
         cL++;
     }
 
-    const rem = Math.floor(totalscore - userEconomy.alltimeScore) + 1; //REMAINING TO NEXT LEVEL
+    const rem = Math.floor(totalscore - userEconomy.score) + 1; //REMAINING TO NEXT LEVEL
     const diff = Math.floor(totalscore - previousScore); //TOTAL TO NEXT LEVEL
     const percent = Math.max(0, 1 - rem / diff).toFixed(3); //RATIO OF REMAINING TO TOTAL
 
@@ -136,8 +135,8 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
 
     //POINTS
     cctx.translate(0, 130);
-    cctx.strokeText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 0, 0);
-    cctx.fillText(userEconomy.monthlyScore + " / " + userEconomy.alltimeScore, 0, 0);
+    cctx.strokeText(`${userEconomy.score}`, 0, 0);
+    cctx.fillText(`${userEconomy.score}`, 0, 0);
 
     //CREDITS
     cctx.translate(0, 130);

@@ -1,17 +1,18 @@
+import { CreditHistory } from "database/entities/CreditHistory";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
-import { LevelToken } from "database/entities/LevelToken";
 import { XPDelay } from "database/entities/XPDelay";
 import { Message, MessageEmbed } from "discord.js";
 import { Connection } from "typeorm";
+import { startOfDay } from "date-fns";
 
 export const updateUserScore = async (msg: Message, connection: Connection): Promise<void> => {
     const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
 
     // How long since last message?
-    let userXP = await connection.getRepository(XPDelay).findOne({ id: msg.author.id });
+    let userXP = await connection.getRepository(XPDelay).findOne({ userid: msg.author.id });
     if (!userXP) {
-        userXP = new XPDelay({ id: msg.author.id, messageCount: 0, nextTime: 0 });
+        userXP = new XPDelay({ userid: msg.author.id, messageCount: 0, nextTime: 0 });
     }
 
     const now = Date.now();
@@ -26,18 +27,26 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
         const P = Math.pow(timeSince / IDEAL_TIME_MS, 2);
         earnedPoint = Math.random() < P;
     }
-
-    // Update score and level if earned a point
     if (!earnedPoint) return;
 
-    let userEconomy = await connection.getRepository(Economy).findOne({ id: msg.author.id });
-    if (!userEconomy) userEconomy = new Economy({ id: msg.author.id });
-
-    userEconomy.monthlyScore++;
-    userEconomy.alltimeScore++;
+    // Update score and level
+    let userEconomy = await connection.getRepository(Economy).findOne({ userid: msg.author.id });
+    if (!userEconomy) userEconomy = new Economy({ userid: msg.author.id });
+    userEconomy.score++;
 
     // Randomly give credits sometimes
     if (Math.random() > 0.5) userEconomy.credits += 2;
+
+    // Add to credit history
+    const startOfDate = startOfDay(new Date());
+    const todayCreditHistory =
+        (await connection.getRepository(CreditHistory).findOne({ date: startOfDate })) ||
+        new CreditHistory({ date: startOfDate });
+
+    if (!todayCreditHistory.entries[msg.author.id]) todayCreditHistory.entries[msg.author.id] = 0;
+    todayCreditHistory.entries[msg.author.id]++;
+
+    await connection.manager.save(todayCreditHistory);
 
     // Calculate the level
     const getLevel = (score: number): number => {
@@ -52,13 +61,13 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
         return curLevel;
     };
 
-    const userLevel = getLevel(userEconomy.alltimeScore);
+    const userLevel = getLevel(userEconomy.score);
 
     if (userLevel > userEconomy.level) {
         // User has "leveled up"
         const hasPerk = await connection
             .getRepository(Item)
-            .findOne({ id: msg.author.id, title: "lvlcred", type: "Perk" });
+            .findOne({ identifier: msg.author.id, title: "lvlcred", type: "Perk" });
 
         let perkStr = "";
         if (hasPerk) {
@@ -67,40 +76,12 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
             userEconomy.credits += randomReward;
         }
         userEconomy.level = userLevel;
-        const levelTokens = await updateTokens(msg, connection, userLevel);
         const lvlEmbed = new MessageEmbed({ description: `LEVEL UP: You are now level ${userLevel}!` }).setColor(
             "RANDOM"
         );
         if (perkStr) lvlEmbed.addField("Perk Bonus", perkStr);
-        if (levelTokens > 0) lvlEmbed.addField("Level Tokens", `You gained ${levelTokens} level tokens!`);
         await msg.reply({ embed: lvlEmbed });
     }
 
     await connection.manager.save(userEconomy);
 };
-
-// Awards Level Tokens when necessary
-async function updateTokens(msg: Message, connection: Connection, currentLevel: number) {
-    const tokenNum = (x: number) => Math.floor(0.0001 * x * x + 0.045 * x + 1);
-    let gained = 0;
-    let preLT = await connection.getRepository(LevelToken).findOne({ id: msg.author.id });
-    if (!preLT) {
-        const newLT = new LevelToken({ id: msg.author.id, value: 0, lastLevel: 0 });
-        await connection.manager.save(newLT);
-        preLT = newLT;
-    }
-    let lastLevel = preLT.lastLevel;
-    for (let i = preLT.lastLevel + 1; i <= currentLevel; i++) {
-        if (i % 5 === 0) {
-            gained += tokenNum(i);
-            lastLevel = i;
-        }
-    }
-
-    if (gained >= 1) {
-        preLT.value += gained;
-        preLT.lastLevel = lastLevel;
-        await connection.manager.save(preLT);
-    }
-    return gained;
-}

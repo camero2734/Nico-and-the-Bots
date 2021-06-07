@@ -25,7 +25,7 @@ export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
 
     if (!id) throw new CommandError("Invalid URL.");
 
-    const idItem = await ctx.connection.getRepository(Item).findOne({ id, type: "InterviewID" });
+    const idItem = await ctx.connection.getRepository(Item).findOne({ identifier: id, type: "InterviewID" });
     if (idItem) throw new CommandError("This interview has already been submitted");
 
     const embed = new MessageEmbed().setDescription("Fetching video info...").setColor("#111111");
@@ -61,7 +61,7 @@ export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
     await m2.react("✅");
     await m2.react("❌");
 
-    const toSave = new Item({ id, type: "InterviewID", title: "" });
+    const toSave = new Item({ identifier: id, type: "InterviewID", title: "" });
     await ctx.connection.manager.save(toSave);
     await ctx.embed(new MessageEmbed().setColor("#111111").setDescription("Sent video to staff for approval!"));
 };

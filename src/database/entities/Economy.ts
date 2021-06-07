@@ -1,10 +1,11 @@
-import { Entity, Column, ObjectIdColumn } from "typeorm";
+import { Snowflake } from "discord.js";
+import { Column, Entity, ObjectIdColumn } from "typeorm";
 import { DailyBox } from "./DailyBox";
 
 @Entity()
 export class Economy {
     @ObjectIdColumn()
-    id: string;
+    userid: Snowflake;
 
     @Column()
     dailyBox: DailyBox;
@@ -13,25 +14,15 @@ export class Economy {
     credits: number;
 
     @Column()
-    monthlyScore: number;
-
-    @Column()
-    alltimeScore: number;
+    score: number;
 
     @Column()
     level: number;
 
-    constructor(params: {
-        id: string;
-        credits?: number;
-        monthlyScore?: number;
-        alltimeScore?: number;
-        level?: number;
-    }) {
+    constructor(params: { userid: Snowflake; credits?: number; score?: number; level?: number }) {
         if (params) {
-            this.id = params.id;
-            this.monthlyScore = params.monthlyScore || 0;
-            this.alltimeScore = params.alltimeScore || 0;
+            this.userid = params.userid;
+            this.score = params.score || 0;
             this.credits = params.credits || 0;
             this.level = params.level || 0;
             this.dailyBox = new DailyBox({});

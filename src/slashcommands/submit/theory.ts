@@ -40,7 +40,7 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
 
     const theoryChan = ctx.member.guild.channels.cache.get(channelIDs.theorylist) as TextChannel;
 
-    const poll = new Poll({ id: ctx.interactionID, userid: ctx.user.id });
+    const poll = new Poll({ identifier: ctx.interactionID, userid: ctx.user.id });
     await ctx.connection.manager.save(poll);
 
     const actionRow = new MessageActionRow().addComponents([

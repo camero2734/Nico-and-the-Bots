@@ -20,7 +20,7 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
     const role = ctx.opts.role;
 
-    const userRoles = (await ctx.connection.getRepository(Item).find({ id: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
+    const userRoles = (await ctx.connection.getRepository(Item).find({ identifier: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
 
     if (!userRoles) {
         throw new CommandError(`You don't have any color roles! Visit <#${channelIDs.shop}> to learn how to get them.`);

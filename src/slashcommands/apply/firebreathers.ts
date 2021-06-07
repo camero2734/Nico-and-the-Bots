@@ -16,7 +16,8 @@ export const Executor: CommandRunner = async (ctx) => {
     await ctx.defer(true);
 
     const economy =
-        (await ctx.connection.getRepository(Economy).findOne({ id: ctx.user.id })) || new Economy({ id: ctx.user.id });
+        (await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id })) ||
+        new Economy({ userid: ctx.member.id });
     const warnings = await ctx.connection.getMongoRepository(Item).count({ id: ctx.user.id, type: "Warning" });
 
     const activityDescription = [

@@ -101,7 +101,7 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
 
     if (options.user) {
         // Mentioned
-        const mentionedItem = await connection.getRepository(Item).findOne({ id: options.user, type: "FM" });
+        const mentionedItem = await connection.getRepository(Item).findOne({ identifier: options.user, type: "FM" });
         if (!mentionedItem) throw new CommandError("The mentioned user does not have their FM set up!");
         else username = mentionedItem.title;
     } else if (options.username) {
@@ -109,7 +109,7 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
         username = options.username;
     } else {
         // Own (default)
-        const mentionedItem = await connection.getRepository(Item).findOne({ id: ctx.user.id, type: "FM" });
+        const mentionedItem = await connection.getRepository(Item).findOne({ identifier: ctx.user.id, type: "FM" });
         if (!mentionedItem)
             throw new CommandError("You do not have your FM set up! Use the `/fm set` command to do so.");
         else username = mentionedItem.title;
@@ -198,7 +198,7 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
     // Don't react if recently scrobbled same song
     const TIME_LIMIT = 10; // Minutes
     const recentlyScrobbled = await connection.getRepository(FM).find({
-        id: ctx.user.id,
+        userid: ctx.user.id,
         track: track.name,
         album: track.album,
         artist: track.artist,
@@ -209,7 +209,7 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
     // React and save to database
     await fm_m.react(FM_REACT);
     const fm_item = new FM({
-        id: ctx.user.id,
+        userid: ctx.user.id,
         message_id: fm_m.id,
         track: track.name,
         album: track.album,

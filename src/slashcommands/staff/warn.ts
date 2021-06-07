@@ -96,7 +96,7 @@ export const Executor: CommandRunner<{
             content: explanation
         };
         const warn = new Item({
-            id: member.id,
+            identifier: member.id,
             title: JSON.stringify(warnData),
             type: "Warning",
             time: Date.now()

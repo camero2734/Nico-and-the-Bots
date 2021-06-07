@@ -42,10 +42,10 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
     // Only allow submissions once/day
     let submissionsCounter = await ctx.connection
         .getRepository(Counter)
-        .findOne({ id: ctx.user.id, title: "MulberryCreations" });
+        .findOne({ identifier: ctx.user.id, title: "MulberryCreations" });
 
     if (!submissionsCounter) {
-        submissionsCounter = new Counter({ id: ctx.user.id, title: "MulberryCreations", lastUpdated: 0 });
+        submissionsCounter = new Counter({ identifier: ctx.user.id, title: "MulberryCreations", lastUpdated: 0 });
         submissionsCounter.lastUpdated = 0;
     }
 

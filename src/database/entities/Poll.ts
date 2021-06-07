@@ -9,7 +9,7 @@ interface Vote {
 @Entity()
 export class Poll {
     @ObjectIdColumn()
-    id: string;
+    identifier: string;
 
     @Column()
     userid: string;
@@ -17,9 +17,9 @@ export class Poll {
     @Column()
     votes: Vote[];
 
-    constructor(params: { id: string; userid: string; votes?: Vote[] }) {
+    constructor(params: { identifier: string; userid: string; votes?: Vote[] }) {
         if (params) {
-            this.id = params.id;
+            this.identifier = params.identifier;
             this.userid = params.userid;
             this.votes = params.votes || [];
         }

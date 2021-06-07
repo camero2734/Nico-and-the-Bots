@@ -110,7 +110,7 @@ export function generateUpvoteDownvoteListener(name: string): CommandComponentLi
             const { isUpvote, pollID } = args;
             const m = interaction.message as Message;
 
-            const poll = await connection.getRepository(Poll).findOne({ id: pollID });
+            const poll = await connection.getRepository(Poll).findOne({ identifier: pollID });
             if (!poll) return;
 
             const vote = poll.votes.find((v) => v.userid === interaction.user.id);

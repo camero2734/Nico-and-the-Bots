@@ -36,8 +36,8 @@ export const Executor: CommandRunner<{ username: string }> = async (ctx) => {
         await ctx.embed(new MessageEmbed({ description: instructions, color: "RANDOM" }));
         return;
     } else {
-        let userItem = await connection.getRepository(Item).findOne({ id: ctx.user.id, type: "FM" });
-        if (!userItem) userItem = new Item({ id: ctx.user.id, title: "", type: "FM", time: Date.now() });
+        let userItem = await connection.getRepository(Item).findOne({ identifier: ctx.user.id, type: "FM" });
+        if (!userItem) userItem = new Item({ identifier: ctx.user.id, title: "", type: "FM", time: Date.now() });
         userItem.time = Date.now();
         userItem.title = options.username;
 

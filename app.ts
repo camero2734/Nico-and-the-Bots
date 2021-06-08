@@ -10,6 +10,7 @@ import { GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
 import { KeonsBot } from "./shop";
 import { SacarverBot } from "./welcome";
+import { channelIDs, guildID } from "configuration/config";
 
 // let ready = false;
 let connection: Connection;
@@ -67,6 +68,9 @@ client.on("ready", async () => {
     setup();
 
     console.log(`Bot initialized with ${loadedCommands.size} commands`);
+    const guild = await client.guilds.fetch(guildID);
+    const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
+    await botChan.send(new Discord.MessageEmbed({ description: "Bot is running" }));
 });
 
 interactions.on("error", console.log);

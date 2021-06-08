@@ -48,20 +48,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
 
     await connection.manager.save(todayCreditHistory);
 
-    // Calculate the level
-    const getLevel = (score: number): number => {
-        let rq = 100;
-        let totalScore = 0;
-        let curLevel = 0;
-        while (totalScore < score) {
-            rq += 21 - Math.pow(1.001450824, rq);
-            curLevel++;
-            totalScore += rq;
-        }
-        return curLevel;
-    };
-
-    const userLevel = getLevel(userEconomy.score);
+    const userLevel = calculateLevel(userEconomy.score);
 
     if (userLevel > userEconomy.level) {
         // User has "leveled up"
@@ -85,3 +72,15 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
 
     await connection.manager.save(userEconomy);
 };
+
+export function calculateLevel(score: number): number {
+    let rq = 100;
+    let totalScore = 0;
+    let curLevel = 0;
+    while (totalScore < score) {
+        rq += 21 - Math.pow(1.001450824, rq);
+        curLevel++;
+        totalScore += rq;
+    }
+    return curLevel;
+}

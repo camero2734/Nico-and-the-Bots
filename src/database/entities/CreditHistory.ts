@@ -1,9 +1,7 @@
-type UserCreditHistory = { [key: string]: number };
-
-import { Snowflake } from "discord.js";
-import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 import { startOfDay } from "date-fns";
+import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
+type UserCreditHistory = { [key: string]: number };
 @Entity()
 export class CreditHistory {
     @ObjectIdColumn()

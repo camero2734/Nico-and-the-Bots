@@ -12,7 +12,7 @@ export const badgeLoader = async (
     member: GuildMember,
     userGold: Counter,
     placeNum: number,
-    connection: Connection
+    connection?: Connection
 ): Promise<Image[]> => {
     const badges: Image[] = [];
     const ignore: string[] = [];
@@ -103,49 +103,49 @@ export const badgeLoader = async (
 
     await createBadge("ScavJumpsuit.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "ScavJumpsuit" });
         return hasRole;
     });
 
     await createBadge("ScavToplogo.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "ScavToplogo" });
         return hasRole;
     });
 
     await createBadge("ScavVulture.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "ScavVulture" });
         return hasRole;
     });
 
     await createBadge("ScavHunt2019.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "ScavHunt2019" });
         return hasRole;
     });
 
     await createBadge("AndreBlackWhite.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "ANDRE" });
         return hasRole;
     });
 
     await createBadge("escapedDEMA.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "ESCAPED_DEMA" });
         return hasRole;
     });
 
     await createBadge("lgbt.png", async function () {
         const hasRole = await connection
-            .getRepository(Item)
+            ?.getRepository(Item)
             .findOne({ identifier: member.id, type: "Badge", title: "PHTG" });
         return hasRole;
     });

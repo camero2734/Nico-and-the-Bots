@@ -46,8 +46,6 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
     if (!todayCreditHistory.entries[msg.author.id]) todayCreditHistory.entries[msg.author.id] = 0;
     todayCreditHistory.entries[msg.author.id]++;
 
-    await connection.manager.save(todayCreditHistory);
-
     const userLevel = calculateLevel(userEconomy.score);
 
     if (userLevel > userEconomy.level) {
@@ -71,6 +69,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
     }
 
     await connection.manager.save(userEconomy);
+    await connection.manager.save(todayCreditHistory);
 };
 
 export function calculateLevel(score: number): number {

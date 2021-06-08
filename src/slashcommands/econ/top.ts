@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
+import { CommandError, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { CreditHistory } from "database/entities/CreditHistory";
 import { Economy } from "database/entities/Economy";
@@ -47,11 +47,16 @@ export const Executor: CommandRunner<{ page?: number; timeperiod?: number }> = a
     const startTime = Date.now();
     const memberScores = await getMemberScores(ctx, pageNum, timeperiod);
 
-    console.log(memberScores.map((ms) => ({ mem: ms.member.displayName, score: ms.score })));
+    const timeStamp = Date.now() - startTime;
 
-    const buffer = await generateImage(memberScores, pageNum, ctx.connection);
+    if (memberScores.length === 0) throw new CommandError("This page doesn't exist!");
 
-    await ctx.send(`Took ${Date.now() - startTime} ms to fetch ${memberScores.length} items`, {
+    const choice = Options.options?.find((o) => o.name === "timeperiod")?.choices?.find((c) => c.value === timeperiod);
+    const timePeriodStr = (timeperiod && choice?.name) || "All time";
+
+    const buffer = await generateImage(memberScores, pageNum, ctx.connection, timePeriodStr);
+
+    await ctx.send(`Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`, {
         file: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, file: buffer }]
     });
 };
@@ -122,7 +127,8 @@ async function getMemberScores(
 async function generateImage(
     userScores: { member: GuildMember; score: number }[],
     pageNum: number,
-    connection: Connection
+    connection: Connection,
+    timePeriodStr: string
 ): Promise<Buffer> {
     const ACTUAl_WIDTH = 1000;
     const ACTUAL_HEIGHT = 1400;
@@ -148,23 +154,20 @@ async function generateImage(
     };
 
     // Header
+    cctx.save();
     cctx.translate(0, 35);
     cctx.fillStyle = "white";
     cctx.textAlign = "center";
     cctx.font = "28px futura";
     cctx.strokeStyle = "black";
     cctx.shadowColor = "black";
-    cctx.lineWidth = 1;
+    cctx.lineWidth = 0;
     cctx.shadowBlur = 4;
     cctx.shadowOffsetX = 0;
-    cctx.strokeText("Top Users | All Time", UNIT_WIDTH / 2, 0);
+    cctx.strokeText(`Top Users | ${timePeriodStr}`, UNIT_WIDTH / 2, 0);
     cctx.shadowOffsetX = 0;
     cctx.shadowBlur = 0;
-    cctx.fillText("Top Users | All Time", UNIT_WIDTH / 2, 0);
-
-    // cctx.font = "20px futura";
-    // cctx.fillStyle = "white";
-    // drawText(`ALL TIME`, UNIT_WIDTH / 2, 30);
+    cctx.fillText(`Top Users | ${timePeriodStr}`, UNIT_WIDTH / 2, 0);
 
     cctx.translate(0, 5);
 
@@ -185,17 +188,15 @@ async function generateImage(
 
         // Avatar
         cctx.translate(10, 0);
-        const avatarRes = await fetch(member.user.displayAvatarURL({ format: "png", size: 64 }));
+        const avatarRes = await fetch(member.user.displayAvatarURL({ format: "png", size: 128 }));
         const avatar = await loadImage(await avatarRes.buffer());
 
         cctx.shadowBlur = 1;
         cctx.drawImage(avatar, 0, 0, IMAGE_HEIGHT, IMAGE_HEIGHT);
 
         // Top badge
-        const userGold =
-            (await connection.getRepository(Counter).findOne({ identifier: member.user.id, title: "GoldCount" })) ||
-            new Counter({ identifier: member.user.id, title: "GoldCount" });
-        const [firstBadge] = await badgeLoader(member, userGold, placeNum, connection);
+        const userGold = new Counter({ identifier: member.user.id, title: "GoldCount" }); // Will exclude gold badges to save time
+        const [firstBadge] = await badgeLoader(member, userGold, placeNum);
 
         cctx.drawImage(firstBadge, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55);
 
@@ -216,7 +217,7 @@ async function generateImage(
         // drawText(displayedName, 0, 26, 200);
 
         // Level
-        cctx.font = "16px futura";
+        cctx.font = "20px futura";
         cctx.fillStyle = "white";
         drawText(`Level: ${calculateLevel(score)}`, 0, 55);
 
@@ -226,21 +227,17 @@ async function generateImage(
         cctx.textAlign = "end";
         drawText(`${score}`, 0, 0);
 
-        // // Estimated Time
-        // const hours = (score / 300).toFixed(2);
-        // cctx.fillStyle = "#00ff00";
-        // drawText(`(${hours} hrs)`, 380, startY + 43 + 45.9 * diff);
-
         cctx.restore();
         cctx.translate(0, 65);
     }
 
     // Page number
-    cctx.translate(0, 0);
+    cctx.restore();
+    cctx.translate(0, UNIT_HEIGHT - 10);
     cctx.textAlign = "end";
     cctx.fillStyle = "white";
     cctx.font = "20px futura";
-    drawText(`Page ${pageNum + 1}`, UNIT_WIDTH - 10, 0);
+    drawText(`${pageNum + 1}`, UNIT_WIDTH - 10, 0);
 
     return canvas.toBuffer();
 }

@@ -1,3 +1,4 @@
+import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
@@ -25,6 +26,10 @@ export const Executor: CommandRunner<{
     const { user, purge } = ctx.opts;
     const member = await ctx.member.guild.members.fetch(user);
     if (!member) throw new CommandError("Could not find this member. They may have already been banned or left.");
+
+    if (member.roles.cache.has(roles.staff) || member.user.bot) {
+        throw new CommandError("You cannot ban a staff member or bot.");
+    }
 
     await member.ban({ days: purge ? 7 : 0 });
 

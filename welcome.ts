@@ -79,6 +79,12 @@ export class SacarverBot {
         const ctx = canvas.getContext("2d");
         ctx.fillStyle = "#FCE300";
         ctx.fillRect(0, 0, 1000, 500);
+
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "60px Comic Sans MS";
+        ctx.fillText("hey y'all", 500, 250);
+
         const attachment = new MessageAttachment(canvas.toBuffer(), "welcome.png");
 
         const noteworthyChannels = [

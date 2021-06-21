@@ -38,6 +38,14 @@ const F = {
     },
     radix64toSnowflake: (encoded: string): Snowflake => {
         return bigintConversion.bufToBigint(radix64.decodeToBuffer(encoded)).toString() as Snowflake;
+    },
+    shuffle: <T>(arr: T[]): T[] => {
+        const array = [...arr];
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 };
 

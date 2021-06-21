@@ -145,7 +145,7 @@ async function generateImage(
     cctx.drawImage(img, 0, 0, UNIT_WIDTH, UNIT_HEIGHT);
 
     const drawText = (text: string, x: number, y: number, maxWidth?: number) => {
-        cctx.shadowBlur = 3;
+        cctx.shadowBlur = 6;
         cctx.shadowOffsetX = 2;
         cctx.strokeText(text, x, y, maxWidth);
         cctx.shadowOffsetX = 0;
@@ -161,7 +161,7 @@ async function generateImage(
     cctx.font = "28px futura";
     cctx.strokeStyle = "black";
     cctx.shadowColor = "black";
-    cctx.lineWidth = 0;
+    cctx.lineWidth = 1;
     cctx.shadowBlur = 4;
     cctx.shadowOffsetX = 0;
     cctx.strokeText(`Top Users | ${timePeriodStr}`, UNIT_WIDTH / 2, 0);

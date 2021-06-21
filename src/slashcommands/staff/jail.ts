@@ -1,5 +1,5 @@
 import { categoryIDs, channelIDs, guildID, roles } from "configuration/config";
-import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { GuildMember, GuildMemberRoleManager, Message, MessageAttachment, TextChannel } from "discord.js";
 import { MessageButton } from "discord.js";
 import { MessageActionRow } from "discord.js";
@@ -47,6 +47,10 @@ export const Executor: CommandRunner<RequiredTypes & OptionalTypes> = async (ctx
     const ids = Object.values(usersDict) as Snowflake[];
 
     const members = await Promise.all(ids.map((id) => ctx.member.guild.members.fetch(id)));
+
+    if (members.some((m) => m.roles.highest.comparePositionTo(ctx.member.roles.highest) >= 0 || m.user.bot)) {
+        throw new CommandError("You cannot jail bots or someone of equal or higher role.");
+    }
 
     const names = members.map((member) => member.displayName.replace(/[^A-z0-9]/g, "").substring(0, 10)).join("-");
     const mentions = members.map((member) => member.toString());

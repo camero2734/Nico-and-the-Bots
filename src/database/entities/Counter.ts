@@ -22,7 +22,7 @@ export class Counter {
             this.identifier = params.identifier;
             this.title = params.title;
             this.count = params.count || 0;
-            this.lastUpdated = params.lastUpdated || Date.now();
+            this.lastUpdated = params.lastUpdated ?? Date.now();
         }
     }
 }

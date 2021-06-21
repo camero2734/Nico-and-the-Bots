@@ -46,6 +46,24 @@ const F = {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    },
+    // prettier-ignore
+    canvasFitText(ctx: CanvasRenderingContext2D, text: string, font: string, opts?: { maxWidth?: number, maxFontSize?: number }): number {
+        ctx.save();
+
+        const maxWidth = opts?.maxWidth || ctx.canvas.width;
+        let fontSize = opts?.maxFontSize || 100;
+
+        do {
+            ctx.font = `${fontSize}px ${font}`;
+            const metrics = ctx.measureText(text);
+
+            if (metrics.width < maxWidth) break;
+        }
+        while (fontSize-- > 10);
+        
+        ctx.restore();
+        return fontSize;
     }
 };
 

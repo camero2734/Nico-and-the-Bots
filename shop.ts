@@ -14,7 +14,7 @@ export class KeonsBot {
         });
     }
 
-    async setupShop() {
+    async setupShop(): Promise<void> {
         await this.ready; // Ensure the bot is ready before trying to set up the shop
 
         const guild = await this.client.guilds.fetch(guildID);

@@ -1,6 +1,7 @@
 import { database as db } from "configuration/secrets.json";
+import { ConnectionOptions } from "typeorm";
 
-export default {
+const config: ConnectionOptions = {
     type: "mongodb",
     url: `mongodb+srv://${db.username}:${db.password}@${db.cluster}/myFirstDatabase?retryWrites=true&w=majority`,
     ssl: true,
@@ -8,11 +9,11 @@ export default {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 
-    synchronize: true,
+    synchronize: false,
     logging: false,
     entities: ["./src/database/entities/*.ts"],
     migrations: ["./src/database/migrations/*.ts"],
-    cli: {
-        migrationsDir: "./src/database/migrations"
-    }
+    cli: { migrationsDir: "src/database/migrations" }
 };
+
+export = config;

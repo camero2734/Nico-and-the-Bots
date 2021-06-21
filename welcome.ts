@@ -1,12 +1,15 @@
 import { Mutex } from "async-mutex";
-import { createCanvas } from "canvas";
+import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles } from "configuration/config";
 import * as secrets from "configuration/secrets.json";
 import { Counter } from "database/entities/Counter";
+import { Economy } from "database/entities/Economy";
+import { Item } from "database/entities/Item";
 import {
     Client,
     Guild,
     GuildMember,
+    GuildMemberManager,
     Intents,
     MessageActionRow,
     MessageAttachment,
@@ -16,6 +19,7 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
+import F from "helpers/funcs";
 import { Connection } from "typeorm";
 
 const ANNOUNCEMENTS_ID = "?announcements";
@@ -48,23 +52,37 @@ export class SacarverBot {
         });
     }
 
-    async getMemberNumber(guild: Guild): Promise<number> {
-        let memberNum = 0;
-        await this.mutex.runExclusive(async () => {
-            // Get member number
-            const memberCount =
-                (await this.connection
-                    .getRepository(Counter)
-                    .findOne({ identifier: "MemberCount", title: "MemberCount" })) ||
-                new Counter({ identifier: "MemberCount", title: "MemberCount", count: guild.memberCount - 1 });
+    async getMemberNumber(member: GuildMember): Promise<string> {
+        // const memberJoin = await this.connection.getRepository(Economy).findOne({identifier: member.user.id, type: "MemberJoin", title: "MemberJoin"});
 
-            memberCount.count++;
-            await this.connection.manager.save(memberCount);
+        // // User has already joined in the past
+        // if (memberJoin?.data) return memberJoin.data;
 
-            memberNum = memberCount.count;
-        });
+        // // Otherwise give the member a new value
+        // let memberNum = 0;
+        // await this.mutex.runExclusive(async () => {
+        //     // Get member number
+        //     const memberCount = await (async () => {
+        //         const count = await this.connection
+        //             .getRepository(Counter)
+        //             .findOne({ identifier: "MemberCount", title: "MemberCount" });
 
-        return memberNum;
+        //         if (count && count.count >= guild.memberCount) return count;
+        //         else
+        //             return new Counter({
+        //                 identifier: "MemberCount",
+        //                 title: "MemberCount",
+        //                 count: guild.memberCount - 1
+        //             });
+        //     })();
+
+        //     memberCount.count++;
+        //     await this.connection.manager.save(memberCount);
+
+        //     memberNum = memberCount.count;
+        // });
+
+        return "5";
     }
 
     async welcomeMember(member: GuildMember): Promise<void> {
@@ -72,20 +90,10 @@ export class SacarverBot {
 
         await member.roles.add(roles.banditos);
 
-        const memberNum = await this.getMemberNumber(member.guild);
+        const memberNum = await this.getMemberNumber(member);
         console.log(`Member #${memberNum} joined`);
 
-        const canvas = createCanvas(1000, 500);
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#FCE300";
-        ctx.fillRect(0, 0, 1000, 500);
-
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.font = "60px Comic Sans MS";
-        ctx.fillText("hey y'all", 500, 250);
-
-        const attachment = new MessageAttachment(canvas.toBuffer(), "welcome.png");
+        const attachment = await this.generateWelcomeImage(member, memberNum);
 
         const noteworthyChannels = [
             {
@@ -154,5 +162,45 @@ export class SacarverBot {
             allowedMentions: { repliedUser: false },
             ephemeral: true
         });
+    }
+
+    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<MessageAttachment> {
+        const canvas = createCanvas(1000, 500);
+        const ctx = canvas.getContext("2d");
+
+        const bg = await loadImage("./src/assets/images/welcome-card.png");
+
+        ctx.drawImage(bg, 0, 0, 1000, 500);
+
+        // Member name
+        ctx.translate(0, 285);
+
+        ctx.fillStyle = "white";
+        ctx.shadowColor = "#EF89AE";
+        ctx.shadowBlur = 1;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
+
+        const name = member.displayName.normalize("NFKC");
+        const fontSize = F.canvasFitText(ctx, name, "Futura", { maxWidth: 600, maxFontSize: 64 });
+        ctx.font = `${fontSize}px Futura`;
+        ctx.fillText(name, 300, 0);
+
+        // Current member number
+        ctx.translate(0, 130);
+        ctx.shadowColor = "#55A4B5";
+        ctx.font = "42px Futura";
+        ctx.textAlign = "end";
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 3;
+        ctx.fillText(`Member #${member.guild.memberCount}`, 925, 0);
+
+        ctx.translate(0, 40);
+        ctx.font = "24px Futura";
+        ctx.textAlign = "center";
+        ctx.fillText(`#${memberNum}`, 155, 0);
+
+        const attachment = new MessageAttachment(canvas.toBuffer(), "welcome.png");
+        return attachment;
     }
 }

@@ -22,6 +22,9 @@ export class Economy {
     @Column()
     level: number;
 
+    @Column()
+    joinedAt: Date;
+
     constructor(params: { userid: Snowflake; credits?: number; score?: number; level?: number }) {
         if (params) {
             this.userid = params.userid;
@@ -29,6 +32,7 @@ export class Economy {
             this.credits = params.credits || 0;
             this.level = params.level || 0;
             this.dailyBox = new DailyBox({});
+            this.joinedAt = new Date();
         }
     }
 }

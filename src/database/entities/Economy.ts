@@ -1,5 +1,5 @@
 import { Snowflake } from "discord.js";
-import { BaseEntity, Column, Entity, getMongoManager, ObjectID, ObjectIdColumn } from "typeorm";
+import { Column, Entity, getMongoManager, ObjectID, ObjectIdColumn } from "typeorm";
 import { DailyBox } from "./DailyBox";
 
 @Entity()

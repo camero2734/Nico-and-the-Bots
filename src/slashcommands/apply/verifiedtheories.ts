@@ -4,6 +4,7 @@ import { Counter } from "database/entities/Counter";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import F from "helpers/funcs";
 import { ComponentActionRow } from "slash-create";
+import QuizQuestions from "../../helpers/verified-quiz/quiz"; // .gitignored
 
 export const Options: CommandOptions = {
     description: "Opens an application for the verified-theories channel",
@@ -57,10 +58,8 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     waitTime.count++;
     await ctx.connection.manager.save(waitTime);
 
-    // Quiz begins
-    const questions: Question[] = [new Question("What?", <const>["Yes", "No"], "No")];
-
-    const randomQuestions = F.shuffle(questions).slice(0, NUM_QUESTIONS);
+    // Get questions from quiz
+    const randomQuestions = F.shuffle(QuizQuestions).slice(0, NUM_QUESTIONS);
 
     let numWrong = 0;
     for (const question of randomQuestions) {
@@ -82,34 +81,3 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         await ctx.editOriginal({ embeds: [failEmbed.toJSON()], components: [] });
     }
 };
-
-class Question<T extends Readonly<string[]> = Readonly<string[]>> {
-    constructor(public question: string, public answers: T, public correct: T[number]) {}
-    async ask(ctx: ExtendedContext): Promise<[boolean, string]> {
-        const embed = new MessageEmbed()
-            .setTitle(this.question)
-            .setFooter("Select the correct answer by hitting a button below");
-
-        // prettier-ignore
-        const actionRow = (<unknown>new MessageActionRow().addComponents(
-            this.answers.map((answer, idx) => new MessageButton({
-                label: answer,
-                style: "PRIMARY",
-                customID: `answer${idx}`
-            }))
-        )) as ComponentActionRow;
-
-        await ctx.editOriginal({ embeds: [embed.toJSON()], components: [actionRow] });
-
-        return new Promise((resolve) => {
-            for (let idx = 0; idx < this.answers.length; idx++) {
-                ctx.registerComponent(`answer${idx}`, async () => {
-                    const answer = this.answers[idx];
-
-                    if (answer === this.correct) resolve([true, answer]);
-                    resolve([false, answer]);
-                });
-            }
-        });
-    }
-}

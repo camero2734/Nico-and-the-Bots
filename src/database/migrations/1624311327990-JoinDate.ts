@@ -26,7 +26,7 @@ export class JoinDate1624311327990 implements MigrationInterface {
 
         const writes = joinDates.map((jd) => {
             const econ = new Economy({ userid: jd.id, joinedAt: jd.date }); // New economy if needed
-            const econNoJoin = R.omit(["joinedAt"], econ); // Otherwise creates a conflict that mongodb doesn't like
+            const econNoJoin = R.omit(["joinedAt"], econ); // Otherwise creates a conflict with $set that mongodb doesn't like
             return {
                 updateOne: {
                     filter: { userid: { $eq: jd.id } },

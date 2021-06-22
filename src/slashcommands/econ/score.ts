@@ -21,6 +21,8 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
 
     await ctx.defer();
 
+    const START_TIME = Date.now();
+
     const userID = options.user || (ctx.user.id as Snowflake);
 
     const member = await ctx.member.guild.members.fetch(userID);
@@ -35,7 +37,7 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     if (!userEconomy) userEconomy = new Economy({ userid: userID });
 
     // Calculate a users place
-    const placeNum = (await connection.getMongoRepository(Economy).count({ score: { $gt: userEconomy.score } })) + 1;
+    const placeNum = await userEconomy.getPlaceNum();
 
     // Get images to place on card as badges
     const badges = await badgeLoader(member, userGold, placeNum, connection);
@@ -188,6 +190,7 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     cctx.fillText(`${placeNum}`, 85, 100);
 
     await ctx.send({
+        content: `Took ${Date.now() - START_TIME} ms`,
         embeds: [],
         file: [{ name: "score.png", file: canvas.toBuffer() }]
     });

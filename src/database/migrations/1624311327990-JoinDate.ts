@@ -2,7 +2,9 @@ import { Client, Intents } from "discord.js";
 import { MigrationInterface, QueryRunner } from "typeorm";
 import { MongoQueryRunner } from "typeorm/driver/mongodb/MongoQueryRunner";
 import * as secrets from "configuration/secrets.json";
+import * as R from "ramda";
 import { guildID } from "configuration/config";
+import { Economy } from "database/entities/Economy";
 
 const bot = new Client({ intents: Intents.ALL });
 bot.login(secrets.bots.nico);
@@ -23,10 +25,16 @@ export class JoinDate1624311327990 implements MigrationInterface {
         const joinDates = members.map((m) => ({ id: m.user.id, date: m.joinedAt || new Date() }));
 
         const writes = joinDates.map((jd) => {
+            const econ = new Economy({ userid: jd.id, joinedAt: jd.date }); // New economy if needed
+            const econNoJoin = R.omit(["joinedAt"], econ); // Otherwise creates a conflict that mongodb doesn't like
             return {
                 updateOne: {
                     filter: { userid: { $eq: jd.id } },
-                    update: { $set: { joinedAt: jd.date } }
+                    update: {
+                        $set: { joinedAt: jd.date },
+                        $setOnInsert: econNoJoin
+                    },
+                    upsert: true
                 }
             };
         });

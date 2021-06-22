@@ -16,6 +16,7 @@ import {
     MessageButton,
     MessageComponentInteraction,
     MessageEmbed,
+    MessageManager,
     Snowflake,
     TextChannel
 } from "discord.js";
@@ -52,37 +53,20 @@ export class SacarverBot {
         });
     }
 
-    async getMemberNumber(member: GuildMember): Promise<string> {
-        // const memberJoin = await this.connection.getRepository(Economy).findOne({identifier: member.user.id, type: "MemberJoin", title: "MemberJoin"});
+    async getMemberNumber(member: GuildMember): Promise<number> {
+        const econRepository = this.connection.getMongoRepository(Economy);
+        const economy = await econRepository.findOne({ userid: member.user.id });
 
-        // // User has already joined in the past
-        // if (memberJoin?.data) return memberJoin.data;
+        // Completely new user
+        if (!economy) {
+            const newEconomy = new Economy({ userid: member.user.id, joinedAt: member.joinedAt });
+            await this.connection.manager.save(newEconomy);
+            const memberNum = await econRepository.count();
+            return memberNum;
+        }
 
-        // // Otherwise give the member a new value
-        // let memberNum = 0;
-        // await this.mutex.runExclusive(async () => {
-        //     // Get member number
-        //     const memberCount = await (async () => {
-        //         const count = await this.connection
-        //             .getRepository(Counter)
-        //             .findOne({ identifier: "MemberCount", title: "MemberCount" });
-
-        //         if (count && count.count >= guild.memberCount) return count;
-        //         else
-        //             return new Counter({
-        //                 identifier: "MemberCount",
-        //                 title: "MemberCount",
-        //                 count: guild.memberCount - 1
-        //             });
-        //     })();
-
-        //     memberCount.count++;
-        //     await this.connection.manager.save(memberCount);
-
-        //     memberNum = memberCount.count;
-        // });
-
-        return "5";
+        // Returning user
+        else return await economy.getJoinedNum();
     }
 
     async welcomeMember(member: GuildMember): Promise<void> {
@@ -172,8 +156,13 @@ export class SacarverBot {
 
         ctx.drawImage(bg, 0, 0, 1000, 500);
 
+        // Avatar
+        ctx.translate(0, 88);
+        const avatar = await loadImage(member.user.displayAvatarURL({ format: "png" }));
+        ctx.drawImage(avatar, 104, 0, 144, 144);
+
         // Member name
-        ctx.translate(0, 285);
+        ctx.translate(0, 197);
 
         ctx.fillStyle = "white";
         ctx.shadowColor = "#EF89AE";
@@ -195,6 +184,7 @@ export class SacarverBot {
         ctx.shadowOffsetY = 3;
         ctx.fillText(`Member #${member.guild.memberCount}`, 925, 0);
 
+        // Original member number (by join date)
         ctx.translate(0, 40);
         ctx.font = "24px Futura";
         ctx.textAlign = "center";

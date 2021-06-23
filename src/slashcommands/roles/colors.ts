@@ -20,6 +20,9 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
     const role = ctx.opts.role;
 
+    if (Math.random() < 10) return ctx.send("This command is disabled.");
+    /////////
+
     const userRoles = (await ctx.connection.getRepository(Item).find({ identifier: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
 
     if (!userRoles) {

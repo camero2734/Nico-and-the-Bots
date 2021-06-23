@@ -6,11 +6,13 @@ import * as helpers from "helpers";
 import SlurFilter from "helpers/slur-filter";
 import AutoReact from "helpers/auto-react";
 import { updateUserScore } from "helpers";
-import { GatewayServer, SlashCreator } from "slash-create";
+import { CommandOptionType, GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
 import { KeonsBot } from "./shop";
 import { SacarverBot } from "./welcome";
 import { channelIDs, guildID } from "configuration/config";
+import ConcertChannelManager from "helpers/concert-channels";
+import R from "ramda";
 
 // let ready = false;
 let connection: Connection;
@@ -49,6 +51,8 @@ client.on("ready", async () => {
         })
     ]);
 
+    await dynamicCommandSetup(commands);
+
     interactions
         .withServer(new GatewayServer((handler) => client.ws.on("INTERACTION_CREATE" as Discord.WSEventType, handler)))
         .registerCommands(commands, false)
@@ -67,7 +71,6 @@ client.on("ready", async () => {
     keonsBot.setupShop();
     setup();
 
-    console.log(`Bot initialized with ${loadedCommands.size} commands`);
     const guild = await client.guilds.fetch(guildID);
     const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
     await botChan.send(new Discord.MessageEmbed({ description: "Bot is running" }));
@@ -116,6 +119,55 @@ function setup() {
     for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
 
     registerFont(`./src/assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
+}
+
+async function dynamicCommandSetup(commands: Command[]): Promise<void> {
+    const guild = await client.guilds.fetch(guildID);
+
+    // Concert channels
+    const concertManager = new ConcertChannelManager(guild);
+    await concertManager.fetchConcerts();
+    await concertManager.checkChannels();
+
+    const concertsByCountry: Record<string, typeof concertManager["concertChannels"]> = {};
+
+    for (const concert of concertManager.concertChannels) {
+        const country =
+            concert.concert?.venue?.country
+                .toLowerCase()
+                .replace(/ +/g, "-")
+                .replace(/[^\w-]/g, "")
+                .substring(0, 32) || "other";
+        if (!concertsByCountry[country]) concertsByCountry[country] = [];
+        concertsByCountry[country].push(concert);
+    }
+
+    const rolesCommands = commands.find((c) => c.commandName === "roles");
+    const command = rolesCommands?.options?.find((o) => o.name === "concert");
+    if (!command) {
+        console.error("Couldn't find command");
+        return;
+    } else console.log(`Got command: ${command.description}`);
+
+    command.options = [];
+    for (const [countryName, allConcerts] of Object.entries(concertsByCountry)) {
+        const subdivisions = R.splitEvery(25, allConcerts);
+        for (let i = 0; i < subdivisions.length; i++) {
+            const concerts = subdivisions[i];
+            command.options.push({
+                name: `${countryName}${i === 0 ? "" : i}`,
+                description: `Select a concert in ${countryName}`,
+                required: false,
+                type: CommandOptionType.STRING,
+                choices: concerts.map((c) => ({
+                    name: c.concert.title || c.concert.venue.name,
+                    value: c.channelID || ""
+                }))
+            });
+        }
+    }
+
+    // console.log(command.options);
 }
 
 process.on("unhandledRejection", (err) => {

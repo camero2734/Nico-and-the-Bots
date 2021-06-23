@@ -10,16 +10,29 @@ import { ComponentActionRow } from "slash-create";
  */
 
 export class Question<T extends Readonly<string[]> = Readonly<string[]>> {
+    static QUESTION_NUMBER = 0;
+
     public correct: T[number]; // The correct answer
-    public shuffle = true; // Whether or not to shuffle the answers
-    constructor(public question: string, public answers: T, correct?: T[number]) {
+    private id: number;
+    constructor(public question: string, public answers: T, id?: number) {
+        // Only up to 16 answers are supported due to how the state is stored
+        if (answers.length > 16) throw new Error("Only up to 16 answers are supported");
+
+        if (id === undefined) this.id = -1;
+        else this.setID(id);
+
         // By default, the first answer is chosen as the correct answer
-        this.correct = correct || answers[0];
+        this.correct = answers[0];
     }
-    noShuffle(): this {
-        this.shuffle = false;
+
+    setID(id: number): this {
+        // ID must be between 0 and 255 (inclusive)
+        if (!Number.isInteger(id)) throw new Error("Question ID must be an integer");
+        if (id < 0 || id > 255) throw new Error("Question ID must be in the range [0, 255]");
+        this.id = id;
         return this;
     }
+
     async ask(ctx: ExtendedContext): Promise<[boolean, string]> {
         const embed = new MessageEmbed()
             .setTitle(this.question)
@@ -46,5 +59,9 @@ export class Question<T extends Readonly<string[]> = Readonly<string[]>> {
                 });
             }
         });
+    }
+    get binaryID(): string {
+        if (this.id === -1) throw new Error("ID was never set");
+        return this.id.toString(2);
     }
 }

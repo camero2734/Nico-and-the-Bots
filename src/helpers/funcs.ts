@@ -33,7 +33,7 @@ const F = {
         return newStr.join("");
     },
     wait: (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms)),
-    snowflakeToRadix64: (id: Snowflake): string => {
+    snowflakeToRadix64: (id: Snowflake | string | number): string => {
         return radix64.encodeBuffer(bigintConversion.bigintToBuf(BigInt(id)) as Buffer);
     },
     radix64toSnowflake: (encoded: string): Snowflake => {

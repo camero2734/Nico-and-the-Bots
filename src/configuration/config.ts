@@ -75,7 +75,8 @@ export const channelIDs = <const>{
     mulberrystreet: "759830064518266880"
 };
 export const categoryIDs = <const>{
-    chilltown: "625524136785215498"
+    chilltown: "625524136785215498",
+    concerts: "857342116005937212"
 };
 
 export const userIDs = <const>{

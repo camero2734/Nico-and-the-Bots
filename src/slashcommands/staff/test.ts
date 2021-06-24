@@ -49,7 +49,16 @@ function convToString() {
 }
 
 export const Executor: CommandRunner = async (ctx) => {
-    //
-    // await ctx.send(`(${r})\n`);
-    // ctx.send({ embeds: [embed.toJSON()] });
+    for (let i = 0; i < 10000; i++) {
+        const RAN_LENGTH = 28;
+        const bits = [...Array(RAN_LENGTH)].map((a) => (Math.random() < 0.5 ? "0" : "1")).join("");
+        const utf8 = F.bitStringToUTF8(bits);
+        const maybeBits = F.UTF8ToBitStr(utf8, RAN_LENGTH);
+
+        if (maybeBits !== bits) {
+            await ctx.send(`\`${bits}\` -> ${utf8} ${i}\n\n\`${maybeBits}\``);
+            return;
+        }
+    }
+    await ctx.send("Done");
 };

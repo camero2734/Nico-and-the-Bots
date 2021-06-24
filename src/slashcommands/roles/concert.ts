@@ -18,7 +18,6 @@ export const Executor: CommandRunner<Record<string, Snowflake>> = async (ctx) =>
     const rolesToGive = channels.map((c) => allRoles.find((r) => r.name === c.name)) as Role[];
 
     const text = rolesToGive.map((r) => `${r}`).join(", ");
-    console.log({ channels, rolesToGive, text });
 
     for (const role of rolesToGive) {
         await ctx.member.roles.add(role);

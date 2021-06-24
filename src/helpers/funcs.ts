@@ -47,6 +47,25 @@ const F = {
         }
         return array;
     },
+    bitStringToUTF8(bitStr: string): string {
+        const padLength = 16 * Math.ceil(bitStr.length / 16);
+        const padded = bitStr.padEnd(padLength, "0"); // Pad to next multiple of 16
+
+        const encodeOneCharacter = (bits: string): string => String.fromCodePoint(parseInt(bits, 2));
+
+        const characters = R.splitEvery(16, padded).map(encodeOneCharacter).join("");
+
+        return characters;
+    },
+    UTF8ToBitStr(utf16: string, expectedLength: number): string {
+        const decodeOneCharacter = (character: string): string => {
+            return (character.codePointAt(0) as number).toString(2).padStart(16, "0");
+        };
+        const bits = utf16.split("").map(decodeOneCharacter);
+
+        const bitStr = bits.join("").slice(0, expectedLength); // Remove padding at end
+        return bitStr;
+    },
     // prettier-ignore
     canvasFitText(ctx: CanvasRenderingContext2D, text: string, font: string, opts?: { maxWidth?: number, maxFontSize?: number }): number {
         ctx.save();

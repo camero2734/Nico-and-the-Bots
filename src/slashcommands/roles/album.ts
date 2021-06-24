@@ -30,6 +30,7 @@ export const Options: CommandOptions = {
 };
 
 export const Executor: CommandRunner<{ album: Snowflake }> = async (ctx) => {
+    if (Math.random() < 10) return ctx.send("This command is disabled");
     const roleID = ctx.opts.album;
 
     const idList = Object.values(albumRoles);

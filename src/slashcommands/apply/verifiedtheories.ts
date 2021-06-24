@@ -1,4 +1,4 @@
-import { channelIDs, userIDs } from "configuration/config";
+import { channelIDs, roles, userIDs } from "configuration/config";
 import {
     CommandComponentListener,
     CommandError,
@@ -7,7 +7,7 @@ import {
     ExtendedContext
 } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import F from "helpers/funcs";
 import { Question } from "helpers/verified-quiz/question";
 import { ComponentActionRow } from "slash-create";
@@ -35,9 +35,14 @@ answerListener.pattern.delimiter = "𝄎"; // Ensure no conflicts with UTF8 rang
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
 const NUM_QUESTIONS = 15;
-const DELAY_BETWEEN_TAKING = hoursToMilliseconds(48);
+const DELAY_BETWEEN_TAKING = hoursToMilliseconds(0.1);
 export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     await ctx.defer(true);
+
+    // If they already have the VQ role then no need to take again
+    if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
+        throw new CommandError("You already passed the quiz!");
+    }
 
     // Ensure they can't retake the quiz for 48 hours
     const waitTime =
@@ -83,7 +88,7 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     const questionList = F.shuffle(QuizQuestions).slice(0, NUM_QUESTIONS);
     const answerEncoder = new PreviousAnswersEncoder(questionList);
     const questionIDs = QuestionIDEncoder.encode(questionList);
-    const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.connection); // prettier-ignore
+    const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.connection, ctx.member); // prettier-ignore
 
     await ctx.editOriginal({
         embeds: [quizEmbed.toJSON()],
@@ -173,6 +178,8 @@ class PreviousAnswersEncoder {
 answerListener.handler = async (interaction, connection, args) => {
     const { currentID, questionIDs, previousAnswers, chosenAnswer, numQs } = args;
 
+    const member = interaction.member as GuildMember;
+
     const questionList = QuestionIDEncoder.decode(questionIDs, +numQs);
 
     // Update answer list
@@ -185,7 +192,8 @@ answerListener.handler = async (interaction, connection, args) => {
         questionList,
         answerEncode,
         questionIDs,
-        connection
+        connection,
+        member
     );
 
     await interaction.editReply({ embeds: [embed], components });
@@ -196,13 +204,14 @@ async function generateEmbedAndButtons(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
-    connection: Connection
+    connection: Connection,
+    member: GuildMember
 ): Promise<[MessageEmbed, MessageActionRow[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
 
-    if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, connection);
+    if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, connection, member);
 
     const newQuestion = questionList[newIndex];
     const embed = new MessageEmbed()
@@ -236,26 +245,45 @@ async function generateEmbedAndButtons(
 async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
-    connection: Connection
+    connection: Connection,
+    member: GuildMember
 ): Promise<[MessageEmbed, MessageActionRow[]]> {
     const answers = answerEncode.answerIndices;
+
+    // Send to staff channel
+    const staffEmbed = new MessageEmbed().setAuthor(member.displayName, member.user.displayAvatarURL());
 
     let incorrect = 0;
     for (const q of questionList) {
         const answerGiven = answers.get(q) ?? -1;
         if (answerGiven !== q.correct) incorrect++;
 
+        const givenAnswerText = q.answers[answerGiven] || "None";
+        const correctAnswerText = q.answers[q.correct];
+        staffEmbed.addField(q.question.split("\n")[0], `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`);
+
         // Record question answer
         const poll =
             (await connection.getRepository(Poll).findOne({ identifier: `VFQZ${q.hexID}` })) ||
             new Poll({ identifier: `VFQZ${q.hexID}`, userid: "" });
-        poll.votes.push({ userid: "", index: answerGiven });
+        poll.votes.push({ userid: member.id, index: answerGiven });
         await connection.manager.save(poll);
     }
     const correct = questionList.length - incorrect;
     const passed = incorrect === 0;
     const hours = millisecondsToHours(DELAY_BETWEEN_TAKING);
 
+    staffEmbed
+        .setTitle(`${passed ? "Passed" : "Failed"}: ${correct}/${questionList.length} correct`)
+        .setColor(passed ? "#88FF88" : "#FF8888");
+    const staffChan = member.guild.channels.cache.get(channelIDs.verifiedapplications) as TextChannel;
+    await staffChan.send({ embed: staffEmbed });
+
+    if (passed) {
+        await member.roles.add(roles.verifiedtheories);
+    }
+
+    // Send embed to normal user
     const embed = new MessageEmbed()
         .setTitle(`${correct}/${questionList.length} correct`)
         .setColor(passed ? "#88FF88" : "#FF8888")

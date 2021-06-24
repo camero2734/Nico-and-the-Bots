@@ -15,7 +15,7 @@ export const Executor: CommandRunner<Record<string, Snowflake>> = async (ctx) =>
     const channels = Object.values(ctx.opts).map((cid) => ctx.channel.guild.channels.cache.get(cid) as TextChannel);
 
     const allRoles = await ctx.channel.guild.roles.fetch();
-    const rolesToGive = channels.map((c) => allRoles.find((r) => r.name === c.name)) as Role[];
+    const rolesToGive = channels.map((c) => allRoles.find((r) => r?.name === c?.name)) as Role[];
 
     const text = rolesToGive.map((r) => `${r}`).join(", ");
 

@@ -72,7 +72,9 @@ export const channelIDs = <const>{
     tourcategory: "600868166612287500",
     lvlcnrn: "721047257029279844",
     demacouncil: "849323629388627978",
-    mulberrystreet: "759830064518266880"
+    mulberrystreet: "759830064518266880",
+    verifiedapplications: "470428222237179905",
+    tourhelp: "857258422293757972"
 };
 export const categoryIDs = <const>{
     chilltown: "625524136785215498",
@@ -105,6 +107,7 @@ export const roles = <const>{
     hideallchannels: "574731157061632000",
     announcements: "357682068785856514",
     artistmusician: "341029793954922496",
+    verifiedtheories: "475388751711830066",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",

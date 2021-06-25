@@ -5,6 +5,7 @@ import * as secrets from "configuration/secrets.json";
 import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
+
 import {
     Client,
     Guild,

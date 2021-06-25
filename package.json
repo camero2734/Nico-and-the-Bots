@@ -38,7 +38,6 @@
         "file-type": "^16.5.0",
         "fuse.js": "^6.4.6",
         "fuzzy-search": "^3.2.1",
-        "heroku": "^7.54.1",
         "leven": "^3.1.0",
         "mime-types": "^2.1.31",
         "node-fetch": "^2.6.1",

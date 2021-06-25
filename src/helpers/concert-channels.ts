@@ -4,7 +4,7 @@ import { CategoryChannel, Client, Guild, GuildChannel, OverwriteData, Role, Text
 import fetch from "node-fetch";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
-const ROLE_HEX = "#1b5151";
+const ROLE_HEX = "#ffc6d5";
 
 export interface Offer {
     type: string;

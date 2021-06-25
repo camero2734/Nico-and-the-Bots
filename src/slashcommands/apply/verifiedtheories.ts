@@ -1,21 +1,15 @@
-import { channelIDs, roles, userIDs } from "configuration/config";
-import {
-    CommandComponentListener,
-    CommandError,
-    CommandOptions,
-    CommandRunner,
-    ExtendedContext
-} from "configuration/definitions";
+import { channelIDs, roles } from "configuration/config";
+import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
-import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Poll } from "database/entities/Poll";
+import { hoursToMilliseconds, millisecondsToHours } from "date-fns";
+import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import F from "helpers/funcs";
 import { Question } from "helpers/verified-quiz/question";
-import { ComponentActionRow } from "slash-create";
-import QuizQuestions from "../../helpers/verified-quiz/quiz"; // .gitignored
 import R from "ramda";
-import { hoursToMilliseconds, millisecondsToHours } from "date-fns";
+import { ComponentActionRow } from "slash-create";
 import { Connection } from "typeorm";
-import { Poll } from "database/entities/Poll";
+import QuizQuestions from "../../helpers/verified-quiz/quiz"; // .gitignored
 
 export const Options: CommandOptions = {
     description: "Opens an application for the verified-theories channel",
@@ -35,7 +29,7 @@ answerListener.pattern.delimiter = "𝄎"; // Ensure no conflicts with UTF8 rang
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
 const NUM_QUESTIONS = 15;
-const DELAY_BETWEEN_TAKING = hoursToMilliseconds(0.1);
+const DELAY_BETWEEN_TAKING = hoursToMilliseconds(12);
 export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     await ctx.defer(true);
 

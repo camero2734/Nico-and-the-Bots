@@ -10,7 +10,7 @@
         "start": "ts-node -r tsconfig-paths/register app.ts",
         "slash": "ts-node-dev -r tsconfig-paths/register slash.ts",
         "update": "npm-check -u",
-        "deploy": "./deploy.sh",
+        "deploy": "bash ./deploy.sh",
         "postinstall": "patch-package",
         "typeorm": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
     },

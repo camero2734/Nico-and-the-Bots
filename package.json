@@ -13,6 +13,9 @@
         "postinstall": "patch-package",
         "typeorm": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
     },
+    "engines": {
+        "node": "15.x"
+    },
     "author": "",
     "license": "ISC",
     "dependencies": {

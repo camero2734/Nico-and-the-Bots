@@ -10,8 +10,8 @@
         "update": "npm-check -u",
         "deploy": "bash ./deploy.sh",
         "typeorm": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-        "dyno:restart": "heroku dyno:restart nico-discord-clique",
-        "dyno:stop": "heroku dyno:stop nico-discord-clique"
+        "dyno:restart": "heroku ps:restart worker.1 --app nico-discord-clique",
+        "dyno:stop": "heroku ps:stop worker.1 --app nico-discord-clique"
     },
     "engines": {
         "node": "15.x"

@@ -197,7 +197,12 @@ export const Executor: CommandRunner = async (ctx) => {
         .setFooter("Have an idea for another server tip? Submit it with !suggest");
     embed.addField("Server Fact", randomFact);
     embed.addField("Blurrytokens Earned", tokenMessage);
-    embed.attachFiles([new MessageAttachment(canvas.toBuffer(), "daily.png")]);
     embed.setImage("attachment://daily.png");
-    await ctx.embed(embed);
+    await ctx.send({
+        embeds: [embed.toJSON()],
+        file: {
+            name: "daily.png",
+            file: canvas.toBuffer()
+        }
+    });
 };

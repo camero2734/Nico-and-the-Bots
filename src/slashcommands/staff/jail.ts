@@ -123,7 +123,11 @@ export const Executor: CommandRunner<RequiredTypes & OptionalTypes> = async (ctx
         })
     ]);
 
-    const m = await jailChan.send(`${mentions.join(" ")}`, { embed: jailEmbed, components: [jailActionRow] });
+    const m = await jailChan.send({
+        content: `${mentions.join(" ")}`,
+        embeds: [jailEmbed],
+        components: [jailActionRow]
+    });
 
     const commandEmbed = new MessageEmbed()
         .setAuthor(members[0].displayName, members[0].user.displayAvatarURL())
@@ -160,7 +164,7 @@ unmuteAllUsers.handler = async (interaction, connection, args) => {
     const msg = interaction.message as Message;
     const [actionRow] = msg.components;
     const button = actionRow.components.find((btn) => btn.customID === interaction.customID);
-    if (!button) return;
+    if (button?.type !== "BUTTON") return;
 
     button.setCustomID(muteAllUsers.generateCustomID({ base64idarray: args.base64idarray })).setLabel("Remute Users");
 
@@ -192,7 +196,7 @@ muteAllUsers.handler = async (interaction, connection, args) => {
     const msg = interaction.message as Message;
     const [actionRow] = msg.components;
     const button = actionRow.components.find((btn) => btn.customID === interaction.customID);
-    if (!button) return;
+    if (button?.type !== "BUTTON") return;
 
     button.setCustomID(unmuteAllUsers.generateCustomID({ base64idarray: args.base64idarray })).setLabel("Unmute Users");
 
@@ -230,7 +234,7 @@ closeChannel.handler = async (interaction, connection, args) => {
         new MessageButton({ label: "Cancel", customID: "cancel", style: "DANGER" })
     ]);
 
-    const m = await chan.send({ embed: warningEmbed, components: [cancelActionRow] });
+    const m = await chan.send({ embeds: [warningEmbed], components: [cancelActionRow] });
 
     const ctx = MessageContext(m);
     ctx.registerComponent("cancel", async (btnInter) => {
@@ -283,11 +287,13 @@ closeChannel.handler = async (interaction, connection, args) => {
 
     if (cancelled) return; // Don't send anything
 
-    const finalM = await chan.send(
-        new MessageEmbed({
-            description: `Fetched ${messages.size} messages. The channel will be deleted in 30 seconds unless cancelled.`
-        })
-    );
+    const finalM = await chan.send({
+        embeds: [
+            new MessageEmbed({
+                description: `Fetched ${messages.size} messages. The channel will be deleted in 30 seconds unless cancelled.`
+            })
+        ]
+    });
     await F.wait(30 * 1000);
     if (cancelled) {
         await finalM.delete();
@@ -302,14 +308,14 @@ closeChannel.handler = async (interaction, connection, args) => {
         .addField("Date", new Date().toString());
 
     const backupChannel = guild.channels.cache.get(channelIDs.jaillog) as TextChannel;
-    await backupChannel.send({ embed, files: [attachment] });
+    await backupChannel.send({ embeds: [embed], files: [attachment] });
 
     // DM members the backup too
     for (const member of members) {
         const dm = await member.createDM();
         if (!dm) continue;
 
-        await dm.send({ embed, files: [attachment] });
+        await dm.send({ embeds: [embed], files: [attachment] });
     }
 
     await chan.delete();

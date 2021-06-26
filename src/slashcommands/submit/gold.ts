@@ -79,13 +79,14 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user, 
             customID: "yes",
             style: "SUCCESS",
             label: "Yes (5000 credits)",
-            emoji: { name: "gold", id: "389216023141941249" }
+            emoji: { name: "gold", id: "389216023141941249" } as any
         }),
         new MessageButton({ customID: "cancel", style: "DANGER", label: "Cancel" })
     ]);
 
-    const m = await msg.reply(member.toString(), {
-        embed,
+    const m = await msg.reply({
+        content: member.toString(),
+        embeds: [embed],
         components: [actionRow],
         allowedMentions: { repliedUser: false, users: [member.user.id] }
     });
@@ -106,14 +107,14 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user, 
         ]);
 
         embed.setTitle("Message was given gold!");
-        m.edit({ embed, components: [actionRow] });
+        m.edit({ embeds: [embed], components: [actionRow] });
     });
 
     dtx.registerComponent("cancel", async (interaction) => {
         if (interaction.user.id !== user.id) return;
 
         embed.setTitle("This message was not given gold.");
-        m.edit({ embed, components: [] });
+        m.edit({ embeds: [embed], components: [] });
     });
 
     return true;
@@ -165,17 +166,17 @@ async function giveGold(msg: Message, connection: Connection): Promise<Message |
             customID: answerListener.generateCustomID({ index: "1", pollID: msg.id }),
             style: "SECONDARY",
             label: "0",
-            emoji: { name: "upvote_pink2", id: "850586748765077514" }
+            emoji: { name: "upvote_pink2", id: "850586748765077514" } as any
         }),
         new MessageButton({
             customID: answerListener.generateCustomID({ index: "0", pollID: msg.id }),
             style: "SECONDARY",
             label: "0",
-            emoji: { name: "downvote_blue2", id: "850586787805265990" }
+            emoji: { name: "downvote_blue2", id: "850586787805265990" } as any
         })
     ]);
 
-    const m = await chan.send({ embed, components: [actionRow] });
+    const m = await chan.send({ embeds: [embed], components: [actionRow] });
 
     return m;
 }

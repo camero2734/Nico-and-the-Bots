@@ -2,22 +2,16 @@ import { Mutex } from "async-mutex";
 import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles } from "configuration/config";
 import * as secrets from "configuration/secrets.json";
-import { Counter } from "database/entities/Counter";
 import { Economy } from "database/entities/Economy";
-import { Item } from "database/entities/Item";
-
 import {
     Client,
-    Guild,
     GuildMember,
-    GuildMemberManager,
     Intents,
     MessageActionRow,
     MessageAttachment,
     MessageButton,
     MessageComponentInteraction,
     MessageEmbed,
-    MessageManager,
     Snowflake,
     TextChannel
 } from "discord.js";
@@ -26,7 +20,7 @@ import { Connection } from "typeorm";
 
 const ANNOUNCEMENTS_ID = "?announcements";
 
-const emoji = (name: string, id: Snowflake | null = null): { emoji: { name: string; id: Snowflake } } => ({
+const emoji = (name: string, id: Snowflake | null = null): any => ({
     emoji: { name, id: id as Snowflake }
 });
 
@@ -115,7 +109,6 @@ export class SacarverBot {
             .setDescription(
                 "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n"
             )
-            .attachFiles([attachment])
             .setImage("attachment://welcome.png");
 
         embed.addField("\u200b", "\u200b");
@@ -133,7 +126,12 @@ export class SacarverBot {
             })
         ]);
 
-        await welcomeChan.send(member.toString(), { embed, components: [actionRow] });
+        await welcomeChan.send({
+            content: member.toString(),
+            embeds: [embed],
+            files: [attachment],
+            components: [actionRow]
+        });
     }
 
     async giveAnnouncementsRole(interaction: MessageComponentInteraction): Promise<void> {

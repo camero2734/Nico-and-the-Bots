@@ -55,7 +55,7 @@ export const Executor: CommandRunner<{
     confirmationEmbed.addField("Severity", `${severity}`);
 
     await ctx.acknowledge();
-    const con_m = await ctx.channel.send(confirmationEmbed);
+    const con_m = await ctx.channel.send({ embeds: [confirmationEmbed] });
 
     const confirmation_msg = await MessageTools.awaitMessage(ctx.user.id, ctx.channel, 120000);
     if (!confirmation_msg) throw new CommandError("I didn't hear back from you in time");
@@ -66,7 +66,7 @@ export const Executor: CommandRunner<{
 
     if (confirmation_msg.content.toLowerCase().indexOf("yes") !== -1) {
         confirmationEmbed.setTitle("Warning submitted.");
-        await ctx.channel.send(confirmationEmbed);
+        await ctx.channel.send({ embeds: [confirmationEmbed] });
 
         const member = await ctx.channel.guild.members.fetch(user);
 
@@ -79,7 +79,7 @@ export const Executor: CommandRunner<{
                 `Initiated by ${ctx.member.displayName} || Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
                 ctx.user.avatarURL
             );
-            await dm.send(confirmationEmbed);
+            await dm.send({ embeds: [confirmationEmbed] });
         } catch (e) {
             await ctx.channel.send(
                 "> Unable to DM user about their warning, you may want to message them so they are aware"
@@ -121,7 +121,7 @@ export const Executor: CommandRunner<{
                     recentWarns === 1 ? "" : "s"
                 } until this user is auto-jailed.`
             );
-            await ctx.channel.send(embed);
+            await ctx.channel.send({ embeds: [embed] });
         }
     }
 

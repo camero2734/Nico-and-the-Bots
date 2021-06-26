@@ -122,16 +122,6 @@ async function extendContext<T extends CommandOption>(
     const extendedContext = ctx as unknown as ExtendedContext<T>;
     extendedContext.embed = (embed: MessageEmbed): Promise<Message | boolean> => {
         if (extendedContext.deferred) return ctx.editOriginal({ embeds: [embed.toJSON()] });
-        else if (embed.files) {
-            const messageOptions = {
-                embeds: [embed.toJSON()],
-                file: (<MessageAttachment[]>embed.files).map((f) => ({
-                    name: f.name as string,
-                    file: f.attachment as Buffer
-                }))
-            };
-            return ctx.sendFollowUp(messageOptions);
-        }
 
         return ctx.send({ embeds: [embed.toJSON()] });
     };
@@ -233,7 +223,7 @@ export class Command<
             else return await executor[subcommand](ectx);
         } catch (e) {
             console.log("got error");
-            ErrorHandler(e, ectx || ctx);
+            ErrorHandler(e as Error, ectx || ctx);
         }
     }
 }

@@ -249,7 +249,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 let sent = false;
                 try {
                     const dm = await ctx.member.createDM();
-                    dm.send(roleEmbed);
+                    dm.send({ embeds: [roleEmbed] });
                     sent = true;
                 } catch (e) {
                     //
@@ -311,18 +311,21 @@ async function sendContrabandMessage(ctx: ExtendedContext, rolePurchased: string
         await chan.createOverwrite(ctx.user.id, { VIEW_CHANNEL: true });
 
         const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
-        const m = await chan.send(transmissionEmbed);
+        const m = await chan.send({ embeds: [transmissionEmbed] });
         for (let i = 0; i < 5; i++) {
             const description = transmissionEmbed.description as string;
             transmissionEmbed.description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
             await F.wait(1000);
-            await m.edit(transmissionEmbed);
+            await m.edit({ embeds: [transmissionEmbed] });
         }
 
         await F.wait(1000);
 
-        await m.edit(`<@${ctx.user.id}>`, transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:"));
-        await chan.send(new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)); // prettier-ignore
+        await m.edit({
+            content: `<@${ctx.user.id}>`,
+            embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")]
+        });
+        await chan.send({files: [new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)]}); // prettier-ignore
     });
 }
 

@@ -73,7 +73,7 @@ client.on("ready", async () => {
 
     const guild = await client.guilds.fetch(guildID);
     const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
-    await botChan.send(new Discord.MessageEmbed({ description: "Bot is running" }));
+    await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
 });
 
 interactions.on("error", console.log);

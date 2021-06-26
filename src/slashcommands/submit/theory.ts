@@ -1,7 +1,13 @@
 import { channelIDs } from "configuration/config";
 import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
-import Discord, { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import Discord, {
+    EmojiIdentifierResolvable,
+    MessageActionRow,
+    MessageButton,
+    MessageEmbed,
+    TextChannel
+} from "discord.js";
 import { generateUpvoteDownvoteListener } from "helpers";
 import F from "helpers/funcs";
 import { last } from "ramda";
@@ -47,18 +53,18 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
         new MessageButton({
             style: "SECONDARY",
             label: "0",
-            emoji: { name: "upvote_pink2", id: "850586748765077514" },
+            emoji: { name: "upvote_pink2", id: "850586748765077514" } as EmojiIdentifierResolvable,
             customID: answerListener.generateCustomID({ index: "1", pollID: ctx.interactionID })
         }),
         new MessageButton({
             style: "SECONDARY",
             label: "0",
-            emoji: { name: "downvote_blue2", id: "850586787805265990" },
+            emoji: { name: "downvote_blue2", id: "850586787805265990" } as EmojiIdentifierResolvable,
             customID: answerListener.generateCustomID({ index: "0", pollID: ctx.interactionID })
         })
     ]);
 
-    const m = await theoryChan.send({ embed, components: [actionRow] });
+    const m = await theoryChan.send({ embeds: [embed], components: [actionRow] });
 
     const responseEmbed = new MessageEmbed({ description: "Your theory has been submitted!" });
     const responseActionRow = new MessageActionRow().addComponents([

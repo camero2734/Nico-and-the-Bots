@@ -157,6 +157,8 @@ answerListener.handler = async (interaction, connection, args) => {
     const parsedOptions: ParsedOption[] = [];
     for (const actionRow of msg.components) {
         for (const button of actionRow.components) {
+            if (button.type !== "BUTTON") return;
+
             const emoji = button.emoji as PartialEmoji | undefined;
             parsedOptions.push({ text: button.label as string, emoji: emoji?.name, emojiID: emoji?.id });
         }
@@ -166,5 +168,5 @@ answerListener.handler = async (interaction, connection, args) => {
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
-    await msg.edit({ embed });
+    await msg.edit({ embeds: [embed] });
 };

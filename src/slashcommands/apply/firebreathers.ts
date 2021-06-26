@@ -90,10 +90,10 @@ export const Executor: CommandRunner = async (ctx) => {
         confirmationEmbed.setFooter(ctx.user.id);
         confirmationEmbed.addField("\u200b", "\u200b");
         confirmationEmbed.addField("To approve/deny", `\`/staff answerfb applicationid:`);
-        const cm = await staffChan.send(confirmationEmbed);
+        const cm = await staffChan.send({ embeds: [confirmationEmbed] });
         const field = confirmationEmbed.fields.find((f) => f.name === "To approve/deny") as EmbedField;
         field.value += ` ${cm.id}\``;
-        await cm.edit(confirmationEmbed);
+        await cm.edit({ embeds: [confirmationEmbed] });
 
         const sentEmbed = new MessageEmbed().setDescription(
             "Submitted to the staff team!\n\nWe will get back to you as soon as possible."

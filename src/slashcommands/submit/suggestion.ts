@@ -31,7 +31,7 @@ export const Executor: CommandRunner<{ title: string; details: string }> = async
 
     const suggestChan = ctx.member.guild.channels.cache.get(channelIDs.submittedsuggestions) as TextChannel;
 
-    await suggestChan.send({ embed });
+    await suggestChan.send({ embeds: [embed] });
 
     const responseEmbed = new MessageEmbed({ description: "Your suggestion has been submitted!" });
     await ctx.send({ embeds: [responseEmbed.toJSON()] });

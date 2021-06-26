@@ -53,6 +53,6 @@ export class KeonsBot {
                 "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited."
             );
 
-        await chan.send(welcomeEmbed);
+        await chan.send({ embeds: [welcomeEmbed] });
     }
 }

@@ -27,7 +27,7 @@ const filter = async (msg: Message): Promise<boolean> => {
         .addField("Word detected", `\`${slur.replace(/[aeiou]/g, "*")}\``)
         .setFooter("If this was a false alarm, you have nothing to worry about.");
 
-    await msg.reply(embed);
+    await msg.reply({ embeds: [embed] });
 
     const slurLog = member.guild.channels.cache.get(channelIDs.slurlog) as TextChannel;
 
@@ -41,7 +41,7 @@ const filter = async (msg: Message): Promise<boolean> => {
     const actionRow = new MessageActionRow();
     actionRow.addComponents([new MessageButton({ label: "View context", style: "LINK", url: msg.url })]);
 
-    await slurLog.send({ embed: staffEmbed, components: [actionRow] });
+    await slurLog.send({ embeds: [staffEmbed], components: [actionRow] });
 
     return true;
 };

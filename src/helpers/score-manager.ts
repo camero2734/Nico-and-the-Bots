@@ -65,7 +65,7 @@ export const updateUserScore = async (msg: Message, connection: Connection): Pro
             "RANDOM"
         );
         if (perkStr) lvlEmbed.addField("Perk Bonus", perkStr);
-        await msg.reply({ embed: lvlEmbed });
+        await msg.reply({ embeds: [lvlEmbed] });
     }
 
     await connection.manager.save(userEconomy);

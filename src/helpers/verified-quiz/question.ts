@@ -1,7 +1,3 @@
-import { ExtendedContext } from "configuration/definitions";
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { ComponentActionRow } from "slash-create";
-
 /**
  * A file named quiz.ts needs to be created in this directory
  * with a default export of an array of these Question objects

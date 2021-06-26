@@ -8,6 +8,7 @@ import {
     Interaction,
     Message,
     MessageActionRow,
+    MessageActionRowComponent,
     MessageButton,
     MessageComponentInteraction,
     MessageComponentInteractionCollector,
@@ -137,9 +138,14 @@ export function generateUpvoteDownvoteListener(name: string): CommandComponentLi
             await msg.delete();
         }
 
-        const upvoteButton = actionRow.components.find((c) => typeof c.emoji !== "string" && c.emoji?.name?.startsWith("upvote")); // prettier-ignore
-        const downvoteButton = actionRow.components.find((c) => typeof c.emoji !== "string" && c.emoji?.name?.startsWith("downvote")); // prettier-ignore
-        if (!upvoteButton || !downvoteButton) return;
+        const getMessageButtonWithEmoji = (name: string): MessageButton | undefined => {
+            return actionRow.components.find(
+                (c) => c.type === "BUTTON" && c.emoji?.name?.startsWith(name)
+            ) as MessageButton;
+        };
+        const upvoteButton = getMessageButtonWithEmoji("upvote");
+        const downvoteButton = getMessageButtonWithEmoji("downvote");
+        if (!upvoteButton || !downvoteButton) return; // prettier-ignore
 
         if (lastVote === 0) downvoteButton.setStyle("DANGER");
         else upvoteButton.setStyle("SUCCESS");

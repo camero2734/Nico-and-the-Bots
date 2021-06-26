@@ -59,7 +59,7 @@ export const Executor: CommandRunner<{ applicationid: Snowflake; approve: "appro
                     "You may apply again at any time, but we generally recommend to wait 2 months."
                 );
 
-            await dm.send(embed);
+            await dm.send({embeds: [embed]});
         }
 
         const applicationEmbed = m.embeds[0];
@@ -68,7 +68,7 @@ export const Executor: CommandRunner<{ applicationid: Snowflake; approve: "appro
             await member.roles.add(role.id);
             applicationEmbed.setColor(role.hexColor);
         }
-        await m.edit(applicationEmbed);
+        await m.edit({ embeds: [applicationEmbed] });
 
         const embed = new MessageEmbed()
             .setAuthor(member.displayName, member.user.displayAvatarURL())

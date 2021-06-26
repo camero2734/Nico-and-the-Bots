@@ -110,7 +110,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
             embed.setImage(`attachment://${fileName}`);
         }
 
-        const m = await chan.send({ embed, files: [attachment] });
+        const m = await chan.send({ embeds: [embed], files: [attachment] });
 
         m.react("💙");
 

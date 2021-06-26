@@ -271,7 +271,7 @@ async function sendFinalEmbed(
         .setTitle(`${passed ? "Passed" : "Failed"}: ${correct}/${questionList.length} correct`)
         .setColor(passed ? "#88FF88" : "#FF8888");
     const staffChan = member.guild.channels.cache.get(channelIDs.verifiedapplications) as TextChannel;
-    await staffChan.send({ embed: staffEmbed });
+    await staffChan.send({ embeds: [staffEmbed] });
 
     if (passed) {
         await member.roles.add(roles.verifiedtheories);

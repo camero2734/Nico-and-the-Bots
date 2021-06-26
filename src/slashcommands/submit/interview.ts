@@ -57,7 +57,7 @@ export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
 
     const interviewsChannel = ctx.channel.guild.channels.cache.get(channelIDs.interviewsubmissions) as TextChannel;
 
-    const m2 = await interviewsChannel.send(embed);
+    const m2 = await interviewsChannel.send({ embeds: [embed] });
     await m2.react("✅");
     await m2.react("❌");
 
@@ -79,14 +79,14 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction }): Pro
     // Do something
     const newEmbed = new MessageEmbed(msg.embeds[0]);
     newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
-    msg.edit(newEmbed);
+    msg.edit({ embeds: [newEmbed] });
 
     if (accepting) {
         await msg.guild?.roles.cache.get(roles.topfeed.selectable.interviews)?.setMentionable(true);
-        const m = await (<TextChannel>msg.guild?.channels.cache.get(channelIDs.interviews))?.send(
-            `<@&${roles.topfeed.selectable.interviews}>`,
-            { embed: newEmbed }
-        );
+        const m = await (<TextChannel>msg.guild?.channels.cache.get(channelIDs.interviews))?.send({
+            content: `<@&${roles.topfeed.selectable.interviews}>`,
+            embeds: [newEmbed]
+        });
         await m.react("📺");
     }
 

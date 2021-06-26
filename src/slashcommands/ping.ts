@@ -19,11 +19,9 @@ export const Executor: CommandRunner = async (ctx) => {
     await ctx.send("Pinging...");
 
     const prior = Date.now();
-    const m = await ctx.channel.send("This is a surprise ping message");
-    await m.delete();
-    const after = m.createdTimestamp;
+    const after = ctx.invokedAt;
 
-    const currentPing = after - prior;
+    const currentPing = Math.abs(after - prior);
 
     previousPings.push({ ping: currentPing, time: Date.now() });
 

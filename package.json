@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register app.ts",
         "build": "tsc",
-        "start": "ts-node -r tsconfig-paths/register app.ts",
+        "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/app.js",
         "slash": "ts-node-dev -r tsconfig-paths/register slash.ts",
         "update": "npm-check -u",
         "deploy": "bash ./deploy.sh",

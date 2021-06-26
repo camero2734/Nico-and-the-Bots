@@ -2,7 +2,7 @@ files=("./src/configuration/secrets.json" "./src/helpers/verified-quiz/quiz.ts")
 fileVals=("${a[@]}") 
 
 git switch heroku && # Switch to branch that has secret files
-cp .gitignore.heroku .gitignore
+cp .gitignore.heroku .gitignore &&
 git add -A && # Add any new files
 git merge main -s recursive -X ours && # Ignore different .gitignore file
 git push -u heroku +HEAD:master # Push to heroku main branch

@@ -13,6 +13,7 @@ do
 done
 
 git switch main
+git add -A
 
 # Rewrite hidden files
 for i in ${!files[@]};

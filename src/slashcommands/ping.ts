@@ -41,10 +41,8 @@ export const Executor: CommandRunner = async (ctx) => {
 
     const embed = new MessageEmbed()
         .setColor("RANDOM")
-        .setDescription(
-            `Heartbeat: ${Math.floor(
-                ctx.client.ws.ping
-            )}ms\nAverage Ping (${pingCount}): ${average}ms\nCurrent Ping: ${currentPing}ms`
-        );
-    await ctx.send({ embeds: [embed.toJSON()] });
+        .setTitle(`Pinged ${currentPing}ms`)
+        .addField("Heartbeat", `${Math.floor(ctx.client.ws.ping)}ms`)
+        .addField("Average ping", `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}`);
+    await ctx.editOriginal({ embeds: [embed.toJSON()] });
 };

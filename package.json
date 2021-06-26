@@ -4,15 +4,14 @@
     "description": "Main bot for Discord Clique",
     "main": "app.ts",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register app.ts",
         "build": "tsc",
         "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/app.js",
-        "slash": "ts-node-dev -r tsconfig-paths/register slash.ts",
         "update": "npm-check -u",
         "deploy": "bash ./deploy.sh",
-        "postinstall": "patch-package",
-        "typeorm": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
+        "typeorm": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+        "dyno:restart": "heroku dyno:restart nico-discord-clique",
+        "dyno:stop": "heroku dyno:stop nico-discord-clique"
     },
     "engines": {
         "node": "15.x"

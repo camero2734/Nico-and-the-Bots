@@ -1,4 +1,3 @@
-import { CommandOptionType } from "slash-create";
 import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
 
@@ -15,14 +14,16 @@ export const Options: CommandOptions = {
 };
 
 export const Executor: CommandRunner = async (ctx) => {
-    const receivedAt = Date.now();
     const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
 
-    const res = await ctx.sendFollowUp("Ping?");
-    const sentAt = Date.now();
-    await res.delete();
+    await ctx.send("Pinging...");
 
-    const currentPing = sentAt - receivedAt;
+    const prior = Date.now();
+    const m = await ctx.channel.send("This is a surprise ping message");
+    await m.delete();
+    const after = m.createdTimestamp;
+
+    const currentPing = after - prior;
 
     previousPings.push({ ping: currentPing, time: Date.now() });
 
@@ -47,5 +48,5 @@ export const Executor: CommandRunner = async (ctx) => {
                 ctx.client.ws.ping
             )}ms\nAverage Ping (${pingCount}): ${average}ms\nCurrent Ping: ${currentPing}ms`
         );
-    await ctx.embed(embed);
+    await ctx.send({ embeds: [embed.toJSON()] });
 };

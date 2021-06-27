@@ -56,6 +56,10 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         .setTitle("Verified Theories Quiz")
         .setDescription(
             `This quiz asks various questions related to the lore of the band. There are ${NUM_QUESTIONS} questions and you must answer them *all* correctly.\n\n**If you fail the quiz, you must wait ${DELAY_HOURS} hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.\n\n*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
+        )
+        .addField(
+            "Cheating is not allowed",
+            "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
         );
 
     const actionRow = (<unknown>(

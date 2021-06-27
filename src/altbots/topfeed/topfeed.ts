@@ -33,12 +33,12 @@ export class TopfeedBot {
     }
 
     async checkAll(): Promise<void> {
-        await this.ready; // Wait until the bot is logged in
+        await this.ready; // Wait  until the bot is logged in
         const chan = this.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
 
         for (const site of this.websites) {
-            const [res] = await site.checkForChanges();
-            await chan.send(res.messageObj);
+            const res = await site.checkForChanges();
+            if (res.msgOpts) await chan.send(res.msgOpts);
         }
     }
 }

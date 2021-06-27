@@ -1,5 +1,5 @@
 import { channelIDs, roles } from "configuration/config";
-import { CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
+import { CommandError, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
 import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
 import { DMChannel, EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
@@ -12,6 +12,8 @@ export const Options: CommandOptions = {
 
 export const Executor: CommandRunner = async (ctx) => {
     const application = await withContext(ctx);
+
+    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is not available yet.");
 
     await ctx.defer(true);
 

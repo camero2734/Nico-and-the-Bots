@@ -44,20 +44,25 @@ export const Executor: CommandRunner<{
         const role = await ctx.member.guild.roles.fetch(roles.verifiedtheories);
         if (!role) return;
 
-        const members = allMembers
-            .filter((m) => m.roles.cache.has(role.id))
-            .array()
-            .filter((m) => m.roles.cache.has(roles.staff));
+        const members = allMembers.filter((m) => m.roles.cache.has(role.id)).array();
 
         await ctx.editOriginal({ content: `Fetched ${members.length} members. Removing roles and DM'ing...` });
 
         const unableToSendTo: string[] = [];
 
+        let i = 1;
         for (const m of members) {
             try {
                 const dm = await m.createDM();
                 await dm.send({ embeds: [dmEmbed] });
                 await m.roles.remove(roles.verifiedtheories);
+                if (i % 5 === 0) {
+                    await ctx.editOriginal({
+                        content: `Fetched ${members.length} members. Removing roles and DM'ing...(${i}/${members.length})`,
+                        allowedMentions: { users: [], everyone: false }
+                    });
+                }
+                i++;
             } catch (e) {
                 unableToSendTo.push(`${m}`);
             }

@@ -2,6 +2,7 @@ import fetch from "node-fetch";
 import https from "https";
 import crypto from "crypto";
 import * as Diff from "diff";
+import R from "ramda";
 import PageRes from "pageres";
 import { Connection } from "typeorm";
 import { Topfeed } from "database/entities/Topfeed";
@@ -14,12 +15,20 @@ type CheckReturn = {
     isNew: boolean;
     ping: boolean;
     type: WATCH_METHOD;
-    messageObj: MessageOptions;
+    hash: string;
 } & (
-    | { type: "HTML"; data: { html: string; hash: string; diff: string } }
+    | { type: "HTML"; data: { html: string; diff: string } }
     | { type: "LAST_MODIFIED"; data: { lastModified: string } }
-    | { type: "VISUAL"; data: { image: Buffer; hash: string } }
+    | { type: "VISUAL"; data: { image: Buffer } }
 );
+
+type CheckReturnWithType<T extends WATCH_METHOD> = CheckReturn & { type: T };
+
+type CheckObj = Partial<{
+    HTML: CheckReturnWithType<"HTML">;
+    LAST_MODIFIED: CheckReturnWithType<"LAST_MODIFIED">;
+    VISUAL: CheckReturnWithType<"VISUAL">;
+}>;
 
 const agent = new https.Agent({
     rejectUnauthorized: false
@@ -45,10 +54,10 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         return await this.ctx.connection.getRepository(Topfeed).findOne({ url: this.url, type });
     }
 
-    generateEmbed(type: T[number], description: string, hash: string, file?: Buffer): MessageOptions {
+    generateEmbed(type: Array<T[number]>, description: string, hash: string, file?: Buffer): MessageOptions {
         const embed = new MessageEmbed()
             .setAuthor(
-                `${this.displayName} updated! [${type} change]`,
+                `${this.displayName} updated! [${type.join(" ")} change]`,
                 this.ctx.client.user?.displayAvatarURL(),
                 this.url
             )
@@ -63,8 +72,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
     }
 
     /** Returns changes ordered by importance (Visual -> HTML -> Last Modified) and a combined MessageObj */
-    async checkForChanges(): Promise<CheckReturn[]> {
-        const res = await Promise.all(
+    async checkForChanges(): Promise<{ msgOpts?: MessageOptions; allResponses: CheckReturn[] }> {
+        const response = await Promise.all(
             this.watchMethods.map((wm) => {
                 // prettier-ignore
                 switch(wm) {
@@ -74,9 +83,22 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
                 }
             })
         );
-        const validResponses = res.filter((r) => r.isNew);
-        if (validResponses.length === 0) return [];
-        else return validResponses.sort((a, b) => watchMethods.indexOf(b.type) - watchMethods.indexOf(a.type));
+
+        const validResponses = response.filter((r) => r.isNew);
+        if (validResponses.length === 0) return { allResponses: response };
+
+        const obj = Object.fromEntries(
+            watchMethods.map((t) => [t, validResponses.find((vr) => vr.type === t)]).filter((ent) => ent[1])
+        ) as CheckObj;
+        const desc = obj.HTML ? `\`\`\`diff\n${obj.HTML?.data.diff.substring(0, 2000)}\`\`\`` : "";
+        const hashes = Object.values(obj)
+            .map((r) => r.hash)
+            .join(", ");
+        const file = obj.VISUAL?.data.image || undefined;
+
+        const messageOpts = this.generateEmbed(R.keys(obj), desc, hashes, file);
+
+        return { msgOpts: messageOpts, allResponses: response };
     }
 
     async #checkHTML(): Promise<CheckReturn> {
@@ -92,9 +114,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const isNew = old?.hash !== hash;
         const diff = Diff.createPatch(this.id, old.data || "", html);
 
-        const messageObj = this.generateEmbed(type, `\`\`\`diff\n${diff.substring(0, 2000)}\`\`\``, hash);
-
-        return { data: { hash, html, diff }, isNew, ping: isNew, type, messageObj };
+        return { data: { html, diff }, isNew, ping: isNew, type, hash };
     }
 
     async #checkLastModified(): Promise<CheckReturn> {
@@ -108,9 +128,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
 
         const isNew = old?.hash !== hash;
 
-        const messageObj = this.generateEmbed(type, lastModified, hash);
-
-        return { data: { lastModified }, isNew, ping: isNew, type, messageObj };
+        return { data: { lastModified }, isNew, ping: isNew, type, hash };
     }
 
     async #checkVisual(): Promise<CheckReturn> {
@@ -124,8 +142,6 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
 
         const isNew = old?.hash !== hash;
 
-        const messageObj = this.generateEmbed(type, "*No description*", hash, screenshot);
-
-        return { data: { image: screenshot, hash }, isNew, ping: isNew, type, messageObj };
+        return { data: { image: screenshot }, isNew, ping: isNew, type, hash };
     }
 }

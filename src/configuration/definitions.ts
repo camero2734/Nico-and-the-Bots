@@ -203,7 +203,7 @@ export class Command<
     hasNoSubCommands(): this is Command<T, CommandRunner<T>> {
         return typeof this.executor === "function";
     }
-    async run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
+    override async run(ctx: CommandContext): ReturnType<SlashCommand["run"]> {
         let ectx = null as unknown as ExtendedContext<T>;
         try {
             ectx = await extendContext<T>(ctx, this.client, this.connection);

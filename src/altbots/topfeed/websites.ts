@@ -7,17 +7,14 @@ import { Connection } from "typeorm";
 import { Topfeed } from "database/entities/Topfeed";
 import { Client, MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
 
-type WATCH_METHOD = "HTML" | "LAST_MODIFIED" | "VISUAL";
-
-type FullMessageOptions = MessageOptions & {
-    split?: false | undefined;
-};
+const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
+type WATCH_METHOD = typeof watchMethods[number];
 
 type CheckReturn = {
     isNew: boolean;
     ping: boolean;
     type: WATCH_METHOD;
-    messageObj: FullMessageOptions;
+    messageObj: MessageOptions;
 } & (
     | { type: "HTML"; data: { html: string; hash: string; diff: string } }
     | { type: "LAST_MODIFIED"; data: { lastModified: string } }
@@ -48,7 +45,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         return await this.ctx.connection.getRepository(Topfeed).findOne({ url: this.url, type });
     }
 
-    generateEmbed(type: T[number], description: string, hash: string, file?: Buffer): FullMessageOptions {
+    generateEmbed(type: T[number], description: string, hash: string, file?: Buffer): MessageOptions {
         const embed = new MessageEmbed()
             .setAuthor(
                 `${this.displayName} updated! [${type} change]`,
@@ -65,8 +62,9 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         } else return { embeds: [embed] };
     }
 
+    /** Returns changes ordered by importance (Visual -> HTML -> Last Modified) and a combined MessageObj */
     async checkForChanges(): Promise<CheckReturn[]> {
-        return await Promise.all(
+        const res = await Promise.all(
             this.watchMethods.map((wm) => {
                 // prettier-ignore
                 switch(wm) {
@@ -76,6 +74,9 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
                 }
             })
         );
+        const validResponses = res.filter((r) => r.isNew);
+        if (validResponses.length === 0) return [];
+        else return validResponses.sort((a, b) => watchMethods.indexOf(b.type) - watchMethods.indexOf(a.type));
     }
 
     async #checkHTML(): Promise<CheckReturn> {

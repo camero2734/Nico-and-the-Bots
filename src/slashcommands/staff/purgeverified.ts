@@ -1,4 +1,4 @@
-import { channelIDs, roles } from "configuration/config";
+import { channelIDs, roles, userIDs } from "configuration/config";
 import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { ComponentActionRow } from "slash-create";
@@ -15,7 +15,7 @@ export const Executor: CommandRunner<{
     const dmEmbed = new MessageEmbed()
         .setTitle("The Verified Theories role has been purged")
         .setDescription(
-            `You are receiving this message because you had the \`verified-theories\` role. The questions have been updated with new content and so we feel it fair to have everyone reapply in order to guarantee the discussion is informed as possible. More information is available in the channel.\n\nThe command to reapply is a **slash command**, which is \`/apply verifiedtheories\`. Type this into <#${channelIDs.commands}> as you normally would. There are now **15** questions and (just like before) you must answer them *all* correctly in order to pass.`
+            `You are receiving this message because you had the \`verified-theories\` role. The questions have been updated with new content and so we feel it fair to have everyone reapply in order to guarantee the discussion is informed as possible. More information is available in the channel.\n\nThe command to reapply is a **slash command**, which is \`/apply verifiedtheories\`. This command will be available in about 15 minutes. Type this into <#${channelIDs.commands}> as you normally would. There are now **15** questions and (just like before) you must answer them *all* correctly in order to pass.`
         )
         .setFooter("bye bye veribesties");
 
@@ -26,13 +26,13 @@ export const Executor: CommandRunner<{
     )) as ComponentActionRow;
 
     await ctx.send({
-        content: `> The following embed will be sent to all members and the role will be cleared. Only <@${ctx.user.id}> can click the purge button.\n\n.`,
+        content: `> The following embed will be sent to all members and the role will be cleared. Only <@${userIDs.me}> can click the purge button.\n\n.`,
         embeds: [dmEmbed.toJSON()],
         components: [actionRow]
     });
 
     ctx.registerComponent("purgeverified", async (btnCtx) => {
-        if (btnCtx.user.id !== ctx.user.id) return;
+        if (btnCtx.user.id !== userIDs.me) return;
 
         await ctx.editOriginal({
             content: "Fetching members with role (this will take a while)...",

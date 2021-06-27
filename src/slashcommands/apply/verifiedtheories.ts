@@ -40,7 +40,7 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         throw new CommandError("You already passed the quiz!");
     }
 
-    // Ensure they can't retake the quiz for 48 hours
+    // Ensure they can't retake the quiz for N hours
     const waitTime =
         (await ctx.connection.getRepository(Counter).findOne({ identifier: ctx.member.id, title: "VerifiedQuiz" })) ||
         new Counter({ identifier: ctx.member.id, title: "VerifiedQuiz", lastUpdated: 0 });

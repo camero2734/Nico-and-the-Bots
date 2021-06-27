@@ -132,7 +132,10 @@ const withContext = async (ctx: ExtendedContext) => {
 
             // Listen for user messages
             const field = embed.fields.find((f) => f.name === "Your response") as EmbedField;
-            const listener = channel.createMessageCollector((m) => m.author.id === ctx.user.id, { time: undefined });
+            const listener = channel.createMessageCollector({
+                filter: (m) => m.author.id === ctx.user.id,
+                time: undefined
+            });
             let answer = field.value;
             listener.on("collect", async (m: Message) => {
                 answer = m.content;

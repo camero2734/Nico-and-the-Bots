@@ -46,7 +46,7 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         new Counter({ identifier: ctx.member.id, title: "VerifiedQuiz", lastUpdated: 0 });
 
     const remainingTime = waitTime.lastUpdated + DELAY_BETWEEN_TAKING - Date.now();
-    if (remainingTime > 0 && ctx.member.id !== userIDs.me) {
+    if (remainingTime > 0 && !ctx.member.roles.cache.has(roles.staff)) {
         const hours = (remainingTime / (1000 * 60 * 60)).toFixed(2);
         throw new CommandError(`You must wait ${hours} hours before applying again.`);
     }

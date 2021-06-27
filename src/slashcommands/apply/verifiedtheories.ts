@@ -1,4 +1,4 @@
-import { channelIDs, roles } from "configuration/config";
+import { channelIDs, roles, userIDs } from "configuration/config";
 import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Poll } from "database/entities/Poll";
@@ -46,7 +46,7 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         new Counter({ identifier: ctx.member.id, title: "VerifiedQuiz", lastUpdated: 0 });
 
     const remainingTime = waitTime.lastUpdated + DELAY_BETWEEN_TAKING - Date.now();
-    if (remainingTime > 0) {
+    if (remainingTime > 0 && ctx.member.id !== userIDs.me) {
         const hours = (remainingTime / (1000 * 60 * 60)).toFixed(2);
         throw new CommandError(`You must wait ${hours} hours before applying again.`);
     }
@@ -192,6 +192,7 @@ answerListener.handler = async (interaction, connection, args) => {
         member
     );
 
+    interaction.deferred = true; // The original int. was deferred, discord.js throws an error when editing if not manually overriden
     await interaction.editReply({ embeds: [embed], components });
 };
 

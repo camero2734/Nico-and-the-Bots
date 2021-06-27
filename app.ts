@@ -70,10 +70,10 @@ client.on("ready", async () => {
     sacarverBot = new SacarverBot(connection);
     topfeedBot = new TopfeedBot(connection);
 
-    await topfeedBot
-        .checkAll()
-        .catch(console.log)
-        .finally(() => process.exit(0));
+    // await topfeedBot
+    //     .checkAll()
+    //     .catch(console.log)
+    //     .finally(() => process.exit(0));
 
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();

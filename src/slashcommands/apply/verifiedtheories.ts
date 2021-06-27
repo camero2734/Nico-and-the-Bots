@@ -176,8 +176,6 @@ answerListener.handler = async (interaction, connection, args) => {
     const answerEncode = new PreviousAnswersEncoder(questionList).fromString(previousAnswers);
     answerEncode.markAnswer(questionList[currentIndex], chosenAnswer);
 
-    console.log(answerEncode.toString());
-
     if (!questionList || questionList.length === 0) {
         console.log("BAD", args);
         return;

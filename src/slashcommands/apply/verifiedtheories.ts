@@ -3,6 +3,7 @@ import { CommandComponentListener, CommandError, CommandOptions, CommandRunner }
 import { Counter } from "database/entities/Counter";
 import { Poll } from "database/entities/Poll";
 import { hoursToMilliseconds, millisecondsToHours } from "date-fns";
+import areIntervalsOverlappingWithOptions from "date-fns/fp/areIntervalsOverlappingWithOptions";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import F from "helpers/funcs";
 import { Question } from "helpers/verified-quiz/question";
@@ -17,14 +18,12 @@ export const Options: CommandOptions = {
 };
 
 // TODO: Use global ComponentListener to avoid having to timeout things
-const answerListener = new CommandComponentListener("verifiedquiz", <const>[
+const answerListener = new CommandComponentListener("veriquiz", <const>[
     "currentID",
     "questionIDs",
     "previousAnswers",
-    "chosenAnswer",
-    "numQs"
+    "chosenAnswer"
 ]);
-answerListener.pattern.delimiter = "𝄎"; // Ensure no conflicts with UTF8 range used
 
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
@@ -102,39 +101,36 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
  *  - The questions being asked and their order
  *  - The current question being asked
  *  - The previous answers
- * 16 bits are encoded into a character by using the UTF8 code points 0000 -> FFFF
+ * 8 bits are encoded into a character by using a custom 256 character alphabet
  */
 
 /**
  *! Encoding question order
- * Use 8 bits for question "id". Maximum of 256 questions (way more than needed)
- * One character for every two questions
- * So: 10 questions = 5 characters, 15 questions = 8 characters
+ * Use 8 bits for question "id". Maximum of a pool of 256 questions
+ * One character for every question
+ * So: 10 questions = 10 characters, 15 questions = 15 characters
  */
 
 class QuestionIDEncoder {
-    static decode(utf16: string, numQs: number): Question[] {
-        const bitStr = F.UTF8ToBitStr(utf16, 8 * numQs);
-        const questionIDs = R.splitEvery(8, bitStr);
+    static decode(base256: string): Question[] {
+        const bitValues = F.base256Decode(base256);
+        const questionIDs = [...bitValues];
 
-        const questions = questionIDs.map((qid) => QuizQuestions.find((q) => q.binaryID(8) === qid));
+        const questions = questionIDs.map((qid) => QuizQuestions.find((q) => q.id === qid));
 
         return questions.filter((q): q is Question => q !== undefined);
     }
     static encode(chosenQuestions: Question[]) {
-        const ids = chosenQuestions.map((q) => q.binaryID(8));
-        const bitStr = ids.join("");
-        const characters = F.bitStringToUTF8(bitStr);
+        const ids = chosenQuestions.map((q) => q.id);
+        const characters = F.base256Encode(Uint8Array.from(ids));
         return characters;
     }
 }
 
 /**
  *! Encoding previous answers
- * Use 4 bits for answer index (so up to 16 answers supported, beyond plenty)
- * So: 10 questions = 3 characters, 15 questions = 4 characters
- *
- * This class is reused for encoding the current question into a single character
+ * Use 8 bits for answer index (so up to 256 answers supported, beyond plenty since there can only be 25 buttons max)
+ * So: 10 questions = 10 characters, 15 questions = 15 characters
  */
 class PreviousAnswersEncoder {
     public answerIndices: Map<Question, number> = new Map();
@@ -149,10 +145,10 @@ class PreviousAnswersEncoder {
         this.answerIndices.set(question, idx);
         return true;
     }
-    fromString(utf16: string, numQs: number): this {
-        const bitStr = F.UTF8ToBitStr(utf16, 4 * numQs);
+    fromString(base256: string): this {
+        const bitValues = F.base256Decode(base256);
 
-        const answerIdxs = R.splitEvery(4, bitStr).map((bits) => parseInt(bits, 2));
+        const answerIdxs = [...bitValues];
 
         for (let i = 0; i < this.questions.length; i++) {
             const idx = answerIdxs[i];
@@ -163,29 +159,29 @@ class PreviousAnswersEncoder {
         return this;
     }
     toString() {
-        let bitStr = "";
-        for (const question of this.questions) {
-            const idx = this.answerIndices.get(question) ?? 0;
-            const bits = idx.toString(2).padStart(4, "0");
-            bitStr += bits;
-        }
-
-        const characters = F.bitStringToUTF8(bitStr);
-        return characters;
+        const arr = this.questions.map((q) => this.answerIndices.get(q) ?? 0);
+        return F.base256Encode(Uint8Array.from(arr));
     }
 }
 
 answerListener.handler = async (interaction, connection, args) => {
-    const { currentID, questionIDs, previousAnswers, chosenAnswer, numQs } = args;
+    const { currentID, questionIDs, previousAnswers, chosenAnswer } = args;
 
     const member = interaction.member as GuildMember;
 
-    const questionList = QuestionIDEncoder.decode(questionIDs, +numQs);
+    const questionList = QuestionIDEncoder.decode(questionIDs);
 
     // Update answer list
     const currentIndex = questionList.findIndex((q) => q.hexID === currentID);
-    const answerEncode = new PreviousAnswersEncoder(questionList).fromString(previousAnswers, +numQs);
+    const answerEncode = new PreviousAnswersEncoder(questionList).fromString(previousAnswers);
     answerEncode.markAnswer(questionList[currentIndex], chosenAnswer);
+
+    console.log(answerEncode.toString());
+
+    if (!questionList || questionList.length === 0) {
+        console.log("BAD", args);
+        return;
+    }
 
     const [embed, components] = await generateEmbedAndButtons(
         currentIndex,
@@ -231,8 +227,7 @@ async function generateEmbedAndButtons(
                     currentID: newQuestion.hexID,
                     questionIDs,
                     previousAnswers: answerEncode.toString(),
-                    chosenAnswer: idx.toString(),
-                    numQs: `${numQs}`
+                    chosenAnswer: idx.toString()
                 })
             });
         })

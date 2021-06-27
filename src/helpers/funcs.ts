@@ -9,6 +9,9 @@ import * as bigintConversion from "bigint-conversion";
 
 const radix64 = radix64Setup();
 
+const base256Alphabet =
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБ";
+
 const F = {
     titleCase: R.pipe(R.split(""), R.adjust(0, R.toUpper), R.join("")),
     lerp: (n: number, low: number, high: number): number => n * (high - low) + low,
@@ -47,24 +50,22 @@ const F = {
         }
         return array;
     },
-    bitStringToUTF8(bitStr: string): string {
-        const padLength = 16 * Math.ceil(bitStr.length / 16);
-        const padded = bitStr.padEnd(padLength, "0"); // Pad to next multiple of 16
-
-        const encodeOneCharacter = (bits: string): string => String.fromCodePoint(parseInt(bits, 2));
-
-        const characters = R.splitEvery(16, padded).map(encodeOneCharacter).join("");
-
-        return characters;
+    base256Encode(nums: Uint8Array): string {
+        let str = "";
+        for (const n of nums) {
+            const char = base256Alphabet[n];
+            str += char;
+        }
+        return str;
     },
-    UTF8ToBitStr(utf16: string, expectedLength: number): string {
-        const decodeOneCharacter = (character: string): string => {
-            return (character.codePointAt(0) as number).toString(2).padStart(16, "0");
-        };
-        const bits = utf16.split("").map(decodeOneCharacter);
-
-        const bitStr = bits.join("").slice(0, expectedLength); // Remove padding at end
-        return bitStr;
+    base256Decode(str: string): Uint8Array {
+        const chars = str.split("");
+        const arr = [];
+        for (const char of chars) {
+            const num = base256Alphabet.indexOf(char);
+            arr.push(num);
+        }
+        return Uint8Array.from(arr);
     },
     // prettier-ignore
     canvasFitText(ctx: CanvasRenderingContext2D, text: string, font: string, opts?: { maxWidth?: number, maxFontSize?: number }): number {

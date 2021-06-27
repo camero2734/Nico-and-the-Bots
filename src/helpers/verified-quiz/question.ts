@@ -9,7 +9,7 @@ export class Question<T extends Readonly<string[]> = Readonly<string[]>> {
     static QUESTION_NUMBER = 0;
 
     public correct: number; // The correct answer
-    constructor(public question: string, public answers: T, private id: number) {
+    constructor(public question: string, public answers: T, public id: number) {
         // Only up to 16 answers are supported due to how the state is stored
         if (answers.length > 16) throw new Error("Only up to 16 answers are supported");
 

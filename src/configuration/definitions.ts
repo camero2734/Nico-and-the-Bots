@@ -229,7 +229,7 @@ export class Command<
 }
 
 function determineCommandPermissions(commandName: string): Partial<SlashCommandOptions> {
-    if (commandName === "staff" || (commandName !== "roles" && commandName !== "apply"))
+    if (commandName === "staff" || commandName !== "roles")
         return {
             defaultPermission: false,
             permissions: {

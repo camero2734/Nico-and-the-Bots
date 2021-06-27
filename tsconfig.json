@@ -16,6 +16,7 @@
         "allowSyntheticDefaultImports": true,
         "skipLibCheck": true,
         "sourceMap": true,
+        "noImplicitOverride": true,
         "paths": {
             "*": ["*", "./src/*"]
         },

@@ -8,17 +8,19 @@ import AutoReact from "helpers/auto-react";
 import { updateUserScore } from "helpers";
 import { CommandOptionType, GatewayServer, SlashCreator } from "slash-create";
 import { Connection } from "typeorm";
-import { KeonsBot } from "./shop";
-import { SacarverBot } from "./welcome";
+import { KeonsBot } from "./src/altbots/shop";
+import { SacarverBot } from "./src/altbots/welcome";
 import { channelIDs, guildID } from "configuration/config";
 import ConcertChannelManager from "helpers/concert-channels";
 import R from "ramda";
+import { TopfeedBot } from "altbots/topfeed/topfeed";
 
 // let ready = false;
 let connection: Connection;
 
 const client = new Discord.Client({ intents: Discord.Intents.ALL, partials: ["REACTION", "USER", "MESSAGE"] });
 const keonsBot = new KeonsBot();
+let topfeedBot: TopfeedBot;
 let sacarverBot: SacarverBot;
 
 const interactions = new SlashCreator({
@@ -66,6 +68,12 @@ client.on("ready", async () => {
     });
 
     sacarverBot = new SacarverBot(connection);
+    topfeedBot = new TopfeedBot(connection);
+
+    await topfeedBot
+        .checkAll()
+        .catch(console.log)
+        .finally(() => process.exit(0));
 
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();

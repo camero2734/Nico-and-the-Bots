@@ -29,7 +29,9 @@ answerListener.pattern.delimiter = "𝄎"; // Ensure no conflicts with UTF8 rang
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
 const NUM_QUESTIONS = 15;
-const DELAY_BETWEEN_TAKING = hoursToMilliseconds(12);
+
+const DELAY_HOURS = 12;
+const DELAY_BETWEEN_TAKING = hoursToMilliseconds(DELAY_HOURS);
 export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     await ctx.defer(true);
 
@@ -53,7 +55,7 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     const initialEmbed = new MessageEmbed()
         .setTitle("Verified Theories Quiz")
         .setDescription(
-            `This quiz asks various questions related to the lore of the band. There are ${NUM_QUESTIONS} questions and you must answer them *all* correctly.\n\n**If you fail the quiz, you must wait 48 hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.\n\n*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
+            `This quiz asks various questions related to the lore of the band. There are ${NUM_QUESTIONS} questions and you must answer them *all* correctly.\n\n**If you fail the quiz, you must wait ${DELAY_HOURS} hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.\n\n*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
         );
 
     const actionRow = (<unknown>(

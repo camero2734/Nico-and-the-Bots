@@ -1,10 +1,11 @@
-import { channelIDs, roles, userIDs } from "configuration/config";
+import { channelIDs, guildID, roles, userIDs } from "configuration/config";
 import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { Poll } from "database/entities/Poll";
 import { hoursToMilliseconds, millisecondsToHours } from "date-fns";
 import areIntervalsOverlappingWithOptions from "date-fns/fp/areIntervalsOverlappingWithOptions";
-import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { MessageContext } from "helpers";
 import F from "helpers/funcs";
 import { Question } from "helpers/verified-quiz/question";
 import R from "ramda";
@@ -61,22 +62,52 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
             "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
         );
 
-    const actionRow = (<unknown>(
-        new MessageActionRow().addComponents([
-            new MessageButton({ label: "Begin", style: "SUCCESS", customID: "begin" })
-        ])
-    )) as ComponentActionRow;
-    await ctx.send({ embeds: [initialEmbed.toJSON()], components: [actionRow] });
+    const actionRow = new MessageActionRow().addComponents([
+        new MessageButton({ label: "Begin", style: "SUCCESS", customID: "verifbegin" }),
+        new MessageButton({ label: "Cancel", style: "DANGER", customID: "verifcancel" })
+    ]);
 
-    const res = await new Promise<boolean>((resolve) => {
-        const timeout = setTimeout(resolve, 120 * 1000, false); // Avoid a memory leak
-        ctx.registerComponent("begin", async () => {
-            ctx.unregisterComponent("begin");
+    let m: Message;
+    try {
+        const dm = await ctx.member.createDM();
+        m = await dm.send({ embeds: [initialEmbed.toJSON()], components: [actionRow] });
+    } catch (e) {
+        throw new CommandError("You must have server DMs enabled to use this command");
+    }
+
+    const dmActionRow = (<unknown>(
+        new MessageActionRow().addComponents([new MessageButton({ style: "LINK", url: m.url, label: "View message" })])
+    )) as ComponentActionRow;
+
+    await ctx.send({
+        embeds: [new MessageEmbed().setDescription("The quiz was DM'd to you!").toJSON()],
+        components: [dmActionRow]
+    });
+
+    const mctx = MessageContext(m);
+
+    const res = await new Promise<boolean | undefined>((resolve) => {
+        const timeout = setTimeout(resolve, 120 * 1000, undefined); // Avoid a memory leak
+        mctx.registerComponent("verifbegin", async () => {
             clearTimeout(timeout);
             resolve(true);
         });
+        mctx.registerComponent("verifcancel", async () => {
+            clearTimeout(timeout);
+            resolve(false);
+        });
     });
-    if (!res) return;
+    mctx.unregisterComponent("begin");
+    mctx.unregisterComponent("verifcancel");
+
+    // If undefined (timed out) or false (clicked cancel), edit the message
+    if (!res) {
+        await m.edit({
+            embeds: [new MessageEmbed().setDescription("Okay, you may restart the quiz at any time.")],
+            components: []
+        });
+        return;
+    }
 
     // Update database
     waitTime.lastUpdated = Date.now();
@@ -89,9 +120,9 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     const questionIDs = QuestionIDEncoder.encode(questionList);
     const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.connection, ctx.member); // prettier-ignore
 
-    await ctx.editOriginal({
+    await m.edit({
         embeds: [quizEmbed.toJSON()],
-        components: quizComponents as unknown as ComponentActionRow[]
+        components: quizComponents
     });
 };
 
@@ -167,7 +198,10 @@ class PreviousAnswersEncoder {
 answerListener.handler = async (interaction, connection, args) => {
     const { currentID, questionIDs, previousAnswers, chosenAnswer } = args;
 
-    const member = interaction.member as GuildMember;
+    const guild = await interaction.client.guilds.fetch(guildID);
+    const member = await guild.members.fetch(interaction.user.id);
+
+    if (!member) return console.log(`[Verified Quiz] Member does not exist: ${interaction.user.id}`);
 
     const questionList = QuestionIDEncoder.decode(questionIDs);
 

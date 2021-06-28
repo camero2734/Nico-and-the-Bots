@@ -5,6 +5,7 @@ import * as Diff from "diff";
 import R from "ramda";
 import PageRes from "pageres";
 import { Connection } from "typeorm";
+import normalizeURL from "normalize-url";
 import { Topfeed } from "database/entities/Topfeed";
 import { Client, MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
 
@@ -39,15 +40,28 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         return crypto.createHash("sha256").update(input).digest("base64");
     }
 
+    displayedURL: string;
+
     constructor(
         public url: string,
         public displayName: string,
         public watchMethods: T,
         protected ctx: { connection: Connection; client: Client }
-    ) {}
+    ) {
+        this.displayedURL = url;
+    }
+
+    get httpURL(): string {
+        return normalizeURL(this.url, { forceHttp: true });
+    }
 
     get id(): string {
         return `WEBSITE:${this.displayName.split(" ").join("-").toUpperCase()}`;
+    }
+
+    setDisplayedURL(url: string): this {
+        this.displayedURL = url;
+        return this;
     }
 
     async getTopfeedObject(type: T[number]): Promise<Topfeed | undefined> {
@@ -59,7 +73,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
             .setAuthor(
                 `${this.displayName} updated! [${type.join(" ")} change]`,
                 this.ctx.client.user?.displayAvatarURL(),
-                this.url
+                this.displayedURL
             )
             .setDescription(description)
             .setFooter(`${hash}`);
@@ -90,7 +104,14 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const obj = Object.fromEntries(
             watchMethods.map((t) => [t, validResponses.find((vr) => vr.type === t)]).filter((ent) => ent[1])
         ) as CheckObj;
-        const desc = obj.HTML ? `\`\`\`diff\n${obj.HTML?.data.diff.substring(0, 2000)}\`\`\`` : "";
+
+        const desc = [
+            obj.HTML ? `\`\`\`diff\n${obj.HTML.data.diff.substring(0, 1850)}\`\`\`` : undefined,
+            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED.data.lastModified}` : undefined
+        ]
+            .filter((d) => d !== undefined)
+            .join("\n");
+
         const hashes = Object.values(obj)
             .map((r) => r.hash)
             .join(", ");
@@ -133,12 +154,13 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
 
     async #checkVisual(): Promise<CheckReturn> {
         const type = <const>"VISUAL";
-        const [screenshot] = await new PageRes({ delay: 2 }).src(this.url, ["1024x768"]).run();
+        const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
 
         const base64 = screenshot.toString("base64");
         const hash = SiteWatcher.hash(base64);
 
-        const old = (await this.getTopfeedObject("VISUAL")) || new Topfeed({ url: this.url, type: "VISUAL", hash: "" });
+        const old =
+            (await this.getTopfeedObject("VISUAL")) || new Topfeed({ url: this.httpURL, type: "VISUAL", hash: "" });
 
         const isNew = old?.hash !== hash;
 

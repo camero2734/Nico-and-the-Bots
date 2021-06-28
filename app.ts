@@ -55,6 +55,13 @@ client.on("ready", async () => {
 
     await dynamicCommandSetup(commands);
 
+    // topfeedBot = new TopfeedBot(connection);
+
+    // await topfeedBot
+    //     .checkAll()
+    //     .catch(console.log)
+    //     .finally(() => process.exit(0));
+
     interactions
         .withServer(new GatewayServer((handler) => client.ws.on("INTERACTION_CREATE" as Discord.WSEventType, handler)))
         .registerCommands(commands, false)
@@ -68,12 +75,6 @@ client.on("ready", async () => {
     });
 
     sacarverBot = new SacarverBot(connection);
-    topfeedBot = new TopfeedBot(connection);
-
-    // await topfeedBot
-    //     .checkAll()
-    //     .catch(console.log)
-    //     .finally(() => process.exit(0));
 
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
@@ -82,6 +83,10 @@ client.on("ready", async () => {
     const guild = await client.guilds.fetch(guildID);
     const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
     await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
+    await guild.members.fetch();
+    await botChan.send({
+        embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
+    });
 });
 
 interactions.on("error", console.log);

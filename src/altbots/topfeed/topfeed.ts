@@ -29,7 +29,13 @@ export class TopfeedBot {
     }
 
     #generateWebsites(): void {
-        this.websites = [new SiteWatcher("http://dmaorg.info", "DMAORG 404 Page", ["VISUAL"], this.ctx)];
+        // prettier-ignore
+        this.websites = [
+            // new SiteWatcher("https://dmaorg.info", "DMAORG 404 Page", ["VISUAL", "HTML"], this.ctx),
+            // new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["VISUAL", "HTML"], this.ctx),
+            new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"], this.ctx)
+                .setDisplayedURL("https://live.twentyonepilots.com")
+        ];
     }
 
     async checkAll(): Promise<void> {

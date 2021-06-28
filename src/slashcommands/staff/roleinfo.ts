@@ -21,6 +21,7 @@ export const Executor: CommandRunner<{
     role4?: Snowflake;
     role5?: Snowflake;
 }> = async (ctx) => {
+    await ctx.defer();
     const roles = Object.values(ctx.opts);
 
     const embeds: MessageEmbedOptions[] = [];

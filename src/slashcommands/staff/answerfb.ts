@@ -50,7 +50,7 @@ export const Executor: CommandRunner<{ applicationid: Snowflake; approve: "appro
         if (!dm) await chan.send(`Unable to DM <@${member.user.id}>. Please inform them manually that they were ${approve}.`); // prettier-ignore
         else {
             const embed = new MessageEmbed()
-                .setColor(role.hexColor)
+                .setColor(role.color)
                 .setDescription(`You were ${approve} for the Firebreathers role.`)
                 .addField("Reason", reason);
             if (approve === "denied")
@@ -66,7 +66,7 @@ export const Executor: CommandRunner<{ applicationid: Snowflake; approve: "appro
         applicationEmbed.setFooter(`Application ${approve}`);
         if (approve === "approved") {
             await member.roles.add(role.id);
-            applicationEmbed.setColor(role.hexColor);
+            applicationEmbed.setColor(role.color);
         }
         await m.edit({ embeds: [applicationEmbed] });
 

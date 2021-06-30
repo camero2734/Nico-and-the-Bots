@@ -33,7 +33,7 @@ const filter = async (msg: Message): Promise<boolean> => {
 
     const staffEmbed = new MessageEmbed()
         .setAuthor(member.displayName, member.user.displayAvatarURL())
-        .setColor("FF0000")
+        .setColor("#FF0000")
         .setTitle("Slur detected")
         .setDescription(msg.content)
         .addField("Word detected", `\`${slur.replace(/[aeiou]/g, "*")}\``);

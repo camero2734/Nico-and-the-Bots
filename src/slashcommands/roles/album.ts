@@ -51,5 +51,5 @@ export const Executor: CommandRunner<{ album: Snowflake }> = async (ctx) => {
     const role = await ctx.member.guild.roles.fetch(roleID);
     if (!role) throw new CommandError("Unable to find role");
 
-    ctx.embed(new MessageEmbed().setDescription(`You now have the ${role.name} album role!`).setColor(role.hexColor));
+    ctx.embed(new MessageEmbed().setDescription(`You now have the ${role.name} album role!`).setColor(role.color));
 };

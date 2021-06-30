@@ -146,7 +146,7 @@ async function giveGold(msg: Message, connection: Connection): Promise<Message |
 
     const embed = new MessageEmbed()
         .setAuthor(msg.member.displayName, msg.author.displayAvatarURL())
-        .setColor("FCE300")
+        .setColor("#FCE300")
         .setDescription(msg.content)
         .addField("Channel", (msg.channel as TextChannel).name, true)
         .addField("Score", `0`, true)

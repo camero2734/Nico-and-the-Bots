@@ -25,7 +25,7 @@ export const Executor: CommandRunner<{ title: string; details: string }> = async
 
     const embed = new MessageEmbed()
         .setAuthor(`Suggestion from ${ctx.member.displayName}`, ctx.member.user.displayAvatarURL())
-        .setColor(ctx.member.displayHexColor)
+        .setColor(ctx.member.displayColor)
         .setTitle(title)
         .setDescription(details);
 

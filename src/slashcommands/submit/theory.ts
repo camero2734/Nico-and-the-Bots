@@ -35,7 +35,7 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .setColor(ctx.member.displayHexColor)
+        .setColor(ctx.member.displayColor)
         .setTitle(title)
         .setDescription(theory)
         .setFooter(

@@ -227,7 +227,7 @@ closeChannel.handler = async (interaction, connection, args) => {
     // prettier-ignore
     const warningEmbed = new MessageEmbed()
         .setDescription("This channel is currently being archived. Once that is done, the channel will be deleted. You may cancel this by pressing the cancel button.")
-        .setColor("FF0000")
+        .setColor("#FF0000")
         .addField("Closed by", interactionMem.toString());
 
     const cancelActionRow = new MessageActionRow().addComponents([

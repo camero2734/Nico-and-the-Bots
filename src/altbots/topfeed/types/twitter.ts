@@ -122,7 +122,7 @@ export class TwitterWatcher extends Watcher<TweetData> {
                     `https://twitter.com/${tweeterUsername}/status/${tweet.id}`
                 ) // prettier-ignore
                 .setThumbnail(tweeterImage)
-                .setColor("55ADEE")
+                .setColor("#55ADEE")
                 .setDescription(tweet.text)
                 .setTimestamp(date);
 

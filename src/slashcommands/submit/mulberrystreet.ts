@@ -81,7 +81,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .setColor("E3B3D8")
+        .setColor("#E3B3D8")
         .setTitle(`"${title}"`)
         .setDescription(
             `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`

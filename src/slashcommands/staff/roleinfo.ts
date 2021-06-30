@@ -32,7 +32,7 @@ export const Executor: CommandRunner<{
 
         const embed = new MessageEmbed();
         embed.setTitle(role.name);
-        embed.setColor(role.hexColor);
+        embed.setColor(role.color);
         embed.addField("Hex", role.hexColor);
         embed.addField("Members", `${role.members.size}`);
         embed.addField("Created", `${role.createdAt}`);

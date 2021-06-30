@@ -188,7 +188,7 @@ export const Executor: CommandRunner = async (ctx) => {
             const roleEmbed = new MessageEmbed()
                 .setAuthor(title, shopImage)
                 .setTitle(role.name)
-                .setColor(role.hexColor)
+                .setColor(role.color)
                 .setDescription(`Would you like to purchase this item?`)
                 .addField("Cost", `${item.data.credits}`, true)
                 .addField("Your credits", `${userEconomy.credits} → ${userEconomy.credits - item.data.credits}`, true)

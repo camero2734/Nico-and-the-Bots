@@ -40,7 +40,7 @@
         "date-fns": "^2.22.1",
         "dayjs": "^1.10.5",
         "diff": "^5.0.0",
-        "discord.js": "^13.0.0-dev.b15d825bb3acdf432b94d8413a7a964ccc8734bc",
+        "discord.js": "^13.0.0-dev.64f093f.1625054868",
         "emoji-regex": "^7.0.3",
         "eslint": "^7.26.0",
         "fastify": "^3.15.1",

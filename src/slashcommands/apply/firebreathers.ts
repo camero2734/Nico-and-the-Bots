@@ -110,13 +110,15 @@ const withContext = async (ctx: ExtendedContext) => {
     const role = await ctx.member.guild.roles.fetch(roles.deatheaters);
     const NO_RESPONSE = "*Nothing yet*";
 
+    if (!role) throw new Error("No deatheaters role");
+
     const answers: Record<string, string> = {};
 
     return {
         async askQuestion(question: string, description: string, requiresAnswer = true): Promise<string> {
             const embed = new MessageEmbed()
                 .setTitle(question)
-                .setColor(role?.hexColor as string)
+                .setColor(role.color)
                 .setDescription(description)
                 .addField("\u200b", "\u200b")
                 .addField("Your response", NO_RESPONSE)
@@ -154,7 +156,7 @@ const withContext = async (ctx: ExtendedContext) => {
             await new Promise((resolve) => {
                 ctx.registerComponent("continue", (context) => {
                     if (requiresAnswer && field.value === NO_RESPONSE) {
-                        embed.setColor("FF0000");
+                        embed.setColor("#FF0000");
                         ctx.editOriginal({
                             embeds: [embed.toJSON()],
                             components: [(<unknown>actionRow) as ComponentActionRow]

@@ -1,13 +1,12 @@
 import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
-import { MessageAttachment, MessageEmbed, Snowflake } from "discord.js";
+import { MessageEmbed } from "discord.js";
 import F from "helpers/funcs";
 import { Question } from "helpers/verified-quiz/question";
-import fetch from "node-fetch";
 import R from "ramda";
 import { CommandOptionType } from "slash-create";
-import QuizQuestions from "../../helpers/verified-quiz/quiz";
 import progressBar from "string-progressbar";
+import QuizQuestions from "../../helpers/verified-quiz/quiz";
 
 export const Options: CommandOptions = {
     description: "Shows stats about verified questions",

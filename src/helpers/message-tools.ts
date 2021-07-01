@@ -12,11 +12,18 @@ import {
     MessageButton,
     MessageComponentInteraction,
     MessageComponentInteractionCollector,
+    MessageEmbed,
     Snowflake,
     TextChannel
 } from "discord.js";
 import { ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
 import F from "./funcs";
+
+export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {
+    const baseEmbed = new MessageEmbed().setDescription(strings.join(""));
+    if (color) baseEmbed.setColor(color);
+    return baseEmbed;
+}
 
 export const MessageTools = {
     async awaitMessage(userID: string, channel: TextChannel, timeMS: number): Promise<Message | null> {

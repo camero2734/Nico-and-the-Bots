@@ -88,7 +88,7 @@ answerListener.handler = async (interaction) => {
     const selected = interaction.values;
     if (!Array.isArray(selected) || selected.length < 1) return;
 
-    const allRoles = Object.values(tf) as Snowflake[];
+    const allRoles: Snowflake[] = Object.values(tf);
     const hasRoles = member.roles.cache.array().filter((r) => allRoles.includes(r.id));
 
     // Remove old roles first

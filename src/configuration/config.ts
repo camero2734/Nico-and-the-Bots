@@ -108,6 +108,7 @@ export const roles = <const>{
     announcements: "357682068785856514",
     artistmusician: "341029793954922496",
     verifiedtheories: "475388751711830066",
+    dema: "451217741584793601",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",

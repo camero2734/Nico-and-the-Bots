@@ -1,45 +1,111 @@
-import { CommandOptionType } from "slash-create";
-import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { CommandOptionType, ComponentActionRow } from "slash-create";
+import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import {
+    EmojiIdentifierResolvable,
+    GuildMember,
+    Message,
+    MessageActionRow,
+    MessageEmbed,
+    MessageSelectMenu,
+    Snowflake
+} from "discord.js";
 import * as R from "ramda";
 import F from "helpers/funcs";
-import { roles } from "configuration/config";
-
-const topfeedList = R.keys(roles.topfeed.selectable);
-type OptsType = Record<typeof topfeedList[number], boolean>;
+import { roles, userIDs } from "configuration/config";
+import { MessageContext } from "helpers";
 
 export const Options: CommandOptions = {
     description: "Gives you notification roles for topfeed channels (when someone posts on SM, DMAORG updates, etc.)",
-    options: topfeedList.map((name) => ({
-        name,
-        description: `Enable or disable notifications for ${F.titleCase(name)}`,
-        required: false,
-        type: CommandOptionType.BOOLEAN
-    }))
+    options: [
+        {
+            name: "removeall",
+            description: "Removes all your topfeed roles",
+            type: CommandOptionType.BOOLEAN,
+            required: false
+        }
+    ]
 };
 
-export const Executor: CommandRunner<OptsType> = async (ctx) => {
-    const chosenRoles = F.entries(ctx.opts).filter((e) => e[1]); // Only want ones they selected True for
-    const toGive = chosenRoles.map((e) => roles.topfeed.selectable[e[0]]); // Map to the role IDs
+const tf = roles.topfeed.selectable;
+const emojiMap: Record<typeof tf[keyof typeof tf], Snowflake> = {
+    [tf.tyler]: "331910425576996864",
+    [tf.josh]: "537470356609302531",
+    [tf.band]: "832772733002973195",
+    [tf.dmaorg]: "404458118299254785",
+    [tf.jenna]: "802951666345181235",
+    [tf.debby]: "699004652481544194",
+    [tf.interviews]: "441115791509684235",
+    [tf.jim]: "587034603714379788",
+    [tf.other]: "694781760407601233"
+};
 
-    const remove = R.difference(R.values(roles.topfeed.selectable), toGive);
+const answerListener = new CommandComponentListener("topfeedChoose", []);
+export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
-    // Remove the roles the user didn't request
-    await ctx.member.roles.remove(remove);
+export const Executor: CommandRunner<{ removeall?: boolean }> = async (ctx) => {
+    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is under construction");
 
-    const embed = new MessageEmbed().setAuthor(ctx.member.displayName, ctx.user.avatarURL);
-
-    if (toGive.length > 0) {
-        // Add the roles they selected and the divider role
-        await ctx.member.roles.add([roles.topfeed.divider, ...toGive]);
-        embed.setDescription(
-            `Your topfeed roles have been updated to ${chosenRoles.map((c) => "`" + c[0] + "`").join(", ")}!`
-        );
-    } else {
-        // Remove the divider role since no more topfeed roles
+    if (ctx.opts.removeall) {
+        for (const role of Object.values(tf)) {
+            await ctx.member.roles.remove(role);
+        }
         await ctx.member.roles.remove(roles.topfeed.divider);
-        embed.setDescription("Removed all of your topfeed roles.");
+        return ctx.send({ embeds: [new MessageEmbed().setDescription("All your roles have been removed.").toJSON()] });
     }
 
-    await ctx.embed(embed);
+    const options = Object.entries(roles.topfeed.selectable);
+    const menu = new MessageSelectMenu()
+        .addOptions(
+            options.map(([roleName, roleID]) => ({
+                label: roleName,
+                description: `Enable notifications for ${roleName}`,
+                value: roleID,
+                emoji: { id: emojiMap[roleID] } as EmojiIdentifierResolvable
+            }))
+        )
+        .setPlaceholder("Select the topfeed role(s) you want")
+        .setMinValues(0)
+        .setMaxValues(options.length)
+        .setCustomID(answerListener.generateCustomID({}));
+
+    const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
+
+    const embed = new MessageEmbed().setDescription(
+        "Select your topfeed roles below. You will receive a ping when the channel receives an update."
+    );
+
+    await ctx.send({
+        components: [actionRow],
+        embeds: [embed.toJSON()]
+    });
+};
+
+answerListener.handler = async (interaction) => {
+    if (!interaction.isSelectMenu() || !interaction.member) return;
+
+    const member = interaction.member as GuildMember;
+
+    const selected = interaction.values;
+    if (!Array.isArray(selected) || selected.length < 1) return;
+
+    const allRoles = Object.values(tf) as Snowflake[];
+    const hasRoles = member.roles.cache.array().filter((r) => allRoles.includes(r.id));
+
+    // Remove old roles first
+    for (const role of hasRoles) {
+        await member.roles.remove(role);
+    }
+
+    // Add new roles
+    for (const role of selected) {
+        await member.roles.add(role);
+    }
+
+    // Add divider
+    await member.roles.add(roles.topfeed.divider);
+
+    const text = `You now have the following topfeed roles:\n${selected.map((s) => `<@&${s}>`).join(" ")}`;
+
+    interaction.deferred = true;
+    await interaction.editReply({ embeds: [new MessageEmbed().setDescription(text)], components: [] });
 };

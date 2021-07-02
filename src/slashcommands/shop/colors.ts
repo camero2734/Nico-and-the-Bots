@@ -260,7 +260,13 @@ export const Executor: CommandRunner = async (ctx) => {
                     btnCtx.editOriginal({ embeds: [roleEmbed.toJSON()], components: [] });
                 }
 
-                if (contraband) sendViolationNotice(ctx.member, ctx.channel, ctx.connection, role.name);
+                if (contraband)
+                    sendViolationNotice(ctx.member, ctx.channel, ctx.connection, {
+                        identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
+                        reason: `Possession of ${role.name.toUpperCase()}`,
+                        mainBody:
+                            "You are in volation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found in possession of regulated materials that have been outlawed by the Dema Council. Further actions will be taken to ensure these violations will not occur again."
+                    });
             });
         }
     }

@@ -1,8 +1,26 @@
 import { Canvas } from "canvas";
 import { channelIDs, roles } from "configuration/config";
-import { CommandComponentListener, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
+import {
+    CommandComponentListener,
+    CommandError,
+    CommandOptions,
+    CommandRunner,
+    ExtendedContext
+} from "configuration/definitions";
+import { Counter } from "database/entities/Counter";
+import { Economy } from "database/entities/Economy";
+import { Item } from "database/entities/Item";
 import { format } from "date-fns";
-import { Message, MessageAttachment } from "discord.js";
+import {
+    GuildMember,
+    Interaction,
+    Message,
+    MessageAttachment,
+    MessageButton,
+    MessageComponentInteraction,
+    SelectMenuInteraction,
+    TextChannel
+} from "discord.js";
 import {
     EmojiIdentifierResolvable,
     MessageActionRow,
@@ -12,20 +30,15 @@ import {
     Snowflake
 } from "discord.js";
 import fs from "fs";
+import { sendViolationNotice } from "helpers/dema-notice";
 import F from "helpers/funcs";
 import * as R from "ramda";
 import { CommandContext, CommandOptionType, ComponentActionRow } from "slash-create";
+import { Connection } from "typeorm";
 
 export const Options: CommandOptions = {
-    description: "Opens a box",
-    options: [
-        {
-            name: "viewlist",
-            type: CommandOptionType.BOOLEAN,
-            description: "View the list of available supplies",
-            required: false
-        }
-    ]
+    description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
+    options: []
 };
 
 const districtOrder = <const>["Andre", "Lisden", "Keons", "Reisdro", "Sacarver", "Listo", "Vetomo", "Nills", "Nico"];
@@ -52,6 +65,13 @@ type PercentlessPrize = { type: PrizeType } & (
 );
 
 type Prize = PercentlessPrize & { percent: number };
+
+function getPrizeName(prize: Prize): string {
+    if (prize.type === PrizeType.Credits) return `crate of ${prize.amount} credits`;
+    else if (prize.type === PrizeType.Role) return `<@&${prize.id}> role`;
+    else if (prize.type === PrizeType.Item) return `${prize.item}`;
+    else return "prize";
+}
 
 class District<T extends typeof districtOrder[number]> {
     difficulty: string;
@@ -105,10 +125,6 @@ class District<T extends typeof districtOrder[number]> {
     }
     addRole(id: Snowflake, chance: `${number}%`): this {
         return this._addPrize({ type: PrizeType.Role, id }, chance);
-    }
-    addRoles(roles: [Snowflake, `${number}%`][]): this {
-        for (const [id, percent] of roles) this.addRole(id, percent);
-        return this;
     }
     _addPrize(percentlessPrize: PercentlessPrize, chance: `${number}%`): this {
         const percent = +chance.substring(0, chance.length - 1) / 100;
@@ -179,25 +195,30 @@ const districts: Array<District<typeof districtOrder[number]>> = [
         .addRole(roles.colors.DExclusive["Bandito Yellow"], "0.25%")
 ];
 
-const answerListener = new CommandComponentListener("banditosBishops", []);
-export const ComponentListeners: CommandComponentListener[] = [answerListener];
+const answerListener = new CommandComponentListener("banditosBishopsSelect", []);
+const buttonListener = new CommandComponentListener("banditosBishopsButton", []);
+export const ComponentListeners: CommandComponentListener[] = [answerListener, buttonListener];
 
-export const Executor: CommandRunner<{ viewlist: boolean }> = async (ctx) => {
+export const Executor: CommandRunner = async (ctx) => {
     await ctx.defer();
-
-    if (ctx.opts.viewlist) return sendList(ctx);
 
     const buffer = await fs.promises.readFile("src/assets/images/banditos.gif");
 
+    const userEconomy = await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id });
+    const tokens = userEconomy?.dailyBox.tokens;
+
+    if (!tokens) throw new CommandError("You don't have any tokens! Use the `/econ daily` command to get some.");
+
     // prettier-ignore
     const fields = [
-        {name: "**`[SYSTEM]`**", value: `Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}. **${5} tokens available.**`},
+        {name: "**`[SYSTEM]`**", value: `Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}. **${tokens} tokens available.**`},
         {name: "**`[SYSTEM]`**", value: `\`B@ND1?0S\` connected from \`153.98.64.214\`. Connection unstable.`},
         {name: "**`[B@ND1?0S]`**", value: "We have &eft suppl&es%<round DEMA. Yo> must evade them;.. You cannot get?caught."}
     ]
 
     const embed = new MessageEmbed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
         .addFields(fields)
         .setColor("#FCE300")
         .setThumbnail("attachment://file.gif")
@@ -221,11 +242,137 @@ export const Executor: CommandRunner<{ viewlist: boolean }> = async (ctx) => {
 
     const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
 
-    await ctx.send({ embeds: [embed.toJSON()], file: [{ name: "file.gif", file: buffer }], components: [actionRow] });
+    const buttonActionRow = new MessageActionRow()
+        .addComponents(
+            new MessageButton({
+                label: "View Supply List",
+                customID: buttonListener.generateCustomID({}),
+                style: "PRIMARY"
+            })
+        )
+        .toJSON() as ComponentActionRow;
+
+    await ctx.send({
+        embeds: [embed.toJSON()],
+        file: [{ name: "file.gif", file: buffer }],
+        components: [actionRow, buttonActionRow]
+    });
 };
 
-answerListener.handler = async (interaction) => {
-    if (!interaction.isSelectMenu()) return;
+async function memberCaught(
+    interaction: SelectMenuInteraction,
+    connection: Connection,
+    district: District<typeof districtOrder[number]>,
+    userEconomy: Economy
+): Promise<void> {
+    await (<Message>interaction.message).removeAttachments();
+    const member = interaction.member as GuildMember;
+
+    const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
+    const tokensRemaining = `${userEconomy.dailyBox.tokens} token${
+        userEconomy.dailyBox.tokens === 1 ? "" : "s"
+    } remaining`;
+
+    const embed = new MessageEmbed()
+        .setColor("#EA523B")
+        .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
+        .setAuthor(district.bishop, emojiURL)
+        .setDescription(
+            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
+        )
+        .setFooter(`You win nothing. ${tokensRemaining}`);
+
+    await sendViolationNotice(interaction.member as GuildMember, interaction.channel as TextChannel, connection, {
+        identifiedAs: "CONSPIRING WITH THE BANDITOS",
+        found: "trespassing while conspiring against the Dema Council",
+        reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
+        issuingBishop: district.bishop
+    });
+
+    await connection.manager.save(userEconomy);
+
+    await interaction.editReply({
+        embeds: [embed],
+        components: []
+    });
+}
+
+async function memberWon(
+    interaction: SelectMenuInteraction,
+    connection: Connection,
+    district: District<typeof districtOrder[number]>,
+    userEconomy: Economy
+) {
+    const prize = district.pickPrize();
+    const tokensRemaining = `${userEconomy.dailyBox.tokens} token${
+        userEconomy.dailyBox.tokens === 1 ? "" : "s"
+    } remaining`;
+    const member = interaction.member as GuildMember;
+
+    let prizeDescription = `You now have ${userEconomy.credits} credits.`;
+    switch (prize.type) {
+        case PrizeType.Credits:
+            userEconomy.credits += prize.amount;
+            break;
+        case PrizeType.Role: {
+            const isColorRole = Object.values(roles.colors).some((group) => Object.values(group).some((id) => id === prize.id)); // prettier-ignore
+            if (isColorRole) {
+                const colorRoleData = { identifier: member.id, type: "ColorRole", title: prize.id };
+                const colorRole =  (await connection.getRepository(Item).findOne(colorRoleData)) || new Item(colorRoleData); // prettier-ignore
+                await connection.manager.save(colorRole);
+                prizeDescription = `You may equip this role using the \`/roles color\` command.`;
+            } else await member.roles.add(prize.id);
+            break;
+        }
+        case PrizeType.Item: {
+            if (prize.item === "BOUNTY") {
+                userEconomy.dailyBox.steals++;
+                prizeDescription =
+                    "A `Bounty` may be used against another member of the server to report them to the Bishops. If they do not have a `Jumpsuit`, they will receive a violation notice and you will receive 1000 credits as the bounty reward";
+            } else if (prize.item === "JUMPSUIT") {
+                userEconomy.dailyBox.blocks++;
+                prizeDescription =
+                    "A `Jumpsuit` will protect you if another member sends the Bishops after you with a `Bounty`. It will prevent the Bishops from finding you, effectively cancelling their `Bounty`.";
+            }
+            break;
+        }
+    }
+
+    const prizeName = getPrizeName(prize);
+
+    const embed = new MessageEmbed()
+        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setColor("#FCE300")
+        .setThumbnail("attachment://file.gif")
+        .setTitle(`You found a ${prizeName}!`)
+        .setDescription(prizeDescription)
+        .setFooter(tokensRemaining);
+
+    await connection.manager.save(userEconomy);
+
+    await interaction.editReply({
+        embeds: [embed],
+        components: []
+    });
+}
+
+async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
+    const reply = (await interaction.fetchReply()) as Message;
+    const originalEmbed = reply.embeds[0];
+    originalEmbed.fields = [];
+    originalEmbed
+        .setDescription(description)
+        .setFooter(
+            "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
+        )
+        .setThumbnail("attachment://file.gif");
+
+    await interaction.editReply({ components: [], embeds: [originalEmbed] });
+}
+
+answerListener.handler = async (interaction, connection) => {
+    const member = interaction.member as GuildMember;
+    if (!interaction.isSelectMenu() || !member) return;
     interaction.deferred = true;
 
     const [_districtNum] = interaction.values || [];
@@ -233,44 +380,33 @@ answerListener.handler = async (interaction) => {
 
     const districtNum = +_districtNum;
     const district = districts[districtNum];
-    const bishop = district.bishop;
 
-    const emojis = await interaction.guild?.emojis.fetch();
-    const emoji = emojis?.find((e) => e.id === district.emoji);
-    if (!emoji) return;
+    await sendWaitingMessage(interaction, `Searching ${district.bishop}'s district...`);
+    await F.wait(1500);
 
-    const embed: MessageEmbed = new MessageEmbed();
+    const userEconomy = await connection.getRepository(Economy).findOne({ userid: member.id });
+    const tokens = userEconomy?.dailyBox.tokens;
+    if (!userEconomy || !tokens) return interaction.deleteReply();
+
+    userEconomy.dailyBox.tokens--; // Take away a token
 
     const CHANCE_CAUGHT = District.catchPercent(districtNum);
 
-    if (Math.random() < CHANCE_CAUGHT) {
-        await (<Message>interaction.message).removeAttachments();
+    const ran = Math.random();
+    const isCaught = ran < CHANCE_CAUGHT;
 
-        embed
-            .setColor("#EA523B")
-            .setTitle(`VIOLATION DETECTED BY ${bishop.toUpperCase()}`)
-            .setAuthor(bishop, emoji.url)
-            .setDescription(
-                `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
-            )
-            .setFooter("You win nothing.");
-    } else {
-        const { percent, ...prize } = district.pickPrize();
-        embed
-            .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-            .setColor("#FCE300")
-            .setThumbnail("attachment://file.gif")
-            .setTitle("You won a prize!")
-            .setDescription(`Prize won:\nChance of winning: ${percent * 100}%\n${JSON.stringify(prize)}`);
-    }
-
-    await interaction.editReply({
-        embeds: [embed],
-        components: []
-    });
+    if (isCaught) return memberCaught(interaction, connection, district, userEconomy);
+    else return memberWon(interaction, connection, district, userEconomy);
 };
 
-async function sendList(ctx: ExtendedContext): Promise<void> {
+buttonListener.handler = async (interaction) => {
+    interaction.deferred = true;
+
+    await sendWaitingMessage(interaction, "Downloading `supplyList.txt` from `B@ND1?0S`...");
+    await F.wait(1500);
+
+    const member = interaction.member as GuildMember;
+
     const embed = new MessageEmbed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setColor("#FCE300")
@@ -279,14 +415,10 @@ async function sendList(ctx: ExtendedContext): Promise<void> {
             "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
         );
 
-    const emojis = await ctx.member.guild.emojis.fetch();
-    const buffer = await fs.promises.readFile("src/assets/images/banditos.gif");
-
     for (let i = 0; i < districts.length; i++) {
         const district = districts[i];
         const bishop = district.bishop;
-
-        const emoji = emojis.find((e) => district.emoji === e.id);
+        const emoji = `<:emoji:${district.emoji}>`;
 
         const creditsPrize = district.getCreditsPrize();
         // Prize types
@@ -295,9 +427,8 @@ async function sendList(ctx: ExtendedContext): Promise<void> {
         const prizeStrings: string[] = [];
         for (const prize of prizes) {
             const chance = District.convPercent(prize.percent);
-            if (prize.type === PrizeType.Credits) prizeStrings.push(`\`${chance}\` crate of ${prize.amount} credits`);
-            else if (prize.type === PrizeType.Role) prizeStrings.push(`\`${chance}\` <@&${prize.id}> role`);
-            else if (prize.type === PrizeType.Item) prizeStrings.push(`\`${chance}\` for a \`${prize.item}\``);
+            const prizeName = getPrizeName(prize);
+            prizeStrings.push(`\`${chance}\` for a ${prizeName}`);
         }
 
         const prizeStr = prizeStrings.map((p) => `➼ ${p}`).join("\n");
@@ -313,5 +444,5 @@ async function sendList(ctx: ExtendedContext): Promise<void> {
         embed.addField(`What is a ${item.toLowerCase()}?`, description, true);
     }
 
-    await ctx.send({ embeds: [embed.toJSON()], file: { name: "file.gif", file: buffer } });
-}
+    await interaction.editReply({ embeds: [embed.toJSON()], components: [] });
+};

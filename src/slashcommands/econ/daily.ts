@@ -16,6 +16,8 @@ const albumRoles = roles.albums;
 export const Executor: CommandRunner = async (ctx) => {
     const { client, connection } = ctx;
 
+    await ctx.defer();
+
     let userEconomy = await connection.getRepository(Economy).findOne({ userid: ctx.member.id });
     if (!userEconomy) userEconomy = new Economy({ userid: ctx.member.id });
 
@@ -103,8 +105,8 @@ export const Executor: CommandRunner = async (ctx) => {
         }
     })();
     const background = await loadImage(`./src/assets/images/daily_cards/${backgroundName}.png`);
-    const cf = await loadImage("./src/assets/badges/cflogo.png");
-    const dd = await loadImage("./src/assets/badges/dd.png");
+    const cf = await loadImage("./src/assets/badges/commonfren.png");
+    const dd = await loadImage("./src/assets/badges/firebreather.png");
 
     const canvas = createCanvas(500, 162);
     const cctx = canvas.getContext("2d");
@@ -152,17 +154,17 @@ export const Executor: CommandRunner = async (ctx) => {
         //JUST REACHED 5
         tokenMessage = `You earned **${after - before} token${
             after - before === 1 ? "" : "s"
-        }**! You have now reached the **maximum number of 5 tokens**, so you should spend them with \`!blurrybox.\``;
+        }**! You have now reached the **maximum number of 5 tokens**, so you should spend them with \`/econ resupply\``;
     } else if (after === before && after === 5) {
         //STILL AT 5
-        tokenMessage = "**You have the maximum number of tokens, so you did not earn any today!** Spend them with `!blurrybox.`"; // prettier-ignore
+        tokenMessage = "**You have the maximum number of tokens, so you did not earn any today!** Spend them with `/econ resupply`."; // prettier-ignore
     } else {
         //EARNED SOME
         tokenMessage = `You earned **${after - before} token${
             after - before === 1 ? "" : "s"
         }**! You now have **${after} token${after === 1 ? "" : "s"} total**- you can spend ${
             after === 1 ? "it" : "them"
-        } with \`!blurrybox.\``;
+        } with \`/econ resupply\``;
     }
 
     try {

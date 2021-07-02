@@ -33,9 +33,9 @@ export async function sendViolationNotice(
     member: GuildMember,
     channel: TextChannel,
     connection: Connection,
-    options: { identifiedAs: string; mainBody: string; reason: string; issuingBishop?: string }
+    options: { identifiedAs: string; found: string; reason: string; issuingBishop?: string }
 ): Promise<void> {
-    const { identifiedAs, reason, issuingBishop, mainBody } = options;
+    const { identifiedAs, reason, issuingBishop, found } = options;
 
     const chan = channel.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
     if (!chan) return;
@@ -75,7 +75,8 @@ export async function sendViolationNotice(
         cctx.font = "45px Arial Narrow";
         cctx.textAlign = "left";
         const mx = 163;
-        fillParagraph(cctx, `NOTICE: ${mainBody}\n\nWe have people on the way. We want you home safe.`, mx, 540, width - 2 * mx); // prettier-ignore
+        const body = `You are in volation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found ${found}. Further actions will be taken to ensure these violations will not occur again`;
+        fillParagraph(cctx, `NOTICE: ${body}.\n\nWe have people on the way. We want you home safe.`, mx, 540, width - 2 * mx); // prettier-ignore
 
         // Infraction No.
         cctx.font = "50px Arial Narrow";
@@ -97,7 +98,7 @@ export async function sendViolationNotice(
         await chan.createOverwrite(member.id, { VIEW_CHANNEL: true });
 
         const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
-        const m = await chan.send({ embeds: [transmissionEmbed] });
+        const m = await chan.send({ content: `${member}`, embeds: [transmissionEmbed] });
         for (let i = 0; i < 5; i++) {
             const description = transmissionEmbed.description as string;
             transmissionEmbed.description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
@@ -108,7 +109,7 @@ export async function sendViolationNotice(
         await F.wait(1000);
 
         await m.edit({
-            content: `<@${member.id}>`,
+            content: `${member}`,
             embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")]
         });
         await chan.send({files: [new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)]}); // prettier-ignore

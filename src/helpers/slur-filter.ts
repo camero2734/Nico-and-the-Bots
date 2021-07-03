@@ -7,7 +7,6 @@ const slursEncoded =
     "Y2hpbms6dHJhbm55OnRyYW5uaWVzOmZhZzpkeWtlOm5pZ2dlcjpuaWdnYTpkaWtlOmtpa2U6YmVhbmVyOnJldGFyZDpsaWJ0YXJk";
 
 const slurs = Buffer.from(slursEncoded, "base64").toString("utf-8").split(":");
-slurs.push("clear is a bad song");
 
 const filter = async (msg: Message): Promise<boolean> => {
     if (msg.author.bot) return false;

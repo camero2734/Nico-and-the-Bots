@@ -17,8 +17,10 @@ import {
 } from "discord.js";
 import F from "helpers/funcs";
 import {
+    ApplicationCommandOption,
     ApplicationCommandPermissionType,
     CommandContext,
+    CommandOptionType,
     Message,
     SlashCommand,
     SlashCommandOptions,
@@ -38,7 +40,7 @@ export class InteractiveError extends Error {}
 export type CommandCategory = "Staff" | "Games" | "Economy" | "Info" | "Roles" | "Social" | "Utility";
 
 export interface CommandOption {
-    [key: string]: string | number | boolean;
+    [key: string]: string | number | boolean | undefined;
 }
 export type CommandRunner<T extends CommandOption = {}> = (ctx: ExtendedContext<T>) => ReturnType<SlashCommand["run"]>;
 export type SubcommandRunner<T extends CommandOption = {}, U extends string = string> = Record<U, CommandRunner<T>>;
@@ -269,3 +271,42 @@ export interface WarningData {
     severity: number;
     content: string;
 }
+
+// Extracts the type from Options so they don't have to be manually typed
+type SnowflakeTypes = CommandOptionType.USER | CommandOptionType.CHANNEL | CommandOptionType.MENTIONABLE | CommandOptionType.ROLE; // prettier-ignore
+// prettier-ignore
+type ToPrimitiveType<T> = 
+    T extends SnowflakeTypes
+        ? Snowflake
+    : T extends CommandOptionType.BOOLEAN
+        ? boolean
+    : T extends CommandOptionType.INTEGER
+        ? number
+    : T extends CommandOptionType.STRING
+        ? string
+    : unknown;
+
+type AsArray<T extends ApplicationCommandOption> = [T["name"], T["type"], T["required"]];
+
+type ToObject<T extends ApplicationCommandOption> = AsArray<T> extends readonly [infer Key, infer Value, infer Required]
+    ? Key extends PropertyKey
+        ? { [P in Key]: Required extends true ? ToPrimitiveType<Value> : ToPrimitiveType<Value> | undefined }
+        : never
+    : never;
+
+type ToObjectsArray<T extends ApplicationCommandOption[]> = {
+    // @ts-expect-error: Cannot index, but it still works
+    [I in keyof T]: ToObject<T[I]>;
+};
+
+type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never; // prettier-ignore
+
+// @ts-expect-error: U is readonly but ToObjectArray wants mutable
+export type OptsType<T> = T extends PreservedOptions<infer U> ? UnionToIntersection<ToObjectsArray<U>[number]> : never;
+
+type PreservedOptions<T extends Readonly<ApplicationCommandOption[]>> = Omit<CommandOptions, "options"> & {
+    options: T;
+};
+
+// Returns the options as readonly so it can be used for OptsType
+export const createOptions = <T extends PreservedOptions<U>, U extends Readonly<ApplicationCommandOption[]>>(options: T): T => options; // prettier-ignore

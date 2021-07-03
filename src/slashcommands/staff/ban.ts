@@ -1,9 +1,7 @@
 import { roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandError, CommandOptions, CommandRunner, CommandTypeMap } from "configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
-
-const rules = <const>["Bothering Others", "Drama", "Spam", "NSFW/Slurs", "Other"];
 
 export const Options: CommandOptions = {
     description: "Submits a warning for a user",

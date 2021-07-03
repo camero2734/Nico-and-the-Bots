@@ -276,14 +276,14 @@ export interface WarningData {
 // Extracts the type from Options so they don't have to be manually typed
 type SnowflakeTypes = CommandOptionType.USER | CommandOptionType.CHANNEL | CommandOptionType.MENTIONABLE | CommandOptionType.ROLE; // prettier-ignore
 // prettier-ignore
-type ToPrimitiveType<BaseType> = 
-    BaseType extends SnowflakeTypes
+type ToPrimitiveType<OType> = 
+    OType extends SnowflakeTypes
         ? Snowflake
-    : BaseType extends CommandOptionType.BOOLEAN
+    : OType extends CommandOptionType.BOOLEAN
         ? boolean
-    : BaseType extends CommandOptionType.INTEGER
+    : OType extends CommandOptionType.INTEGER
         ? number
-    : BaseType extends CommandOptionType.STRING
+    : OType extends CommandOptionType.STRING
         ? string
     : unknown;
 
@@ -293,10 +293,12 @@ type DeepReadonly<T> = {
 
 type AsArray<T extends DeepReadonly<ApplicationCommandOption>> = [T["name"], T["type"], T["required"], T["choices"]];
 
+// Ensures that the choices array matches the specified type
 type ChoicesUnion<T extends DeepReadonly<ApplicationCommandOptionChoice[]>, P> = T[number]["value"] extends P
     ? T[number]["value"]
     : never;
 
+// prettier-ignore
 type ToObject<T extends DeepReadonly<ApplicationCommandOption>> = AsArray<T> extends readonly [
     infer Key,
     infer Value,
@@ -305,11 +307,10 @@ type ToObject<T extends DeepReadonly<ApplicationCommandOption>> = AsArray<T> ext
 ]
     ? Key extends PropertyKey
         ? {
-              [P in Key]: Required extends true
-                  ? Choices extends DeepReadonly<ApplicationCommandOptionChoice[]>
-                      ? ChoicesUnion<Choices, ToPrimitiveType<Value>>
-                      : ToPrimitiveType<Value>
-                  : ToPrimitiveType<Value> | undefined;
+              [P in Key]: (Choices extends DeepReadonly<ApplicationCommandOptionChoice[]> // If choices provided...
+                      ? ChoicesUnion<Choices, ToPrimitiveType<Value>> // Return those choices
+                      : ToPrimitiveType<Value> // Otherwise return basic type
+              ) | (Required extends true ? never : undefined) // If it's not required, it can also be undefined
           }
         : never
     : never;

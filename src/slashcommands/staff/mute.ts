@@ -5,7 +5,16 @@ export const Options = createOptions({
     description: "Mutes a user",
     options: <const>[
         { name: "user", description: "The user to mute", required: true, type: CommandOptionType.USER },
-        { name: "reason", description: "Reason for muting", required: true, type: CommandOptionType.STRING }
+        {
+            name: "reason",
+            description: "Reason for muting",
+            required: true,
+            type: CommandOptionType.INTEGER,
+            choices: [
+                { name: "Number", value: 5 },
+                { name: "Something", value: 4 }
+            ]
+        }
     ]
 });
 

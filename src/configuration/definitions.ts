@@ -18,6 +18,7 @@ import {
 import F from "helpers/funcs";
 import {
     ApplicationCommandOption,
+    ApplicationCommandOptionChoice,
     ApplicationCommandPermissionType,
     CommandContext,
     CommandOptionType,
@@ -275,38 +276,56 @@ export interface WarningData {
 // Extracts the type from Options so they don't have to be manually typed
 type SnowflakeTypes = CommandOptionType.USER | CommandOptionType.CHANNEL | CommandOptionType.MENTIONABLE | CommandOptionType.ROLE; // prettier-ignore
 // prettier-ignore
-type ToPrimitiveType<T> = 
-    T extends SnowflakeTypes
+type ToPrimitiveType<BaseType> = 
+    BaseType extends SnowflakeTypes
         ? Snowflake
-    : T extends CommandOptionType.BOOLEAN
+    : BaseType extends CommandOptionType.BOOLEAN
         ? boolean
-    : T extends CommandOptionType.INTEGER
+    : BaseType extends CommandOptionType.INTEGER
         ? number
-    : T extends CommandOptionType.STRING
+    : BaseType extends CommandOptionType.STRING
         ? string
     : unknown;
 
-type AsArray<T extends ApplicationCommandOption> = [T["name"], T["type"], T["required"]];
+type DeepReadonly<T> = {
+    readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
 
-type ToObject<T extends ApplicationCommandOption> = AsArray<T> extends readonly [infer Key, infer Value, infer Required]
+type AsArray<T extends DeepReadonly<ApplicationCommandOption>> = [T["name"], T["type"], T["required"], T["choices"]];
+
+type ChoicesUnion<T extends DeepReadonly<ApplicationCommandOptionChoice[]>, P> = T[number]["value"] extends P
+    ? T[number]["value"]
+    : never;
+
+type ToObject<T extends DeepReadonly<ApplicationCommandOption>> = AsArray<T> extends readonly [
+    infer Key,
+    infer Value,
+    infer Required,
+    infer Choices
+]
     ? Key extends PropertyKey
-        ? { [P in Key]: Required extends true ? ToPrimitiveType<Value> : ToPrimitiveType<Value> | undefined }
+        ? {
+              [P in Key]: Required extends true
+                  ? Choices extends DeepReadonly<ApplicationCommandOptionChoice[]>
+                      ? ChoicesUnion<Choices, ToPrimitiveType<Value>>
+                      : ToPrimitiveType<Value>
+                  : ToPrimitiveType<Value> | undefined;
+          }
         : never
     : never;
 
-type ToObjectsArray<T extends ApplicationCommandOption[]> = {
+type ToObjectsArray<T extends DeepReadonly<ApplicationCommandOption[]>> = {
     // @ts-expect-error: Cannot index, but it still works
     [I in keyof T]: ToObject<T[I]>;
 };
 
 type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never; // prettier-ignore
 
-// @ts-expect-error: U is readonly but ToObjectArray wants mutable
 export type OptsType<T> = T extends PreservedOptions<infer U> ? UnionToIntersection<ToObjectsArray<U>[number]> : never;
 
-type PreservedOptions<T extends Readonly<ApplicationCommandOption[]>> = Omit<CommandOptions, "options"> & {
+type PreservedOptions<T extends DeepReadonly<ApplicationCommandOption[]>> = Omit<CommandOptions, "options"> & {
     options: T;
 };
 
 // Returns the options as readonly so it can be used for OptsType
-export const createOptions = <T extends PreservedOptions<U>, U extends Readonly<ApplicationCommandOption[]>>(options: T): T => options; // prettier-ignore
+export const createOptions = <T extends PreservedOptions<U>, U extends DeepReadonly<ApplicationCommandOption[]>>(options: T): T => options; // prettier-ignore

@@ -14,6 +14,7 @@ import { channelIDs, guildID } from "configuration/config";
 import ConcertChannelManager from "helpers/concert-channels";
 import R from "ramda";
 import { TopfeedBot } from "altbots/topfeed/topfeed";
+import Scheduler from "./src/helpers/scheduler";
 
 // let ready = false;
 let connection: Connection;
@@ -132,6 +133,8 @@ function setup() {
     for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
 
     registerFont(`./src/assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
+
+    Scheduler(client, connection);
 }
 
 async function dynamicCommandSetup(commands: Command[]): Promise<void> {

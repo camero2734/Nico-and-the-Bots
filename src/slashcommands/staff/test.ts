@@ -12,7 +12,7 @@ export const Options: CommandOptions = {
 
 export const Executor: CommandRunner = async (ctx) => {
     const member = await ctx.member.guild.members.fetch("298244234912333824");
-    sendViolationNotice(ctx.member, ctx.channel, ctx.connection, {
+    sendViolationNotice(ctx.member, ctx.connection, {
         identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
         reason: "Possession of BANDITO GREEN",
         found: "in possession of regulated materials that have been outlawed by the Dema Council"

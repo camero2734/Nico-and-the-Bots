@@ -164,7 +164,11 @@ const ErrorHandler = (e: Error, ectx: ExtendedContext): void => {
             .setDescription(e.message)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet machine broke");
-        ectx.send({ embeds: [embed.toJSON()], ephemeral: e.sendEphemeral });
+        ectx.send({
+            embeds: [embed.toJSON()],
+            ephemeral: e.sendEphemeral,
+            allowedMentions: { users: [], everyone: false, roles: [] }
+        });
     } else {
         console.log(e);
         const embed = new MessageEmbed()

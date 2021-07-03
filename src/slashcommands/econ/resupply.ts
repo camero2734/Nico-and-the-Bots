@@ -1,40 +1,28 @@
-import { Canvas } from "canvas";
 import { channelIDs, roles } from "configuration/config";
-import {
-    CommandComponentListener,
-    CommandError,
-    CommandOptions,
-    CommandRunner,
-    ExtendedContext
-} from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
+import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Economy } from "database/entities/Economy";
-import { Item } from "database/entities/Item";
 import { format } from "date-fns";
 import {
+    EmojiIdentifierResolvable,
     GuildMember,
-    Interaction,
     Message,
-    MessageAttachment,
+    MessageActionRow,
     MessageButton,
     MessageComponentInteraction,
-    SelectMenuInteraction,
-    TextChannel
-} from "discord.js";
-import {
-    EmojiIdentifierResolvable,
-    MessageActionRow,
     MessageEmbed,
     MessageSelectMenu,
     MessageSelectOptionData,
-    Snowflake
+    SelectMenuInteraction,
+    Snowflake,
+    TextChannel
 } from "discord.js";
 import fs from "fs";
-import { sendViolationNotice } from "helpers/dema-notice";
 import F from "helpers/funcs";
 import * as R from "ramda";
-import { CommandContext, CommandOptionType, ComponentActionRow } from "slash-create";
+import { ComponentActionRow } from "slash-create";
 import { Connection } from "typeorm";
+import { Item } from "../../database/entities/Item";
+import { sendViolationNotice } from "../../helpers/dema-notice";
 
 export const Options: CommandOptions = {
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
@@ -135,7 +123,7 @@ class District<T extends typeof districtOrder[number]> {
 }
 
 // prettier-ignore
-const districts: Array<District<typeof districtOrder[number]>> = [
+export const districts: Array<District<typeof districtOrder[number]>> = [
     new District("Andre")
         .setDifficulty("Easiest")
         .setCredits(500),
@@ -209,17 +197,24 @@ export const Executor: CommandRunner = async (ctx) => {
 
     if (!tokens) throw new CommandError("You don't have any tokens! Use the `/econ daily` command to get some.");
 
+    const wrapXML = (xml: string) => `\`\`\`xml\n${xml}\n\`\`\``;
+
     // prettier-ignore
-    const fields = [
-        {name: "**`[SYSTEM]`**", value: `Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}. **${tokens} tokens available.**`},
-        {name: "**`[SYSTEM]`**", value: `\`B@ND1?0S\` connected from \`153.98.64.214\`. Connection unstable.`},
-        {name: "**`[B@ND1?0S]`**", value: "We have &eft suppl&es%<round DEMA. Yo> must evade them;.. You cannot get?caught."}
-    ]
+    const description = wrapXML([ 
+            `<SYSTEM> Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
+            "<SYSTEM> B4ND170S connected from 153.98.64.214. Connection unstable.",
+            "<B4ND170S> We have &eft suppl&es%^round DEMA. Yo> must evade them;.. You cannot get?caught."
+        ].join("\n\n")
+    );
 
     const embed = new MessageEmbed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
-        .addFields(fields)
+        .addField(
+            "**Tokens**",
+            `You have ${tokens} token${tokens === 1 ? "" : "s"} available. A token is used when searching a district.`
+        )
+        .addField("**CONSOLE**", description)
         .setColor("#FCE300")
         .setThumbnail("attachment://file.gif")
         .setFooter(
@@ -237,7 +232,7 @@ export const Executor: CommandRunner = async (ctx) => {
 
     const menu = new MessageSelectMenu()
         .addOptions(options)
-        .setPlaceholder("Select a district")
+        .setPlaceholder("Select a district to search")
         .setCustomID(answerListener.generateCustomID({}));
 
     const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
@@ -266,7 +261,6 @@ async function memberCaught(
     userEconomy: Economy
 ): Promise<void> {
     await (<Message>interaction.message).removeAttachments();
-    const member = interaction.member as GuildMember;
 
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${userEconomy.dailyBox.tokens} token${
@@ -282,8 +276,8 @@ async function memberCaught(
         )
         .setFooter(`You win nothing. ${tokensRemaining}`);
 
-    await sendViolationNotice(interaction.member as GuildMember, interaction.channel as TextChannel, connection, {
-        identifiedAs: "CONSPIRING WITH THE BANDITOS",
+    await sendViolationNotice(interaction.member as GuildMember, connection, {
+        identifiedAs: "CONSPIRACY TO COMMIT TREASON",
         found: "trespassing while conspiring against the Dema Council",
         reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
         issuingBishop: district.bishop
@@ -362,6 +356,10 @@ async function sendWaitingMessage(interaction: MessageComponentInteraction, desc
     originalEmbed.fields = [];
     originalEmbed
         .setDescription(description)
+        .addField(
+            "**WARNING**",
+            "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
+        )
         .setFooter(
             "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
         )
@@ -405,8 +403,6 @@ buttonListener.handler = async (interaction) => {
     await sendWaitingMessage(interaction, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
 
-    const member = interaction.member as GuildMember;
-
     const embed = new MessageEmbed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setColor("#FCE300")
@@ -433,7 +429,7 @@ buttonListener.handler = async (interaction) => {
 
         const prizeStr = prizeStrings.map((p) => `➼ ${p}`).join("\n");
 
-        const expectedValue = (1 - District.catchPercent(i)) * creditsPrize.percent * creditsPrize.amount;
+        // const expectedValue = (1 - District.catchPercent(i)) * creditsPrize.percent * creditsPrize.amount;
 
         const catchRate = District.convPercent(District.catchPercent(i));
 

@@ -261,7 +261,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 }
 
                 if (contraband)
-                    sendViolationNotice(ctx.member, ctx.channel, ctx.connection, {
+                    sendViolationNotice(ctx.member, ctx.connection, {
                         identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
                         reason: `Possession of ${role.name.toUpperCase()}`,
                         found: "in possession of regulated materials that have been outlawed by the Dema Council"

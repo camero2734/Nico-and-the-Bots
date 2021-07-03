@@ -31,13 +31,12 @@ function fillParagraph(ctx: CanvasRenderingContext2D, text: string, x: number, y
 const mutex = new Mutex();
 export async function sendViolationNotice(
     member: GuildMember,
-    channel: TextChannel,
     connection: Connection,
     options: { identifiedAs: string; found: string; reason: string; issuingBishop?: string }
 ): Promise<void> {
     const { identifiedAs, reason, issuingBishop, found } = options;
 
-    const chan = channel.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
+    const chan = member.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
     if (!chan) return;
 
     await F.wait(1000);

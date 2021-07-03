@@ -6,6 +6,7 @@ import { Economy } from "database/entities/Economy";
 import { Item } from "database/entities/Item";
 import { GuildMember, MessageAttachment, MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
+import { sendViolationNotice } from "../../helpers/dema-notice";
 import F from "../../helpers/funcs";
 import { districts } from "./resupply";
 
@@ -98,6 +99,13 @@ export const Executor: CommandRunner<{ user?: Snowflake }> = async (ctx) => {
         const winEmbed = new MessageEmbed(embed).setDescription(
             `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${NUM_CREDITS}\` credits.`
         );
+
+        sendViolationNotice(member, ctx.connection, {
+            identifiedAs: "FAILED PERIMETER ESCAPE",
+            found: "",
+            issuingBishop: assignedBishop.bishop,
+            reason: ""
+        });
 
         await ctx.editOriginal({ embeds: [winEmbed.toJSON()] });
     }

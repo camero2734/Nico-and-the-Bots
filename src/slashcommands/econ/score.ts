@@ -175,7 +175,7 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
         //Initial y value
         const y_val = 306;
         //Num. of badges in each column
-        const maxbadges = Math.min(3, Math.ceil(Math.sqrt(badges.length)));
+        const maxbadges = Math.max(3, Math.ceil(Math.sqrt(badges.length)));
         for (let i = 0; i < Math.min(badges.length, maxbadges ** 2); i++) {
             //Calculate x value depending on i #
             const x_val = (480 / maxbadges) * (i % maxbadges) + 482;

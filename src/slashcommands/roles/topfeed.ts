@@ -45,6 +45,8 @@ export const ComponentListeners: CommandComponentListener[] = [answerListener];
 export const Executor: CommandRunner<{ removeall?: boolean }> = async (ctx) => {
     if (ctx.user.id !== userIDs.me) throw new CommandError("This command is under construction");
 
+    await ctx.defer(true);
+
     if (ctx.opts.removeall) {
         for (const role of Object.values(tf)) {
             await ctx.member.roles.remove(role);
@@ -92,14 +94,10 @@ answerListener.handler = async (interaction) => {
     const hasRoles = member.roles.cache.array().filter((r) => allRoles.includes(r.id));
 
     // Remove old roles first
-    for (const role of hasRoles) {
-        await member.roles.remove(role);
-    }
+    await member.roles.remove(hasRoles);
 
     // Add new roles
-    for (const role of selected) {
-        await member.roles.add(role);
-    }
+    await member.roles.add(selected);
 
     // Add divider
     await member.roles.add(roles.topfeed.divider);

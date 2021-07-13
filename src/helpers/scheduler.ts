@@ -7,6 +7,7 @@ import { Client, Guild, GuildMember, MessageEmbed, MessageOptions, Snowflake } f
 import { Connection } from "typeorm";
 import { guildID, roles } from "../configuration/config";
 import { Item } from "../database/entities/Item";
+import { Reminder } from "../database/entities/Reminder";
 import F from "./funcs";
 
 const CHECK_INTERVAL = secondsToMilliseconds(10);
@@ -59,5 +60,26 @@ async function checkMutes(guild: Guild, connection: Connection): Promise<void> {
 }
 
 async function checkReminders(guild: Guild, connection: Connection): Promise<void> {
-    //
+    console.log("Checking reminders");
+    const finishedReminders = await connection
+        .getMongoRepository(Reminder)
+        .find({ where: { sendAt: { $lt: new Date() } } });
+
+    for (const rem of finishedReminders) {
+        try {
+            const member = await guild.members.fetch(rem.userid as Snowflake);
+
+            const dm = await member.createDM();
+            const embed = new MessageEmbed()
+                .setTitle("Your Reminder")
+                .setDescription(rem.text)
+                .setTimestamp(rem.createdAt);
+
+            await dm.send({ embeds: [embed] });
+        } catch (e) {
+            console.log(e, /UNABLE_TO_SEND_REMINDER/);
+        }
+    }
+
+    await connection.manager.remove(finishedReminders); // Remove them all, regardless of whether they were sent
 }

@@ -43,9 +43,8 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
     const confirmEmbed = new MessageEmbed()
         .setTitle("Created reminder")
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .addField("Reminder text", reminder.text)
-        .addField("Reminder time", format(reminder.sendAt, "H:mm:ss d MMM yyyy '(CT)'"))
-        .setFooter("You can always cancel or edit this by using the appropriate command");
+        .setDescription(reminder.text)
+        .setTimestamp(sendAt);
 
     await ctx.connection.manager.save(reminder);
 

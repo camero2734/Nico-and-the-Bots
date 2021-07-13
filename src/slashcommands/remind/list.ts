@@ -1,8 +1,4 @@
-import { CommandRunner, createOptions, OptsType } from "configuration/definitions";
-import { subHours } from "date-fns";
-import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
-import { Economy } from "../../database/entities/Economy";
+import { CommandRunner, createOptions } from "configuration/definitions";
 
 export const Options = createOptions(<const>{
     description: "Presents a list of your reminders",

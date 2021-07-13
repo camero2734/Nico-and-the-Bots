@@ -1,9 +1,13 @@
-import { hoursToMilliseconds } from "date-fns";
+import { hoursToMilliseconds, minutesToMilliseconds } from "date-fns";
 const HOURS_IN_YEAR = 24 * 365;
 
 export const REMINDER_LIMIT = 20;
 
 export const REMINDER_TIMES = {
+    "1 minute": minutesToMilliseconds(1),
+    "5 minutes": minutesToMilliseconds(5),
+    "15 minutes": minutesToMilliseconds(15),
+    "30 minutes": minutesToMilliseconds(30),
     "1 hour": hoursToMilliseconds(1),
     "6 hours": hoursToMilliseconds(6),
     "12 hours": hoursToMilliseconds(12),

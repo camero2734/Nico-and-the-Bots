@@ -46,7 +46,12 @@ export const loadCommands = async function (
         const file = fileNames[i];
         const fp = filePaths[i];
 
-        const commandName = fp[fp.length - 1].split(".")[0];
+        const fileName = fp[fp.length - 1];
+
+        // Ignore files that start with _ (they just contain shared definitions)
+        if (fileName.startsWith("_")) continue;
+
+        const commandName = fileName.split(".")[0];
 
         if (fp.length === 1) subCommands[commandName] = file;
         else if (fp.length === 2) {

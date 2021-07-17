@@ -1,5 +1,12 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandError, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
+import {
+    CommandError,
+    CommandOptions,
+    CommandRunner,
+    createOptions,
+    ExtendedContext,
+    OptsType
+} from "configuration/definitions";
 import { Counter } from "database/entities/Counter";
 import { CreditHistory } from "database/entities/CreditHistory";
 import { Economy } from "database/entities/Economy";
@@ -11,14 +18,15 @@ import fetch from "node-fetch";
 import { CommandContext, CommandOptionType } from "slash-create";
 import { Connection } from "typeorm";
 
-export const Options: CommandOptions = {
+export const Options = createOptions(<const>{
     description: "Displays the server point leaderboard",
     options: [
         {
             name: "page",
             description: "The page number of the leaderboard to check",
             required: false,
-            type: CommandOptionType.INTEGER
+            type: CommandOptionType.INTEGER,
+            choices: []
         },
         {
             name: "timeperiod",
@@ -34,11 +42,11 @@ export const Options: CommandOptions = {
             ]
         }
     ]
-};
+});
 
 const PAGE_SIZE = 10;
 
-export const Executor: CommandRunner<{ page?: number; timeperiod?: number }> = async (ctx) => {
+export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
     const { page, timeperiod } = ctx.opts;
     const pageNum = page && page > 0 ? page - 1 : 0; // Computers tend to like to start at zero. Also negative pages don't make sense
 

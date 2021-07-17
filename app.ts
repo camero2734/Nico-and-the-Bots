@@ -160,7 +160,7 @@ async function dynamicCommandSetup(commands: Command[]): Promise<void> {
 
     const rolesCommands = commands.find((c) => c.commandName === "roles");
     const command = rolesCommands?.options?.find((o) => o.name === "concert");
-    if (!command) {
+    if (!command || command.type !== CommandOptionType.SUB_COMMAND) {
         console.error("Couldn't find command");
         return;
     } else console.log(`Got command: ${command.description}`);

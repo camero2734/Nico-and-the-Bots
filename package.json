@@ -66,7 +66,7 @@
         "require-all": "^3.0.0",
         "s-ago": "^2.2.0",
         "slash-commands": "^1.4.0",
-        "slash-create": "^3.2.3",
+        "slash-create": "^3.3.0",
         "sqlite3": "^5.0.2",
         "string-progressbar": "^1.0.4",
         "ts-node": "^10.0.0",

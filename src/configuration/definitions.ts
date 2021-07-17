@@ -27,6 +27,7 @@ import {
     SlashCommandOptions,
     SlashCreator
 } from "slash-create";
+import { ApplicationCommandOptionArgument } from "slash-create/lib/constants";
 import { Connection } from "typeorm";
 import { channelIDs, guildID, roles } from "./config";
 
@@ -273,7 +274,9 @@ export interface WarningData {
     content: string;
 }
 
-// Extracts the type from Options so they don't have to be manually typed
+/**
+ *  Extracts the type from Options so they don't have to be manually typed
+ */
 type SnowflakeTypes = CommandOptionType.USER | CommandOptionType.CHANNEL | CommandOptionType.MENTIONABLE | CommandOptionType.ROLE; // prettier-ignore
 // prettier-ignore
 type ToPrimitiveType<OType> = 
@@ -291,7 +294,12 @@ type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-type AsArray<T extends DeepReadonly<ApplicationCommandOption>> = [T["name"], T["type"], T["required"], T["choices"]];
+type AsArray<T extends DeepReadonly<ApplicationCommandOptionArgument>> = [
+    T["name"],
+    T["type"],
+    T["required"],
+    T["choices"]
+];
 
 // Ensures that the choices array matches the specified type
 type ChoicesUnion<T extends DeepReadonly<ApplicationCommandOptionChoice[]>, P> = T[number]["value"] extends P
@@ -299,7 +307,7 @@ type ChoicesUnion<T extends DeepReadonly<ApplicationCommandOptionChoice[]>, P> =
     : never;
 
 // prettier-ignore
-type ToObject<T extends DeepReadonly<ApplicationCommandOption>> = AsArray<T> extends readonly [
+type ToObject<T extends DeepReadonly<ApplicationCommandOptionArgument>> = AsArray<T> extends readonly [
     infer Key,
     infer Value,
     infer Required,

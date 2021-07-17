@@ -1,13 +1,5 @@
 import { CommandComponentListener, CommandRunner, createOptions } from "configuration/definitions";
-import { format } from "date-fns";
-import {
-    EmojiIdentifierResolvable,
-    GuildMember,
-    MessageActionRow,
-    MessageButton,
-    MessageEmbed,
-    MessageSelectMenu
-} from "discord.js";
+import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from "discord.js";
 import { ComponentActionRow } from "slash-create";
 import { Connection } from "typeorm";
 import { Reminder } from "../../database/entities/Reminder";
@@ -111,6 +103,7 @@ selectReminder.handler = async (interaction, connection) => {
     await interaction.editReply({ components: [actionRow], embeds: [embed] });
 };
 
+// Delete button handler
 deleteReminder.handler = async (interaction, connection, args) => {
     console.log("delete", /SELECT/);
     if (!interaction.isButton()) return;

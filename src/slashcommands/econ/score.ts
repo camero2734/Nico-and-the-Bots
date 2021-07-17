@@ -8,7 +8,7 @@ import { badgeLoader } from "helpers";
 import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
-    description: "the score",
+    description: "View your score card",
     options: [
         { name: "user", description: "The user to check the score for", required: false, type: CommandOptionType.USER }
     ]

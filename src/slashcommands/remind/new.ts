@@ -1,9 +1,7 @@
 import { CommandError, CommandRunner, createOptions, OptsType } from "configuration/definitions";
-import { addMilliseconds, format } from "date-fns";
+import { addMilliseconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
-import parseDuration from "parse-duration";
 import { CommandOptionType } from "slash-create";
-import { Economy } from "../../database/entities/Economy";
 import { Reminder } from "../../database/entities/Reminder";
 import F from "../../helpers/funcs";
 import { ERRORS, REMINDER_LIMIT, REMINDER_TIMES } from "./_consts";

@@ -1,21 +1,21 @@
+import { TopfeedBot } from "altbots/topfeed/topfeed";
 import { registerFont } from "canvas";
+import { channelIDs, guildID } from "configuration/config";
 import { Command, CommandComponentListener, CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
 import * as helpers from "helpers";
-import SlurFilter from "helpers/slur-filter";
-import AutoReact from "helpers/auto-react";
 import { updateUserScore } from "helpers";
+import AutoReact from "helpers/auto-react";
+import ConcertChannelManager from "helpers/concert-channels";
+import SlurFilter from "helpers/slur-filter";
+import R from "ramda";
 import { CommandOptionType, GatewayServer, SlashCreator } from "slash-create";
+import { ApplicationCommandOptionSubCommand } from "slash-create/lib/constants";
 import { Connection } from "typeorm";
 import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
-import { channelIDs, guildID } from "configuration/config";
-import ConcertChannelManager from "helpers/concert-channels";
-import R from "ramda";
-import { TopfeedBot } from "altbots/topfeed/topfeed";
 import Scheduler from "./src/helpers/scheduler";
-import { ApplicationCommandOptionSubCommand } from "slash-create/lib/constants";
 
 // let ready = false;
 let connection: Connection;

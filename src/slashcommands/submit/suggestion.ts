@@ -1,11 +1,7 @@
 import { channelIDs } from "configuration/config";
-import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Poll } from "database/entities/Poll";
-import Discord, { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { generateUpvoteDownvoteListener } from "helpers";
-import F from "helpers/funcs";
-import { last } from "ramda";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
+import { CommandOptions, CommandRunner } from "configuration/definitions";
+import { MessageEmbed, TextChannel } from "discord.js";
+import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
     description: "Submits a suggestion to the staff",

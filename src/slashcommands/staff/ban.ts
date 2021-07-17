@@ -4,9 +4,9 @@ import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
 
 export const Options: CommandOptions = {
-    description: "Submits a warning for a user",
+    description: "Bans a member",
     options: [
-        { name: "user", description: "The user to warn", required: true, type: CommandOptionType.USER },
+        { name: "user", description: "The member to ban", required: true, type: CommandOptionType.USER },
         {
             name: "purge",
             description: "Whether to delete all messages or not",

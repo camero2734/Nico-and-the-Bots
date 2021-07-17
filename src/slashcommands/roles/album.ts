@@ -14,11 +14,11 @@ const albumRoles = {
 };
 
 export const Options: CommandOptions = {
-    description: "Displays some information about your (or another user's) golds",
+    description: "Get a role for one of the band's albums",
     options: [
         {
             name: "album",
-            description: "The user to get gold info for",
+            description: "The album role to get",
             required: true,
             type: CommandOptionType.STRING,
             choices: Object.entries(albumRoles).map(([name, roleID]) => ({

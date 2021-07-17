@@ -96,7 +96,7 @@ const options = {
 const fuse = new Fuse(rules, options);
 
 export const Options = createOptions(<const>{
-    description: "Displays some information about a user",
+    description: "Displays a server rule",
     options: [
         {
             name: "rule",

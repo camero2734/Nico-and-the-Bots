@@ -6,8 +6,6 @@
 import {
     Client,
     GuildMember,
-    Interaction,
-    MessageAttachment,
     MessageComponentInteraction,
     MessageEmbed,
     MessageReaction,

@@ -6,7 +6,7 @@ import { channelIDs, roles } from "configuration/config";
 import { Item } from "database/entities/Item";
 
 export const Options: CommandOptions = {
-    description: "Overwrites all of your pronoun roles with up to three that you specify",
+    description: "Chooses a color role purchased from the shop",
     options: [
         {
             name: "role",

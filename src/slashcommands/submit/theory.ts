@@ -1,16 +1,8 @@
 import { channelIDs } from "configuration/config";
 import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
-import Discord, {
-    EmojiIdentifierResolvable,
-    MessageActionRow,
-    MessageButton,
-    MessageEmbed,
-    TextChannel
-} from "discord.js";
+import { EmojiIdentifierResolvable, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { generateUpvoteDownvoteListener } from "helpers";
-import F from "helpers/funcs";
-import { last } from "ramda";
 import { CommandOptionType, ComponentActionRow } from "slash-create";
 
 export const Options: CommandOptions = {

@@ -15,6 +15,7 @@ import ConcertChannelManager from "helpers/concert-channels";
 import R from "ramda";
 import { TopfeedBot } from "altbots/topfeed/topfeed";
 import Scheduler from "./src/helpers/scheduler";
+import { ApplicationCommandOptionSubCommand } from "slash-create/lib/constants";
 
 // let ready = false;
 let connection: Connection;
@@ -122,7 +123,10 @@ client.on("interaction", (interaction) => {
 
     const interactionComponent = interactionHandlers.find((handler) => id.startsWith(handler.name));
 
-    if (!interactionComponent) return;
+    if (!interactionComponent) {
+        console.log(interactionHandlers.map((ih) => ih.name));
+        return console.log(`No handler for ${id}`);
+    }
 
     interactionComponent.handler(interaction, connection, interactionComponent.pattern.toDict(id));
 });
@@ -159,8 +163,8 @@ async function dynamicCommandSetup(commands: Command[]): Promise<void> {
     }
 
     const rolesCommands = commands.find((c) => c.commandName === "roles");
-    const command = rolesCommands?.options?.find((o) => o.name === "concert");
-    if (!command || command.type !== CommandOptionType.SUB_COMMAND) {
+    const command = rolesCommands?.options?.find((o) => o.name === "concert") as ApplicationCommandOptionSubCommand;
+    if (!command) {
         console.error("Couldn't find command");
         return;
     } else console.log(`Got command: ${command.description}`);

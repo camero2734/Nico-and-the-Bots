@@ -5,6 +5,7 @@ import parseDuration from "parse-duration";
 import { CommandOptionType } from "slash-create";
 import { Economy } from "../../database/entities/Economy";
 import { Reminder } from "../../database/entities/Reminder";
+import F from "../../helpers/funcs";
 import { ERRORS, REMINDER_LIMIT, REMINDER_TIMES } from "./_consts";
 
 export const Options = createOptions(<const>{
@@ -43,8 +44,8 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
     const confirmEmbed = new MessageEmbed()
         .setTitle("Created reminder")
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .setDescription(reminder.text)
-        .setTimestamp(sendAt);
+        .addField("Reminder", reminder.text)
+        .addField("Send time", F.discordTimestamp(sendAt, "longDateTime"));
 
     await ctx.connection.manager.save(reminder);
 

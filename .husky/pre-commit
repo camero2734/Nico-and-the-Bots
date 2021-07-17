@@ -1,4 +1,7 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+echo "Typescript check running"
+echo "> tsc --noEmit"
 tsc --noEmit
+echo "Typescript check passed"

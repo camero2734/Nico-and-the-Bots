@@ -11,7 +11,8 @@
         "deploy": "bash ./deploy.sh",
         "typeorm": "ts-node --transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
         "dyno:restart": "heroku scale worker=1 && heroku ps:restart worker.1 --app nico-discord-clique",
-        "dyno:stop": "heroku scale worker=0"
+        "dyno:stop": "heroku scale worker=0",
+        "prepare": "husky install"
     },
     "engines": {
         "node": "15.x"
@@ -78,5 +79,8 @@
         "wokcommands": "^1.2.8",
         "youtube-dl": "^3.5.0",
         "youtube-info-streams": "^1.0.5"
+    },
+    "devDependencies": {
+        "husky": "^7.0.1"
     }
 }

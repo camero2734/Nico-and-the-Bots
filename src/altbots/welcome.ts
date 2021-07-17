@@ -141,7 +141,11 @@ export class SacarverBot {
         member.roles.add(roles.announcements);
 
         await interaction.reply({
-            embeds: [new MessageEmbed({ description: "You now have the announcements role!" })],
+            embeds: [
+                new MessageEmbed({
+                    description: `You now have the announcements role! You can remove this at any time by using the \`/roles announcements\` command in <#${channelIDs.commands}>`
+                })
+            ],
             allowedMentions: { repliedUser: false },
             ephemeral: true
         });

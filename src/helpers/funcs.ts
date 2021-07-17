@@ -12,6 +12,16 @@ const radix64 = radix64Setup();
 const base256Alphabet =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБ";
 
+const timestampTypes = <const>{
+    shortTime: "t",
+    longTime: "T",
+    shortDate: "d",
+    longDate: "D",
+    shortDateTime: "f",
+    longDateTime: "F",
+    relative: "R"
+};
+
 const F = {
     titleCase: R.pipe(R.split(""), R.adjust(0, R.toUpper), R.join("")),
     lerp: (n: number, low: number, high: number): number => n * (high - low) + low,
@@ -88,6 +98,13 @@ const F = {
     plural(value: number | unknown[], ending = "s"): string {
         const count = typeof value === "number" ? value : value.length;
         return count === 1 ? "" : ending;
+    },
+    discordTimestamp(
+        d: Date,
+        format: keyof typeof timestampTypes = "shortDateTime"
+    ): `<t:${bigint}:${typeof timestampTypes[keyof typeof timestampTypes]}>` {
+        const time = Math.floor(d.getTime() / 1000).toString() as `${bigint}`;
+        return `<t:${time}:${timestampTypes[format]}>`;
     }
 };
 

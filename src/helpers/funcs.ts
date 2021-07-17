@@ -84,6 +84,10 @@ const F = {
         
         ctx.restore();
         return fontSize;
+    },
+    plural(value: number | unknown[], ending = "s"): string {
+        const count = typeof value === "number" ? value : value.length;
+        return count === 1 ? "" : ending;
     }
 };
 

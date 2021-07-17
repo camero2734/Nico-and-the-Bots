@@ -60,7 +60,6 @@ async function checkMutes(guild: Guild, connection: Connection): Promise<void> {
 }
 
 async function checkReminders(guild: Guild, connection: Connection): Promise<void> {
-    console.log("Checking reminders");
     const finishedReminders = await connection
         .getMongoRepository(Reminder)
         .find({ where: { sendAt: { $lt: new Date() } } });

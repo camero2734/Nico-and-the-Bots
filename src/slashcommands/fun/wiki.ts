@@ -2,7 +2,6 @@ import { CommandError, CommandRunner, createOptions, OptsType } from "configurat
 import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
 import WikiJS from "wikijs";
-import { Tag } from "../../database/entities/Tag";
 import F from "../../helpers/funcs";
 
 export const Options = createOptions(<const>{

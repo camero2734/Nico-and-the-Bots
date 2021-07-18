@@ -1,7 +1,6 @@
 import { Mutex } from "async-mutex";
-import { Component } from "chrono-node";
 import { constants } from "configuration/config";
-import { CommandComponentListener, CommandOption, CommandRunner, ExtendedContext } from "configuration/definitions";
+import { CommandComponentListener, ExtendedContext } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
 import {
     Collection,
@@ -9,7 +8,6 @@ import {
     Interaction,
     Message,
     MessageActionRow,
-    MessageActionRowComponent,
     MessageButton,
     MessageComponentInteraction,
     MessageComponentInteractionCollector,
@@ -17,7 +15,7 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
-import { ComponentActionRow, ComponentButton, ComponentType, MessageOptions } from "slash-create";
+import { ComponentActionRow, ComponentType, MessageOptions } from "slash-create";
 import F from "./funcs";
 
 export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {

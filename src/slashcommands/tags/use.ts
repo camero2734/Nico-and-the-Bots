@@ -1,9 +1,6 @@
-import { CommandError, CommandOptions, CommandRunner, createOptions, OptsType } from "configuration/definitions";
+import { CommandRunner, createOptions, OptsType } from "configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
-import Mime from "mime-types";
-import normalizeUrl from "normalize-url";
-import { createCanvas, loadImage } from "canvas";
 import { Tag } from "../../database/entities/Tag";
 
 export const Options = createOptions(<const>{

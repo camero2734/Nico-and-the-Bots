@@ -1,8 +1,7 @@
-import { Snowflake } from "discord.js";
-import * as R from "ramda";
-import radix64Setup from "radix-64";
 import * as bigintConversion from "bigint-conversion";
-import { text } from "express";
+import { Snowflake } from "discord.js";
+import radix64Setup from "radix-64";
+import * as R from "ramda";
 
 /**
  * Just some commonly used short functions

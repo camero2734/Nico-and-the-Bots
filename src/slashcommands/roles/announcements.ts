@@ -1,5 +1,5 @@
 import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, Role, Snowflake, TextChannel } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import { roles } from "../../configuration/config";
 
 export const Options: CommandOptions = {

@@ -2,6 +2,7 @@ import { Snowflake } from "discord.js";
 import * as R from "ramda";
 import radix64Setup from "radix-64";
 import * as bigintConversion from "bigint-conversion";
+import { text } from "express";
 
 /**
  * Just some commonly used short functions
@@ -98,6 +99,10 @@ const F = {
     plural(value: number | unknown[], ending = "s"): string {
         const count = typeof value === "number" ? value : value.length;
         return count === 1 ? "" : ending;
+    },
+    truncate(text: string, len: number): string {
+        if (text.length <= len) return text;
+        else return text.substring(0, len - 3) + "...";
     },
     discordTimestamp(
         d: Date,

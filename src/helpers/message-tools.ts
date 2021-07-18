@@ -1,4 +1,5 @@
 import { Mutex } from "async-mutex";
+import { Component } from "chrono-node";
 import { constants } from "configuration/config";
 import { CommandComponentListener, CommandOption, CommandRunner, ExtendedContext } from "configuration/definitions";
 import { Poll } from "database/entities/Poll";
@@ -16,7 +17,7 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
-import { ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
+import { ComponentActionRow, ComponentButton, ComponentType, MessageOptions } from "slash-create";
 import F from "./funcs";
 
 export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {
@@ -73,6 +74,28 @@ export const MessageTools = {
         }
 
         return allMessages;
+    },
+
+    async askYesOrNo(ctx: ExtendedContext, msg: MessageOptions): Promise<boolean> {
+        const actionRow = new MessageActionRow()
+            .addComponents([
+                new MessageButton({ label: "Yes", customID: "yes", style: "SUCCESS" }),
+                new MessageButton({ label: "No", customID: "no", style: "DANGER" })
+            ])
+            .toJSON();
+        await ctx.send({ ...msg, components: [actionRow as ComponentActionRow] });
+
+        return new Promise((resolve, reject) => {
+            const timeOut = setTimeout(() => reject(), 120 * 1000); // Automatically cancel after 120 secs
+            for (const t of ["yes", "no"]) {
+                ctx.registerComponent(t, () => {
+                    clearTimeout(timeOut);
+                    ctx.unregisterComponent("yes");
+                    ctx.unregisterComponent("no");
+                    resolve(t === "yes");
+                });
+            }
+        });
     }
 };
 

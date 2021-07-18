@@ -76,6 +76,7 @@
         "twit": "^2.2.11",
         "typeorm": "^0.2.34",
         "typescript": "^4.4.0-beta",
+        "wikijs": "^6.2.1",
         "wokcommands": "^1.2.8",
         "youtube-dl": "^3.5.0",
         "youtube-info-streams": "^1.0.5"

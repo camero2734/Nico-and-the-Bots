@@ -5,7 +5,7 @@ import { Item } from "database/entities/Item";
 import { MessageTools } from "helpers";
 import * as secrets from "configuration/secrets.json";
 import fetch from "node-fetch";
-import { RecentTracksResponse } from "./now";
+import { RecentTracksResponse } from "./_consts";
 
 export const Options: CommandOptions = {
     description: "Sets your lastfm username for use with other /fm commands",

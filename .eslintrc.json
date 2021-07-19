@@ -11,6 +11,7 @@
     },
     "plugins": ["@typescript-eslint"],
     "rules": {
-        "prefer-const": "error"
+        "prefer-const": "error",
+        "@typescript-eslint/explicit-module-boundary-types": "off"
     }
 }

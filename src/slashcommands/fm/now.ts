@@ -1,88 +1,13 @@
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import * as secrets from "configuration/secrets.json";
 import { FM } from "database/entities/FM";
 import { Item } from "database/entities/Item";
 import { MessageEmbed, Snowflake } from "discord.js";
 import fetch from "node-fetch";
 import { CommandOptionType } from "slash-create";
 import { MoreThan } from "typeorm";
+import { AlbumResponse, ArtistResponse, createFMMethod, RecentTracksResponse, TrackResponse } from "./_consts";
 
 const FM_REACT = "⭐";
-
-interface TrackDate {
-    uts: string;
-    "#text": string;
-}
-
-interface FMIdentifier {
-    mbid: string;
-    "#text": string;
-}
-
-interface TrackImage {
-    size: "small" | "medium" | "large" | "extralarge";
-    "#text": string;
-}
-
-interface Track {
-    artist: FMIdentifier;
-    "@attr"?: { nowplaying: string };
-    mbid: string;
-    album: FMIdentifier;
-    streamable: string;
-    url: string;
-    name: string;
-    image: TrackImage[];
-    date?: TrackDate;
-}
-
-interface RecentTracksAttr {
-    page: string;
-    total: string;
-    user: string;
-    perPage: string;
-    totalPages: string;
-}
-
-interface RecentTracks {
-    "@attr": RecentTracksAttr;
-    track: Track[];
-}
-
-export interface RecentTracksResponse {
-    recenttracks: RecentTracks;
-}
-
-interface FMPlayResponse {
-    userplaycount: number;
-    url: string;
-}
-
-interface TrackResponse {
-    track?: FMPlayResponse;
-}
-
-interface AlbumResponse {
-    album?: FMPlayResponse;
-}
-
-interface ArtistResponse {
-    artist?: {
-        stats?: FMPlayResponse;
-    };
-}
-
-const createFMMethod = (username: string) => {
-    const base = `http://ws.audioscrobbler.com/2.0/?`;
-    const opts = new URLSearchParams({ username, api_key: secrets.apis.lastfm, format: "json" });
-    return (options: { method: string; [k: string]: string }) => {
-        for (const [key, value] of Object.entries(options)) {
-            opts.append(key, value);
-        }
-
-        return `${base}${opts}`;
-    };
-};
 
 export const Options: CommandOptions = {
     description: "Displays now playing on last.fm",

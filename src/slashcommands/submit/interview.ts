@@ -4,7 +4,7 @@ import { Item } from "database/entities/Item";
 import dayjs from "dayjs";
 import { MessageEmbed, TextChannel } from "discord.js";
 import { CommandOptionType } from "slash-create";
-import * as ytdl from "youtube-dl";
+// import * as ytdl from "youtube-dl";
 
 export const Options: CommandOptions = {
     description: "Submits an interview to the interview channel",
@@ -31,8 +31,9 @@ export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
     const embed = new MessageEmbed().setDescription("Fetching video info...").setColor("#111111");
     await ctx.embed(embed);
 
-    const info: Record<string, string> = await new Promise((resolve) =>
-        ytdl.getInfo(id, (_error, output) => resolve(output as unknown as Record<string, string>))
+    const info: Record<string, string> = await new Promise(
+        (resolve) => resolve({})
+        // ytdl.getInfo(id, (_error, output) => resolve(output as unknown as Record<string, string>))
     );
 
     const { channel, view_count, fulltitle, thumbnail, upload_date, description } = info;

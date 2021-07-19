@@ -87,7 +87,7 @@ answerListener.handler = async (interaction) => {
 
     const member = interaction.member as GuildMember;
 
-    const selected = interaction.values;
+    const selected = interaction.values as Snowflake[];
     if (!Array.isArray(selected) || selected.length < 1) return;
 
     const allRoles: Snowflake[] = Object.values(tf);

@@ -1,9 +1,8 @@
+import { PrismaClient } from "@prisma/client";
 import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageAttachment, MessageEmbed, Snowflake } from "discord.js";
-import { sendViolationNotice } from "helpers/dema-notice";
-import F from "helpers/funcs";
-import fetch from "node-fetch";
-import R from "ramda";
+import { Economy } from "../../database/entities/Economy";
+
+const prisma = new PrismaClient();
 
 export const Options: CommandOptions = {
     description: "Test command",
@@ -11,11 +10,8 @@ export const Options: CommandOptions = {
 };
 
 export const Executor: CommandRunner = async (ctx) => {
-    const member = await ctx.member.guild.members.fetch("298244234912333824");
-    sendViolationNotice(ctx.member, ctx.connection, {
-        identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
-        reason: "Possession of BANDITO GREEN",
-        found: "in possession of regulated materials that have been outlawed by the Dema Council"
-    });
-    await ctx.delete();
+    const user = await prisma.user.findUnique({ where: { id: 75345735n }, include: { dailyBox: true, tags: true } });
+    if (!user) return;
+
+    user.tags;
 };

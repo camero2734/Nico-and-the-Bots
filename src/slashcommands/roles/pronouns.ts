@@ -1,6 +1,6 @@
 import { CommandOptionType } from "slash-create";
 import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "configuration/config";
 
@@ -33,16 +33,16 @@ export const Executor: CommandRunner<OptsType> = async (ctx) => {
         ctx.embed(embed);
     }
 
-    pronounRoles = pronounRoles.filter((p) => p !== "notExist"); // Ignore this one
+    pronounRoles = pronounRoles.filter((p) => p !== "notExist") as Snowflake[]; // Ignore this one
 
     if (pronounRoles.length === 0) return;
 
     // Remove any pronoun roles not mentioned
-    const toRemove = R.difference(Object.values(roles.pronouns), pronounRoles);
+    const toRemove = R.difference(Object.values(roles.pronouns), pronounRoles) as Snowflake[];
     for (const r of toRemove) await ctx.member.roles.remove(r);
 
     // Give the pronoun roles mentioned
-    for (const r of pronounRoles) await ctx.member.roles.add(r);
+    for (const r of pronounRoles as Snowflake[]) await ctx.member.roles.add(r);
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.user.avatarURL)

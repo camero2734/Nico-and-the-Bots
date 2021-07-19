@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model DailyBox {
+  id         Int   @id @default(autoincrement())
+  tokens     Int
+  steals     Int
+  blocks     Int
+  lastDaily  Int
+  dailyCount Int
+  User       User?
+}
+
+model User {
+  id         BigInt   @id
+  dailyBox   DailyBox @relation(fields: [dailyBoxId], references: [id])
+  credits    Int
+  score      Int
+  level      Int
+  joinedAt   DateTime
+  dailyBoxId Int
+  tags       Tag[]
+}
+
+model Tag {
+  name      String   @id
+  text      String
+  createdAt DateTime
+  uses      Int
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    BigInt?
+}

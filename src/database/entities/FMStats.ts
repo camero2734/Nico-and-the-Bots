@@ -1,24 +1,26 @@
+import { Snowflake } from "discord.js";
 import { Column, Entity, ObjectID, ObjectIdColumn } from "typeorm";
 
 @Entity()
 export class FMStats {
     @ObjectIdColumn()
-    id: ObjectID;
+    _id: ObjectID;
 
     @Column()
-    fmuser: string;
+    type: "TRACK" | "ALBUM" | "ARTIST";
 
     @Column()
-    artist: string;
+    identifier: string;
 
     @Column()
-    playcount: number;
+    userid: Snowflake;
+
+    @Column()
+    playCount: number;
 
     constructor(params: { fmuser: string; artist: string; playcount?: number }) {
         if (params) {
-            this.fmuser = params.fmuser;
-            this.artist = params.artist;
-            this.playcount = params.playcount || 0;
+            //
         }
     }
 }

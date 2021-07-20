@@ -16,6 +16,7 @@ import { Connection } from "typeorm";
 import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
 import Scheduler from "./src/helpers/scheduler";
+import { extendPrototypes } from "./src/helpers/prototype-extend";
 
 // let ready = false;
 let connection: Connection;
@@ -33,6 +34,7 @@ const interactions = new SlashCreator({
 
 const reactionHandlers: CommandReactionHandler[] = [];
 const interactionHandlers: CommandComponentListener[] = [];
+extendPrototypes();
 
 client.login(secrets.bots.nico);
 

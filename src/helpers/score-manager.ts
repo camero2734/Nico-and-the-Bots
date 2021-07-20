@@ -1,8 +1,12 @@
-import { CreditHistory } from "database/entities/CreditHistory";
 import { startOfDay } from "date-fns";
 import { Message, MessageEmbed } from "discord.js";
-import { Connection } from "typeorm";
 import { prisma } from "./prisma-init";
+import { User } from "@prisma/client";
+
+const batchMessageHistory = {
+    lastUpdated: Date.now(),
+    data: [] as Parameters<typeof prisma.messageHistory.update>[0][]
+};
 
 export const updateUserScore = async (msg: Message): Promise<void> => {
     const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
@@ -25,20 +29,34 @@ export const updateUserScore = async (msg: Message): Promise<void> => {
         const P = Math.pow(timeSince / IDEAL_TIME_MS, 2);
         earnedPoint = Math.random() < P;
     }
-    if (!earnedPoint) return;
 
+    // Add to message history
+    const startOfDate = startOfDay(new Date());
+    const historyIdentifier = { date_userId: { date: startOfDate, userId: dbUser.id } };
+
+    const messageHistory = await prisma.messageHistory.findUnique({
+        where: historyIdentifier
+    });
+
+    if (!messageHistory) {
+        await prisma.messageHistory.create({ data: { date: startOfDate, userId: dbUser.id, messageCount: 1 } });
+    } else {
+        batchMessageHistory.data.push({ where: historyIdentifier, data: { messageCount: { increment: 1 } } });
+
+        if (Date.now() - batchMessageHistory.lastUpdated > 10 * 1000) {
+            batchMessageHistory.lastUpdated = Date.now();
+            const historyData = batchMessageHistory.data;
+            batchMessageHistory.data = [];
+            await prisma.$transaction(historyData.map(prisma.messageHistory.update));
+        }
+    }
+    if (earnedPoint) return onEarnPoint(msg, dbUser);
+};
+
+async function onEarnPoint(msg: Message, dbUser: User): Promise<void> {
     let creditIncrement = 0;
     let setLevel = dbUser.level;
     if (Math.random() > 0.5) creditIncrement += 2; // Random chance of earning some credits
-
-    // Add to credit history
-    const startOfDate = startOfDay(new Date());
-    // const todayCreditHistory =
-    //     (await connection.getRepository(CreditHistory).findOne({ date: startOfDate })) ||
-    //     new CreditHistory({ date: startOfDate });
-
-    // if (!todayCreditHistory.entries[msg.author.id]) todayCreditHistory.entries[msg.author.id] = 0;
-    // todayCreditHistory.entries[msg.author.id]++;
 
     const userLevel = calculateLevel(dbUser.score);
 
@@ -68,9 +86,7 @@ export const updateUserScore = async (msg: Message): Promise<void> => {
             level: setLevel
         }
     });
-
-    // await connection.manager.save(todayCreditHistory);
-};
+}
 
 export function calculateLevel(score: number): number {
     let rq = 100;

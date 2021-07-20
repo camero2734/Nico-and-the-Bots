@@ -60,6 +60,7 @@ model MessageHistory {
 enum PerkType {
   DoubleDailyCredits
   DoubleDailyTokens
+  LevelCredits
 }
 
 model Perk {
@@ -68,4 +69,6 @@ model Perk {
 
   user   User?  @relation(fields: [userId], references: [id])
   userId String
+
+  @@unique([userId, type])
 }

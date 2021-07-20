@@ -63,9 +63,9 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<void> {
     if (userLevel > setLevel) {
         setLevel = userLevel;
         // User has "leveled up"
-        const hasPerk = true; //await connection
-        // .getRepository(Item)
-        // .findOne({ identifier: msg.author.id, title: "lvlcred", type: "Perk" });
+        const hasPerk = !!(await prisma.perk.findUnique({
+            where: { userId_type: { userId: dbUser.id, type: "LevelCredits" } }
+        }));
 
         const lvlEmbed = new MessageEmbed({ description: `LEVEL UP: You are now level ${userLevel}!` });
 

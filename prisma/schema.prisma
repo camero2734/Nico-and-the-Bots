@@ -11,24 +11,27 @@ generator client {
 }
 
 model DailyBox {
-  id         Int   @id @default(autoincrement())
-  tokens     Int   @default(0)
-  steals     Int   @default(0)
-  blocks     Int   @default(0)
-  lastDaily  Int   @default(0)
-  dailyCount Int   @default(0)
-  User       User?
+  id         String @id @default(uuid())
+  tokens     Int    @default(0)
+  steals     Int    @default(0)
+  blocks     Int    @default(0)
+  lastDaily  Int    @default(0)
+  dailyCount Int    @default(0)
+  user       User?  @relation(fields: [userId], references: [id])
+  userId     String
 }
 
 model User {
-  id         BigInt   @id
-  dailyBox   DailyBox @relation(fields: [dailyBoxId], references: [id])
-  credits    Int      @default(0)
-  score      Int      @default(0)
-  level      Int      @default(0)
-  joinedAt   DateTime @default(now())
-  dailyBoxId Int
-  tags       Tag[]
+  id String @id
+
+  credits  Int      @default(0)
+  score    Int      @default(0)
+  level    Int      @default(0)
+  joinedAt DateTime @default(now())
+
+  dailyBox DailyBox?
+
+  tags Tag[]
 }
 
 model Tag {
@@ -37,5 +40,5 @@ model Tag {
   createdAt DateTime @default(now())
   uses      Int      @default(0)
   user      User?    @relation(fields: [userId], references: [id])
-  userId    BigInt?
+  userId    String
 }

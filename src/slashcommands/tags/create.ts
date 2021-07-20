@@ -20,13 +20,17 @@ export const Options = createOptions(<const>{
 export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
     await ctx.defer(true);
 
-    const tagRepo = ctx.connection.getRepository(Tag);
+    const existingTag = await ctx.prisma.tag.findUnique({ where: { name: ctx.opts.name } });
 
-    const existingTag = await tagRepo.findOne({ identifier: ctx.opts.name });
-    if (existingTag) {
-        if (existingTag.userid !== ctx.member.id) throw new CommandError("This tag already exists");
+    if (existingTag?.userId) {
+        if (existingTag.userId.toSnowflake() !== ctx.member.id) throw new CommandError("This tag already exists");
         existingTag.text = ctx.opts.text;
-        await ctx.connection.manager.save(existingTag);
+
+        await ctx.prisma.tag.update({
+            where: { name: existingTag.name },
+            data: { text: ctx.opts.text }
+        });
+
         const embed = new MessageEmbed()
             .setTitle(`Your tag \`${ctx.opts.name}\` was successfully edited`)
             .setDescription(ctx.opts.text);
@@ -46,13 +50,14 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
         });
     }
 
-    const tag = new Tag({ text: ctx.opts.text, userid: ctx.member.id, identifier: ctx.opts.name });
-    await ctx.connection.manager.save(tag);
+    const createdTag = await ctx.prisma.tag.create({
+        data: { text: ctx.opts.text, userId: ctx.member.id, name: ctx.opts.name }
+    });
 
     const doneEmbed = new MessageEmbed()
         .setTitle(`Tag created: \`${ctx.opts.name}\``)
         .setDescription(ctx.opts.text)
-        .addField("Usage", `Use this tag with the command \`/tags use ${tag.identifier}\``);
+        .addField("Usage", `Use this tag with the command \`/tags use ${createdTag.name}\``);
 
     await ctx.editOriginal({ embeds: [doneEmbed.toJSON()], components: [] });
 };

@@ -28,6 +28,8 @@ import {
 import { ApplicationCommandOptionArgument } from "slash-create/lib/constants";
 import { Connection } from "typeorm";
 import { channelIDs, guildID, roles } from "./config";
+import { PrismaClient } from "@prisma/client";
+import { prisma, PrismaType } from "../helpers/prisma-init";
 
 export class CommandError extends Error {
     constructor(message?: string, public sendEphemeral = false) {
@@ -113,6 +115,7 @@ export type ExtendedContext<T extends CommandOption = {}> = Omit<
     opts: T;
     client: Client;
     connection: Connection;
+    prisma: PrismaType;
     isExtended: boolean;
 };
 
@@ -143,6 +146,7 @@ async function extendContext<T extends CommandOption>(
 
     extendedContext.client = client;
     extendedContext.connection = connection;
+    extendedContext.prisma = prisma;
     extendedContext.opts = (ctx.options[extendedContext.subcommands[0]] || ctx.options) as T;
 
     extendedContext.runCommand = async (executor, opts) => {

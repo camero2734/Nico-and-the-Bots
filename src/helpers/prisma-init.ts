@@ -1,6 +1,26 @@
 import { PrismaClient } from "@prisma/client";
+import chalk from "chalk";
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+    log: [
+        {
+            emit: "event",
+            level: "query"
+        },
+        {
+            emit: "stdout",
+            level: "error"
+        },
+        {
+            emit: "stdout",
+            level: "info"
+        },
+        {
+            emit: "stdout",
+            level: "warn"
+        }
+    ]
+});
 export type PrismaType = typeof prisma;
 
 // Middleware to create user if not exist
@@ -22,3 +42,10 @@ export type PrismaType = typeof prisma;
         return next(params);
     });
 })();
+
+prisma.$on("query", (e) => {
+    const prefix = chalk.red("Query");
+    const time = chalk.yellow(`${e.duration}ms`);
+    const query = chalk.gray(e.query);
+    console.log(`${prefix} [${time}]: ${query}`);
+});

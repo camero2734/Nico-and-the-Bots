@@ -4,7 +4,7 @@ import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { ComponentActionRow } from "slash-create";
 
 export const Options: CommandOptions = {
-    description: "Removes all users from veriifed-theories and DMs them",
+    description: "Removes all users from verified-theories and DMs them",
     options: []
 };
 

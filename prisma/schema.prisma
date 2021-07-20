@@ -32,7 +32,8 @@ model User {
 
   dailyBox DailyBox?
 
-  tags Tag[]
+  tags          Tag[]
+  creditHistory MessageHistory[]
 }
 
 model Tag {
@@ -43,4 +44,14 @@ model Tag {
 
   user   User?  @relation(fields: [userId], references: [id])
   userId String
+}
+
+model MessageHistory {
+  date         DateTime
+  messageCount Int      @default(0)
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  @@id([date, userId])
 }

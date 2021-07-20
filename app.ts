@@ -103,7 +103,7 @@ client.on("message", async (msg: Discord.Message) => {
     if (wasSlur) return;
 
     AutoReact(msg);
-    updateUserScore(msg, connection); // Add to score
+    updateUserScore(msg); // Add to score
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {

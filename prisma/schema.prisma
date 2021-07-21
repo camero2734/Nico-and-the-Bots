@@ -7,7 +7,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["orderByAggregateGroup"]
 }
 
 model DailyBox {
@@ -81,9 +82,9 @@ model Gold {
   from User? @relation("Gold_fromUser", fields: [fromUserId], references: [id])
   to   User? @relation("Gold_toUser", fields: [toUserId], references: [id])
 
-  /// The message the gold was given for
+  // The message the gold was given for
   messageId String
-  /// The channel the gold was given in
+  // The channel the gold was given in
   channelId String
 
   createdAt DateTime @default(now())

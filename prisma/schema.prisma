@@ -32,9 +32,9 @@ model User {
 
   dailyBox DailyBox?
 
-  tags          Tag[]
-  creditHistory MessageHistory[]
-  Perk          Perk[]
+  tags           Tag[]
+  messageHistory MessageHistory[]
+  perks          Perk[]
 }
 
 model Tag {

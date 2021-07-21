@@ -5,6 +5,7 @@
     "main": "app.ts",
     "scripts": {
         "dev": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register app.ts",
+        "dev:debug": "set DEBUG=consola && yarn dev",
         "build": "tsc",
         "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/app.js",
         "update": "npm-check -u",
@@ -40,6 +41,7 @@
         "canvas": "^2.8.0",
         "chalk": "^4.1.1",
         "chrono-node": "^2.2.6",
+        "consola": "^2.15.3",
         "date-fns": "^2.22.1",
         "dayjs": "^1.10.5",
         "diff": "^5.0.0",

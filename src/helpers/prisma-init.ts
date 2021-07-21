@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import chalk from "chalk";
+import consola from "consola";
 
 export const prisma = new PrismaClient({
     log: [
@@ -45,5 +46,5 @@ prisma.$on("query", (e) => {
     const prefix = chalk.red("Query");
     const time = chalk.yellow(`${e.duration}ms`);
     const query = chalk.gray(e.query);
-    console.log(`${prefix} [${time}]: ${query}`);
+    consola.debug(`${prefix} [${time}]: ${query}`);
 });

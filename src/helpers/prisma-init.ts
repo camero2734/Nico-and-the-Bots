@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import chalk from "chalk";
 import consola from "consola";
+import { subMonths, startOfDay } from "date-fns";
 
 export const prisma = new PrismaClient({
     log: [
@@ -48,3 +49,26 @@ prisma.$on("query", (e) => {
     const query = chalk.gray(e.query);
     consola.debug(`${prefix} [${time}]: ${query}`);
 });
+
+export const queries = {
+    async monthlyStats(): Promise<{ score: number; place: number; userId: string }[]> {
+        const monthAgo = startOfDay(subMonths(new Date(), 1));
+        try {
+            const results = await prisma.messageHistory.groupBy({
+                by: ["userId"],
+                where: { date: { gte: monthAgo } },
+                _sum: { pointsEarned: true },
+                orderBy: { _sum: { pointsEarned: "desc" } }
+            });
+            const sorted = results.map((r, idx) => ({
+                score: r._sum.pointsEarned || 0,
+                userId: r.userId,
+                place: idx + 1
+            }));
+            return sorted;
+        } catch (e) {
+            consola.error("Failed to fetch monthlyStats", e);
+            return [];
+        }
+    }
+};

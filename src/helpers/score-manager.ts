@@ -32,12 +32,14 @@ export const updateUserScore = async (msg: Message): Promise<void> => {
     await prisma.messageHistory.upsert({
         where: historyIdentifier,
         update: {
-            messageCount: { increment: 1 }
+            messageCount: { increment: 1 },
+            pointsEarned: { increment: earnedPoint ? 1 : 0 }
         },
         create: {
             date: startOfDate,
             userId: dbUser.id,
-            messageCount: 1
+            messageCount: 1,
+            pointsEarned: earnedPoint ? 1 : 0
         }
     });
 

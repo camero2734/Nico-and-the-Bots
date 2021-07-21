@@ -35,6 +35,8 @@ model User {
   tags           Tag[]
   messageHistory MessageHistory[]
   perks          Perk[]
+  givenGolds     Gold[]           @relation("Gold_fromUser")
+  golds          Gold[]           @relation("Gold_toUser")
 }
 
 model Tag {
@@ -50,6 +52,7 @@ model Tag {
 model MessageHistory {
   date         DateTime
   messageCount Int      @default(0)
+  pointsEarned Int      @default(0)
 
   user   User?  @relation(fields: [userId], references: [id])
   userId String
@@ -71,4 +74,20 @@ model Perk {
   userId String
 
   @@unique([userId, type])
+}
+
+model Gold {
+  id   Int   @id @default(autoincrement())
+  from User? @relation("Gold_fromUser", fields: [fromUserId], references: [id])
+  to   User? @relation("Gold_toUser", fields: [toUserId], references: [id])
+
+  /// The message the gold was given for
+  messageId String
+  /// The channel the gold was given in
+  channelId String
+
+  createdAt DateTime @default(now())
+
+  fromUserId String
+  toUserId   String
 }

@@ -51,7 +51,7 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<void> {
     let setLevel = dbUser.level;
     if (Math.random() > 0.5) creditIncrement += 2; // Random chance of earning some credits
 
-    const userLevel = calculateLevel(dbUser.score);
+    const userLevel = LevelCalculator.calculateLevel(dbUser.score);
 
     if (userLevel > setLevel) {
         setLevel = userLevel;
@@ -81,14 +81,33 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<void> {
     });
 }
 
-export function calculateLevel(score: number): number {
-    let rq = 100;
-    let totalScore = 0;
-    let curLevel = 0;
-    while (totalScore < score) {
-        rq += 21 - Math.pow(1.001450824, rq);
-        curLevel++;
-        totalScore += rq;
+export class LevelCalculator {
+    static limit = 2100; // Determines the limit of the derivative (2100 in this case)
+    static yIntercept = 80; // Determines the value of L(0)
+    static adder = 140; // Causes function to not grow as quickly
+
+    /**
+     * Calculates the level using a function that is asymptotic to the line 2100x
+     * meaning that the # of points to the next level approaches 2100
+     *
+     * This is the inverse of {@link calculateScore}
+     *
+     * @param score The score of the user
+     * @returns The level corresponding to the score
+     */
+    static calculateLevel(score: number) {
+        const x = score;
+        const A = (x - this.yIntercept) / this.limit; // Helper substitute variable
+        return Math.floor(0.5 * (A + Math.sqrt(A * (A + 560))) + Number.EPSILON);
     }
-    return curLevel;
+
+    /**
+     * Calculates the minimum score required to be this level.
+     * @param score The score of the user
+     * @returns The level corresponding to the score
+     */
+    static calculateScore(level: number) {
+        const y = level;
+        return Math.ceil((this.limit * y * y) / (y + this.adder) + this.yIntercept);
+    }
 }

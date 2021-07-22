@@ -13,7 +13,7 @@ import { Economy } from "database/entities/Economy";
 import { subWeeks } from "date-fns";
 import { GuildMember, Snowflake } from "discord.js";
 import { badgeLoader } from "helpers";
-import { calculateLevel } from "helpers/score-manager";
+import { LevelCalculator } from "helpers/score-manager";
 import fetch from "node-fetch";
 import { CommandContext, CommandOptionType } from "slash-create";
 import { Connection } from "typeorm";
@@ -203,8 +203,7 @@ async function generateImage(
         cctx.drawImage(avatar, 0, 0, IMAGE_HEIGHT, IMAGE_HEIGHT);
 
         // Top badge
-        const userGold = new Counter({ identifier: member.user.id, title: "GoldCount" }); // Will exclude gold badges to save time
-        const [firstBadge] = await badgeLoader(member, userGold, placeNum);
+        const [firstBadge] = await badgeLoader(member, 0, placeNum);
 
         cctx.drawImage(firstBadge, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55);
 
@@ -227,7 +226,7 @@ async function generateImage(
         // Level
         cctx.font = "20px futura";
         cctx.fillStyle = "white";
-        drawText(`Level: ${calculateLevel(score)}`, 0, 55);
+        drawText(`Level: ${LevelCalculator.calculateLevel(score)}`, 0, 55);
 
         // Score
         cctx.translate(325, 25);

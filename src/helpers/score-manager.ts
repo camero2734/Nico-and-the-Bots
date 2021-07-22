@@ -96,6 +96,8 @@ export class LevelCalculator {
      * @returns The level corresponding to the score
      */
     static calculateLevel(score: number) {
+        if (score < this.yIntercept) return 0;
+
         const x = score;
         const A = (x - this.yIntercept) / this.limit; // Helper substitute variable
         return Math.floor(0.5 * (A + Math.sqrt(A * (A + 560))) + Number.EPSILON);
@@ -107,7 +109,21 @@ export class LevelCalculator {
      * @returns The level corresponding to the score
      */
     static calculateScore(level: number) {
+        if (level <= 0) return 0;
+
         const y = level;
         return Math.ceil((this.limit * y * y) / (y + this.adder) + this.yIntercept);
+    }
+
+    /**
+     * Calculates points remaining until the next level
+     */
+    static pointsToNextLevel(score: number) {
+        const nextLevel = this.calculateLevel(score) + 1;
+        const scoreRequired = this.calculateScore(nextLevel);
+
+        console.log({ score, nextLevel, scoreRequired });
+
+        return scoreRequired - score;
     }
 }

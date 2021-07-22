@@ -73,7 +73,7 @@ export const queries = {
     },
     async alltimePlaceNum(score: number): Promise<number> {
         try {
-            const res = await prisma.user.count({ where: { score: { lte: score } } });
+            const res = await prisma.user.count({ where: { score: { gt: score } } });
             return res;
         } catch {
             return 0;

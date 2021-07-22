@@ -1,22 +1,11 @@
 import { createCanvas, loadImage } from "canvas";
-import {
-    CommandError,
-    CommandOptions,
-    CommandRunner,
-    createOptions,
-    ExtendedContext,
-    OptsType
-} from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
-import { CreditHistory } from "database/entities/CreditHistory";
-import { Economy } from "database/entities/Economy";
-import { subWeeks } from "date-fns";
-import { GuildMember, Snowflake } from "discord.js";
+import { CommandError, CommandRunner, createOptions, ExtendedContext, OptsType } from "configuration/definitions";
+import { GuildMember } from "discord.js";
 import { badgeLoader } from "helpers";
 import { LevelCalculator } from "helpers/score-manager";
 import fetch from "node-fetch";
-import { CommandContext, CommandOptionType } from "slash-create";
-import { Connection } from "typeorm";
+import { CommandOptionType } from "slash-create";
+import { queries } from "../../helpers/prisma-init";
 
 export const Options = createOptions(<const>{
     description: "Displays the server point leaderboard",
@@ -38,7 +27,8 @@ export const Options = createOptions(<const>{
                 { name: "Last month", value: 4 },
                 { name: "Last 3 months", value: 13 },
                 { name: "Last 6 months", value: 26 },
-                { name: "Last year", value: 52 }
+                { name: "Last year", value: 52 },
+                { name: "All time", value: 0 }
             ]
         }
     ]
@@ -47,13 +37,15 @@ export const Options = createOptions(<const>{
 const PAGE_SIZE = 10;
 
 export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
-    const { page, timeperiod } = ctx.opts;
+    const { page } = ctx.opts;
     const pageNum = page && page > 0 ? page - 1 : 0; // Computers tend to like to start at zero. Also negative pages don't make sense
+    const timeperiod = ctx.opts.timeperiod || 0;
 
     await ctx.defer();
 
     const startTime = Date.now();
-    const memberScores = await getMemberScores(ctx, pageNum, timeperiod);
+    const memberScores =
+        timeperiod === 0 ? await getAlltimeScores(ctx, pageNum) : await getMemberScores(ctx, pageNum, timeperiod);
 
     const timeStamp = Date.now() - startTime;
 
@@ -62,7 +54,7 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
     const choice = Options.options?.find((o) => o.name === "timeperiod")?.choices?.find((c) => c.value === timeperiod);
     const timePeriodStr = (timeperiod && choice?.name) || "All time";
 
-    const buffer = await generateImage(memberScores, pageNum, ctx.connection, timePeriodStr);
+    const buffer = await generateImage(memberScores, pageNum, timePeriodStr);
 
     await ctx.send(`Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`, {
         file: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, file: buffer }]
@@ -74,68 +66,42 @@ async function getMemberScores(
     pageNum: number,
     timeperiod?: number
 ): Promise<{ member: GuildMember; score: number }[]> {
-    const creditRepo = ctx.connection.getMongoRepository(CreditHistory);
-    const economyRepo = ctx.connection.getMongoRepository(Economy);
+    const startAt = pageNum * 10;
+    const allUsers = await queries.scoresOverTime(timeperiod); // TODO: Should probably just skip/take in the SQL query
+    const paginatedUsers = allUsers.slice(startAt, startAt + 10);
 
-    // Use CreditHistory to calculate the score over the provided interval
-    if (timeperiod) {
-        const userScores: Record<string, number> = {};
-        const now = new Date();
-        const startDate = subWeeks(now, timeperiod);
-        const histories = await creditRepo.find({ where: { date: { $gte: startDate, $lte: now } } });
+    return await Promise.all(
+        paginatedUsers.map(async (u) => ({
+            member: await ctx.member.guild.members.fetch(u.userId.toSnowflake()),
+            score: u.score
+        }))
+    );
+}
 
-        // Calculate each user's score
-        for (const day of histories) {
-            for (const [userid, score] of Object.entries(day.entries)) {
-                if (!userScores[userid]) userScores[userid] = 0;
-                userScores[userid] += score;
-            }
-        }
+async function getAlltimeScores(
+    ctx: ExtendedContext,
+    pageNum: number
+): Promise<{ member: GuildMember; score: number }[]> {
+    const startAt = pageNum * 10;
+    const endAt = startAt + 10;
 
-        const sortedScores = Object.entries(userScores)
-            .map(([id, score]) => ({ id, score }))
-            .sort((a, b) => b.score - a.score);
+    const paginatedUsers = await ctx.prisma.user.findMany({
+        orderBy: { score: "desc" },
+        skip: startAt,
+        take: endAt
+    });
 
-        const memberScores: { member: GuildMember; score: number }[] = [];
-        let curIdx = pageNum * PAGE_SIZE;
-        while (memberScores.length !== PAGE_SIZE) {
-            const curScore = sortedScores[curIdx++];
-            if (!curScore) break; // No more scores
-
-            const member = await ctx.member.guild.members.fetch(<Snowflake>curScore.id);
-            memberScores.push({ member, score: curScore.score });
-        }
-
-        return memberScores;
-    }
-    // All time score is trivially just a comparison of the `score` property
-    else {
-        // Need to be able to make multiple fetches in case some users left
-        let skip = pageNum * 10;
-        const fetchEcons = async () => {
-            const econs = await economyRepo.find({ order: { score: "DESC" }, take: PAGE_SIZE, skip });
-            skip += PAGE_SIZE;
-            return econs;
-        };
-
-        const memberScores: { member: GuildMember; score: number }[] = [];
-        while (memberScores.length < PAGE_SIZE) {
-            const econs = await fetchEcons();
-            for (const econ of econs) {
-                if (memberScores.length >= PAGE_SIZE) break;
-                const member = await ctx.member.guild.members.fetch(<Snowflake>econ.userid);
-                memberScores.push({ member, score: econ.score });
-            }
-            if (econs.length < PAGE_SIZE) break; // No more left to fetch
-        }
-        return memberScores.slice(0, PAGE_SIZE);
-    }
+    return await Promise.all(
+        paginatedUsers.map(async (u) => ({
+            member: await ctx.member.guild.members.fetch(u.id.toSnowflake()),
+            score: u.score
+        }))
+    );
 }
 
 async function generateImage(
     userScores: { member: GuildMember; score: number }[],
     pageNum: number,
-    connection: Connection,
     timePeriodStr: string
 ): Promise<Buffer> {
     const ACTUAl_WIDTH = 1000;

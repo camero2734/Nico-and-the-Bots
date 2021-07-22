@@ -1,7 +1,7 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import chalk from "chalk";
 import consola from "consola";
-import { subMonths, startOfDay } from "date-fns";
+import { startOfDay, subWeeks } from "date-fns";
 
 export const prisma = new PrismaClient({
     log: [
@@ -51,8 +51,8 @@ prisma.$on("query", (e) => {
 });
 
 export const queries = {
-    async monthlyStats(): Promise<{ score: number; place: number; userId: string }[]> {
-        const monthAgo = startOfDay(subMonths(new Date(), 1));
+    async scoresOverTime(weeks = 1): Promise<{ score: number; place: number; userId: string }[]> {
+        const monthAgo = startOfDay(subWeeks(new Date(), weeks));
         try {
             const results = await prisma.messageHistory.groupBy({
                 by: ["userId"],

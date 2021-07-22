@@ -29,7 +29,7 @@ export const updateUserScore = async (msg: Message): Promise<void> => {
     const startOfDate = startOfDay(new Date());
     const historyIdentifier = { date_userId: { date: startOfDate, userId: dbUser.id } };
 
-    await prisma.messageHistory.upsert({
+    const upsertData: Parameters<typeof prisma["messageHistory"]["upsert"]>[0] = {
         where: historyIdentifier,
         update: {
             messageCount: { increment: 1 },
@@ -41,12 +41,19 @@ export const updateUserScore = async (msg: Message): Promise<void> => {
             messageCount: 1,
             pointsEarned: earnedPoint ? 1 : 0
         }
-    });
+    };
 
-    if (earnedPoint) return onEarnPoint(msg, dbUser);
+    if (earnedPoint) {
+        const userUpdateData = await onEarnPoint(msg, dbUser);
+        // Ensure the messageHistory perfectly tracks the score
+        await prisma.$transaction([
+            prisma.messageHistory.upsert(upsertData), //
+            prisma.user.update(userUpdateData)
+        ]);
+    } else await prisma.messageHistory.upsert(upsertData);
 };
 
-async function onEarnPoint(msg: Message, dbUser: User): Promise<void> {
+async function onEarnPoint(msg: Message, dbUser: User): Promise<Parameters<typeof prisma["user"]["update"]>[0]> {
     let creditIncrement = 0;
     let setLevel = dbUser.level;
     if (Math.random() > 0.5) creditIncrement += 2; // Random chance of earning some credits
@@ -71,14 +78,14 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<void> {
         await msg.reply({ embeds: [lvlEmbed] });
     }
 
-    await prisma.user.update({
+    return {
         where: { id: dbUser.id },
         data: {
             credits: { increment: creditIncrement },
             score: { increment: 1 },
             level: setLevel
         }
-    });
+    };
 }
 
 export class LevelCalculator {

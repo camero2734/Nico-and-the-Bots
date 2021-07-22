@@ -33,11 +33,11 @@ export type PrismaType = typeof prisma;
     prisma.$use(async (params, next) => {
         const userId: string | undefined = params.args?.data?.userId;
         if (userId && !userIds.has(userId)) {
-            // Need to create user first
+            userIds.add(userId);
+            // Create user
             await prisma.user.create({
                 data: { id: userId, dailyBox: { create: {} } }
             });
-            userIds.add(userId);
         }
         return next(params);
     });
@@ -69,6 +69,14 @@ export const queries = {
         } catch (e) {
             consola.error("Failed to fetch monthlyStats", e);
             return [];
+        }
+    },
+    async alltimePlaceNum(score: number): Promise<number> {
+        try {
+            const res = await prisma.user.count({ where: { score: { lte: score } } });
+            return res;
+        } catch {
+            return 0;
         }
     }
 };

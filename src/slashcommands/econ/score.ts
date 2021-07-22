@@ -6,6 +6,7 @@ import { Economy } from "database/entities/Economy";
 import { Snowflake } from "discord.js";
 import { badgeLoader } from "helpers";
 import { CommandOptionType } from "slash-create";
+import { queries } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {
     description: "View your score card",
@@ -36,11 +37,13 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
         include: { golds: true, dailyBox: true }
     });
 
-    // Calculate a users place
-    const placeNum = 3; //
+    if (!dbUser) throw new CommandError("Unable to find user's score.");
+
+    // Calculate a users all-time place
+    const placeNum = await queries.alltimePlaceNum(dbUser.score);
 
     // Get images to place on card as badges
-    // const badges = await badgeLoader(member, userGold, placeNum, connection);
+    const badges = await badgeLoader(member, dbUser.golds.length, placeNum, connection);
 
     //CALCULATE POINTS TO NEXT LEVEL
     // let rq = 100;

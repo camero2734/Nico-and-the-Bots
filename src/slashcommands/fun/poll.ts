@@ -1,5 +1,5 @@
+import { Poll, Vote } from "@prisma/client";
 import { CommandComponentListener, CommandOptions, CommandRunner, CustomIDPattern } from "configuration/definitions";
-import { Poll } from "database/entities/Poll";
 import { EmbedField, Message, MessageEmbed } from "discord.js";
 import EmojiReg from "emoji-regex";
 import { MessageTools } from "helpers";
@@ -12,6 +12,7 @@ import {
     PartialEmoji
 } from "slash-create";
 import progressBar from "string-progressbar";
+import { PrismaType, prisma } from "../../helpers/prisma-init";
 
 const REQUIRED_OPTIONS = <const>[1, 2];
 const OPTIONAL_OPTIONS = <const>[3, 4, 5, 6, 7, 8, 9, 10];
@@ -83,12 +84,10 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
         }
     }
 
-    const poll = new Poll({
-        identifier: ctx.interactionID,
-        userid: ctx.user.id
+    const poll = await ctx.prisma.poll.create({
+        data: { userId: ctx.user.id, name: title, options: parsedOptions.map((p) => p.text) },
+        include: { votes: true }
     });
-
-    await ctx.connection.manager.save(poll);
 
     const embed = new MessageEmbed()
         .setTitle(title)
@@ -104,7 +103,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
             type: ComponentType.BUTTON,
             style: ButtonStyle.PRIMARY,
             label: opt.text,
-            custom_id: answerListener.generateCustomID({ index: `${idx}`, pollID: ctx.interactionID }),
+            custom_id: answerListener.generateCustomID({ index: `${idx}`, pollID: `${poll.id}` }),
             emoji: { name: opt.emoji, id: opt.emojiID }
         }))
     );
@@ -112,13 +111,14 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
     await ctx.send({ embeds: [embed.toJSON()], components });
 };
 
-function generateStatsDescription(poll: Poll, parsedOptions: ParsedOption[]): EmbedField[] {
+type PollWithVotes = Poll & { votes: Vote[] };
+function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOption[]): EmbedField[] {
     // Calculate votes for each option
-    const votes = parsedOptions.map((_) => 0);
+    const votes = parsedOptions.map(() => 0);
     const totalVotes = poll.votes.length;
 
     for (const vote of poll.votes) {
-        votes[vote.index]++;
+        votes[vote.choice]++;
     }
 
     const tempEmbed = new MessageEmbed();
@@ -140,19 +140,22 @@ answerListener.handler = async (interaction, connection, args) => {
     const { index, pollID } = args;
 
     const msg = interaction.message as Message;
-    const poll = await connection.getRepository(Poll).findOne({ identifier: pollID });
 
+    const poll = await prisma.poll.findUnique({ where: { id: +pollID }, include: { votes: true } });
     if (!poll) return;
 
     // Ensure user hasn't voted
-    const userVote = poll.votes.find((vote) => vote.userid === interaction.user.id);
+    const previousVote = poll.votes.find((vote) => vote.userId === interaction.user.id);
 
-    // Editing
-    if (userVote) userVote.index = +index;
-    // Cast new vote
-    else poll.votes.push({ index: +index, userid: interaction.user.id });
+    const castVote = await prisma.vote.upsert({
+        where: { id: previousVote?.id || -1 },
+        update: { choice: +index },
+        create: { choice: +index, userId: interaction.user.id, pollId: poll.id }
+    });
 
-    await connection.manager.save(poll);
+    // Update poll object
+    if (previousVote) previousVote.choice = castVote.choice;
+    else poll.votes.push(castVote);
 
     const parsedOptions: ParsedOption[] = [];
     for (const actionRow of msg.components) {

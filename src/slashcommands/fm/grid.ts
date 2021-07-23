@@ -1,9 +1,8 @@
-import { createCanvas, loadImage, Image } from "canvas";
+import { createCanvas, Image, loadImage } from "canvas";
 import { CommandError, CommandRunner, createOptions, OptsType } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { CommandOptionType } from "slash-create";
-import { userIDs } from "../../configuration/config";
 import { Item } from "../../database/entities/Item";
 import { Album, createFMMethod, RankedAlbum } from "./_consts";
 

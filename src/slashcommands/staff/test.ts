@@ -1,10 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { CommandError, CommandOptions, CommandRunner, createOptions, OptsType } from "configuration/definitions";
+import { CommandRunner, createOptions, OptsType } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
-import { Economy } from "../../database/entities/Economy";
 import { LevelCalculator } from "../../helpers";
-import { queries } from "../../helpers/prisma-init";
 
 export const Options = createOptions(<const>{
     description: "Test command",

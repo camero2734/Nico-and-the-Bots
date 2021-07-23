@@ -10,6 +10,7 @@ import { Mutex } from "async-mutex";
 import { Counter } from "database/entities/Counter";
 import { createCanvas, loadImage } from "canvas";
 import { sendViolationNotice } from "helpers/dema-notice";
+import { ColorCategory } from "./_consts";
 
 export const Options: CommandOptions = {
     description: "Opens the shop menu for color roles",
@@ -23,45 +24,23 @@ export const Executor: CommandRunner = async (ctx) => {
 
     const colorRoles = roles.colors;
 
-    class ColorCategory {
-        public requiresDE = false;
-        public credits: number;
-        public level: number;
-        public roles: Role[];
-        constructor(roleIDs: Snowflake[], opts: Partial<{ level: number; credits: number; DE: boolean }>) {
-            this.level = opts.level || 0;
-            this.credits = opts.credits || 0;
-            this.requiresDE = opts.DE || false;
-            this.roles = roleIDs.map((id) => ctx.channel.guild.roles.cache.get(id) as Role);
-        }
+    const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
+        Object.values(roleIds).map((r) => ctx.member.guild.roles.cache.get(r) as Role);
 
-        unlockedFor(member: GuildMember, userEconomy: Economy) {
-            const meetsDE = this.requiresDE ? member.roles.cache.has(roles.deatheaters) : true;
-            return this.level <= userEconomy.level && meetsDE;
-        }
+    const tier1 = new ColorCategory(tierToRoles(colorRoles.tier1), { credits: 7500, level: 10 });
+    const tier2 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 20 });
+    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 25000, level: 50 });
+    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
+    const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
 
-        purchasable(roleID: string, member: GuildMember, userEconomy: Economy): boolean {
-            if (!this.unlockedFor(member, userEconomy)) return false; // Checks level and DE
-            const role = this.roles.find((r) => r.id === roleID);
-            if (!role) return false; // Invalid role ID
+    const dbUser = await ctx.prisma.user.upsert({
+        where: { id: ctx.member.id },
+        update: {}, // No update, just return
+        create: { id: ctx.member.id, dailyBox: { create: {} } },
+        include: { colorRoles: true }
+    });
 
-            if (userEconomy.credits < this.credits) return false; // Check credits
-
-            return true;
-        }
-    }
-
-    const tier1 = new ColorCategory(Object.values(colorRoles.tier1), { credits: 7500, level: 10 });
-    const tier2 = new ColorCategory(Object.values(colorRoles.tier2), { credits: 15000, level: 20 });
-    const tier3 = new ColorCategory(Object.values(colorRoles.tier3), { credits: 25000, level: 50 });
-    const tier4 = new ColorCategory(Object.values(colorRoles.tier4), { credits: 50000, level: 100 });
-    const DExclusive = new ColorCategory(Object.values(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
-
-    const userEconomy =
-        (await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id })) ||
-        new Economy({ userid: ctx.member.id });
-
-    const userRoles = (await ctx.connection.getRepository(Item).find({ identifier: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
+    const userRoles = dbUser.colorRoles.map(r => r.roleId); // prettier-ignore
 
     const categories = {
         "The Scaled Back Collection": {
@@ -110,7 +89,7 @@ export const Executor: CommandRunner = async (ctx) => {
         {
             type: ComponentType.ACTION_ROW,
             components: Object.entries(categories).map(([label, item], idx) => {
-                const unlocked = item.data.unlockedFor(ctx.member, userEconomy);
+                const unlocked = item.data.unlockedFor(ctx.member, dbUser);
                 return {
                     type: ComponentType.BUTTON,
                     style: unlocked ? ButtonStyle.PRIMARY : ButtonStyle.SECONDARY,
@@ -192,7 +171,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 .setColor(role.color)
                 .setDescription(`Would you like to purchase this item?`)
                 .addField("Cost", `${item.data.credits}`, true)
-                .addField("Your credits", `${userEconomy.credits} → ${userEconomy.credits - item.data.credits}`, true)
+                .addField("Your credits", `${dbUser.credits} → ${dbUser.credits - item.data.credits}`, true)
                 .setFooter(footer); // prettier-ignore
 
             if (contraband) {
@@ -229,17 +208,22 @@ export const Executor: CommandRunner = async (ctx) => {
             // When someone clicks "Purchase"
             ctx.registerComponent(BUY_ID, async (btnCtx) => {
                 // Purchase
-                if (!item.data.purchasable(role.id, ctx.member, userEconomy))
+                if (!item.data.purchasable(role.id, ctx.member, dbUser))
                     throw new CommandError("You do not have enough credits to purchase this item");
 
                 // Add role to user's color roles list
                 if (userRoles.some((r) => r === role.id)) throw new CommandError("You already have this role!");
-                const colorRoleItem = new Item({ identifier: ctx.user.id, type: "ColorRole", title: role.id });
-                await ctx.connection.manager.save(colorRoleItem);
 
-                // Update user's economy
-                userEconomy.credits -= item.data.credits;
-                await ctx.connection.manager.save(userEconomy);
+                // Use transaction to ensure user receives role and has their credits deducted
+                await ctx.prisma.$transaction([
+                    ctx.prisma.colorRole.create({
+                        data: { userId: ctx.user.id, roleId: role.id, amountPaid: item.data.credits }
+                    }),
+                    ctx.prisma.user.update({
+                        where: { id: dbUser.id },
+                        data: { credits: { decrement: item.data.credits } }
+                    })
+                ]);
 
                 roleEmbed.fields = [];
                 roleEmbed.setDescription(`Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`); // prettier-ignore

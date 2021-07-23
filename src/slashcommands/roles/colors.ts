@@ -2,7 +2,7 @@ import { CommandOptionType } from "slash-create";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import * as R from "ramda";
-import { channelIDs, roles } from "configuration/config";
+import { channelIDs, roles, userIDs } from "configuration/config";
 import { Item } from "database/entities/Item";
 
 export const Options: CommandOptions = {
@@ -20,22 +20,25 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
     const role = ctx.opts.role;
 
-    if (Math.random() < 10) return ctx.send("This command is disabled.");
-    /////////
+    if (ctx.user.id !== userIDs.me) return ctx.send("This command is disabled.");
 
-    const userRoles = (await ctx.connection.getRepository(Item).find({ identifier: ctx.user.id, type: "ColorRole" }) || []).map(r => r.title); // prettier-ignore
+    const userRoles = await ctx.prisma.colorRole.findMany({
+        where: { userId: ctx.user.id }
+    });
 
-    if (!userRoles) {
+    const roleIDs = userRoles.map((r) => r.roleId.toSnowflake());
+
+    if (!roleIDs || roleIDs.length === 0) {
         throw new CommandError(`You don't have any color roles! Visit <#${channelIDs.shop}> to learn how to get them.`);
     }
 
     if (!role) {
         const embed = new MessageEmbed()
             .setTitle("Your Color Roles")
-            .setDescription(userRoles.map((r) => `<@&${r}>`).join("\n"))
+            .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
             .addField(
                 "How do I choose one?",
-                `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles color <@&${userRoles[0]}>`
+                `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles color <@&${roleIDs[0]}>`
             );
 
         return ctx.send({ embeds: [embed.toJSON()] });
@@ -44,14 +47,14 @@ export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
     // User has valid roles and requested one
 
     // Not a valid role
-    if (!userRoles.includes(role)) {
-        throw new CommandError(`You don't have this color role (or it is not a color role)`);
+    if (!roleIDs.includes(role)) {
+        throw new CommandError(`You don't own this color role (or it is not a color role)`);
     }
 
     // All good - remove any current color roles and add the requested one
     const currentlyEquippedRoles = ctx.member.roles.cache
         .array()
-        .filter((r) => userRoles.includes(r.id))
+        .filter((r) => roleIDs.includes(r.id))
         .map((r) => r.id);
 
     // Remove all color roles

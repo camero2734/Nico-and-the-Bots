@@ -75,7 +75,7 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<Parameters<typeo
             creditIncrement += randomReward;
         }
 
-        await msg.reply({ embeds: [lvlEmbed] });
+        await msg.reply({ embeds: [lvlEmbed], allowedMentions: { repliedUser: false } });
     }
 
     return {

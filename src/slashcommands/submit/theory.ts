@@ -38,21 +38,22 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
 
     const theoryChan = ctx.member.guild.channels.cache.get(channelIDs.theorylist) as TextChannel;
 
-    const poll = new Poll({ identifier: ctx.interactionID, userid: ctx.user.id });
-    await ctx.connection.manager.save(poll);
+    const poll = await ctx.prisma.poll.create({
+        data: { userId: ctx.user.id, options: ["upvote", "downvote"], name: title }
+    });
 
     const actionRow = new MessageActionRow().addComponents([
         new MessageButton({
             style: "SECONDARY",
             label: "0",
             emoji: { name: "upvote_pink2", id: "850586748765077514" } as EmojiIdentifierResolvable,
-            customID: answerListener.generateCustomID({ index: "1", pollID: ctx.interactionID })
+            customID: answerListener.generateCustomID({ index: "1", pollID: poll.id.toString() })
         }),
         new MessageButton({
             style: "SECONDARY",
             label: "0",
             emoji: { name: "downvote_blue2", id: "850586787805265990" } as EmojiIdentifierResolvable,
-            customID: answerListener.generateCustomID({ index: "0", pollID: ctx.interactionID })
+            customID: answerListener.generateCustomID({ index: "0", pollID: poll.id.toString() })
         })
     ]);
 

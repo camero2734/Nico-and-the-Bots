@@ -1,7 +1,7 @@
+import { Poll, Vote } from "@prisma/client";
 import { Mutex } from "async-mutex";
 import { constants } from "configuration/config";
 import { CommandComponentListener, ExtendedContext } from "configuration/definitions";
-import { Poll } from "database/entities/Poll";
 import {
     Collection,
     CollectorFilter,
@@ -17,6 +17,7 @@ import {
 } from "discord.js";
 import { ComponentActionRow, ComponentType, MessageOptions } from "slash-create";
 import F from "./funcs";
+import { prisma } from "./prisma-init";
 
 export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {
     const baseEmbed = new MessageEmbed().setDescription(strings.join(""));
@@ -130,6 +131,7 @@ export function MessageContext(msg: Message) {
  * Deletes the original message if too many downvotes
  * @param name The name passed to the CommandComponentListener
  */
+type PollWithVotes = Poll & { votes: Vote[] };
 export function generateUpvoteDownvoteListener(name: string): CommandComponentListener {
     const answerListener = new CommandComponentListener(name, <const>["isUpvote", "pollID"]);
     const mutex = new Mutex();
@@ -139,25 +141,30 @@ export function generateUpvoteDownvoteListener(name: string): CommandComponentLi
             const { isUpvote, pollID } = args;
             const m = interaction.message as Message;
 
-            const poll = await connection.getRepository(Poll).findOne({ identifier: pollID });
+            const poll = await prisma.poll.findUnique({ where: { id: +pollID }, include: { votes: true } });
             if (!poll) return;
 
-            const vote = poll.votes.find((v) => v.userid === interaction.user.id);
-            if (vote) vote.index = +isUpvote;
-            else poll.votes.push({ index: +isUpvote, userid: interaction.user.id });
+            const previousVote = poll.votes.find((v) => v.userId === interaction.user.id);
 
-            await connection.manager.save(poll);
+            const castVote = await prisma.vote.upsert({
+                where: { id: previousVote?.id || -1 },
+                update: { choice: +isUpvote },
+                create: { choice: +isUpvote, userId: interaction.user.id, pollId: poll.id }
+            });
+
+            if (previousVote) previousVote.choice = castVote.choice;
+            else poll.votes.push(castVote);
 
             await updateMessage(m, poll, +isUpvote);
         });
     };
 
-    async function updateMessage(msg: Message, poll: Poll, lastVote: number) {
+    async function updateMessage(msg: Message, poll: PollWithVotes, lastVote: number) {
         const [actionRow] = msg.components;
 
         let upvotes = 0;
         for (const vote of poll.votes) {
-            if (vote.index === 1) upvotes++;
+            if (vote.choice === 1) upvotes++;
         }
         const downvotes = poll.votes.length - upvotes;
 

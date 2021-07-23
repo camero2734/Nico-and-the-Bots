@@ -1,18 +1,10 @@
 import { Poll, Vote } from "@prisma/client";
-import { CommandComponentListener, CommandOptions, CommandRunner, CustomIDPattern } from "configuration/definitions";
-import { EmbedField, Message, MessageEmbed } from "discord.js";
+import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
+import { EmbedField, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
 import EmojiReg from "emoji-regex";
-import { MessageTools } from "helpers";
-import {
-    ApplicationCommandOption,
-    ButtonStyle,
-    CommandOptionType,
-    ComponentActionRow,
-    ComponentType,
-    PartialEmoji
-} from "slash-create";
+import { ApplicationCommandOption, CommandOptionType, ComponentActionRow, PartialEmoji } from "slash-create";
 import progressBar from "string-progressbar";
-import { PrismaType, prisma } from "../../helpers/prisma-init";
+import { prisma } from "../../helpers/prisma-init";
 
 const REQUIRED_OPTIONS = <const>[1, 2];
 const OPTIONAL_OPTIONS = <const>[3, 4, 5, 6, 7, 8, 9, 10];
@@ -44,10 +36,10 @@ export const Options: CommandOptions = {
     ]
 };
 
-const answerListener = new CommandComponentListener("pollresponse", <const>["index", "pollID"]);
+const answerListener = new CommandComponentListener("pollresponse", <const>["pollID"]);
 export const ComponentListeners: CommandComponentListener[] = [answerListener];
 
-type ParsedOption = { text: string; emoji?: string; emojiID?: string };
+type ParsedOption = { text: string; emoji?: string };
 export const Executor: CommandRunner<OptType> = async (ctx) => {
     await ctx.defer();
 
@@ -64,14 +56,12 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
     const parsedOptions: ParsedOption[] = [];
 
     for (const option of options) {
-        const discordMatch = discordEmojiRegex.exec(option);
+        const discordMatch = option.match(discordEmojiRegex);
 
         // Has valid Discord emoji
         if (discordMatch?.index === 0) {
             const emoji = discordMatch[0];
-            const { name, id } = discordMatch.groups as { name: string; id: string };
-            console.log({ emoji: id });
-            parsedOptions.push({ text: option.replace(emoji, "").trim(), emoji: name, emojiID: id });
+            parsedOptions.push({ text: option.replace(emoji, "").trim(), emoji });
         }
         // Doesn't have a Discord emoji, might have a unicode emoji
         else {
@@ -98,17 +88,19 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
-    const components = MessageTools.allocateButtonsIntoRows<ComponentActionRow>(
-        parsedOptions.map((opt, idx) => ({
-            type: ComponentType.BUTTON,
-            style: ButtonStyle.PRIMARY,
-            label: opt.text,
-            custom_id: answerListener.generateCustomID({ index: `${idx}`, pollID: `${poll.id}` }),
-            emoji: { name: opt.emoji, id: opt.emojiID }
-        }))
-    );
+    const selectMenu = new MessageSelectMenu()
+        .setCustomID(answerListener.generateCustomID({ pollID: poll.id.toString() }))
+        .setPlaceholder("Select a poll choice");
 
-    await ctx.send({ embeds: [embed.toJSON()], components });
+    for (let i = 0; i < parsedOptions.length; i++) {
+        const option = parsedOptions[i];
+        const emoji = option.emoji;
+        selectMenu.addOptions({ label: option.text, emoji, value: `${i}` });
+    }
+
+    const actionRow = new MessageActionRow().addComponents(selectMenu).toJSON();
+
+    await ctx.send({ embeds: [embed.toJSON()], components: [actionRow as ComponentActionRow] });
 };
 
 type PollWithVotes = Poll & { votes: Vote[] };
@@ -125,11 +117,8 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
 
     parsedOptions.forEach((opt, idx) => {
         const [progress] = progressBar.filledBar(totalVotes === 0 ? 1 : totalVotes, votes[idx], 20);
-        let emoji = "";
-        if (opt.emojiID) emoji = `<a:${opt.emoji}:${opt.emojiID}>`;
-        else if (opt.emoji) emoji = opt.emoji;
 
-        tempEmbed.addField(`${emoji} ${opt.text}`.trim(), `${progress} [${votes[idx]}/${totalVotes}]`);
+        tempEmbed.addField(`${opt.emoji} ${opt.text}`.trim(), `${progress} [${votes[idx]}/${totalVotes}]`);
     });
 
     return tempEmbed.fields;
@@ -137,7 +126,11 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
 
 // Button handler
 answerListener.handler = async (interaction, connection, args) => {
-    const { index, pollID } = args;
+    if (!interaction.isSelectMenu()) return;
+    const { pollID } = args;
+    const index = interaction.values?.[0];
+    const guild = interaction.guild;
+    if (typeof index === "undefined" || !guild) return;
 
     const msg = interaction.message as Message;
 
@@ -159,11 +152,13 @@ answerListener.handler = async (interaction, connection, args) => {
 
     const parsedOptions: ParsedOption[] = [];
     for (const actionRow of msg.components) {
-        for (const button of actionRow.components) {
-            if (button.type !== "BUTTON") return;
+        const selectMenu = actionRow.components[0];
+        if (selectMenu.type !== "SELECT_MENU") return;
 
-            const emoji = button.emoji as PartialEmoji | undefined;
-            parsedOptions.push({ text: button.label as string, emoji: emoji?.name, emojiID: emoji?.id });
+        for (const option of selectMenu.options) {
+            const emoji = option.emoji as PartialEmoji;
+            const emojiString = emoji.id ? (await guild.emojis.fetch(emoji.id.toSnowflake())).toString() : emoji.name;
+            parsedOptions.push({ text: option.label as string, emoji: emojiString });
         }
     }
 

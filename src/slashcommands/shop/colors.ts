@@ -127,6 +127,9 @@ export const Executor: CommandRunner = async (ctx) => {
                 .addField("\u200b", item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063")
                 .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
+            const cantAfford = dbUser.credits < item.data.credits;
+            const missingCredits = item.data.credits - dbUser.credits;
+
             const categoryButtons: ComponentButton[] = item.data.roles.map((role) => {
                 const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
                 const ownsRole = userRoles.includes(role.id);
@@ -134,8 +137,9 @@ export const Executor: CommandRunner = async (ctx) => {
 
                 return {
                     type: ComponentType.BUTTON,
-                    style: ownsRole ? ButtonStyle.SECONDARY : defaultColor,
-                    label: role.name,
+                    disabled: cantAfford,
+                    style: cantAfford || ownsRole ? ButtonStyle.SECONDARY : defaultColor,
+                    label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
                     custom_id: !ownsRole ? role.id : "nothing",
                     emoji: contraband ? { name: "🩸" } : undefined
                 };

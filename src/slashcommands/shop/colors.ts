@@ -1,15 +1,11 @@
-import { channelIDs, roles, userIDs } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
-import { Economy } from "database/entities/Economy";
-import { Item } from "database/entities/Item";
-import { GuildMember, MessageAttachment, MessageEmbed, Role, Snowflake, TextChannel } from "discord.js";
+import { roles } from "configuration/config";
+import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { MessageEmbed, Role, Snowflake } from "discord.js";
 import { MessageTools } from "helpers";
+import { sendViolationNotice } from "helpers/dema-notice";
 import F from "helpers/funcs";
 import { ButtonStyle, ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
-import { Mutex } from "async-mutex";
-import { Counter } from "database/entities/Counter";
-import { createCanvas, loadImage } from "canvas";
-import { sendViolationNotice } from "helpers/dema-notice";
+import { prisma } from "../../helpers/prisma-init";
 import { ColorCategory } from "./_consts";
 
 export const Options: CommandOptions = {
@@ -33,7 +29,7 @@ export const Executor: CommandRunner = async (ctx) => {
     const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
     const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
 
-    const dbUser = await ctx.prisma.user.upsert({
+    const dbUser = await prisma.user.upsert({
         where: { id: ctx.member.id },
         update: {}, // No update, just return
         create: { id: ctx.member.id, dailyBox: { create: {} } },
@@ -219,11 +215,11 @@ export const Executor: CommandRunner = async (ctx) => {
                 if (userRoles.some((r) => r === role.id)) throw new CommandError("You already have this role!");
 
                 // Use transaction to ensure user receives role and has their credits deducted
-                await ctx.prisma.$transaction([
-                    ctx.prisma.colorRole.create({
+                await prisma.$transaction([
+                    prisma.colorRole.create({
                         data: { userId: ctx.user.id, roleId: role.id, amountPaid: item.data.credits }
                     }),
-                    ctx.prisma.user.update({
+                    prisma.user.update({
                         where: { id: dbUser.id },
                         data: { credits: { decrement: item.data.credits } }
                     })

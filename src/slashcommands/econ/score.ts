@@ -1,12 +1,10 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
-import { Economy } from "database/entities/Economy";
 import { Snowflake } from "discord.js";
 import { badgeLoader, LevelCalculator } from "helpers";
 import { CommandOptionType } from "slash-create";
-import { queries } from "../../helpers/prisma-init";
+import { prisma, queries } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {
     description: "View your score card",
@@ -31,7 +29,7 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
     // Fetch user's information
-    const dbUser = await ctx.prisma.user.findUnique({
+    const dbUser = await prisma.user.findUnique({
         where: { id: userID },
         include: { golds: true, dailyBox: true }
     });

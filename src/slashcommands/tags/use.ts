@@ -1,6 +1,7 @@
 import { CommandRunner, createOptions, OptsType } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
+import { prisma } from "../../helpers/prisma-init";
 
 export const Options = createOptions(<const>{
     description: "Uses or searches for a tag",
@@ -12,7 +13,7 @@ export const Options = createOptions(<const>{
 export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
     await ctx.defer();
 
-    const tag = await ctx.prisma.tag.findUnique({ where: { name: ctx.opts.name } });
+    const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
     if (!tag?.userId) return sendSuggestionList(ctx);
 
     const tagAuthor = await ctx.member.guild.members.fetch(tag.userId.toSnowflake());
@@ -24,7 +25,7 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
         .setFooter(`Created by ${tagAuthor.displayName}`, tagAuthor.user.displayAvatarURL());
 
     // Increase # of uses
-    await ctx.prisma.tag.update({
+    await prisma.tag.update({
         where: { name: tag.name },
         data: { uses: { increment: 1 } }
     });
@@ -34,7 +35,7 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
 
 // TODO: Send a drop down list that sends the selected one
 async function sendSuggestionList(ctx: Parameters<typeof Executor>[0]): Promise<void> {
-    const tags = await ctx.prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 10 });
+    const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 10 });
 
     const embed = new MessageEmbed().setTitle(
         "That tag doesn't exist. Here are some of the most popular tags you can try."

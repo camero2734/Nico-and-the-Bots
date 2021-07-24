@@ -4,6 +4,7 @@ import { MessageEmbed, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles, userIDs } from "configuration/config";
 import { Item } from "database/entities/Item";
+import { prisma } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {
     description: "Chooses a color role purchased from the shop",
@@ -22,7 +23,7 @@ export const Executor: CommandRunner<{ role?: Snowflake }> = async (ctx) => {
 
     if (ctx.user.id !== userIDs.me) return ctx.send("This command is disabled.");
 
-    const userRoles = await ctx.prisma.colorRole.findMany({
+    const userRoles = await prisma.colorRole.findMany({
         where: { userId: ctx.user.id }
     });
 

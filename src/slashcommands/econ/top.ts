@@ -5,7 +5,7 @@ import { badgeLoader } from "helpers";
 import { LevelCalculator } from "helpers/score-manager";
 import fetch from "node-fetch";
 import { CommandOptionType } from "slash-create";
-import { queries } from "../../helpers/prisma-init";
+import { queries, prisma } from "../../helpers/prisma-init";
 
 export const Options = createOptions(<const>{
     description: "Displays the server point leaderboard",
@@ -85,7 +85,7 @@ async function getAlltimeScores(
     const startAt = pageNum * 10;
     const endAt = startAt + 10;
 
-    const paginatedUsers = await ctx.prisma.user.findMany({
+    const paginatedUsers = await prisma.user.findMany({
         orderBy: { score: "desc" },
         skip: startAt,
         take: endAt

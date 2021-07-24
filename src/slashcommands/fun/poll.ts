@@ -74,7 +74,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
         }
     }
 
-    const poll = await ctx.prisma.poll.create({
+    const poll = await prisma.poll.create({
         data: { userId: ctx.user.id, name: title, options: parsedOptions.map((p) => p.text) },
         include: { votes: true }
     });

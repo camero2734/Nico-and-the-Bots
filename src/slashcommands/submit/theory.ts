@@ -1,9 +1,9 @@
 import { channelIDs } from "configuration/config";
 import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Poll } from "database/entities/Poll";
 import { EmojiIdentifierResolvable, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { generateUpvoteDownvoteListener } from "helpers";
 import { CommandOptionType, ComponentActionRow } from "slash-create";
+import { prisma } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {
     description: "Submits a theory to #theory-list",
@@ -38,7 +38,7 @@ export const Executor: CommandRunner<{ title: string; theory: string; imageurl?:
 
     const theoryChan = ctx.member.guild.channels.cache.get(channelIDs.theorylist) as TextChannel;
 
-    const poll = await ctx.prisma.poll.create({
+    const poll = await prisma.poll.create({
         data: { userId: ctx.user.id, options: ["upvote", "downvote"], name: title }
     });
 

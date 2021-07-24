@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import chalk from "chalk";
 import consola from "consola";
 import { startOfDay, subWeeks } from "date-fns";
@@ -78,5 +78,17 @@ export const queries = {
         } catch {
             return 0;
         }
+    },
+    async findOrCreateUser<T extends Prisma.UserInclude>(
+        id: string,
+        include?: T
+    ): Promise<Prisma.UserGetPayload<{ include: T }>> {
+        const res = await prisma.user.upsert({
+            where: { id },
+            include: include,
+            create: { id, dailyBox: { create: {} } },
+            update: {}
+        });
+        return res as any; // The return type is correct but Typescript is being a boomwhacker
     }
 };

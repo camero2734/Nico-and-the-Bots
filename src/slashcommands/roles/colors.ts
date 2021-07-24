@@ -1,9 +1,7 @@
-import { CommandOptionType } from "slash-create";
+import { channelIDs, userIDs } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
-import * as R from "ramda";
-import { channelIDs, roles, userIDs } from "configuration/config";
-import { Item } from "database/entities/Item";
+import { CommandOptionType } from "slash-create";
 import { prisma } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {

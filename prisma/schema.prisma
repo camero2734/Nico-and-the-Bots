@@ -22,17 +22,21 @@ model DailyBox {
 }
 
 model User {
+  // Basic info
   id       String   @id
   joinedAt DateTime @default(now())
 
+  // Economy
   credits Int @default(0)
   score   Int @default(0)
   level   Int @default(0)
 
-  lastMessageSent DateTime @default(now())
+  // Timers
+  lastMessageSent    DateTime  @default(now())
+  lastCreationUpload DateTime?
 
-  dailyBox DailyBox?
-
+  // Relations
+  dailyBox       DailyBox?
   tags           Tag[]
   messageHistory MessageHistory[]
   perks          Perk[]

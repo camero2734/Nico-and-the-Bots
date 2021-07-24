@@ -1,11 +1,11 @@
+import { channelIDs, roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import fetch from "node-fetch";
-import FileType from "file-type";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
 import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { channelIDs, roles, userIDs } from "configuration/config";
-import { Counter } from "database/entities/Counter";
-import ago from "s-ago";
+import FileType from "file-type";
+import fetch from "node-fetch";
+import { CommandOptionType, ComponentActionRow } from "slash-create";
+import F from "../../helpers/funcs";
+import { prisma, queries } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {
     description: "Submits an image, video, or audio file to #mulberry-street",
@@ -28,7 +28,8 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ title: string; url: string }> = async (ctx) => {
     const MAX_FILE_SIZE = 50000000; // 50MB
     const MS_24_HOURS = 1000 * 60 * 60 * 24; // 24 hours in ms
-    const { title, url } = ctx.opts;
+    const { title } = ctx.opts;
+    const url = ctx.opts.url.trim();
 
     const chan = ctx.channel.guild.channels.cache.get(channelIDs.mulberrystreet) as TextChannel;
 
@@ -40,30 +41,20 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
     await ctx.defer(true);
 
     // Only allow submissions once/day
-    let submissionsCounter = await ctx.connection
-        .getRepository(Counter)
-        .findOne({ identifier: ctx.user.id, title: "MulberryCreations" });
+    const dbUser = await queries.findOrCreateUser(ctx.user.id);
+    const lastSubmitted = dbUser.lastCreationUpload ? dbUser.lastCreationUpload.getTime() : 0;
 
-    if (!submissionsCounter) {
-        submissionsCounter = new Counter({ identifier: ctx.user.id, title: "MulberryCreations", lastUpdated: 0 });
-        submissionsCounter.lastUpdated = 0;
+    if (Date.now() - lastSubmitted < MS_24_HOURS) {
+        const ableToSubmitAgainDate = new Date(lastSubmitted + MS_24_HOURS);
+        const timestamp = F.discordTimestamp(ableToSubmitAgainDate, "relative");
+        throw new CommandError(`You've already submitted! You can submit again ${timestamp}.`);
     }
-
-    console.log(submissionsCounter.lastUpdated, /LAST_UPDATED/);
-
-    if (Date.now() - submissionsCounter.lastUpdated < MS_24_HOURS && ctx.user.id !== userIDs.me) {
-        const msRemaining = submissionsCounter.lastUpdated + MS_24_HOURS - Date.now();
-        const timeRemaining = ago(new Date(Date.now() + msRemaining), "hour");
-        throw new CommandError(`You need to wait ${timeRemaining} before submitting another creation!`);
-    }
-
-    submissionsCounter.count++;
-    submissionsCounter.lastUpdated = Date.now();
 
     // Validate and fetch url
     if (!isValidURL(url)) throw new CommandError("Invalid URL given");
 
-    const res = await fetch(url, { size: MAX_FILE_SIZE }).catch(() => {
+    const res = await fetch(url, { size: MAX_FILE_SIZE }).catch((E) => {
+        console.log(E);
         throw new CommandError("Unable to get the file from that URL.");
     });
 
@@ -97,7 +88,10 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
     await ctx.send({ embeds: [embed.toJSON()], components: [componentActionRow] });
 
     ctx.registerComponent("submit-mulberry", async (btnCtx) => {
-        await ctx.connection.manager.save(submissionsCounter);
+        ctx.unregisterComponent("submit-mulberry");
+
+        await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
+
         embed.setDescription("Submitted.");
         const doneEmbed = embed.toJSON();
 

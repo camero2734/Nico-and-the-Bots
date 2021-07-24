@@ -103,10 +103,10 @@ const F = {
         if (text.length <= len) return text;
         else return text.substring(0, len - 3) + "...";
     },
-    discordTimestamp(
+    discordTimestamp<T extends keyof typeof timestampTypes = "shortDateTime">(
         d: Date,
-        format: keyof typeof timestampTypes = "shortDateTime"
-    ): `<t:${bigint}:${typeof timestampTypes[keyof typeof timestampTypes]}>` {
+        format: T = "shortDateTime" as T
+    ): `<t:${bigint}:${typeof timestampTypes[T]}>` {
         const time = Math.floor(d.getTime() / 1000).toString() as `${bigint}`;
         return `<t:${time}:${timestampTypes[format]}>`;
     }

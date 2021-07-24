@@ -28,8 +28,6 @@ import {
 import { ApplicationCommandOptionArgument } from "slash-create/lib/constants";
 import { Connection } from "typeorm";
 import { channelIDs, guildID, roles } from "./config";
-import { PrismaClient } from "@prisma/client";
-import { prisma, PrismaType } from "../helpers/prisma-init";
 
 export class CommandError extends Error {
     constructor(message?: string, public sendEphemeral = false) {

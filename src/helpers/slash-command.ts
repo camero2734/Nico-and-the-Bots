@@ -24,7 +24,7 @@ export type SlashCommandData<T extends CommandOptions = ApplicationCommandOption
 };
 
 type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuInteraction;
-export type ExtendedInteraction<T extends CommandOptions> = BaseInteraction & {
+export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction & {
     send(payload: MessageOptions): Promise<Message | void>;
     opts: OptsType<SlashCommandData<T>>;
 };

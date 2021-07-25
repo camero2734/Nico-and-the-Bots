@@ -14,7 +14,7 @@ import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
-import { SlashCommand } from "./src/helpers/slash-command";
+import { InteractionListener, ListenerCustomIdGenerator, SlashCommand } from "./src/helpers/slash-command";
 
 // let ready = false;
 let connection: Connection;
@@ -25,22 +25,22 @@ let topfeedBot: TopfeedBot;
 let sacarverBot: SacarverBot;
 
 const reactionHandlers: CommandReactionHandler[] = [];
-const interactionHandlers: CommandComponentListener[] = [];
+// const interactionHandlers: CommandComponentListener[] = [];
 extendPrototypes();
 
 client.login(secrets.bots.nico);
 
 console.log("Script started");
 
-let slashCommands: Collection<string, SlashCommand<[]>> = new Collection<string, SlashCommand<[]>>();
+let slashCommands = new Collection<string, SlashCommand<[]>>();
+let interactionHandlers = new Collection<string, InteractionListener>();
 
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
     const guild = await client.guilds.fetch(guildID);
 
-    const [_, _slashCommands] = await setupAllCommands(guild);
-    slashCommands = _slashCommands;
+    [slashCommands, interactionHandlers] = await setupAllCommands(guild);
 
     console.log(slashCommands);
 
@@ -101,12 +101,18 @@ client.on("message", async (msg: Discord.Message) => {
 client.on("interaction", (interaction) => {
     if (interaction.isCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
-        console.log(`Got command ${commandIdentifier}`);
         const command = slashCommands.get(commandIdentifier);
         if (!command) return console.log(`Failed to find command ${commandIdentifier}`);
 
-        console.log(interaction.options);
         command.run(interaction);
+    } else if (interaction.isMessageComponent()) {
+        const [interactionID] = interaction.customID.split(":");
+        if (!interactionID) return;
+
+        const interactionHandler = interactionHandlers.get(interactionID);
+        if (!interactionHandler) return;
+
+        interactionHandler.handler(interaction, interactionHandler.pattern.toDict(interaction.customID));
     }
     // if (!interaction.isMessageComponent()) return;
 

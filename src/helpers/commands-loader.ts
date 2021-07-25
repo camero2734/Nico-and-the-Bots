@@ -6,7 +6,7 @@
  * so the max nest level is 3
  */
 
-import { SlashCommand, SlashCommandData } from "./slash-command";
+import { InteractionListener, ListenerCustomIdGenerator, SlashCommand, SlashCommandData } from "./slash-command";
 import { join, resolve, sep } from "path";
 import * as fs from "fs";
 import { ApplicationCommandData, Guild } from "discord.js";
@@ -139,7 +139,7 @@ async function generateCommandData(parsedFile: ParsedFile): Promise<[Application
 // Step 3: Wrap it all up
 export async function setupAllCommands(
     guild: Guild
-): Promise<[ApplicationCommandData[], Collection<string, SlashCommand<[]>>]> {
+): Promise<[Collection<string, SlashCommand<[]>>, Collection<string, InteractionListener>]> {
     const parsedFiles = await parseCommandFolderStructure();
     const dataFromCommands: ApplicationCommandData[] = [];
     const allSlashCommands: SlashCommand[] = [];
@@ -151,13 +151,14 @@ export async function setupAllCommands(
     }
 
     // Set guild commands
-    console.log(dataFromCommands);
     const savedData = await guild.commands.set(dataFromCommands.map((p) => ({ ...p, defaultPermission: false })));
 
-    const collection = new Collection<string, SlashCommand>();
+    const slashCommandCollection = new Collection<string, SlashCommand>();
+    let intListenerCollection = new Collection<string, InteractionListener>();
 
     for (const slashCommand of allSlashCommands) {
-        collection.set(slashCommand.commandIdentifier, slashCommand);
+        slashCommandCollection.set(slashCommand.commandIdentifier, slashCommand);
+        intListenerCollection = intListenerCollection.concat(slashCommand.interactionListeners);
     }
 
     const fullPermissions: GuildApplicationCommandPermissionData[] = savedData.map((s) => ({
@@ -173,5 +174,5 @@ export async function setupAllCommands(
 
     await guild.commands.permissions.set({ fullPermissions });
 
-    return [dataFromCommands, collection];
+    return [slashCommandCollection, intListenerCollection];
 }

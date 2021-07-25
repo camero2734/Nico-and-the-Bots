@@ -36,14 +36,16 @@ export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction
 
 type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<void>;
 
-type ListenerCustomIdGenerator<T extends Readonly<string[]>> = (
+export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
     ctx: MessageComponentInteraction,
     args: ReturnType<CustomIDPattern<T>["toDict"]>
 ) => Promise<void>;
 
+export type InteractionListener = { handler: ListenerCustomIdGenerator<any>; pattern: CustomIDPattern<any> };
+
 export class SlashCommand<T extends CommandOptions = []> {
     #handler: SlashCommandHandler<T>;
-    #interactionListeners = new Collection<string, ListenerCustomIdGenerator<any>>();
+    public interactionListeners = new Collection<string, InteractionListener>();
     public commandIdentifier: string;
     constructor(public commandData: SlashCommandData<T>) {}
     setHandler(handler: SlashCommandHandler<T>): this {
@@ -69,13 +71,15 @@ export class SlashCommand<T extends CommandOptions = []> {
         args: T,
         interactionHandler: ListenerCustomIdGenerator<T>
     ): (args: ReturnType<CustomIDPattern<T>["toDict"]>) => string {
+        const argsHash = F.hash(args.join(",")).slice(0, 4); // Invalidate interactions when args are updated
+        const encodedName = `${name}.${argsHash}`;
         const pattern = new CustomIDPattern(args);
-        this.#interactionListeners.set(name, interactionHandler);
+        this.interactionListeners.set(encodedName, { handler: interactionHandler, pattern });
         return (args: ReturnType<CustomIDPattern<T>["toDict"]>): string => {
             // Ensure order is preserved
             const ordered = F.entries(args).sort(([key1], [key2]) => pattern.args.indexOf(key1) - pattern.args.indexOf(key2)); // prettier-ignore
             const values = ordered.map((a) => a[1]);
-            return [name, ...values].join(pattern.delimiter);
+            return [encodedName, ...values].join(pattern.delimiter);
         };
     }
     getMutableCommandData(): ApplicationCommandData {
@@ -93,7 +97,7 @@ export class SlashCommand<T extends CommandOptions = []> {
 export class CustomIDPattern<T extends Readonly<string[]>> {
     constructor(public args: T, public delimiter = ":") {}
     toDict(input: string): { [K in T[number]]: string } {
-        const [name, ...parts] = input.split(this.delimiter);
+        const [_name, ...parts] = input.split(this.delimiter);
         const dict = {} as { [K in T[number]]: string };
         for (let i = 0; i < parts.length; i++) {
             const key: T[number] = this.args[i];

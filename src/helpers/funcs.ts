@@ -2,6 +2,7 @@ import * as bigintConversion from "bigint-conversion";
 import { Snowflake } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
+import * as crypto from "crypto";
 
 /**
  * Just some commonly used short functions
@@ -109,6 +110,9 @@ const F = {
     ): `<t:${bigint}:${typeof timestampTypes[T]}>` {
         const time = Math.floor(d.getTime() / 1000).toString() as `${bigint}`;
         return `<t:${time}:${timestampTypes[format]}>`;
+    },
+    hash(text: string, algorithm: "md5" | "sha1" | "sha256" = "sha1"): string {
+        return crypto.createHash(algorithm).update(text).digest("base64");
     }
 };
 

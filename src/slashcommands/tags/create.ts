@@ -1,5 +1,6 @@
+import { cairoVersion } from "canvas";
 import { CommandError } from "configuration/definitions";
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 
@@ -37,25 +38,38 @@ command.setHandler(async (ctx) => {
         return;
     }
 
+    const textLookup = await prisma.temporaryText.create({
+        data: { value: ctx.opts.text }
+    });
+
     const embed = new MessageEmbed()
         .setTitle(`Create tag \`${ctx.opts.name}\`?`)
         .setDescription(ctx.opts.text)
         .setFooter("Select yes or no");
 
     const actionRow = new MessageActionRow().addComponents(
-        new MessageButton({ label: "Yes", style: "SUCCESS", customID: generateYesID({ name: ctx.opts.name }) })
+        new MessageButton({
+            label: "Yes",
+            style: "SUCCESS",
+            customID: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
+        })
     );
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });
 
-const generateYesID = command.addInteractionListener("createYes", <const>["name"], async (ctx, args) => {
-    const text = ctx.message.embeds[0].description;
-    if (!text) throw new Error("Unable to find text");
+const generateYesID = command.addInteractionListener("tcYes", <const>["name", "textLookup"], async (ctx, args) => {
+    await ctx.defer({ ephemeral: true });
 
-    const createdTag = await prisma.tag.create({
-        data: { text, userId: ctx.user.id, name: args.name }
-    });
+    const { value: text, id } = (await prisma.temporaryText.findUnique({ where: { id: +args.textLookup } })) || {};
+    if (!text) return;
+
+    const [createdTag] = await prisma.$transaction([
+        prisma.tag.create({
+            data: { text, userId: ctx.user.id, name: args.name }
+        }),
+        prisma.temporaryText.delete({ where: { id } })
+    ]);
 
     const doneEmbed = new MessageEmbed()
         .setTitle(`Tag created: \`${args.name}\``)
@@ -64,3 +78,5 @@ const generateYesID = command.addInteractionListener("createYes", <const>["name"
 
     await ctx.editReply({ embeds: [doneEmbed], components: [] });
 });
+
+export default command;

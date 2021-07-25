@@ -1,7 +1,7 @@
 import { Poll, Vote } from "@prisma/client";
 import { Mutex } from "async-mutex";
 import { constants } from "configuration/config";
-import { CommandComponentListener, ExtendedContext } from "configuration/definitions";
+import { CommandComponentListener } from "configuration/definitions";
 import {
     Collection,
     CollectorFilter,
@@ -15,7 +15,6 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
-import { ComponentActionRow, ComponentType, MessageOptions } from "slash-create";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
@@ -39,7 +38,7 @@ export const MessageTools = {
     },
 
     /** Takes an array of buttons and places them into an array of Action Row components */
-    allocateButtonsIntoRows<T extends ComponentActionRow | MessageActionRow>(buttons: T["components"][number][]): T[] {
+    allocateButtonsIntoRows<T extends MessageActionRow>(buttons: T["components"][number][]): T[] {
         const components: T[] = [];
 
         if (buttons.length > constants.ACTION_ROW_MAX_ITEMS * constants.MAX_ACTION_ROWS)
@@ -48,7 +47,7 @@ export const MessageTools = {
         for (let i = 0; i < buttons.length; i += constants.ACTION_ROW_MAX_ITEMS) {
             const slicedButtons = buttons.slice(i, i + constants.ACTION_ROW_MAX_ITEMS);
             components.push(<T>{
-                type: ComponentType.ACTION_ROW,
+                type: "ACTION_ROW",
                 components: slicedButtons
             });
         }
@@ -73,28 +72,6 @@ export const MessageTools = {
         }
 
         return allMessages;
-    },
-
-    async askYesOrNo(ctx: ExtendedContext, msg: MessageOptions): Promise<boolean> {
-        const actionRow = new MessageActionRow()
-            .addComponents([
-                new MessageButton({ label: "Yes", customID: "yes", style: "SUCCESS" }),
-                new MessageButton({ label: "No", customID: "no", style: "DANGER" })
-            ])
-            .toJSON();
-        await ctx.send({ ...msg, components: [actionRow as ComponentActionRow] });
-
-        return new Promise((resolve, reject) => {
-            const timeOut = setTimeout(() => reject(), 120 * 1000); // Automatically cancel after 120 secs
-            for (const t of ["yes", "no"]) {
-                ctx.registerComponent(t, () => {
-                    clearTimeout(timeOut);
-                    ctx.unregisterComponent("yes");
-                    ctx.unregisterComponent("no");
-                    resolve(t === "yes");
-                });
-            }
-        });
     }
 };
 

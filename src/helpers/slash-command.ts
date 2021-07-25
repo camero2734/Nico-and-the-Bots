@@ -1,15 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
     ApplicationCommandOptionData,
     ButtonInteraction,
+    Collection,
     CommandInteraction,
+    Interaction,
     Message,
+    MessageComponentInteraction,
     MessageOptions,
     SelectMenuInteraction,
     Snowflake
 } from "discord.js";
 import R from "ramda";
+import F from "./funcs";
 
 type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
@@ -31,10 +36,14 @@ export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction
 
 type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<void>;
 
-type ListenerCustomIdGenerator = () => void;
+type ListenerCustomIdGenerator<T extends Readonly<string[]>> = (
+    ctx: MessageComponentInteraction,
+    args: ReturnType<CustomIDPattern<T>["toDict"]>
+) => Promise<void>;
 
 export class SlashCommand<T extends CommandOptions = []> {
     #handler: SlashCommandHandler<T>;
+    #interactionListeners = new Collection<string, ListenerCustomIdGenerator<any>>();
     public commandIdentifier: string;
     constructor(public commandData: SlashCommandData<T>) {}
     setHandler(handler: SlashCommandHandler<T>): this {
@@ -55,8 +64,19 @@ export class SlashCommand<T extends CommandOptions = []> {
             // Handle
         }
     }
-    addInteractionListener(name: string, interactionHandler: () => void): ListenerCustomIdGenerator {
-        return interactionHandler;
+    addInteractionListener<T extends Readonly<string[]> = any>(
+        name: string,
+        args: T,
+        interactionHandler: ListenerCustomIdGenerator<T>
+    ): (args: ReturnType<CustomIDPattern<T>["toDict"]>) => string {
+        const pattern = new CustomIDPattern(args);
+        this.#interactionListeners.set(name, interactionHandler);
+        return (args: ReturnType<CustomIDPattern<T>["toDict"]>): string => {
+            // Ensure order is preserved
+            const ordered = F.entries(args).sort(([key1], [key2]) => pattern.args.indexOf(key1) - pattern.args.indexOf(key2)); // prettier-ignore
+            const values = ordered.map((a) => a[1]);
+            return [name, ...values].join(pattern.delimiter);
+        };
     }
     getMutableCommandData(): ApplicationCommandData {
         return R.clone(this.commandData) as unknown as ApplicationCommandData;
@@ -67,6 +87,22 @@ export class SlashCommand<T extends CommandOptions = []> {
         else return `${subcommand.name}:${interaction.commandName}`;
     }
 }
+/**
+ * Encodes/decodes key-value pairs into the customID field
+ */
+export class CustomIDPattern<T extends Readonly<string[]>> {
+    constructor(public args: T, public delimiter = ":") {}
+    toDict(input: string): { [K in T[number]]: string } {
+        const [name, ...parts] = input.split(this.delimiter);
+        const dict = {} as { [K in T[number]]: string };
+        for (let i = 0; i < parts.length; i++) {
+            const key: T[number] = this.args[i];
+            dict[key] = parts[i];
+        }
+        return dict;
+    }
+}
+
 /**
  * Extracts the data from the options object so they aren't nested
  */

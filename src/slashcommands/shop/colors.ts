@@ -147,7 +147,9 @@ export const Executor: CommandRunner = async (ctx) => {
                 custom_id: "MainMenu"
             });
 
-            const components: ComponentActionRow[] = MessageTools.allocateButtonsIntoRows(categoryButtons);
+            const components = MessageTools.allocateButtonsIntoRows(
+                categoryButtons as any
+            ) as unknown as ComponentActionRow[];
 
             btnCtx.editParent({ embeds: [embed.toJSON()], components });
         });
@@ -181,7 +183,7 @@ export const Executor: CommandRunner = async (ctx) => {
                 );
             }
 
-            const roleComponents: ComponentActionRow[] = MessageTools.allocateButtonsIntoRows([
+            const roleComponents = MessageTools.allocateButtonsIntoRows([
                 {
                     type: ComponentType.BUTTON,
                     style: ButtonStyle.SUCCESS,
@@ -195,7 +197,7 @@ export const Executor: CommandRunner = async (ctx) => {
                     label: "Go back",
                     custom_id: item.id // Will go back to parent menu
                 }
-            ]);
+            ] as any) as unknown as ComponentActionRow[];
 
             // Listen for role being pressed in subcategory
             ctx.registerComponent(role.id, async (btnCtx) => {

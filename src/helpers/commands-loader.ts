@@ -39,8 +39,8 @@ async function parseCommandFolderStructure(): Promise<ParsedFile[]> {
             currentNodes.map(async (path) => {
                 const isDirectory = (await fs.promises.stat(path)).isDirectory();
                 if (!isDirectory) {
-                    const slashCommand = (await import(path)).default as SlashCommand;
-                    if (!slashCommand) return [];
+                    const slashCommand = (await import(path)).default;
+                    if (!slashCommand || !(slashCommand instanceof SlashCommand)) return [];
 
                     const parts = path.split(sep).reverse();
                     const [name, parentName, grandparentName] = parts

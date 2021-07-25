@@ -11,6 +11,8 @@ import { join, resolve, sep } from "path";
 import * as fs from "fs";
 import { ApplicationCommandData, Guild } from "discord.js";
 import { Collection } from "discord.js";
+import { GuildApplicationCommandPermissionData } from "discord.js";
+import { guildID, userIDs } from "../configuration/config";
 
 const basePath = join(__dirname, "../slashcommands");
 
@@ -150,13 +152,26 @@ export async function setupAllCommands(
 
     // Set guild commands
     console.log(dataFromCommands);
-    await guild.commands.set(dataFromCommands);
+    const savedData = await guild.commands.set(dataFromCommands.map((p) => ({ ...p, defaultPermission: false })));
 
     const collection = new Collection<string, SlashCommand>();
 
     for (const slashCommand of allSlashCommands) {
         collection.set(slashCommand.commandIdentifier, slashCommand);
     }
+
+    const fullPermissions: GuildApplicationCommandPermissionData[] = savedData.map((s) => ({
+        id: s.id,
+        permissions: [
+            {
+                id: userIDs.me,
+                type: "USER",
+                permission: true
+            }
+        ]
+    }));
+
+    await guild.commands.permissions.set({ fullPermissions });
 
     return [dataFromCommands, collection];
 }

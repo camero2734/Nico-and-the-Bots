@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MessageEmbed } from "discord.js";
+import { Guild, GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
@@ -15,8 +15,10 @@ import {
     Snowflake
 } from "discord.js";
 import R from "ramda";
+import { emojiIDs } from "../configuration/config";
 import { CommandError } from "../configuration/definitions";
 import F from "./funcs";
+import { prisma } from "./prisma-init";
 
 type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
@@ -34,6 +36,8 @@ type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuIntera
 export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction & {
     send(payload: MessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
     opts: OptsType<SlashCommandData<T>>;
+    member: GuildMember;
+    guild: Guild;
 };
 
 type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<void>;
@@ -102,6 +106,81 @@ export class SlashCommand<T extends CommandOptions = []> {
     }
     getMutableCommandData(): ApplicationCommandData {
         return R.clone(this.commandData) as unknown as ApplicationCommandData;
+    }
+    upvoteDownVoteListener(name: string) {
+        const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
+            await ctx.deferUpdate();
+
+            const isUpvote = args.isUpvote === "1" ? 1 : 0;
+            const pollId = +args.pollID;
+            await prisma.vote.upsert({
+                where: { pollId_userId: { userId: ctx.user.id, pollId } },
+                create: { pollId, userId: ctx.user.id, choice: isUpvote },
+                update: { choice: isUpvote }
+            });
+
+            const msg = ctx.message as Message;
+            const poll = await prisma.poll.findUnique({ where: { id: pollId }, include: { votes: true } });
+            const [actionRow] = msg.components || [];
+            if (!actionRow || !poll) return;
+
+            let upvotes = 0;
+            for (const vote of poll.votes) {
+                if (vote.choice === 1) upvotes++;
+            }
+            const downvotes = poll.votes.length - upvotes;
+
+            // If the post is heavily downvoted
+            if (downvotes >= Math.max(5, upvotes)) {
+                await msg.delete();
+            }
+
+            const getMessageButtonWithEmoji = (name: string): MessageButton | undefined => {
+                return actionRow.components.find(
+                    (c) => c.type === "BUTTON" && c.emoji?.name?.startsWith(name)
+                ) as MessageButton;
+            };
+            const upvoteButton = getMessageButtonWithEmoji("upvote");
+            const downvoteButton = getMessageButtonWithEmoji("downvote");
+            if (!upvoteButton || !downvoteButton) return; // prettier-ignore
+
+            if (isUpvote) upvoteButton.setStyle("SUCCESS");
+            else downvoteButton.setStyle("DANGER");
+
+            upvoteButton.label = `${upvotes}`;
+            downvoteButton.label = `${downvotes}`;
+
+            await msg.edit({ components: [actionRow] });
+
+            await F.wait(1000);
+
+            upvoteButton.setStyle("SECONDARY");
+            downvoteButton.setStyle("SECONDARY");
+
+            await msg.edit({ components: [actionRow] });
+        });
+
+        const createActionRow = async (ctx: ExtendedInteraction, title?: string) => {
+            const poll = await prisma.poll.create({
+                data: { userId: ctx.user.id, name: title || `${name}-${Date.now()}`, options: ["downvote", "upvote"] }
+            });
+            return new MessageActionRow().addComponents([
+                new MessageButton({
+                    emoji: emojiIDs.upvote,
+                    style: "SECONDARY",
+                    label: "0",
+                    customID: gen({ isUpvote: "1", pollID: `${poll.id}` })
+                }),
+                new MessageButton({
+                    emoji: emojiIDs.downvote,
+                    style: "SECONDARY",
+                    label: "0",
+                    customID: gen({ isUpvote: "0", pollID: `${poll.id}` })
+                })
+            ]);
+        };
+
+        return createActionRow;
     }
     static getIdentifierFromInteraction(interaction: CommandInteraction): string {
         const subcommand = interaction.options.find((o) => o.type === "SUB_COMMAND");

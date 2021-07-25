@@ -1,7 +1,13 @@
-import { CommandRunner, createOptions, OptsType } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
-import { LevelCalculator } from "../../helpers";
+import { CommandRunner, createOptions, extendContext, OptsType } from "configuration/definitions";
+import {
+    CommandContext,
+    CommandMember,
+    CommandOptionType,
+    InteractionRequestData,
+    InteractionType
+} from "slash-create";
+import { interactions } from "../../../app";
+import * as jail from "./jail";
 
 export const Options = createOptions(<const>{
     description: "Test command",
@@ -25,14 +31,31 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
     // if (!user) throw new CommandError("Error");
     // await ctx.send(`You are #${user.place} monthly, with a score of ${user.score} [${time}ms]`);
 
-    const embed = new MessageEmbed().setTitle("Results");
+    const data: InteractionRequestData = {
+        channel_id: ctx.channelID as string,
+        data: { id: "f", name: "fff" },
+        guild_id: ctx.guildID as string,
+        id: "f",
+        member: ctx.member as unknown as CommandMember,
+        token: "f",
+        version: 1,
+        type: InteractionType.COMMAND
+    };
+    const newctx = new CommandContext(
+        interactions,
+        data,
+        async () => {
+            /** */
+        },
+        false
+    );
 
-    for (let i = 0; i < 20; i++) {
-        const level = i === 0 ? 156 : Math.floor(Math.random() * 99) + 1;
-        const score = LevelCalculator.calculateScore(level);
-        const sameLevel = LevelCalculator.calculateLevel(score);
-        embed.addField(`Level ${level}`, `${score} -> ${sameLevel}`);
-    }
+    console.log(newctx.send, /send/);
 
-    await ctx.send({ embeds: [embed.toJSON()] });
+    const ectx = await extendContext(newctx, ctx.client, null as any);
+    // Hooks into !jail to jail user
+    ectx.runCommand(jail.Executor, {
+        user: "335912315494989825",
+        explanation: "[Autojail] You were automatically jailed for receiving multiple warnings."
+    });
 };

@@ -45,6 +45,8 @@ model User {
   polls          Poll[]
   votesCasted    Vote[]
   colorRoles     ColorRole[]
+  warnings       Warning[]        @relation("Warning_warnedUser")
+  issuedWarnings Warning[]        @relation("Warning_issuedByUser")
 }
 
 model Tag {
@@ -129,4 +131,30 @@ model ColorRole {
   amountPaid Int
 
   @@id([roleId, userId])
+}
+
+enum WarningType {
+  BotheringOthers
+  Drama
+  Spam
+  NsfwOrSlurs
+  Other
+}
+
+model Warning {
+  id Int @id @default(autoincrement())
+
+  reason    String
+  type      WarningType
+  severity  Int
+  channelId String
+
+  warnedUser   User?  @relation("Warning_warnedUser", fields: [warnedUserId], references: [id])
+  warnedUserId String
+
+  issuedByUser   User?  @relation("Warning_issuedByUser", fields: [issuedByUserId], references: [id])
+  issuedByUserId String
+
+  createdAt DateTime @default(now())
+  editedAt  DateTime @updatedAt
 }

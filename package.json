@@ -5,6 +5,7 @@
     "main": "app.ts",
     "scripts": {
         "dev": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register app.ts",
+        "devtest": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register test.ts",
         "dev:debug": "set DEBUG=consola && yarn dev",
         "build": "tsc",
         "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/app.js",

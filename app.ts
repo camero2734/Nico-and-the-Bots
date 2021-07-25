@@ -26,7 +26,7 @@ const keonsBot = new KeonsBot();
 let topfeedBot: TopfeedBot;
 let sacarverBot: SacarverBot;
 
-const interactions = new SlashCreator({
+export const interactions = new SlashCreator({
     applicationID: "470410168186699788",
     token: secrets.bots.nico,
     defaultImageFormat: "png"

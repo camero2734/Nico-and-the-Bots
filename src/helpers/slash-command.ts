@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { MessageEmbed } from "discord.js";
 import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
@@ -14,6 +15,7 @@ import {
     Snowflake
 } from "discord.js";
 import R from "ramda";
+import { CommandError } from "../configuration/definitions";
 import F from "./funcs";
 
 type DeepReadonly<T> = {
@@ -30,7 +32,7 @@ export type SlashCommandData<T extends CommandOptions = ApplicationCommandOption
 
 type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuInteraction;
 export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction & {
-    send(payload: MessageOptions): Promise<Message | void>;
+    send(payload: MessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
     opts: OptsType<SlashCommandData<T>>;
 };
 
@@ -53,17 +55,33 @@ export class SlashCommand<T extends CommandOptions = []> {
         return this;
     }
     async run(interaction: BaseInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
+        if (!this.#handler) throw new Error("Invalid command handler");
+        const ctx = interaction as ExtendedInteraction<T>;
+        ctx.send = async (payload) => {
+            if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
+            else return ctx.reply(payload);
+        };
+        ctx.opts = opts || extractOptsFromInteraction(interaction as CommandInteraction);
         try {
-            if (!this.#handler) throw new Error("Invalid command handler");
-            const ctx = interaction as ExtendedInteraction<T>;
-            ctx.send = async (payload) => {
-                if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
-                else return ctx.reply(payload);
-            };
-            ctx.opts = opts || extractOptsFromInteraction(interaction as CommandInteraction);
             await this.#handler(ctx);
         } catch (e) {
-            // Handle
+            if (e instanceof CommandError) {
+                const embed = new MessageEmbed()
+                    .setDescription(e.message)
+                    .setTitle("An error occurred!")
+                    .setFooter("DEMA internet machine broke");
+                ctx.send({
+                    embeds: [embed],
+                    ephemeral: e.sendEphemeral,
+                    allowedMentions: { users: [], roles: [] }
+                });
+            } else {
+                console.log(e);
+                const embed = new MessageEmbed()
+                    .setTitle("An unknown error occurred!")
+                    .setFooter("DEMA internet machine really broke");
+                ctx.send({ embeds: [embed] });
+            }
         }
     }
     addInteractionListener<T extends Readonly<string[]> = any>(

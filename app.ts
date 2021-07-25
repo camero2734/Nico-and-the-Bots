@@ -42,8 +42,6 @@ client.on("ready", async () => {
 
     [slashCommands, interactionHandlers] = await setupAllCommands(guild);
 
-    console.log(slashCommands);
-
     // Initialize everything
     await Promise.all([
         // Wait until commands are loaded, connected to database, etc.

@@ -16,12 +16,15 @@ type DeepReadonly<T> = {
 };
 type CommandOptions = DeepReadonly<ApplicationCommandOptionData[]>;
 
-type SlashCommandData<T extends CommandOptions> = Omit<ApplicationCommandData, "options"> & {
+export type SlashCommandData<T extends CommandOptions = ApplicationCommandOptionData[]> = Omit<
+    ApplicationCommandData,
+    "options" | "name"
+> & {
     options: T;
 };
 
 type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuInteraction;
-type ExtendedInteraction<T extends CommandOptions> = BaseInteraction & {
+export type ExtendedInteraction<T extends CommandOptions> = BaseInteraction & {
     send(payload: MessageOptions): Promise<Message | void>;
     opts: OptsType<SlashCommandData<T>>;
 };
@@ -32,12 +35,13 @@ type ListenerCustomIdGenerator = () => void;
 
 export class SlashCommand<T extends CommandOptions = []> {
     #handler: SlashCommandHandler<T>;
+    public commandIdentifier: string;
     constructor(public commandData: SlashCommandData<T>) {}
     setHandler(handler: SlashCommandHandler<T>): this {
         this.#handler = handler;
         return this;
     }
-    async run(interaction: BaseInteraction): Promise<void> {
+    async run(interaction: BaseInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
         try {
             if (!this.#handler) throw new Error("Invalid command handler");
             const ctx = interaction as ExtendedInteraction<T>;
@@ -45,6 +49,7 @@ export class SlashCommand<T extends CommandOptions = []> {
                 if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
                 else return ctx.reply(payload);
             };
+            ctx.opts = opts || extractOptsFromInteraction(interaction as CommandInteraction);
             await this.#handler(ctx);
         } catch (e) {
             // Handle
@@ -56,10 +61,34 @@ export class SlashCommand<T extends CommandOptions = []> {
     getMutableCommandData(): ApplicationCommandData {
         return R.clone(this.commandData) as unknown as ApplicationCommandData;
     }
+    static getIdentifierFromInteraction(interaction: CommandInteraction): string {
+        const subcommand = interaction.options.find((o) => o.type === "SUB_COMMAND");
+        if (!subcommand) return interaction.commandName;
+        else return `${subcommand.name}:${interaction.commandName}`;
+    }
+}
+/**
+ * Extracts the data from the options object so they aren't nested
+ */
+function extractOptsFromInteraction(interaction: CommandInteraction): any {
+    let arr = interaction.options.array();
+    const opts: Record<string, any> = {};
+    while (arr.length !== 0) {
+        const newArr: typeof arr = [];
+        for (const option of arr) {
+            if (option.options?.size) {
+                newArr.push(...option.options.array());
+                continue;
+            }
+            opts[option.name] = option.value;
+        }
+        arr = newArr;
+    }
+    return opts;
 }
 
 /**
- *  Extracts the type from Options so they don't have to be manually typed
+ *  Extracts the type for opts so they don't have to be manually typed
  */
 type SnowflakeTypes = "USER" | "CHANNEL" | "MENTIONABLE" | "ROLE"; // prettier-ignore
 // prettier-ignore

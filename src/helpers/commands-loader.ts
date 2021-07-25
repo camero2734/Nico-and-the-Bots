@@ -1,122 +1,162 @@
-import {
-    Command,
-    CommandComponentListener,
-    CommandOption,
-    CommandOptions,
-    CommandReactionHandler,
-    CommandRunner,
-    GeneralCommandRunner,
-    SubcommandRunner
-} from "configuration/definitions";
-import * as fs from "fs";
-import { join, resolve, sep } from "path";
-import { CommandOptionType, SlashCreator } from "slash-create";
+/** There are three types of usable commands:
+ * 1. Commands
+ * 2. Command > Subcommand
+ * 3. Command > Subcommand Group > Subcommand
+ *
+ * so the max nest level is 3
+ */
 
-async function getFilesRecursive(dir: string): Promise<string[]> {
-    const subdirs = await fs.promises.readdir(dir);
-    const files = await Promise.all(
-        subdirs.map(async (subdir) => {
-            const res = resolve(dir, subdir);
-            return (await fs.promises.stat(res)).isDirectory() ? getFilesRecursive(res) : res;
-        })
-    );
-    return files.flat();
+import { SlashCommand, SlashCommandData } from "./slash-command";
+import { join, resolve, sep } from "path";
+import * as fs from "fs";
+import { ApplicationCommandData, Guild } from "discord.js";
+import { Collection } from "discord.js";
+
+const basePath = join(__dirname, "../slashcommands");
+
+async function readDirectory(path: string): Promise<string[]> {
+    try {
+        const directoryFiles = await fs.promises.readdir(path);
+        return directoryFiles.map((fileOrFolder) => resolve(path, fileOrFolder));
+    } catch (e) {
+        return [];
+    }
 }
 
-/**
- * Loads all command modules from ./commands
- * @param commands - Command array to populate
- * @param reactionHandlers - Reaction handlers array to populate
- * @param interactionHandlers - Interaction handlers array to populate
- */
-export const loadCommands = async function (
-    commands: Command<CommandOption, GeneralCommandRunner>[],
-    reactionHandlers: CommandReactionHandler[],
-    interactionHandlers: CommandComponentListener[],
-    creator: SlashCreator
-): Promise<void> {
-    const commandsPath = join(__dirname, "../slashcommands");
-    const fileNames = await getFilesRecursive(commandsPath);
-    const filePaths = fileNames.map(f => f.replace(commandsPath, "").split(sep).filter(a => a)); // prettier-ignore
-
-    const subCommands: Record<string, string | Record<string, string>> = {};
-
-    // Put the files into a nice hierarchical format for subcommand purposes
-    for (let i = 0; i < filePaths.length; i++) {
-        const file = fileNames[i];
-        const fp = filePaths[i];
-
-        const fileName = fp[fp.length - 1];
-
-        // Ignore files that start with _ (they just contain shared definitions)
-        if (fileName.startsWith("_")) continue;
-
-        const commandName = fileName.split(".")[0];
-
-        if (fp.length === 1) subCommands[commandName] = file;
-        else if (fp.length === 2) {
-            const categoryName = fp[fp.length - 2];
-            if (!subCommands[categoryName]) subCommands[categoryName] = {};
-            const category = subCommands[categoryName] as Record<string, string>;
-            category[commandName] = file;
-        } else throw new Error("Only sub commands with a depth of 1 are currently supported");
-    }
-
-    // Create commands
-    for (const [key, value] of Object.entries(subCommands)) {
-        if (typeof value === "string") {
-            // Single command
-            const {
-                Executor,
-                Options,
-                ReactionHandler,
-                ComponentListeners
-            }: {
-                Executor: CommandRunner;
-                Options: CommandOptions;
-                ReactionHandler?: CommandReactionHandler;
-                ComponentListeners?: CommandComponentListener[];
-            } = await import(value);
-
-            if (ReactionHandler) reactionHandlers.push(ReactionHandler);
-            if (ComponentListeners) interactionHandlers.push(...ComponentListeners);
-
-            const command = new Command(creator, key, Options, value, Executor);
-            command.onError = console.log;
-            commands.push(command);
-        } else {
-            // Subcommand
-            const options: CommandOptions = { description: key, options: [] };
-
-            const SubcommandExecutor: SubcommandRunner = {};
-
-            for (const [subcommand, fileName] of Object.entries(value)) {
-                const {
-                    Executor,
-                    Options,
-                    ReactionHandler,
-                    ComponentListeners
-                }: {
-                    Executor: CommandRunner;
-                    Options: CommandOptions;
-                    ReactionHandler?: CommandReactionHandler;
-                    ComponentListeners?: CommandComponentListener[];
-                } = await import(fileName);
-                options.options?.push({
-                    ...Options,
-                    name: subcommand,
-                    type: CommandOptionType.SUB_COMMAND
-                });
-
-                if (ReactionHandler) reactionHandlers.push(ReactionHandler);
-                if (ComponentListeners) interactionHandlers.push(...ComponentListeners);
-                SubcommandExecutor[subcommand] = Executor;
-            }
-
-            const command = new Command(creator, key, options, "", SubcommandExecutor);
-            command.onError = console.log;
-
-            commands.push(command);
-        }
-    }
+// Step 1: Walk the file structure to extract SlashCommands and their path
+type ParsedFile = {
+    topName: string;
+    depth: number;
+    files: { name: string; subcommandName: string; command: SlashCommand }[];
 };
+async function parseCommandFolderStructure(): Promise<ParsedFile[]> {
+    const parsedFiles: ParsedFile[] = [];
+    let currentNodes = await readDirectory(basePath);
+
+    let maxDepth = 3;
+    while (currentNodes.length !== 0 && maxDepth-- > 0) {
+        const result = await Promise.all(
+            currentNodes.map(async (path) => {
+                const isDirectory = (await fs.promises.stat(path)).isDirectory();
+                if (!isDirectory) {
+                    const slashCommand = (await import(path)).default as SlashCommand;
+                    if (!slashCommand) return [];
+
+                    const parts = path.split(sep).reverse();
+                    const [name, parentName, grandparentName] = parts
+                        .slice(0, 3 - maxDepth)
+                        .map((p) => p.split(".")[0].trim());
+                    const topName = grandparentName || parentName || name;
+                    const subcommandName = grandparentName ? parentName : "";
+                    const existingParsed = parsedFiles.find((p) => p.topName === topName);
+                    slashCommand.commandIdentifier = [name, parentName, grandparentName].filter((n) => n).join(":");
+                    if (existingParsed) existingParsed.files.push({ name, subcommandName, command: slashCommand });
+                    else
+                        parsedFiles.push({
+                            topName,
+                            depth: 3 - maxDepth,
+                            files: [{ name, subcommandName, command: slashCommand }]
+                        });
+                    return [];
+                } else return await readDirectory(path);
+            })
+        );
+        currentNodes = result.flat();
+    }
+
+    return parsedFiles;
+}
+
+// Step 2: Construct the *actual* command data to be sent to Discord
+async function generateCommandData(parsedFile: ParsedFile): Promise<[ApplicationCommandData, SlashCommand[]]> {
+    const nestingDepth = parsedFile.depth as 1 | 2 | 3;
+    if (nestingDepth === 1) {
+        return [
+            {
+                ...parsedFile.files[0].command.commandData,
+                name: parsedFile.files[0].name // Use file name for name
+            },
+            [parsedFile.files[0].command]
+        ];
+    }
+    if (nestingDepth === 2) {
+        return [
+            {
+                name: parsedFile.topName,
+                description: parsedFile.topName,
+                options: [
+                    ...parsedFile.files.map(
+                        (p) =>
+                            <const>{
+                                ...p.command.commandData,
+                                type: "SUB_COMMAND",
+                                name: p.name
+                            }
+                    )
+                ]
+            },
+            parsedFile.files.map((f) => f.command)
+        ];
+    }
+
+    const commandData: SlashCommandData & { name: string } = {
+        name: parsedFile.topName,
+        description: parsedFile.topName,
+        options: []
+    };
+
+    const subcommandsSet = new Set<string>();
+    for (const file of parsedFile.files) subcommandsSet.add(file.subcommandName);
+    const subcommands = [...subcommandsSet];
+
+    const slashCommands: SlashCommand[] = [];
+
+    for (const subcommand of subcommands) {
+        const relevantCommands = parsedFile.files.filter((f) => f.subcommandName === subcommand);
+        slashCommands.push(...relevantCommands.map((c) => c.command));
+        commandData.options.push({
+            name: subcommand,
+            description: subcommand,
+            type: "SUB_COMMAND_GROUP",
+            options: [
+                ...relevantCommands.map(
+                    (p) =>
+                        <const>{
+                            ...p.command.commandData,
+                            type: "SUB_COMMAND",
+                            name: p.name
+                        }
+                )
+            ]
+        });
+    }
+
+    return [commandData, slashCommands];
+}
+
+// Step 3: Wrap it all up
+export async function setupAllCommands(
+    guild: Guild
+): Promise<[ApplicationCommandData[], Collection<string, SlashCommand<[]>>]> {
+    const parsedFiles = await parseCommandFolderStructure();
+    const dataFromCommands: ApplicationCommandData[] = [];
+    const allSlashCommands: SlashCommand[] = [];
+
+    for (const file of parsedFiles) {
+        const [commandData, slashCommands] = await generateCommandData(file);
+        dataFromCommands.push(commandData);
+        allSlashCommands.push(...slashCommands);
+    }
+
+    // Set guild commands
+    console.log(dataFromCommands);
+    await guild.commands.set(dataFromCommands);
+
+    const collection = new Collection<string, SlashCommand>();
+
+    for (const slashCommand of allSlashCommands) {
+        collection.set(slashCommand.commandIdentifier, slashCommand);
+    }
+
+    return [dataFromCommands, collection];
+}

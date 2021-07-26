@@ -114,7 +114,7 @@ client.on("messageCreate", async (msg: Discord.Message) => {
 //     }
 // });
 
-client.on("interactionCreate", (interaction) => {
+client.on("interactionCreate", async (interaction) => {
     if (interaction.isCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
         const command = slashCommands.get(commandIdentifier);
@@ -122,6 +122,7 @@ client.on("interactionCreate", (interaction) => {
 
         command.run(interaction);
     } else if (interaction.isMessageComponent()) {
+        await interaction.deferUpdate();
         console.log(`Got interaction: ${interaction.customId}`);
         const [interactionID] = interaction.customId.split(":");
         if (!interactionID) return;

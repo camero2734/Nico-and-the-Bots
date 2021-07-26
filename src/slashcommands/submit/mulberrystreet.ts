@@ -1,9 +1,8 @@
-import { channelIDs, roles } from "configuration/config";
+import { channelIDs, roles, userIDs } from "configuration/config";
 import { CommandError } from "configuration/definitions";
-import { Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
-import { ComponentActionRow } from "slash-create";
 import { EphemeralInteractionListener } from "../../helpers/ephemeral-interaction-listener";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
@@ -46,7 +45,7 @@ command.setHandler(async (ctx) => {
     const dbUser = await queries.findOrCreateUser(ctx.user.id);
     const lastSubmitted = dbUser.lastCreationUpload ? dbUser.lastCreationUpload.getTime() : 0;
 
-    if (Date.now() - lastSubmitted < MS_24_HOURS) {
+    if (Date.now() - lastSubmitted < MS_24_HOURS && ctx.user.id !== userIDs.me) {
         const ableToSubmitAgainDate = new Date(lastSubmitted + MS_24_HOURS);
         const timestamp = F.discordTimestamp(ableToSubmitAgainDate, "relative");
         throw new CommandError(`You've already submitted! You can submit again ${timestamp}.`);
@@ -92,55 +91,38 @@ command.setHandler(async (ctx) => {
     await ctx.send({ embeds: [embed.toJSON()], components: [actionRow] });
 
     const buttonPressed = await ephemeralListener.wait();
-    if (!buttonPressed) return;
-
-    if (buttonPressed === yesId) {
-        console.log("It was pressed");
+    if (buttonPressed !== yesId) {
+        await ctx.editReply({
+            embeds: [new MessageEmbed({ description: "Submission cancelled." })],
+            components: []
+        });
+        return;
     }
-});
 
-const genYesId = command.addInteractionListener("mulstYes", <const>["titleLookup", "urlLookup"], async (ctx, args) => {
-    if (!ctx.isButton()) return;
+    // User submitted it
 
-    // const [titleLookup, urlLookup] = await prisma.$transaction([
-    //     prisma.temporaryText.findUnique({ where: { id: +args.titleLookup } }),
-    //     prisma.temporaryText.findUnique({ where: { id: +args.urlLookup } })
-    // ]);
+    await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
 
-    // if (!titleLookup || !urlLookup) throw new Error("Unable to find text and url");
+    embed.setDescription("Submitted.");
+    const doneEmbed = embed.toJSON();
 
-    // const embed = new MessageEmbed()
-    //     .setAuthor(ctx.member?.displayName, ctx.member.user.displayAvatarURL())
-    //     .setColor("#E3B3D8")
-    //     .setTitle(`"${titleLookup.value}"`)
-    //     .setDescription(
-    //         `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
-    //     )
-    //     .addField("URL", urlLookup.value)
-    //     .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
+    embed.description = "";
+    embed.fields = [];
 
-    // await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
+    const attachment = new MessageAttachment(buffer, fileName);
 
-    // embed.setDescription("Submitted.");
-    // const doneEmbed = embed.toJSON();
+    if (fileType.mime.startsWith("image")) {
+        embed.setImage(`attachment://${fileName}`);
+    }
 
-    // embed.description = "";
-    // embed.fields = [];
+    const m = await chan.send({ embeds: [embed], files: [attachment] });
+    m.react("💙");
 
-    // const attachment = new MessageAttachment(buffer, fileName);
+    const newActionRow = new MessageActionRow().addComponents([
+        new MessageButton({ style: "LINK", label: "View post", url: m.url })
+    ]);
 
-    // if (fileType.mime.startsWith("image")) {
-    //     embed.setImage(`attachment://${fileName}`);
-    // }
-
-    // const m = await chan.send({ embeds: [embed], files: [attachment] });
-    // m.react("💙");
-
-    // const newActionRow = (<unknown>(
-    //     new MessageActionRow().addComponents([new MessageButton({ style: "LINK", label: "View post", url: m.url })])
-    // )) as ComponentActionRow;
-
-    // await btnCtx.editParent({ embeds: [doneEmbed], components: [newActionRow] });
+    await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });
 });
 
 export default command;

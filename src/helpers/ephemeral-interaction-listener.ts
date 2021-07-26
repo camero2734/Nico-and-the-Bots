@@ -24,7 +24,7 @@ export class EphemeralInteractionListener<IDs extends Readonly<string[]>> {
                 const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID; // prettier-ignore
                 const collector = this.ctx.channel.createMessageComponentCollector({ filter });
 
-                collector.on("collect", () => {
+                collector.on("collect", (interaction) => {
                     clearTimeout(timeout);
                     resolve(customID);
                 });

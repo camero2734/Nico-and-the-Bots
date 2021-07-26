@@ -11,7 +11,7 @@ export class EphemeralInteractionListener<IDs extends Readonly<string[]>> {
     customIDs: IDsMapped<IDs>;
     constructor(private ctx: ExtendedInteraction, private names: IDs) {
         this.customIDs = names.map((n) => {
-            const hash = F.hash(names.join(",")).slice(0, 4);
+            const hash = F.hash(names.join(",") + ctx.id + ctx.user.id).slice(0, 10);
             return `eph&${n}${hash}`;
         }) as any;
     }

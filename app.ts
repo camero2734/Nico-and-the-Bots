@@ -130,10 +130,7 @@ client.on("interactionCreate", async (interaction) => {
         const interactionHandler = interactionHandlers.get(interactionID);
         if (!interactionHandler) return;
 
-        interactionHandler.handler(
-            interaction as MessageComponentInteraction & RequiredDiscordValues,
-            interactionHandler.pattern.toDict(interaction.customId)
-        );
+        interactionHandler.handler(interaction as any, interactionHandler.pattern.toDict(interaction.customId));
     }
     // if (!interaction.isMessageComponent()) return;
 

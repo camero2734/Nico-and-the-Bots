@@ -54,10 +54,10 @@ export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction
         opts: OptsType<SlashCommandData<T>>;
     };
 
-type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<void>;
+type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<any>;
 
 export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
-    ctx: MessageComponentInteraction & RequiredDiscordValues,
+    ctx: MessageComponentInteraction & RequiredDiscordValues & { message: Message },
     args: ReturnType<CustomIDPattern<T>["toDict"]>
 ) => Promise<void>;
 

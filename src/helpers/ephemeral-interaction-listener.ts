@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CollectorFilter, TextChannel, MessageComponentInteraction } from "discord.js";
-import { Message } from "discord.js";
+import { CollectorFilter, MessageComponentInteraction } from "discord.js";
 import F from "./funcs";
 import { ExtendedInteraction } from "./slash-command";
 
@@ -24,7 +23,7 @@ export class EphemeralInteractionListener<IDs extends Readonly<string[]>> {
                 const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID; // prettier-ignore
                 const collector = this.ctx.channel.createMessageComponentCollector({ filter });
 
-                collector.on("collect", (interaction) => {
+                collector.on("collect", () => {
                     clearTimeout(timeout);
                     resolve(customID);
                 });

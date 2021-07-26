@@ -90,5 +90,9 @@ export const queries = {
             update: {}
         });
         return res as any; // The return type is correct but Typescript is being a boomwhacker
+    },
+    async getJoinedNum(date: Date): Promise<number> {
+        const numJoinedBefore = await prisma.user.count({ where: { joinedAt: { lt: date } } });
+        return numJoinedBefore + 1; // If 0 people joined before you, you are number 1
     }
 };

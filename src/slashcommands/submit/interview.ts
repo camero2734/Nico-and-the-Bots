@@ -1,95 +1,114 @@
-import { channelIDs, roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandReactionHandler, CommandRunner } from "configuration/definitions";
-import { Item } from "database/entities/Item";
-import dayjs from "dayjs";
-import { MessageEmbed, TextChannel } from "discord.js";
-import { CommandOptionType } from "slash-create";
-// import * as ytdl from "youtube-dl";
+import { CommandError } from "configuration/definitions";
+import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
+import * as ytdl from "youtube-dl";
+import { parse } from "date-fns";
+import F from "../../helpers/funcs";
+import { channelIDs, roles } from "../../configuration/config";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Submits an interview to the interview channel",
-    options: [
-        { name: "link", description: "The YouTube URL for the video", required: true, type: CommandOptionType.STRING }
-    ]
-};
+    options: [{ name: "link", description: "The YouTube URL for the video", required: true, type: "STRING" }]
+});
 
-export const Executor: CommandRunner<{ link: string }> = async (ctx) => {
-    const url = ctx.opts.link;
+command.setHandler(async (ctx) => {
+    const rawUrl = ctx.opts.link;
+
+    await ctx.defer({ ephemeral: true });
 
     let id = "";
-    if (url.indexOf("youtube.com/watch?v=") !== -1) {
-        id = (/(?<=watch\?v=).*?(?=$|&|\?)/.exec(url) || [])[0];
-    } else if (url.indexOf("youtu.be/") !== -1) {
-        id = (/(?<=youtu\.be\/).*?(?=$|&|\?)/.exec(url) || [])[0];
+    if (rawUrl.indexOf("youtube.com/watch?v=") !== -1) {
+        id = (/(?<=watch\?v=).*?(?=$|&|\?)/.exec(rawUrl) || [])[0];
+    } else if (rawUrl.indexOf("youtu.be/") !== -1) {
+        id = (/(?<=youtu\.be\/).*?(?=$|&|\?)/.exec(rawUrl) || [])[0];
     }
-
     if (!id) throw new CommandError("Invalid URL.");
+    const url = `https://youtube.com/watch?v=${id}`;
 
-    const idItem = await ctx.connection.getRepository(Item).findOne({ identifier: id, type: "InterviewID" });
-    if (idItem) throw new CommandError("This interview has already been submitted");
+    const existingInterview = await prisma.submittedInterview.findUnique({
+        where: { url }
+    });
+    if (existingInterview) throw new CommandError("This interview has already been submitted");
 
+    // Fetch info
     const embed = new MessageEmbed().setDescription("Fetching video info...").setColor("#111111");
-    await ctx.embed(embed);
+    await ctx.send({ embeds: [embed] });
 
-    const info: Record<string, string> = await new Promise(
-        (resolve) => resolve({})
-        // ytdl.getInfo(id, (_error, output) => resolve(output as unknown as Record<string, string>))
+    const info: Record<string, string> = await new Promise((resolve) =>
+        ytdl.getInfo(id, (_error, output) => resolve(output as unknown as Record<string, string>))
     );
 
     const { channel, view_count, fulltitle, thumbnail, upload_date, description } = info;
 
-    const uploadDate = dayjs(upload_date, "YYYYMMDD");
+    const uploadDate = parse(upload_date, "yyyyMMdd", new Date());
 
     console.log(channel, view_count, fulltitle, thumbnail);
 
-    const daysSince = dayjs().diff(uploadDate, "day");
-    embed.setAuthor(ctx.member.displayName, ctx.user.avatarURL);
+    embed.setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL());
     embed.setTitle(info.title);
     embed.addField("Channel", channel, true);
-    embed.addField("Views", view_count, true);
+    embed.addField("Views", `${view_count}`, true);
     embed.addField("Link", "[Click Here](https://youtu.be/" + id + ")", true);
     embed.setImage(thumbnail);
     embed.setDescription(description || "No description provided");
-    embed.setFooter(
-        "Uploaded " +
-            (daysSince === 0 ? "today" : daysSince === 1 ? "yesterday" : daysSince + " days ago") +
-            " || Add an interview with the !interview command"
-    );
+    embed.addField("Uploaded", F.discordTimestamp(uploadDate, "relative"));
 
     const interviewsChannel = ctx.channel.guild.channels.cache.get(channelIDs.interviewsubmissions) as TextChannel;
 
-    const m2 = await interviewsChannel.send({ embeds: [embed] });
-    await m2.react("✅");
-    await m2.react("❌");
+    const dbInterview = await prisma.submittedInterview.create({
+        data: { url, submittedByUserId: ctx.user.id }
+    });
 
-    const toSave = new Item({ identifier: id, type: "InterviewID", title: "" });
-    await ctx.connection.manager.save(toSave);
-    await ctx.embed(new MessageEmbed().setColor("#111111").setDescription("Sent video to staff for approval!"));
-};
+    const actionRow = new MessageActionRow().addComponents([
+        new MessageButton({
+            label: "Approve",
+            customId: genYesID({ interviewId: `${dbInterview.id}` }),
+            style: "SUCCESS"
+        })
+    ]);
 
-export const ReactionHandler: CommandReactionHandler = async ({ reaction }): Promise<boolean> => {
-    const msg = reaction.message;
+    await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 
-    // Verify reaction is to this command
-    if (msg.channel.id !== channelIDs.interviewsubmissions || !msg.author?.bot || !msg.embeds[0]?.footer) return false;
+    const finalEmbed = new MessageEmbed().setColor("#111111").setDescription("Sent video to staff for approval!");
+    await ctx.send({ embeds: [finalEmbed] });
+});
 
-    const accepting = reaction.emoji.name === "✅";
+const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId"], async (ctx, args) => {
+    const embed = ctx.message.embeds[0];
+    embed.setColor("#00FF00");
 
-    await msg.reactions.removeAll();
+    await ctx.editReply({ components: [], embeds: [embed] });
+    const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
 
-    // Do something
-    const newEmbed = new MessageEmbed(msg.embeds[0]);
-    newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
-    msg.edit({ embeds: [newEmbed] });
+    await chan.send({ content: `<@&${roles.topfeed.selectable.interviews}>`, embeds: [embed] });
+});
 
-    if (accepting) {
-        await msg.guild?.roles.cache.get(roles.topfeed.selectable.interviews)?.setMentionable(true);
-        const m = await (<TextChannel>msg.guild?.channels.cache.get(channelIDs.interviews))?.send({
-            content: `<@&${roles.topfeed.selectable.interviews}>`,
-            embeds: [newEmbed]
-        });
-        await m.react("📺");
-    }
+// const ReactionHandler: CommandReactionHandler = async ({ reaction }): Promise<boolean> => {
+//     const msg = reaction.message;
 
-    return true;
-};
+//     // Verify reaction is to this command
+//     if (msg.channel.id !== channelIDs.interviewsubmissions || !msg.author?.bot || !msg.embeds[0]?.footer) return false;
+
+//     const accepting = reaction.emoji.name === "✅";
+
+//     await msg.reactions.removeAll();
+
+//     // Do something
+//     const newEmbed = new MessageEmbed(msg.embeds[0]);
+//     newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
+//     msg.edit({ embeds: [newEmbed] });
+
+//     if (accepting) {
+//         await msg.guild?.roles.cache.get(roles.topfeed.selectable.interviews)?.setMentionable(true);
+//         const m = await (<TextChannel>msg.guild?.channels.cache.get(channelIDs.interviews))?.send({
+//             content: `<@&${roles.topfeed.selectable.interviews}>`,
+//             embeds: [newEmbed]
+//         });
+//         await m.react("📺");
+//     }
+
+//     return true;
+// };
+
+export default command;

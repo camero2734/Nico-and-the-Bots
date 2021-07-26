@@ -113,6 +113,14 @@ const F = {
     },
     hash(text: string, algorithm: "md5" | "sha1" | "sha256" = "sha1"): string {
         return crypto.createHash(algorithm).update(text).digest("base64");
+    },
+    isValidURL(url: string): boolean {
+        try {
+            new URL(url);
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 };
 

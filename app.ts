@@ -1,10 +1,10 @@
 import { TopfeedBot } from "altbots/topfeed/topfeed";
 import { registerFont } from "canvas";
 import { channelIDs, guildID } from "configuration/config";
-import { CommandComponentListener, CommandReactionHandler } from "configuration/definitions";
+import { CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
-import { Collection } from "discord.js";
+import { Collection, MessageComponentInteraction } from "discord.js";
 import * as helpers from "helpers";
 import { setupAllCommands, updateUserScore } from "helpers";
 import AutoReact from "helpers/auto-react";
@@ -14,12 +14,30 @@ import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
-import { InteractionListener, ListenerCustomIdGenerator, SlashCommand } from "./src/helpers/slash-command";
+import { InteractionListener, RequiredDiscordValues, SlashCommand } from "./src/helpers/slash-command";
 
 // let ready = false;
 let connection: Connection;
 
-const client = new Discord.Client({ intents: Discord.Intents.ALL, partials: ["REACTION", "USER", "MESSAGE"] });
+const client = new Discord.Client({
+    intents: [
+        "GUILDS",
+        "DIRECT_MESSAGES",
+        "DIRECT_MESSAGE_REACTIONS",
+        "GUILDS",
+        "GUILD_BANS",
+        "GUILD_EMOJIS_AND_STICKERS",
+        "GUILD_MEMBERS",
+        "GUILD_MESSAGES",
+        "GUILD_MESSAGE_REACTIONS"
+        // "GUILD_INTEGRATIONS",
+        // "GUILD_INVITES",
+        // "GUILD_PRESENCES",
+        // "GUILD_VOICE_STATES",
+        // "GUILD_WEBHOOKS"
+    ],
+    partials: ["REACTION", "USER", "MESSAGE"]
+});
 const keonsBot = new KeonsBot();
 let topfeedBot: TopfeedBot;
 let sacarverBot: SacarverBot;
@@ -76,7 +94,7 @@ client.on("ready", async () => {
     });
 });
 
-client.on("message", async (msg: Discord.Message) => {
+client.on("messageCreate", async (msg: Discord.Message) => {
     if (!connection) return;
 
     const wasSlur = await SlurFilter(msg);
@@ -96,7 +114,7 @@ client.on("message", async (msg: Discord.Message) => {
 //     }
 // });
 
-client.on("interaction", (interaction) => {
+client.on("interactionCreate", (interaction) => {
     if (interaction.isCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
         const command = slashCommands.get(commandIdentifier);
@@ -104,13 +122,17 @@ client.on("interaction", (interaction) => {
 
         command.run(interaction);
     } else if (interaction.isMessageComponent()) {
-        const [interactionID] = interaction.customID.split(":");
+        console.log(`Got interaction: ${interaction.customId}`);
+        const [interactionID] = interaction.customId.split(":");
         if (!interactionID) return;
 
         const interactionHandler = interactionHandlers.get(interactionID);
         if (!interactionHandler) return;
 
-        interactionHandler.handler(interaction, interactionHandler.pattern.toDict(interaction.customID));
+        interactionHandler.handler(
+            interaction as MessageComponentInteraction & RequiredDiscordValues,
+            interactionHandler.pattern.toDict(interaction.customId)
+        );
     }
     // if (!interaction.isMessageComponent()) return;
 

@@ -4,13 +4,10 @@ import { constants } from "configuration/config";
 import { CommandComponentListener } from "configuration/definitions";
 import {
     Collection,
-    CollectorFilter,
     Interaction,
     Message,
     MessageActionRow,
     MessageButton,
-    MessageComponentInteraction,
-    MessageComponentInteractionCollector,
     MessageEmbed,
     Snowflake,
     TextChannel
@@ -78,19 +75,17 @@ export const MessageTools = {
 /** Things that extend a Message object */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function MessageContext(msg: Message) {
-    const listeners: Collection<string, MessageComponentInteractionCollector> = new Collection();
+    const listeners: Collection<string, any> = new Collection();
     return {
         msg,
         // Copying the functionality of slash create for use with discord.js
         registerComponent(customID: string, handler: (interaction: Interaction) => Promise<void>): void {
-            const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customID === customID; // prettier-ignore
-            const collector = msg.createMessageComponentInteractionCollector({ filter });
-
-            console.log("Created collector");
-            listeners.set(customID, collector);
-
-            collector.on("collect", handler);
-            collector.on("end", () => console.log(`${customID} collector ended`));
+            // const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customID === customID; // prettier-ignore
+            // const collector = msg.createMessageComponentInteractionCollector({ filter });
+            // console.log("Created collector");
+            // listeners.set(customID, collector);
+            // collector.on("collect", handler);
+            // collector.on("end", () => console.log(`${customID} collector ended`));
         },
         unregisterComponent(customID: string): boolean {
             const collector = listeners.get(customID);

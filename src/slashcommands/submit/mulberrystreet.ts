@@ -1,31 +1,33 @@
 import { channelIDs, roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { CommandError } from "configuration/definitions";
+import { Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
+import { ComponentActionRow } from "slash-create";
+import { EphemeralInteractionListener } from "../../helpers/ephemeral-interaction-listener";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Submits an image, video, or audio file to #mulberry-street",
     options: [
         {
             name: "title",
             description: "The title of your piece of art",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         },
         {
             name: "url",
             description: "A direct link to the image, video, or audio file. Max 50MB.",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ title: string; url: string }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const MAX_FILE_SIZE = 50000000; // 50MB
     const MS_24_HOURS = 1000 * 60 * 60 * 24; // 24 hours in ms
     const { title } = ctx.opts;
@@ -38,7 +40,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
             `Only users with the <@&${roles.artistmusician}> role can submit to Mulberry Street Creations™`
         );
 
-    await ctx.defer(true);
+    await ctx.defer({ ephemeral: true });
 
     // Only allow submissions once/day
     const dbUser = await queries.findOrCreateUser(ctx.user.id);
@@ -51,7 +53,7 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
     }
 
     // Validate and fetch url
-    if (!isValidURL(url)) throw new CommandError("Invalid URL given");
+    if (!F.isValidURL(url)) throw new CommandError("Invalid URL given");
 
     const res = await fetch(url, { size: MAX_FILE_SIZE }).catch((E) => {
         console.log(E);
@@ -80,47 +82,65 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
         .addField("URL", url)
         .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
 
+    const ephemeralListener = new EphemeralInteractionListener(ctx, <const>["msYes"]);
+    const [yesId] = ephemeralListener.customIDs;
+
     const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "SUCCESS", label: "Submit", customID: "submit-mulberry" })
+        new MessageButton({ style: "SUCCESS", label: "Submit", customId: yesId })
     ]);
 
-    const componentActionRow = (<unknown>actionRow) as ComponentActionRow;
-    await ctx.send({ embeds: [embed.toJSON()], components: [componentActionRow] });
+    await ctx.send({ embeds: [embed.toJSON()], components: [actionRow] });
 
-    ctx.registerComponent("submit-mulberry", async (btnCtx) => {
-        ctx.unregisterComponent("submit-mulberry");
+    const buttonPressed = await ephemeralListener.wait();
+    if (!buttonPressed) return;
 
-        await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
-
-        embed.setDescription("Submitted.");
-        const doneEmbed = embed.toJSON();
-
-        embed.description = "";
-        embed.fields = [];
-
-        const attachment = new MessageAttachment(buffer, fileName);
-
-        if (fileType.mime.startsWith("image")) {
-            embed.setImage(`attachment://${fileName}`);
-        }
-
-        const m = await chan.send({ embeds: [embed], files: [attachment] });
-
-        m.react("💙");
-
-        const newActionRow = (<unknown>(
-            new MessageActionRow().addComponents([new MessageButton({ style: "LINK", label: "View post", url: m.url })])
-        )) as ComponentActionRow;
-
-        await btnCtx.editParent({ embeds: [doneEmbed], components: [newActionRow] });
-    });
-};
-
-function isValidURL(url: string): boolean {
-    try {
-        new URL(url);
-        return true;
-    } catch (err) {
-        return false;
+    if (buttonPressed === yesId) {
+        console.log("It was pressed");
     }
-}
+});
+
+const genYesId = command.addInteractionListener("mulstYes", <const>["titleLookup", "urlLookup"], async (ctx, args) => {
+    if (!ctx.isButton()) return;
+
+    // const [titleLookup, urlLookup] = await prisma.$transaction([
+    //     prisma.temporaryText.findUnique({ where: { id: +args.titleLookup } }),
+    //     prisma.temporaryText.findUnique({ where: { id: +args.urlLookup } })
+    // ]);
+
+    // if (!titleLookup || !urlLookup) throw new Error("Unable to find text and url");
+
+    // const embed = new MessageEmbed()
+    //     .setAuthor(ctx.member?.displayName, ctx.member.user.displayAvatarURL())
+    //     .setColor("#E3B3D8")
+    //     .setTitle(`"${titleLookup.value}"`)
+    //     .setDescription(
+    //         `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
+    //     )
+    //     .addField("URL", urlLookup.value)
+    //     .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
+
+    // await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
+
+    // embed.setDescription("Submitted.");
+    // const doneEmbed = embed.toJSON();
+
+    // embed.description = "";
+    // embed.fields = [];
+
+    // const attachment = new MessageAttachment(buffer, fileName);
+
+    // if (fileType.mime.startsWith("image")) {
+    //     embed.setImage(`attachment://${fileName}`);
+    // }
+
+    // const m = await chan.send({ embeds: [embed], files: [attachment] });
+    // m.react("💙");
+
+    // const newActionRow = (<unknown>(
+    //     new MessageActionRow().addComponents([new MessageButton({ style: "LINK", label: "View post", url: m.url })])
+    // )) as ComponentActionRow;
+
+    // await btnCtx.editParent({ embeds: [doneEmbed], components: [newActionRow] });
+});
+
+export default command;

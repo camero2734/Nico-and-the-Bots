@@ -64,12 +64,12 @@ export const ReactionHandler: CommandReactionHandler = async ({ reaction, user, 
     const actionRow = new MessageActionRow();
     actionRow.addComponents([
         new MessageButton({
-            customID: "yes",
+            customId: "yes",
             style: "SUCCESS",
             label: "Yes (5000 credits)",
             emoji: { name: "gold", id: "389216023141941249" } as EmojiIdentifierResolvable
         }),
-        new MessageButton({ customID: "cancel", style: "DANGER", label: "Cancel" })
+        new MessageButton({ customId: "cancel", style: "DANGER", label: "Cancel" })
     ]);
 
     const dm = await member.createDM();
@@ -164,13 +164,13 @@ async function giveGold(msg: Message, givingMember: GuildMember, connection: Con
     const actionRow = new MessageActionRow();
     actionRow.addComponents([
         new MessageButton({
-            customID: answerListener.generateCustomID({ index: "1", pollID }),
+            customId: answerListener.generateCustomID({ index: "1", pollID }),
             style: "SECONDARY",
             label: "0",
             emoji: { name: "upvote_pink2", id: "850586748765077514" } as EmojiIdentifierResolvable
         }),
         new MessageButton({
-            customID: answerListener.generateCustomID({ index: "0", pollID }),
+            customId: answerListener.generateCustomID({ index: "0", pollID }),
             style: "SECONDARY",
             label: "0",
             emoji: { name: "downvote_blue2", id: "850586787805265990" } as EmojiIdentifierResolvable

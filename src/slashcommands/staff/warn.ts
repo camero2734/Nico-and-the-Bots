@@ -71,7 +71,7 @@ export const Executor: CommandRunner<{
             new MessageButton({
                 label: "Submit Warning",
                 style: "PRIMARY",
-                customID: answerListener.generateCustomID({ userId: user })
+                customId: answerListener.generateCustomID({ userId: user })
             })
         ])
         .toJSON();

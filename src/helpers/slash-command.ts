@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Guild, GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import {
+    CommandInteractionOption,
+    Guild,
+    GuildMember,
+    MessageActionRow,
+    MessageButton,
+    MessageEmbed,
+    TextChannel
+} from "discord.js";
 import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
@@ -32,18 +40,24 @@ export type SlashCommandData<T extends CommandOptions = ApplicationCommandOption
     options: T;
 };
 
-type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuInteraction;
-export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction & {
-    send(payload: MessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
-    opts: OptsType<SlashCommandData<T>>;
+// Discord.js marks as optional, but for our purposes these are always present
+export type RequiredDiscordValues = {
     member: GuildMember;
     guild: Guild;
+    channel: TextChannel;
 };
+
+type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuInteraction;
+export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction &
+    RequiredDiscordValues & {
+        send(payload: MessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
+        opts: OptsType<SlashCommandData<T>>;
+    };
 
 type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<void>;
 
 export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
-    ctx: MessageComponentInteraction,
+    ctx: MessageComponentInteraction & RequiredDiscordValues,
     args: ReturnType<CustomIDPattern<T>["toDict"]>
 ) => Promise<void>;
 
@@ -109,6 +123,8 @@ export class SlashCommand<T extends CommandOptions = []> {
     }
     upvoteDownVoteListener(name: string) {
         const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
+            if (!ctx.isButton()) return;
+
             await ctx.deferUpdate();
 
             const isUpvote = args.isUpvote === "1" ? 1 : 0;
@@ -133,6 +149,8 @@ export class SlashCommand<T extends CommandOptions = []> {
             // If the post is heavily downvoted
             if (downvotes >= Math.max(5, upvotes)) {
                 await msg.delete();
+                await prisma.poll.delete({ where: { id: poll.id } });
+                return;
             }
 
             const getMessageButtonWithEmoji = (name: string): MessageButton | undefined => {
@@ -169,13 +187,13 @@ export class SlashCommand<T extends CommandOptions = []> {
                     emoji: emojiIDs.upvote,
                     style: "SECONDARY",
                     label: "0",
-                    customID: gen({ isUpvote: "1", pollID: `${poll.id}` })
+                    customId: gen({ isUpvote: "1", pollID: `${poll.id}` })
                 }),
                 new MessageButton({
                     emoji: emojiIDs.downvote,
                     style: "SECONDARY",
                     label: "0",
-                    customID: gen({ isUpvote: "0", pollID: `${poll.id}` })
+                    customId: gen({ isUpvote: "0", pollID: `${poll.id}` })
                 })
             ]);
         };
@@ -183,7 +201,7 @@ export class SlashCommand<T extends CommandOptions = []> {
         return createActionRow;
     }
     static getIdentifierFromInteraction(interaction: CommandInteraction): string {
-        const subcommand = interaction.options.find((o) => o.type === "SUB_COMMAND");
+        const subcommand = interaction.options.data.find((o) => o.type === "SUB_COMMAND");
         if (!subcommand) return interaction.commandName;
         else return `${subcommand.name}:${interaction.commandName}`;
     }
@@ -208,13 +226,13 @@ export class CustomIDPattern<T extends Readonly<string[]>> {
  * Extracts the data from the options object so they aren't nested
  */
 function extractOptsFromInteraction(interaction: CommandInteraction): any {
-    let arr = interaction.options.array();
+    let arr = interaction.options.data as CommandInteractionOption[];
     const opts: Record<string, any> = {};
     while (arr.length !== 0) {
         const newArr: typeof arr = [];
         for (const option of arr) {
-            if (option.options?.size) {
-                newArr.push(...option.options.array());
+            if (option.options?.length) {
+                newArr.push(...option.options);
                 continue;
             }
             opts[option.name] = option.value;

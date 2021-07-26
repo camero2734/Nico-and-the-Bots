@@ -1,22 +1,21 @@
 import { channelIDs } from "configuration/config";
-import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed, TextChannel } from "discord.js";
-import { CommandOptionType } from "slash-create";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Submits a suggestion to the staff",
     options: [
-        { name: "title", description: "The title of your suggestion", required: true, type: CommandOptionType.STRING },
+        { name: "title", description: "The title of your suggestion", required: true, type: "STRING" },
         {
             name: "details",
             description: "Some more details about your suggestion",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ title: string; details: string }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const { title, details } = ctx.opts;
 
     const embed = new MessageEmbed()
@@ -30,5 +29,7 @@ export const Executor: CommandRunner<{ title: string; details: string }> = async
     await suggestChan.send({ embeds: [embed] });
 
     const responseEmbed = new MessageEmbed({ description: "Your suggestion has been submitted!" });
-    await ctx.send({ embeds: [responseEmbed.toJSON()] });
-};
+    await ctx.send({ embeds: [responseEmbed] });
+});
+
+export default command;

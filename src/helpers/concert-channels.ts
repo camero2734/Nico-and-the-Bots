@@ -167,7 +167,7 @@ class ConcertChannelManager {
 
         const channel = await this.guild.channels.create(toAdd.channelName, {
             permissionOverwrites,
-            type: "text",
+            type: "GUILD_TEXT",
             topic
         });
         await channel.setParent(categoryIDs.concerts, { lockPermissions: false });
@@ -185,7 +185,7 @@ class ConcertChannelManager {
             return false;
         }
 
-        if (toDelete.parentID !== categoryIDs.concerts) return false;
+        if (toDelete.parentId !== categoryIDs.concerts) return false;
 
         await toDelete.delete();
         await role.delete();

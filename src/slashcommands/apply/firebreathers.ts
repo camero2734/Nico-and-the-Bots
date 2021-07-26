@@ -79,7 +79,7 @@ export const Executor: CommandRunner = async (ctx) => {
     }
 
     const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Submit", customID: "submit", style: "SUCCESS" })
+        new MessageButton({ label: "Submit", customId: "submit", style: "SUCCESS" })
     ]);
     await ctx.editOriginal({
         embeds: [confirmationEmbed.toJSON()],
@@ -127,7 +127,7 @@ const withContext = async (ctx: ExtendedContext) => {
                 );
 
             const actionRow = new MessageActionRow();
-            actionRow.addComponents([new MessageButton({ label: "Continue", customID: "continue", style: "PRIMARY" })]);
+            actionRow.addComponents([new MessageButton({ label: "Continue", customId: "continue", style: "PRIMARY" })]);
 
             await ctx.editOriginal({
                 embeds: [embed.toJSON()],

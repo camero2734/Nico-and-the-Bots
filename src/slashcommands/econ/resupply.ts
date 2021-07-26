@@ -233,7 +233,7 @@ export const Executor: CommandRunner = async (ctx) => {
     const menu = new MessageSelectMenu()
         .addOptions(options)
         .setPlaceholder("Select a district to search")
-        .setCustomID(answerListener.generateCustomID({}));
+        .setCustomId(answerListener.generateCustomID({}));
 
     const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
 
@@ -241,7 +241,7 @@ export const Executor: CommandRunner = async (ctx) => {
         .addComponents(
             new MessageButton({
                 label: "View Supply List",
-                customID: buttonListener.generateCustomID({}),
+                customId: buttonListener.generateCustomID({}),
                 style: "PRIMARY"
             })
         )

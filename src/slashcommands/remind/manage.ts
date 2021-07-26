@@ -34,7 +34,7 @@ async function generateReminderList(
     });
 
     const selectMenu = new MessageSelectMenu()
-        .setCustomID(selectReminder.generateCustomID({}))
+        .setCustomId(selectReminder.generateCustomID({}))
         .setPlaceholder("Select a reminder for more information");
 
     const emojis = await member.guild.emojis.fetch();
@@ -92,11 +92,11 @@ selectReminder.handler = async (interaction, connection) => {
     if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
     const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Back to List", style: "PRIMARY", customID: listReminders.generateCustomID({}) }),
+        new MessageButton({ label: "Back to List", style: "PRIMARY", customId: listReminders.generateCustomID({}) }),
         new MessageButton({
             label: "Delete Reminder",
             style: "DANGER",
-            customID: deleteReminder.generateCustomID({ reminderid: selected })
+            customId: deleteReminder.generateCustomID({ reminderid: selected })
         })
     ]);
 

@@ -51,7 +51,7 @@ command.setHandler(async (ctx) => {
         new MessageButton({
             label: "Yes",
             style: "SUCCESS",
-            customID: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
+            customId: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
         })
     );
 

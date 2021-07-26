@@ -63,8 +63,8 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
         );
 
     const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Begin", style: "SUCCESS", customID: "verifbegin" }),
-        new MessageButton({ label: "Cancel", style: "DANGER", customID: "verifcancel" })
+        new MessageButton({ label: "Begin", style: "SUCCESS", customId: "verifbegin" }),
+        new MessageButton({ label: "Cancel", style: "DANGER", customId: "verifcancel" })
     ]);
 
     let m: Message;
@@ -255,7 +255,7 @@ async function generateEmbedAndButtons(
             return new MessageButton({
                 label: answer,
                 style: "PRIMARY",
-                customID: answerListener.generateCustomID({
+                customId: answerListener.generateCustomID({
                     currentID: newQuestion.hexID,
                     questionIDs,
                     previousAnswers: answerEncode.toString(),

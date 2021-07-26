@@ -94,7 +94,7 @@ export async function sendViolationNotice(
         await connection.manager.save(counter);
 
         // Allow user to see channel
-        await chan.createOverwrite(member.id, { VIEW_CHANNEL: true });
+        await chan.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true });
 
         const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
         const m = await chan.send({ content: `${member}`, embeds: [transmissionEmbed] });

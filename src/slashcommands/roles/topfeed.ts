@@ -68,7 +68,7 @@ export const Executor: CommandRunner<{ removeall?: boolean }> = async (ctx) => {
         .setPlaceholder("Select the topfeed role(s) you want")
         .setMinValues(0)
         .setMaxValues(options.length)
-        .setCustomID(answerListener.generateCustomID({}));
+        .setCustomId(answerListener.generateCustomID({}));
 
     const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
 

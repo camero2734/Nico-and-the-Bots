@@ -89,7 +89,7 @@ export const Executor: CommandRunner<OptType> = async (ctx) => {
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
     const selectMenu = new MessageSelectMenu()
-        .setCustomID(answerListener.generateCustomID({ pollID: poll.id.toString() }))
+        .setCustomId(answerListener.generateCustomID({ pollID: poll.id.toString() }))
         .setPlaceholder("Select a poll choice");
 
     for (let i = 0; i < parsedOptions.length; i++) {

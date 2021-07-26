@@ -29,11 +29,28 @@ export class SacarverBot {
     ready: Promise<void>;
     mutex = new Mutex();
     constructor(private connection: Connection) {
-        this.client = new Client({ intents: Intents.ALL });
+        this.client = new Client({
+            intents: [
+                "GUILDS",
+                "DIRECT_MESSAGES",
+                "DIRECT_MESSAGE_REACTIONS",
+                "GUILDS",
+                "GUILD_BANS",
+                "GUILD_EMOJIS_AND_STICKERS",
+                "GUILD_MEMBERS",
+                "GUILD_MESSAGES",
+                "GUILD_MESSAGE_REACTIONS",
+                "GUILD_INTEGRATIONS",
+                "GUILD_INVITES",
+                "GUILD_PRESENCES",
+                "GUILD_VOICE_STATES",
+                "GUILD_WEBHOOKS"
+            ]
+        });
         this.client.login(secrets.bots.sacarver);
 
         this.ready = new Promise((resolve) => {
-            this.client.on("ready", resolve);
+            this.client.on("ready", () => resolve());
         });
     }
 
@@ -44,7 +61,7 @@ export class SacarverBot {
 
         this.client.on("interaction", (interaction) => {
             if (!interaction.isMessageComponent()) return;
-            if (interaction.customID === ANNOUNCEMENTS_ID) return this.giveAnnouncementsRole(interaction);
+            if (interaction.customId === ANNOUNCEMENTS_ID) return this.giveAnnouncementsRole(interaction);
         });
     }
 
@@ -121,7 +138,7 @@ export class SacarverBot {
             new MessageButton({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",
-                customID: ANNOUNCEMENTS_ID,
+                customId: ANNOUNCEMENTS_ID,
                 ...emoji("📢")
             })
         ]);

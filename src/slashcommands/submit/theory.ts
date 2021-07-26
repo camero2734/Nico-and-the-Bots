@@ -1,9 +1,5 @@
 import { channelIDs } from "configuration/config";
-import { CommandComponentListener, CommandOptions, CommandRunner } from "configuration/definitions";
-import { EmojiIdentifierResolvable, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { generateUpvoteDownvoteListener } from "helpers";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
-import { prisma } from "../../helpers/prisma-init";
+import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { SlashCommand } from "../../helpers/slash-command";
 
 const command = new SlashCommand(<const>{

@@ -88,7 +88,10 @@ export const Executor: CommandRunner<RequiredTypes & OptionalTypes> = async (ctx
     console.log(permissionOverwrites);
 
     // Create channel
-    const jailChan = await ctx.member.guild.channels.create(`jail-${names}`, { type: "text", permissionOverwrites });
+    const jailChan = await ctx.member.guild.channels.create(`jail-${names}`, {
+        type: "GUILD_TEXT",
+        permissionOverwrites
+    });
 
     // Put channel in correct category
     await jailChan.setParent(categoryIDs.chilltown, { lockPermissions: false });
@@ -109,7 +112,7 @@ export const Executor: CommandRunner<RequiredTypes & OptionalTypes> = async (ctx
         new MessageButton({
             style: "SECONDARY",
             label: "Unmute Users",
-            customID: unmuteAllUsers.generateCustomID({
+            customId: unmuteAllUsers.generateCustomID({
                 // Compresses user ids to base64 and as an array
                 base64idarray: members.map((m) => F.snowflakeToRadix64(m.user.id)).join(",")
             })
@@ -117,7 +120,7 @@ export const Executor: CommandRunner<RequiredTypes & OptionalTypes> = async (ctx
         new MessageButton({
             style: "DANGER",
             label: "Close channel",
-            customID: closeChannel.generateCustomID({
+            customId: closeChannel.generateCustomID({
                 base64idarray: members.map((m) => F.snowflakeToRadix64(m.user.id)).join(",")
             })
         })
@@ -163,10 +166,10 @@ unmuteAllUsers.handler = async (interaction, connection, args) => {
     // Change button to mute
     const msg = interaction.message as Message;
     const [actionRow] = msg.components;
-    const button = actionRow.components.find((btn) => btn.customID === interaction.customID);
+    const button = actionRow.components.find((btn) => btn.customId === interaction.customId);
     if (button?.type !== "BUTTON") return;
 
-    button.setCustomID(muteAllUsers.generateCustomID({ base64idarray: args.base64idarray })).setLabel("Remute Users");
+    button.setCustomId(muteAllUsers.generateCustomID({ base64idarray: args.base64idarray })).setLabel("Remute Users");
 
     await msg.edit({ components: msg.components });
 };
@@ -195,10 +198,10 @@ muteAllUsers.handler = async (interaction, connection, args) => {
     // Change button to unmute
     const msg = interaction.message as Message;
     const [actionRow] = msg.components;
-    const button = actionRow.components.find((btn) => btn.customID === interaction.customID);
+    const button = actionRow.components.find((btn) => btn.customId === interaction.customId);
     if (button?.type !== "BUTTON") return;
 
-    button.setCustomID(unmuteAllUsers.generateCustomID({ base64idarray: args.base64idarray })).setLabel("Unmute Users");
+    button.setCustomId(unmuteAllUsers.generateCustomID({ base64idarray: args.base64idarray })).setLabel("Unmute Users");
 
     await msg.edit({ components: msg.components });
 };
@@ -219,7 +222,7 @@ closeChannel.handler = async (interaction, connection, args) => {
     const chan = msg.channel as TextChannel;
     const [actionRow] = msg.components;
 
-    const button = actionRow.components.find((btn) => btn.customID === interaction.customID);
+    const button = actionRow.components.find((btn) => btn.customId === interaction.customId);
     if (!button) return;
 
     await msg.edit({ components: [] });
@@ -231,7 +234,7 @@ closeChannel.handler = async (interaction, connection, args) => {
         .addField("Closed by", interactionMem.toString());
 
     const cancelActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Cancel", customID: "cancel", style: "DANGER" })
+        new MessageButton({ label: "Cancel", customId: "cancel", style: "DANGER" })
     ]);
 
     const m = await chan.send({ embeds: [warningEmbed], components: [cancelActionRow] });

@@ -48,6 +48,7 @@ export type RequiredDiscordValues = {
     member: GuildMember;
     guild: Guild;
     channel: TextChannel;
+    guildId: Snowflake;
 };
 
 type BaseInteraction = CommandInteraction | ButtonInteraction | SelectMenuInteraction;
@@ -59,8 +60,10 @@ export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction
 
 type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<any>;
 
+export type ListenerInteraction = MessageComponentInteraction & RequiredDiscordValues & { message: Message };
+
 export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
-    ctx: MessageComponentInteraction & RequiredDiscordValues & { message: Message },
+    ctx: ListenerInteraction,
     args: ReturnType<CustomIDPattern<T>["toDict"]>
 ) => Promise<void>;
 

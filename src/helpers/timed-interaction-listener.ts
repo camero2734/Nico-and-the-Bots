@@ -15,12 +15,15 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
             return `eph&${n}${hash}`;
         }) as any;
     }
-    async wait(timeOutMs = 30000): Promise<IDsMapped<IDs>[number] | null> {
+    async wait(
+        timeOutMs = 30000,
+        inFilter: CollectorFilter<[MessageComponentInteraction]> = async () => true
+    ): Promise<IDsMapped<IDs>[number] | null> {
         const promises = this.customIDs.map((customID) => {
             return new Promise<string | null>((resolve) => {
                 const timeout = setTimeout(() => resolve(null), timeOutMs);
 
-                const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID; // prettier-ignore
+                const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID && inFilter(interaction); // prettier-ignore
                 const collector = this.ctx.channel.createMessageComponentCollector({ filter });
 
                 collector.on("collect", () => {

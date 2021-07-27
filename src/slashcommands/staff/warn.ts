@@ -6,6 +6,7 @@ import { roles } from "../../configuration/config";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
+import JailCommand from "./jail";
 
 const rules = Object.values(WarningType);
 
@@ -49,9 +50,9 @@ command.setHandler(async (ctx) => {
     const confirmationEmbed = new MessageEmbed()
         .setTitle("Would you like to submit this warning?")
         .addField("User", `<@${user}>`)
-        .addField(FIELDS.Explanation, explanation)
-        .addField(FIELDS.RuleBroken, ruleBroken)
-        .addField(FIELDS.Severity, `${severity}`);
+        .addField("Explanation", explanation)
+        .addField("Rule Broken", ruleBroken)
+        .addField("Severity", `${severity}`);
 
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
@@ -72,8 +73,8 @@ command.setHandler(async (ctx) => {
         return;
     }
 
-    const member = ctx.member as GuildMember | undefined;
-    if (!member?.roles.cache.has(roles.staff)) return;
+    const member = await ctx.guild.members.fetch(user);
+    if (!member || !ctx.member?.roles.cache.has(roles.staff)) return;
 
     // Make sure warned user exists
     await queries.findOrCreateUser(member.id);
@@ -113,12 +114,6 @@ command.setHandler(async (ctx) => {
     autoJailCheck(ctx, member);
 });
 
-const FIELDS = <const>{
-    Explanation: "Explanation",
-    RuleBroken: "Rule Broken",
-    Severity: "Severity"
-};
-
 async function autoJailCheck(ctx: ExtendedInteraction, member: GuildMember) {
     const oneYearAgo = subYears(new Date(), 1);
     const recentWarns = await prisma.warning.count({
@@ -137,22 +132,12 @@ async function autoJailCheck(ctx: ExtendedInteraction, member: GuildMember) {
         );
         return await ctx.followUp({ embeds: [embed], ephemeral: true });
     }
-    // TODO: Fix
-    // const data: InteractionRequestData = {
-    //     channel_id: interaction.channelID as string,
-    //     data: {id: "f", name: "fff"},
-    //     guild_id: interaction.guildID as string,
-    //     id: "f",
-    //     member: interaction.member as CommandMember,
-    //     token: "f",
-    //     version: 1,
-    //     type: InteractionType.COMMAND
-    // }
-    // const ctx = new CommandContext(interactions, data, async () => { /** */ }, false);
-    // const ectx = await extendContext(ctx, interaction.client, null as any);
-    // // Hooks into !jail to jail user
-    // ectx.runCommand(jail.Executor, {
-    //     user: member.user.id,
-    //     explanation: "[Autojail] You were automatically jailed for receiving multiple warnings."
-    // });
+
+    // Automatically run the jail command on the user
+    JailCommand.run(ctx, {
+        user: member.id,
+        explanation: "[AUTO-JAIL] This user collected 3 recent warnings and has been automatically jailed"
+    });
 }
+
+export default command;

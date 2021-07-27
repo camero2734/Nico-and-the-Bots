@@ -7,7 +7,7 @@ type IDsMapped<IDs extends Readonly<string[]>> = {
     [Index in keyof IDs]: IDs[Index] extends string ? `eph&${IDs[Index]}${string}` : never;
 };
 
-export class EphemeralInteractionListener<IDs extends Readonly<string[]>> {
+export class TimedInteractionListener<IDs extends Readonly<string[]>> {
     customIDs: IDsMapped<IDs>;
     constructor(private ctx: ExtendedInteraction | Message, private names: IDs) {
         this.customIDs = names.map((n) => {
@@ -15,10 +15,10 @@ export class EphemeralInteractionListener<IDs extends Readonly<string[]>> {
             return `eph&${n}${hash}`;
         }) as any;
     }
-    async wait(): Promise<IDsMapped<IDs>[number] | null> {
+    async wait(timeOutMs = 30000): Promise<IDsMapped<IDs>[number] | null> {
         const promises = this.customIDs.map((customID) => {
             return new Promise<string | null>((resolve) => {
-                const timeout = setTimeout(() => resolve(null), 120 * 1000);
+                const timeout = setTimeout(() => resolve(null), timeOutMs);
 
                 const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID; // prettier-ignore
                 const collector = this.ctx.channel.createMessageComponentCollector({ filter });

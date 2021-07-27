@@ -3,7 +3,7 @@ import { CommandError } from "configuration/definitions";
 import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
-import { EphemeralInteractionListener } from "../../helpers/ephemeral-interaction-listener";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
@@ -81,8 +81,8 @@ command.setHandler(async (ctx) => {
         .addField("URL", url)
         .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
 
-    const ephemeralListener = new EphemeralInteractionListener(ctx, <const>["msYes"]);
-    const [yesId] = ephemeralListener.customIDs;
+    const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
+    const [yesId] = timedListener.customIDs;
 
     const actionRow = new MessageActionRow().addComponents([
         new MessageButton({ style: "SUCCESS", label: "Submit", customId: yesId })
@@ -90,7 +90,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({ embeds: [embed.toJSON()], components: [actionRow] });
 
-    const buttonPressed = await ephemeralListener.wait();
+    const buttonPressed = await timedListener.wait();
     if (buttonPressed !== yesId) {
         await ctx.editReply({
             embeds: [new MessageEmbed({ description: "Submission cancelled." })],

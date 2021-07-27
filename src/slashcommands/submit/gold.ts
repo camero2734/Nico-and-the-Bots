@@ -11,7 +11,7 @@ import {
     TextChannel,
     User
 } from "discord.js";
-import { EphemeralInteractionListener } from "../../helpers/ephemeral-interaction-listener";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
@@ -59,8 +59,8 @@ async function askToSendGold(reaction: MessageReaction, user: User): Promise<voi
         embeds: [new MessageEmbed({ description: "THE COUNCIL IS REVIEWING YOUR GOLD REQUEST" })]
     });
 
-    const ephemeralListener = new EphemeralInteractionListener(m, <const>["yes"]);
-    const [yesId] = ephemeralListener.customIDs;
+    const timedListener = new TimedInteractionListener(m, <const>["yes"]);
+    const [yesId] = timedListener.customIDs;
 
     const actionRow = new MessageActionRow();
     actionRow.addComponents([
@@ -78,7 +78,7 @@ async function askToSendGold(reaction: MessageReaction, user: User): Promise<voi
         components: [actionRow]
     });
 
-    const result = await ephemeralListener.wait();
+    const result = await timedListener.wait();
 
     if (result !== yesId) {
         m.edit({

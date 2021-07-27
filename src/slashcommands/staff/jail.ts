@@ -115,6 +115,8 @@ command.setHandler(async (ctx) => {
 
     if (explanation) jailEmbed.addField("Initial explanation", explanation);
 
+    jailEmbed.addField("Jailed", F.discordTimestamp(new Date(), "relative"));
+
     const jailActionRow = new MessageActionRow().addComponents([
         new MessageButton({
             style: "SECONDARY",

@@ -16,16 +16,17 @@ const command = new SlashCommand(<const>{
         { name: "user", description: "The user to warn", required: true, type: "USER" },
         {
             name: "rule",
-            description: "The rule broken. Must be one of {B, D, S, N, O} (you can write it out too)",
+            description: "The rule broken",
             required: true,
             type: "STRING",
             choices: rules.map((name) => ({ name, value: name }))
         },
         {
             name: "severity",
-            description: "The severity of the warning. Must be between 1 and 10 (inclusive)",
+            description: "The severity of the warning",
             required: true,
-            type: "INTEGER"
+            type: "INTEGER",
+            choices: (<const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map((n) => <const>{ name: `${n}`, value: n })
         },
         {
             name: "explanation",
@@ -92,7 +93,7 @@ command.setHandler(async (ctx) => {
     });
 
     confirmationEmbed.setTitle("Warning submitted.");
-    await ctx.editReply({ embeds: [confirmationEmbed], components: [] });
+    await ctx.followUp({ embeds: [confirmationEmbed], components: [] });
 
     // DM warned user
     try {

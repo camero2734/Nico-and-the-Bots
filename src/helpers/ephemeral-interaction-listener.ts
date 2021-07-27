@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CollectorFilter, MessageComponentInteraction } from "discord.js";
+import { CollectorFilter, Message, MessageComponentInteraction } from "discord.js";
 import F from "./funcs";
 import { ExtendedInteraction } from "./slash-command";
 
@@ -9,9 +9,9 @@ type IDsMapped<IDs extends Readonly<string[]>> = {
 
 export class EphemeralInteractionListener<IDs extends Readonly<string[]>> {
     customIDs: IDsMapped<IDs>;
-    constructor(private ctx: ExtendedInteraction, private names: IDs) {
+    constructor(private ctx: ExtendedInteraction | Message, private names: IDs) {
         this.customIDs = names.map((n) => {
-            const hash = F.hash(names.join(",") + ctx.id + ctx.user.id).slice(0, 10);
+            const hash = F.hash(names.join(",") + ctx.id + ctx.member?.id).slice(0, 10);
             return `eph&${n}${hash}`;
         }) as any;
     }

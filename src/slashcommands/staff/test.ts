@@ -6,6 +6,7 @@ import {
     InteractionRequestData,
     InteractionType
 } from "slash-create";
+import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 import * as jail from "./jail";
 
@@ -22,9 +23,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer({ ephemeral: true });
-
-    throw new CommandError("Test");
+    //
 });
 
 export default command;

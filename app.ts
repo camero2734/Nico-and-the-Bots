@@ -14,7 +14,13 @@ import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
-import { InteractionListener, RequiredDiscordValues, SlashCommand } from "./src/helpers/slash-command";
+import {
+    ErrorHandler,
+    InteractionListener,
+    ReactionListener,
+    RequiredDiscordValues,
+    SlashCommand
+} from "./src/helpers/slash-command";
 
 // let ready = false;
 let connection: Connection;
@@ -42,8 +48,6 @@ const keonsBot = new KeonsBot();
 let topfeedBot: TopfeedBot;
 let sacarverBot: SacarverBot;
 
-const reactionHandlers: CommandReactionHandler[] = [];
-// const interactionHandlers: CommandComponentListener[] = [];
 extendPrototypes();
 
 client.login(secrets.bots.nico);
@@ -52,13 +56,14 @@ console.log("Script started");
 
 let slashCommands = new Collection<string, SlashCommand<[]>>();
 let interactionHandlers = new Collection<string, InteractionListener>();
+let reactionHandlers = new Collection<string, ReactionListener>();
 
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
     const guild = await client.guilds.fetch(guildID);
 
-    [slashCommands, interactionHandlers] = await setupAllCommands(guild);
+    [slashCommands, interactionHandlers, reactionHandlers] = await setupAllCommands(guild);
 
     // Initialize everything
     await Promise.all([
@@ -104,9 +109,29 @@ client.on("messageCreate", async (msg: Discord.Message) => {
     updateUserScore(msg); // Add to score
 });
 
+client.on("messageReactionAdd", async (reaction, user) => {
+    const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
+    const fullUser = user.partial ? await user.fetch() : user;
+
+    for (const [name, handler] of reactionHandlers.entries()) {
+        const wasSuccessful = await handler(fullReaction, fullUser, async (promise) => {
+            try {
+                await promise;
+            } catch (e) {
+                const m = await fullUser.createDM();
+                ErrorHandler(m, e);
+            }
+        });
+        if (wasSuccessful) {
+            console.log(`[Reaction] ${name}`);
+            return;
+        }
+    }
+});
+
 // client.on("messageReactionAdd", async (reaction, user) => {
-//     const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
-//     const fullUser = user.partial ? await user.fetch() : user;
+// const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
+// const fullUser = user.partial ? await user.fetch() : user;
 //     for (const reactionHandler of reactionHandlers) {
 //         // If a command's handler returns true, it handled the reaction; no need to continue
 //         const retVal = await reactionHandler({ reaction: fullReaction, user: fullUser, connection, interactions });

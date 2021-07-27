@@ -84,7 +84,7 @@ export class SacarverBot {
     async welcomeMember(member: GuildMember): Promise<void> {
         const welcomeChan = member.guild.channels.cache.get(channelIDs.welcometest) as TextChannel;
 
-        await member.roles.add(roles.banditos);
+        // await member.roles.add(roles.banditos);
 
         const memberNum = await this.getMemberNumber(member);
         console.log(`Member #${memberNum} joined`);

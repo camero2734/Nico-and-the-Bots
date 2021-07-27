@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     CommandInteractionOption,
+    DMChannel,
     Guild,
     GuildMember,
     MessageActionRow,
     MessageButton,
     MessageEmbed,
-    TextChannel
+    MessageReaction,
+    TextChannel,
+    User
 } from "discord.js";
 import {
     ApplicationCommandData,
@@ -62,10 +65,37 @@ export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
 ) => Promise<void>;
 
 export type InteractionListener = { handler: ListenerCustomIdGenerator<any>; pattern: CustomIDPattern<any> };
+export type ReactionListener = (
+    reaction: MessageReaction,
+    user: User,
+    // Catches any errors that occur
+    safeExecute: (promise: Promise<void>) => Promise<void>
+) => Promise<boolean>;
+
+export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel, e: unknown) => {
+    if (e instanceof CommandError) {
+        const embed = new MessageEmbed()
+            .setDescription(e.message)
+            .setTitle("An error occurred!")
+            .setFooter("DEMA internet machine broke");
+        ctx.send({
+            embeds: [embed],
+            ephemeral: e.sendEphemeral,
+            allowedMentions: { users: [], roles: [] }
+        });
+    } else {
+        console.log(e);
+        const embed = new MessageEmbed()
+            .setTitle("An unknown error occurred!")
+            .setFooter("DEMA internet machine really broke");
+        ctx.send({ embeds: [embed] });
+    }
+};
 
 export class SlashCommand<T extends CommandOptions = []> {
     #handler: SlashCommandHandler<T>;
     public interactionListeners = new Collection<string, InteractionListener>();
+    public reactionListeners = new Collection<string, ReactionListener>();
     public commandIdentifier: string;
     constructor(public commandData: SlashCommandData<T>) {}
     setHandler(handler: SlashCommandHandler<T>): this {
@@ -83,23 +113,7 @@ export class SlashCommand<T extends CommandOptions = []> {
         try {
             await this.#handler(ctx);
         } catch (e) {
-            if (e instanceof CommandError) {
-                const embed = new MessageEmbed()
-                    .setDescription(e.message)
-                    .setTitle("An error occurred!")
-                    .setFooter("DEMA internet machine broke");
-                ctx.send({
-                    embeds: [embed],
-                    ephemeral: e.sendEphemeral,
-                    allowedMentions: { users: [], roles: [] }
-                });
-            } else {
-                console.log(e);
-                const embed = new MessageEmbed()
-                    .setTitle("An unknown error occurred!")
-                    .setFooter("DEMA internet machine really broke");
-                ctx.send({ embeds: [embed] });
-            }
+            ErrorHandler(ctx, e);
         }
     }
     addInteractionListener<T extends Readonly<string[]> = any>(
@@ -118,14 +132,15 @@ export class SlashCommand<T extends CommandOptions = []> {
             return [encodedName, ...values].join(pattern.delimiter);
         };
     }
+    addReactionListener(name: string, handler: ReactionListener): void {
+        this.reactionListeners.set(name, handler);
+    }
     getMutableCommandData(): ApplicationCommandData {
         return R.clone(this.commandData) as unknown as ApplicationCommandData;
     }
     upvoteDownVoteListener(name: string) {
         const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
             if (!ctx.isButton()) return;
-
-            await ctx.deferUpdate();
 
             const isUpvote = args.isUpvote === "1" ? 1 : 0;
             const pollId = +args.pollID;
@@ -178,9 +193,13 @@ export class SlashCommand<T extends CommandOptions = []> {
             await msg.edit({ components: [actionRow] });
         });
 
-        const createActionRow = async (ctx: ExtendedInteraction, title?: string) => {
+        const createActionRow = async (ctx: ExtendedInteraction | Message, title?: string) => {
             const poll = await prisma.poll.create({
-                data: { userId: ctx.user.id, name: title || `${name}-${Date.now()}`, options: ["downvote", "upvote"] }
+                data: {
+                    userId: ctx.member?.id,
+                    name: title || `${name}-${Date.now()}`,
+                    options: ["downvote", "upvote"]
+                }
             });
             return new MessageActionRow().addComponents([
                 new MessageButton({

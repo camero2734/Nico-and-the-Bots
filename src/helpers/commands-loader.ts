@@ -6,7 +6,13 @@
  * so the max nest level is 3
  */
 
-import { InteractionListener, ListenerCustomIdGenerator, SlashCommand, SlashCommandData } from "./slash-command";
+import {
+    InteractionListener,
+    ListenerCustomIdGenerator,
+    ReactionListener,
+    SlashCommand,
+    SlashCommandData
+} from "./slash-command";
 import { join, resolve, sep } from "path";
 import * as fs from "fs";
 import { ApplicationCommandData, Guild } from "discord.js";
@@ -139,7 +145,13 @@ async function generateCommandData(parsedFile: ParsedFile): Promise<[Application
 // Step 3: Wrap it all up
 export async function setupAllCommands(
     guild: Guild
-): Promise<[Collection<string, SlashCommand<[]>>, Collection<string, InteractionListener>]> {
+): Promise<
+    [
+        Collection<string, SlashCommand<[]>>,
+        Collection<string, InteractionListener>,
+        Collection<string, ReactionListener>
+    ]
+> {
     const parsedFiles = await parseCommandFolderStructure();
     const dataFromCommands: ApplicationCommandData[] = [];
     const allSlashCommands: SlashCommand[] = [];
@@ -155,10 +167,12 @@ export async function setupAllCommands(
 
     const slashCommandCollection = new Collection<string, SlashCommand>();
     let intListenerCollection = new Collection<string, InteractionListener>();
+    let reactionListenerCollection = new Collection<string, ReactionListener>();
 
     for (const slashCommand of allSlashCommands) {
         slashCommandCollection.set(slashCommand.commandIdentifier, slashCommand);
         intListenerCollection = intListenerCollection.concat(slashCommand.interactionListeners);
+        reactionListenerCollection = reactionListenerCollection.concat(slashCommand.reactionListeners);
     }
 
     const fullPermissions: GuildApplicationCommandPermissionData[] = savedData.map((s) => ({
@@ -174,5 +188,5 @@ export async function setupAllCommands(
 
     await guild.commands.permissions.set({ fullPermissions });
 
-    return [slashCommandCollection, intListenerCollection];
+    return [slashCommandCollection, intListenerCollection, reactionListenerCollection];
 }

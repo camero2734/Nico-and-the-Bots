@@ -1,13 +1,19 @@
 import { CommandError } from "configuration/definitions";
-import { FM } from "database/entities/FM";
-import { MessageActionRow, MessageButton, MessageEmbed, Snowflake } from "discord.js";
+import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../configuration/config";
 import { GeniusClient } from "../../helpers/apis/genius";
 import { SpotifyClient } from "../../helpers/apis/spotify";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
-import { AlbumResponse, ArtistResponse, createFMMethod, RecentTracksResponse, TrackResponse } from "./_consts";
+import {
+    AlbumResponse,
+    ArtistResponse,
+    createFMMethod,
+    getFMUsername,
+    RecentTracksResponse,
+    TrackResponse
+} from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
@@ -19,21 +25,7 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     const selfFM = !ctx.opts.username && !ctx.opts.user;
-    const username = await (async (): Promise<string> => {
-        if (ctx.opts.username) {
-            // A specific username
-            return ctx.opts.username;
-        } else {
-            const userId = ctx.opts.user || ctx.user.id;
-
-            // Mentioned another user
-            const fm = await prisma.userLastFM.findUnique({ where: { userId } });
-            if (!fm) {
-                const whose = ctx.opts.user ? "The mentioned user's'" : "Your";
-                throw new CommandError(`${whose} Last.FM username isn't connected!`);
-            } else return fm.username;
-        }
-    })();
+    const username = await getFMUsername(ctx.opts.username, ctx.opts.user, ctx.member);
 
     const getFMURL = createFMMethod(username);
 
@@ -93,26 +85,37 @@ command.setHandler(async (ctx) => {
     const artistField = `${artistName}\n[${artistCount} play${artistCount === 1 ? "" : "s"}](${us_pl(artistURL)})`;
 
     const thumbnail =
-        track.image ||
+        track.image?.replace("/34s/", "/300x300/") ||
         "http://orig14.deviantart.net/5162/f/2014/153/9/e/no_album_art__no_cover___placeholder_picture_by_cmdrobot-d7kpm65.jpg";
 
-    const embed = new MessageEmbed().setColor("RANDOM");
-    embed.setTitle(`${username}'s FM`);
-    embed.addField("Track", trackField, true);
-    embed.addField("Album", albumField, true);
-    embed.addField("Artist", artistField, true);
-    embed.setThumbnail(thumbnail);
+    console.log(thumbnail);
 
-    embed.setFooter(track.date);
-    embed.setAuthor(
-        `${total} total scrobbles`,
-        "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",
-        `https://www.last.fm/user/${username}`
-    );
+    const embed = new MessageEmbed()
+        .setColor("#FF0000")
+        .setTitle(`${username}'s FM`)
+        .addField("Track", trackField, true)
+        .addField("Album", albumField, true)
+        .addField("Artist", artistField, true)
+        .setThumbnail(thumbnail)
+        .setFooter(track.date)
+        .setAuthor(
+            `${total} total scrobbles`,
+            "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",
+            `https://www.last.fm/user/${username}`
+        );
 
-    const starActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ emoji: "⭐", label: "0", style: "SECONDARY", customId: "#&$_TBD" })
-    ]);
+    const starActionRow = new MessageActionRow();
+
+    // Add star button if own FM
+    if (selfFM) {
+        const starButton = new MessageButton({
+            emoji: "⭐",
+            label: "0",
+            style: "SECONDARY",
+            customId: genStarId({ fmStarId: "" })
+        });
+        starActionRow.addComponents(starButton);
+    }
 
     // Get Spotify and Genius links
     const spotifyResults = await SpotifyClient.searchTracks(`track:${trackName} artist:${artistName}`, { limit: 1 });
@@ -139,32 +142,10 @@ command.setHandler(async (ctx) => {
     }
 
     await ctx.send({ embeds: [embed], components: [starActionRow] });
+});
 
-    // if (!selfFM || typeof embed_res === "boolean") return;
-    // const fm_m = await ctx.channel.messages.fetch(embed_res.id as Snowflake);
-
-    // Don't react if recently scrobbled same song
-    // const TIME_LIMIT = 10; // Minutes
-    // const recentlyScrobbled = await connection.getRepository(FM).find({
-    //     userid: ctx.user.id,
-    //     track: track.name,
-    //     album: track.album,
-    //     artist: track.artist,
-    //     time: MoreThan(Date.now() - TIME_LIMIT * 60 * 1000)
-    // });
-    // if (recentlyScrobbled && recentlyScrobbled.length > 0) return;
-
-    // React and save to database
-    // await fm_m.react(FM_REACT);
-    // const fm_item = new FM({
-    //     userid: ctx.user.id,
-    //     message_id: fm_m.id,
-    //     track: track.name,
-    //     album: track.album,
-    //     artist: track.artist,
-    //     stars: 0
-    // });
-    // await connection.manager.save(fm_item);
+const genStarId = command.addInteractionListener("fmStarInt", <const>["fmStarId"], async (ctx, args) => {
+    //
 });
 
 export default command;

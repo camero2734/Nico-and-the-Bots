@@ -1,29 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    CommandInteractionOption,
-    DMChannel,
-    Guild,
-    GuildMember,
-    MessageActionRow,
-    MessageButton,
-    MessageEmbed,
-    MessageReaction,
-    TextChannel,
-    User
-} from "discord.js";
-import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
     ApplicationCommandOptionData,
     ButtonInteraction,
     Collection,
     CommandInteraction,
-    Interaction,
+    CommandInteractionOption,
+    DMChannel,
+    Guild,
+    GuildMember,
     Message,
+    MessageActionRow,
+    MessageButton,
     MessageComponentInteraction,
+    MessageEmbed,
     MessageOptions,
+    MessageReaction,
     SelectMenuInteraction,
-    Snowflake
+    Snowflake,
+    TextChannel,
+    User
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../configuration/config";

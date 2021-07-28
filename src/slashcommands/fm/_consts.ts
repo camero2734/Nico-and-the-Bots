@@ -1,4 +1,7 @@
 import * as secrets from "configuration/secrets.json";
+import { GuildMember } from "discord.js";
+import { CommandError } from "../../configuration/definitions";
+import { prisma } from "../../helpers/prisma-init";
 
 export class Album {
     artist: string;
@@ -23,6 +26,22 @@ export const createFMMethod = (username: string) => {
 
         return `${base}${opts}`;
     };
+};
+
+export const getFMUsername = async (
+    username: string | undefined,
+    mentionedId: string | undefined,
+    usingMember: GuildMember
+): Promise<string> => {
+    if (username) return username;
+
+    const userId = mentionedId || usingMember.id;
+    // Mentioned another user
+    const fm = await prisma.userLastFM.findUnique({ where: { userId } });
+    if (!fm) {
+        const whose = mentionedId ? "The mentioned user's'" : "Your";
+        throw new CommandError(`${whose} Last.FM username isn't connected!`);
+    } else return fm.username;
 };
 
 interface TrackDate {

@@ -37,6 +37,7 @@ model User {
 
   // Relations
   dailyBox            DailyBox?
+  lastFM              UserLastFM?
   tags                Tag[]
   messageHistory      MessageHistory[]
   perks               Perk[]
@@ -174,4 +175,14 @@ model SubmittedInterview {
 model TemporaryText {
   id    Int    @id @default(autoincrement())
   value String
+}
+
+model UserLastFM {
+  username String @id
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  createdAt   DateTime @default(now())
+  lastUpdated DateTime @updatedAt
 }

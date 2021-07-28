@@ -94,7 +94,9 @@ export const userIDs = <const>{
 export const emojiIDs = <const>{
     gold: "389216023141941249",
     upvote: "850586748765077514",
-    downvote: "850586787805265990"
+    downvote: "850586787805265990",
+    spotify: "869731229853970432",
+    genius: "869733049347211374"
 };
 
 export const roles = <const>{

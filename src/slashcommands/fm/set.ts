@@ -1,24 +1,22 @@
-import { CommandOptionType } from "slash-create";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Message, MessageEmbed, TextChannel } from "discord.js";
-import { Item } from "database/entities/Item";
-import { MessageTools } from "helpers";
+import { CommandError } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
+import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import { RecentTracksResponse } from "./_consts";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Sets your lastfm username for use with other /fm commands",
-    options: [
-        { name: "username", description: "Your username on last.fm", required: true, type: CommandOptionType.STRING }
-    ]
-};
+    options: [{ name: "username", description: "Your username on last.fm", required: true, type: "STRING" }]
+});
 
-export const Executor: CommandRunner<{ username: string }> = async (ctx) => {
-    const options = ctx.opts;
-    const { client, connection } = ctx;
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
-    if (!options.username) {
+    const fmUsername = ctx.opts.username;
+    if (!fmUsername) {
         // prettier-ignore
         const instructions =  
             `**To set up your fm account:**
@@ -33,66 +31,67 @@ export const Executor: CommandRunner<{ username: string }> = async (ctx) => {
             \`\`\`
 
             \`4.\` The \`/fm now\` command should now work properly and display what you are currently listening to!`.replace(/^ +/gm,"");
-        await ctx.embed(new MessageEmbed({ description: instructions, color: "RANDOM" }));
+        await ctx.send({
+            embeds: [new MessageEmbed({ description: instructions, color: "RANDOM" })]
+        });
         return;
-    } else {
-        let userItem = await connection.getRepository(Item).findOne({ identifier: ctx.user.id, type: "FM" });
-        if (!userItem) userItem = new Item({ identifier: ctx.user.id, title: "", type: "FM", time: Date.now() });
-        userItem.time = Date.now();
-        userItem.title = options.username;
-
-        const lastTrack = await getMostRecentTrack(options.username);
-        const avatar = ctx.user.dynamicAvatarURL("png");
-
-        let trackEmbed = new MessageEmbed()
-            .setAuthor(options.username, avatar, `https://www.last.fm/user/${options.username}`)
-            .setTitle(`You have not scrobbled any songs yet. Is this your profile?`)
-            .setDescription(
-                `Please ensure you are linking the correct profile by going here\n**-->** https://www.last.fm/user/${options.username}\n\nThis should link to **your** last.fm profile.`
-            )
-            .setFooter("Respond with yes or no");
-
-        if (lastTrack?.name) {
-            trackEmbed = new MessageEmbed()
-                .setAuthor(options.username, avatar, `https://www.last.fm/user/${options.username}`)
-                .setTitle("This is your most recently scrobbled song. Does this look correct?")
-                .addField("Track", lastTrack.name, true)
-                .addField("Artist", lastTrack.artist, true)
-                .addField("Album", lastTrack.album, true)
-                .addField("Time", lastTrack.date, true)
-                .setThumbnail(lastTrack.image)
-                .setFooter("Respond with yes or no");
-        }
-
-        await ctx.embed(trackEmbed);
-
-        const channel = client.guilds.cache.get(ctx.guildID || "")?.channels.cache.get(ctx.channelID) as TextChannel;
-
-        let response: Message;
-        try {
-            const res = await MessageTools.awaitMessage(ctx.user.id, channel, 60 * 1000);
-            if (!res?.content) throw new Error("No message content");
-            response = res;
-        } catch (e) {
-            throw new CommandError(`You didn't reply soon enough, use \`/fm set\` again`);
-        }
-
-        if (response.content.toLowerCase() === "yes") {
-            await connection.manager.save(userItem);
-            ctx.embed(
-                new MessageEmbed()
-                    .setDescription(`Succesfully updated your FM username to \`${userItem.title}\``)
-                    .setColor("RANDOM")
-            );
-        } else {
-            ctx.embed(
-                new MessageEmbed()
-                    .setDescription("Okay, try using `/fm set` again to set the correct username.")
-                    .setColor("RANDOM")
-            );
-            return;
-        }
     }
+
+    const existingUserItem = await prisma.userLastFM.findUnique({ where: { username: fmUsername } });
+
+    if (existingUserItem) throw new CommandError(`Someone already connected the last.FM user \`${fmUsername}\``);
+
+    const lastTrack = await getMostRecentTrack(ctx.opts.username);
+    const avatar = ctx.user.displayAvatarURL();
+
+    let trackEmbed = new MessageEmbed()
+        .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
+        .setTitle(`You have not scrobbled any songs yet. Is this your profile?`)
+        .setDescription(
+            `Please ensure you are linking the correct profile by going here\n**-->** https://www.last.fm/user/${fmUsername}\n\nThis should link to **your** last.fm profile.`
+        )
+        .setFooter("Respond with yes or no");
+
+    if (lastTrack?.name) {
+        trackEmbed = new MessageEmbed()
+            .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
+            .setTitle("This is your most recently scrobbled song. Does this look correct?")
+            .addField("Track", lastTrack.name, true)
+            .addField("Artist", lastTrack.artist, true)
+            .addField("Album", lastTrack.album, true)
+            .addField("Time", lastTrack.date, true)
+            .setThumbnail(lastTrack.image)
+            .setFooter("Press one of the buttons below to respond");
+    }
+
+    const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
+    const [yesId, noId] = timedListener.customIDs;
+
+    const actionRow = new MessageActionRow().addComponents([
+        new MessageButton({ label: "Yes", style: "SUCCESS", customId: yesId }),
+        new MessageButton({ label: "No", style: "DANGER", customId: noId })
+    ]);
+
+    await ctx.send({ embeds: [trackEmbed], components: [actionRow] });
+
+    const buttonPressed = await timedListener.wait();
+
+    if (buttonPressed !== yesId) {
+        const failEmbed = new MessageEmbed({ description: "Setting FM username cancelled." });
+        await ctx.editReply({ embeds: [failEmbed], components: [] });
+        return;
+    }
+
+    await prisma.userLastFM.upsert({
+        where: { userId: ctx.user.id },
+        create: { userId: ctx.user.id, username: fmUsername },
+        update: { username: fmUsername }
+    });
+
+    await ctx.send({
+        embeds: [new MessageEmbed({ description: `Succesfully updated your FM username to \`${fmUsername}\`` })],
+        components: []
+    });
 
     async function getMostRecentTrack(username: string) {
         try {
@@ -112,4 +111,6 @@ export const Executor: CommandRunner<{ username: string }> = async (ctx) => {
             return null;
         }
     }
-};
+});
+
+export default command;

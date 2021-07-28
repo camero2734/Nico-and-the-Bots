@@ -1,45 +1,37 @@
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandError } from "configuration/definitions";
 import { FM } from "database/entities/FM";
-import { Item } from "database/entities/Item";
-import { MessageEmbed, Snowflake } from "discord.js";
+import { MessageActionRow, MessageButton, MessageEmbed, Snowflake } from "discord.js";
 import fetch from "node-fetch";
-import { CommandOptionType } from "slash-create";
-import { MoreThan } from "typeorm";
+import { emojiIDs } from "../../configuration/config";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 import { AlbumResponse, ArtistResponse, createFMMethod, RecentTracksResponse, TrackResponse } from "./_consts";
 
-const FM_REACT = "⭐";
-
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
     options: [
-        { name: "username", description: "This is a test option", required: false, type: CommandOptionType.STRING },
-        { name: "user", description: "The user in the server to lookup", required: false, type: CommandOptionType.USER }
+        { name: "user", description: "The user in the server to lookup", required: false, type: "USER" },
+        { name: "username", description: "The Last.FM username to lookup", required: false, type: "STRING" }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ username?: string; user?: string }> = async (ctx) => {
-    const options = ctx.opts;
-    const { connection } = ctx;
+command.setHandler(async (ctx) => {
+    const selfFM = !ctx.opts.username && !ctx.opts.user;
+    const username = await (async (): Promise<string> => {
+        if (ctx.opts.username) {
+            // A specific username
+            return ctx.opts.username;
+        } else {
+            const userId = ctx.opts.user || ctx.user.id;
 
-    let username: string;
-    let selfFM = false;
-
-    if (options.user) {
-        // Mentioned
-        const mentionedItem = await connection.getRepository(Item).findOne({ identifier: options.user, type: "FM" });
-        if (!mentionedItem) throw new CommandError("The mentioned user does not have their FM set up!");
-        else username = mentionedItem.title;
-    } else if (options.username) {
-        // Provided username
-        username = options.username;
-    } else {
-        // Own (default)
-        const mentionedItem = await connection.getRepository(Item).findOne({ identifier: ctx.user.id, type: "FM" });
-        if (!mentionedItem)
-            throw new CommandError("You do not have your FM set up! Use the `/fm set` command to do so.");
-        else username = mentionedItem.title;
-        selfFM = true;
-    }
+            // Mentioned another user
+            const fm = await prisma.userLastFM.findUnique({ where: { userId } });
+            if (!fm) {
+                const whose = ctx.opts.user ? "The mentioned user's'" : "Your";
+                throw new CommandError(`${whose} Last.FM username isn't connected!`);
+            } else return fm.username;
+        }
+    })();
 
     const getFMURL = createFMMethod(username);
 
@@ -49,8 +41,9 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
     const info = response.recenttracks;
     const total = info?.["@attr"].total;
 
-    if (!total)
+    if (!total) {
         throw new CommandError(`Unable to get your recent tracks. Are you sure your username ${username} is correct?`);
+    }
 
     const track = {
         album: info.track[0].album["#text"],
@@ -115,31 +108,39 @@ export const Executor: CommandRunner<{ username?: string; user?: string }> = asy
         `https://www.last.fm/user/${username}`
     );
 
-    const embed_res = await ctx.embed(embed);
+    const starActionRow = new MessageActionRow().addComponents([
+        new MessageButton({ emoji: "⭐", label: "0", style: "SECONDARY", customId: "#&$_TBD" }),
+        new MessageButton({ emoji: emojiIDs.spotify, label: "Listen", style: "LINK", url: "https://spotify.com" }),
+        new MessageButton({ emoji: emojiIDs.genius, label: "Lyrics", style: "LINK", url: "https://genius.com" })
+    ]);
 
-    if (!selfFM || typeof embed_res === "boolean") return;
-    const fm_m = await ctx.channel.messages.fetch(embed_res.id as Snowflake);
+    await ctx.send({ embeds: [embed], components: [starActionRow] });
+
+    // if (!selfFM || typeof embed_res === "boolean") return;
+    // const fm_m = await ctx.channel.messages.fetch(embed_res.id as Snowflake);
 
     // Don't react if recently scrobbled same song
-    const TIME_LIMIT = 10; // Minutes
-    const recentlyScrobbled = await connection.getRepository(FM).find({
-        userid: ctx.user.id,
-        track: track.name,
-        album: track.album,
-        artist: track.artist,
-        time: MoreThan(Date.now() - TIME_LIMIT * 60 * 1000)
-    });
-    if (recentlyScrobbled && recentlyScrobbled.length > 0) return;
+    // const TIME_LIMIT = 10; // Minutes
+    // const recentlyScrobbled = await connection.getRepository(FM).find({
+    //     userid: ctx.user.id,
+    //     track: track.name,
+    //     album: track.album,
+    //     artist: track.artist,
+    //     time: MoreThan(Date.now() - TIME_LIMIT * 60 * 1000)
+    // });
+    // if (recentlyScrobbled && recentlyScrobbled.length > 0) return;
 
     // React and save to database
-    await fm_m.react(FM_REACT);
-    const fm_item = new FM({
-        userid: ctx.user.id,
-        message_id: fm_m.id,
-        track: track.name,
-        album: track.album,
-        artist: track.artist,
-        stars: 0
-    });
-    await connection.manager.save(fm_item);
-};
+    // await fm_m.react(FM_REACT);
+    // const fm_item = new FM({
+    //     userid: ctx.user.id,
+    //     message_id: fm_m.id,
+    //     track: track.name,
+    //     album: track.album,
+    //     artist: track.artist,
+    //     stars: 0
+    // });
+    // await connection.manager.save(fm_item);
+});
+
+export default command;

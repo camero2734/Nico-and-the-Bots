@@ -1,15 +1,13 @@
-import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
+import F from "../../helpers/funcs";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Dusts off the old 8-ball and gives you an answer to your most burning yes/no questions",
-    options: [
-        { name: "question", description: "What you want to ask Nico", required: true, type: CommandOptionType.STRING }
-    ]
-};
+    options: [{ name: "question", description: "What you want to ask Nico", required: true, type: "STRING" }]
+});
 
-export const Executor: CommandRunner<{ question: string }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     await ctx.defer();
     const responses = [
         "Yes",
@@ -29,11 +27,13 @@ export const Executor: CommandRunner<{ question: string }> = async (ctx) => {
 
     const embed = new MessageEmbed();
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await F.wait(2000);
 
-    embed.setAuthor(ctx.member?.displayName, ctx.user.dynamicAvatarURL("png"));
+    embed.setAuthor(ctx.member?.displayName, ctx.user.displayAvatarURL());
     embed.setTitle(ctx.opts.question);
     embed.setDescription(`**The Wise Nico Says:** ${response}`);
 
-    await ctx.embed(embed);
-};
+    await ctx.send({ embeds: [embed] });
+});
+
+export default command;

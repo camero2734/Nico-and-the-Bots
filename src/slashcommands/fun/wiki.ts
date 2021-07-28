@@ -3,11 +3,7 @@ import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
 import WikiJS from "wikijs";
 import F from "../../helpers/funcs";
-
-export const Options = createOptions(<const>{
-    description: "Grabs the summary of something from Wikipedia",
-    options: [{ name: "search", description: "The term to search for", required: true, type: CommandOptionType.STRING }]
-});
+import { SlashCommand } from "../../helpers/slash-command";
 
 const wikipediaLogo =
     "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/440px-Wikipedia-logo-v2.svg.png";
@@ -19,7 +15,15 @@ const wiki = WikiJS({
     }
 });
 
-export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
+const command = new SlashCommand(<const>{
+    description: "Grabs the summary of something from Wikipedia",
+    options: [
+        { name: "search", description: "The term to search for", required: true, type: "STRING" },
+        { name: "full", description: "Includes more information from the page", required: false, type: "BOOLEAN" }
+    ]
+});
+
+command.setHandler(async (ctx) => {
     await ctx.defer();
 
     let condensedSummary: string | undefined;
@@ -48,10 +52,14 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
         .setColor("#AAACAE")
         .setDescription(condensedSummary);
 
-    for (const field of fields.slice(0, 10)) {
-        const content = field.content || "*No content*";
-        embed.addField(field.title, F.truncate(content, 200));
+    if (ctx.opts.full) {
+        for (const field of fields.slice(0, 10)) {
+            const content = field.content || "*No content*";
+            embed.addField(field.title, F.truncate(content, 200));
+        }
     }
 
-    await ctx.send({ embeds: [embed.toJSON()] });
-};
+    await ctx.send({ embeds: [embed] });
+});
+
+export default command;

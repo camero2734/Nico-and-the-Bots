@@ -3,6 +3,8 @@ import { FM } from "database/entities/FM";
 import { MessageActionRow, MessageButton, MessageEmbed, Snowflake } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../configuration/config";
+import { GeniusClient } from "../../helpers/apis/genius";
+import { SpotifyClient } from "../../helpers/apis/spotify";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 import { AlbumResponse, ArtistResponse, createFMMethod, RecentTracksResponse, TrackResponse } from "./_consts";
@@ -109,10 +111,32 @@ command.setHandler(async (ctx) => {
     );
 
     const starActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ emoji: "⭐", label: "0", style: "SECONDARY", customId: "#&$_TBD" }),
-        new MessageButton({ emoji: emojiIDs.spotify, label: "Listen", style: "LINK", url: "https://spotify.com" }),
-        new MessageButton({ emoji: emojiIDs.genius, label: "Lyrics", style: "LINK", url: "https://genius.com" })
+        new MessageButton({ emoji: "⭐", label: "0", style: "SECONDARY", customId: "#&$_TBD" })
     ]);
+
+    // Get Spotify and Genius links
+    const spotifyResults = await SpotifyClient.searchTracks(`track:${trackName} artist:${artistName}`, { limit: 1 });
+    const trackUrl = spotifyResults.body.tracks?.items?.[0]?.external_urls.spotify;
+    if (trackUrl) {
+        const spotifyButton = new MessageButton({
+            emoji: emojiIDs.spotify,
+            label: "Listen",
+            style: "LINK",
+            url: trackUrl
+        });
+        starActionRow.addComponents(spotifyButton);
+    }
+
+    const geniusResult = await GeniusClient.getSong([trackName, artistName].join(" "));
+    if (geniusResult) {
+        const geniusButton = new MessageButton({
+            emoji: emojiIDs.genius,
+            label: "Lyrics",
+            style: "LINK",
+            url: geniusResult.result.url
+        });
+        starActionRow.addComponents(geniusButton);
+    }
 
     await ctx.send({ embeds: [embed], components: [starActionRow] });
 

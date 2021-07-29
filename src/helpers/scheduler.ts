@@ -9,6 +9,7 @@ import { guildID, roles } from "../configuration/config";
 import { Item } from "../database/entities/Item";
 import { Reminder } from "../database/entities/Reminder";
 import F from "./funcs";
+import { prisma } from "./prisma-init";
 
 const CHECK_INTERVAL = secondsToMilliseconds(10);
 
@@ -17,7 +18,7 @@ export default async function (client: Client, connection: Connection): Promise<
 
     async function runChecks() {
         await checkMutes(guild, connection);
-        await checkReminders(guild, connection);
+        await checkReminders(guild);
         await F.wait(CHECK_INTERVAL);
         runChecks();
     }
@@ -59,14 +60,12 @@ async function checkMutes(guild: Guild, connection: Connection): Promise<void> {
     await connection.manager.remove(successfulUnmutes);
 }
 
-async function checkReminders(guild: Guild, connection: Connection): Promise<void> {
-    const finishedReminders = await connection
-        .getMongoRepository(Reminder)
-        .find({ where: { sendAt: { $lt: new Date() } } });
+async function checkReminders(guild: Guild): Promise<void> {
+    const finishedReminders = await prisma.reminder.findMany({ where: { sendAt: { lte: new Date() } } });
 
     for (const rem of finishedReminders) {
         try {
-            const member = await guild.members.fetch(rem.userid as Snowflake);
+            const member = await guild.members.fetch(rem.userId as Snowflake);
 
             const dm = await member.createDM();
             const embed = new MessageEmbed()
@@ -80,5 +79,7 @@ async function checkReminders(guild: Guild, connection: Connection): Promise<voi
         }
     }
 
-    await connection.manager.remove(finishedReminders); // Remove them all, regardless of whether they were sent
+    // Remove them all, regardless of whether they were sent
+    const fetchedIds = finishedReminders.map((r) => r.id);
+    await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
 }

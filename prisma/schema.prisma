@@ -49,6 +49,7 @@ model User {
   warnings            Warning[]            @relation("Warning_warnedUser")
   issuedWarnings      Warning[]            @relation("Warning_issuedByUser")
   submittedInterviews SubmittedInterview[]
+  reminders           Reminder[]
 }
 
 model Tag {
@@ -183,6 +184,19 @@ model UserLastFM {
   user   User?  @relation(fields: [userId], references: [id])
   userId String @unique
 
+  createdAt   DateTime @default(now())
+  lastUpdated DateTime @updatedAt
+}
+
+model Reminder {
+  id Int @id @default(autoincrement())
+
+  text String
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  sendAt      DateTime
   createdAt   DateTime @default(now())
   lastUpdated DateTime @updatedAt
 }

@@ -1,40 +1,42 @@
-import { CommandComponentListener, CommandRunner, createOptions } from "configuration/definitions";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from "discord.js";
-import { ComponentActionRow } from "slash-create";
-import { Connection } from "typeorm";
-import { Reminder } from "../../database/entities/Reminder";
+import { Message } from "slash-create";
 import F from "../../helpers/funcs";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 import { formatReminderDate } from "./_consts";
 
-export const Options = createOptions(<const>{
+enum ActionTypes {
+    SelectReminder,
+    ShowList,
+    DeleteReminder
+}
+
+const command = new SlashCommand(<const>{
     description: "Presents a list of your reminders",
     options: []
 });
 
-const selectReminder = new CommandComponentListener("remindlistselect", []);
-const deleteReminder = new CommandComponentListener("remindlistdelete", <const>["reminderid"]);
-const listReminders = new CommandComponentListener("remindlistshow", []);
-export const ComponentListeners: CommandComponentListener[] = [selectReminder, deleteReminder, listReminders];
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
-export const Executor: CommandRunner = async (ctx) => {
-    await ctx.defer(true);
+    const [embed, actionRow] = await generateReminderList(ctx.member);
 
-    const [embed, actionRow] = await generateReminderList(ctx.member, ctx.connection);
-
-    await ctx.send({ embeds: [embed.toJSON()], components: [actionRow.toJSON() as ComponentActionRow] });
-};
+    await ctx.send({ embeds: [embed.toJSON()], components: actionRow ? [actionRow] : undefined });
+});
 
 // Main list
-async function generateReminderList(
-    member: GuildMember,
-    connection: Connection
-): Promise<[MessageEmbed, MessageActionRow]> {
-    const reminders = (await connection.getRepository(Reminder).find({ userid: member.id })).sort((a, b) => {
-        return a.sendAt.getTime() - b.sendAt.getTime();
+async function generateReminderList(member: GuildMember): Promise<[MessageEmbed] | [MessageEmbed, MessageActionRow]> {
+    const reminders = await prisma.reminder.findMany({
+        where: { userId: member.id },
+        orderBy: { sendAt: "asc" }
     });
 
+    if (reminders.length < 1) {
+        return [new MessageEmbed({ description: "You don't have any reminders! Create one using `/remind new`" })];
+    }
+
     const selectMenu = new MessageSelectMenu()
-        .setCustomId(selectReminder.generateCustomID({}))
+        .setCustomId(genActionId({ reminderId: "void", actionType: ActionTypes.SelectReminder.toString() }))
         .setPlaceholder("Select a reminder for more information");
 
     const emojis = await member.guild.emojis.fetch();
@@ -45,7 +47,7 @@ async function generateReminderList(
 
         const label = r.text.substring(0, 25);
         const description = formatReminderDate(r.sendAt).substring(0, 50);
-        selectMenu.addOptions([{ label, description, emoji, value: r._id.toHexString() }]);
+        selectMenu.addOptions([{ label, description, emoji, value: `${r.id}` }]);
     }
 
     const actionRow = new MessageActionRow().addComponents(selectMenu);
@@ -57,73 +59,81 @@ async function generateReminderList(
 
     return [embed, actionRow];
 }
-listReminders.handler = async (interaction, connection) => {
-    const [embed, actionRow] = await generateReminderList(interaction.member as GuildMember, connection);
-    interaction.deferred = true;
-    await interaction.editReply({ embeds: [embed], components: [actionRow] });
-};
 
-// Info page for a specific reminder
-selectReminder.handler = async (interaction, connection) => {
-    console.log("here", /SELECT/);
-    if (!interaction.isSelectMenu()) return;
-    interaction.deferred = true;
+const genArgs = <const>["actionType", "reminderId"];
+const genActionId = command.addInteractionListener("remindManage", genArgs, async (ctx, args) => {
+    const actionType = +args.actionType;
+    ctx.deferred = true;
 
-    const member = interaction.member as GuildMember;
+    console.log(`Got ${actionType}`, args);
 
-    const selected = interaction.values?.[0];
-    if (!selected) return;
+    if (actionType === ActionTypes.ShowList) {
+        const [embed, actionRow] = await generateReminderList(ctx.member);
+        await ctx.editReply({ embeds: [embed], components: actionRow ? [actionRow] : undefined });
+        return;
+    } else if (actionType === ActionTypes.DeleteReminder) {
+        console.log("delete", /SELECT/);
+        if (!ctx.isButton()) return;
+        ctx.deferred = true;
 
-    const reminder = await connection.getRepository(Reminder).findOne(selected);
-    if (!reminder || reminder.userid !== member.id) return;
+        const id = +args.reminderId;
+        if (!id) return;
 
-    const sendTS = F.discordTimestamp(reminder.sendAt, "longDateTime");
-    const sendTSRelative = F.discordTimestamp(reminder.sendAt, "relative");
-    const madeTS = F.discordTimestamp(reminder.createdAt, "longDateTime");
+        const reminder = await prisma.reminder.findUnique({ where: { id } });
+        if (!reminder || reminder.userId !== ctx.member.id) return;
 
-    const reminderBody = reminder.text.substring(250);
-    const reminderTitle = reminderBody === "" ? reminder.text : `${reminder.text.substring(0, 250)}...`;
+        // Delete reminder
+        await prisma.reminder.delete({ where: { id } });
 
-    const embed = new MessageEmbed()
-        .setTitle(reminderTitle)
-        .addField("Sending", `${sendTS} (${sendTSRelative})`)
-        .addField("Created", madeTS);
+        const embed = new MessageEmbed()
+            .setTitle("Deleted reminder")
+            .setDescription("Your reminder has been deleted.")
+            .addField("Text", reminder.text);
 
-    if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
+        await ctx.editReply({ embeds: [embed], components: [] });
+    } else if (actionType === ActionTypes.SelectReminder) {
+        if (!ctx.isSelectMenu()) return;
+        const id = +ctx.values[0];
+        if (!id || isNaN(id)) return;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Back to List", style: "PRIMARY", customId: listReminders.generateCustomID({}) }),
-        new MessageButton({
-            label: "Delete Reminder",
-            style: "DANGER",
-            customId: deleteReminder.generateCustomID({ reminderid: selected })
-        })
-    ]);
+        const reminder = await prisma.reminder.findUnique({ where: { id } });
+        if (!reminder || reminder.userId !== ctx.member.id) return;
 
-    await interaction.editReply({ components: [actionRow], embeds: [embed] });
-};
+        const sendTS = F.discordTimestamp(reminder.sendAt, "longDateTime");
+        const sendTSRelative = F.discordTimestamp(reminder.sendAt, "relative");
+        const madeTS = F.discordTimestamp(reminder.createdAt, "longDateTime");
 
-// Delete button handler
-deleteReminder.handler = async (interaction, connection, args) => {
-    console.log("delete", /SELECT/);
-    if (!interaction.isButton()) return;
-    interaction.deferred = true;
+        const reminderBody = reminder.text.substring(250);
+        const reminderTitle = reminderBody === "" ? reminder.text : `${reminder.text.substring(0, 250)}...`;
 
-    const member = interaction.member as GuildMember;
+        const embed = new MessageEmbed()
+            .setTitle(reminderTitle)
+            .addField("Sending", `${sendTS} (${sendTSRelative})`)
+            .addField("Created", madeTS);
 
-    const selected = args.reminderid;
-    if (!selected) return;
+        if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
-    const reminder = await connection.getRepository(Reminder).findOne(selected);
-    if (!reminder || reminder.userid !== member.id) return;
+        const actionRow = new MessageActionRow().addComponents([
+            new MessageButton({
+                label: "Back to List",
+                style: "PRIMARY",
+                customId: genActionId({
+                    reminderId: "void",
+                    actionType: ActionTypes.ShowList.toString()
+                })
+            }),
+            new MessageButton({
+                label: "Delete Reminder",
+                style: "DANGER",
+                customId: genActionId({
+                    reminderId: reminder.id.toString(),
+                    actionType: ActionTypes.DeleteReminder.toString()
+                })
+            })
+        ]);
 
-    // Delete reminder
-    await connection.manager.remove(reminder);
+        await ctx.editReply({ components: [actionRow], embeds: [embed] });
+    }
+});
 
-    const embed = new MessageEmbed()
-        .setTitle("Deleted reminder")
-        .setDescription("Your reminder has been deleted.")
-        .addField("Text", reminder.text);
-
-    await interaction.editReply({ embeds: [embed], components: [] });
-};
+export default command;

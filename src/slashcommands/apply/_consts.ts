@@ -1,6 +1,10 @@
 import { hoursToMilliseconds } from "date-fns";
-import F from "../../helpers/funcs";
+import { DMChannel, EmbedField, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { Question } from "helpers/verified-quiz/question";
+import { roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
+import F from "../../helpers/funcs";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import QuizQuestions from "../../helpers/verified-quiz/quiz"; // .gitignored
 
 const VERIFIED_DELAY_HOURS = 12;
@@ -77,3 +81,89 @@ export class PreviousAnswersEncoder {
         return F.base256Encode(Uint8Array.from(arr));
     }
 }
+
+export const createFBApplication = async (dmMessage: Message, member: GuildMember) => {
+    const channel = dmMessage.channel as DMChannel;
+    const role = await member.guild.roles.fetch(roles.deatheaters);
+    const NO_RESPONSE = "*Nothing yet*";
+
+    if (!role) throw new Error("No deatheaters role");
+
+    const answers: Record<string, string> = {};
+
+    return {
+        async askQuestion(
+            question: string,
+            description: string,
+            requiresAnswer = true,
+            warning?: string
+        ): Promise<string> {
+            const embed = new MessageEmbed()
+                .setTitle(question)
+                .setColor(role.color)
+                .setDescription(description)
+                .addField("\u200b", "\u200b")
+                .addField("Your response", NO_RESPONSE)
+                .setFooter(
+                    "Submit an answer by sending a message with your response. You may edit your response by sending another message. Press 'Continue' to submit your response."
+                );
+
+            if (warning) {
+                embed.addField("Notice", warning);
+            }
+
+            const timedListener = new TimedInteractionListener(dmMessage, <const>["continueFBId"]);
+            const [continueId] = timedListener.customIDs;
+
+            const actionRow = new MessageActionRow();
+            actionRow.addComponents([new MessageButton({ label: "Continue", customId: continueId, style: "PRIMARY" })]);
+
+            await dmMessage.edit({
+                embeds: [embed],
+                components: [actionRow]
+            });
+
+            // Listen for user messages
+            const field = embed.fields.find((f) => f.name === "Your response") as EmbedField;
+            const listener = channel.createMessageCollector({
+                filter: (m) => m.author.id === member.id,
+                time: undefined
+            });
+            let answer = field.value;
+            listener.on("collect", async (m: Message) => {
+                answer = m.content;
+                field.value = "```\n" + m.content + "```";
+
+                await dmMessage.edit({
+                    embeds: [embed.toJSON()],
+                    components: [actionRow]
+                });
+                await m.delete();
+            });
+
+            const buttonPressed = await timedListener.wait();
+            console.log(buttonPressed, /BUTTON_PRESSED/);
+            listener.stop();
+
+            if (buttonPressed !== continueId) {
+                throw new CommandError("Your application was cancelled. You may restart if you wish.");
+            }
+
+            // Just reask the question since they didn't answer a required question
+            if (requiresAnswer && field.value === NO_RESPONSE) {
+                return this.askQuestion(
+                    question,
+                    description,
+                    requiresAnswer,
+                    "You must provide an answer for this question."
+                );
+            }
+
+            answers[question] = answer;
+            return answer;
+        },
+        getAnswers(): Record<string, string> {
+            return answers;
+        }
+    };
+};

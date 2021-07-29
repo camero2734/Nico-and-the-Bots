@@ -17,7 +17,7 @@ export default async function (client: Client, connection: Connection): Promise<
     const guild = await client.guilds.fetch(guildID);
 
     async function runChecks() {
-        await checkMutes(guild, connection);
+        // await checkMutes(guild, connection);
         await checkReminders(guild);
         await F.wait(CHECK_INTERVAL);
         runChecks();

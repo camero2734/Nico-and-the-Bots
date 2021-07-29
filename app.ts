@@ -66,15 +66,15 @@ client.on("ready", async () => {
     [slashCommands, interactionHandlers, reactionHandlers] = await setupAllCommands(guild);
 
     // Initialize everything
-    await Promise.all([
-        // Wait until commands are loaded, connected to database, etc.
-        new Promise((resolve) => {
-            helpers.connectToDatabase().then((c) => {
-                connection = c;
-                resolve(true);
-            });
-        })
-    ]);
+    // await Promise.all([
+    //     // Wait until commands are loaded, connected to database, etc.
+    //     new Promise((resolve) => {
+    //         helpers.connectToDatabase().then((c) => {
+    //             connection = c;
+    //             resolve(true);
+    //         });
+    //     })
+    // ]);
 
     // await dynamicCommandSetup(commands);
 

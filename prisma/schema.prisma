@@ -38,6 +38,7 @@ model User {
   // Relations
   dailyBox            DailyBox?
   lastFM              UserLastFM?
+  verifiedQuiz        VerifiedQuiz?
   tags                Tag[]
   messageHistory      MessageHistory[]
   perks               Perk[]
@@ -50,6 +51,7 @@ model User {
   issuedWarnings      Warning[]            @relation("Warning_issuedByUser")
   submittedInterviews SubmittedInterview[]
   reminders           Reminder[]
+  verifiedQuizAnswers VerifiedQuizAnswer[]
 }
 
 model Tag {
@@ -199,4 +201,24 @@ model Reminder {
   sendAt      DateTime
   createdAt   DateTime @default(now())
   lastUpdated DateTime @updatedAt
+}
+
+model VerifiedQuiz {
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String @id
+
+  answersGiven Int[]
+  timesTaken   Int      @default(0)
+  lastTaken    DateTime
+}
+
+model VerifiedQuizAnswer {
+  id         Int @id @default(autoincrement())
+  questionId Int
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  answer    Int
+  createdAt DateTime @default(now())
 }

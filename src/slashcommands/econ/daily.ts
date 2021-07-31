@@ -43,7 +43,7 @@ command.setHandler(async (ctx) => {
         },
         select: { consecutiveDailyCount: true }
     });
-    const isWeeklyBonus = true; //consecutiveDailyCount > 0 && consecutiveDailyCount % 7 === 0;
+    const isWeeklyBonus = consecutiveDailyCount > 0 && consecutiveDailyCount % 7 === 0;
 
     // Weekly consecutive bonus
     if (isWeeklyBonus) {

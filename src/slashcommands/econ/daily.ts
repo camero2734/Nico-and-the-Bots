@@ -1,89 +1,76 @@
 import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles, userIDs } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
-import { Economy } from "database/entities/Economy";
-import { Item } from "database/entities/Item";
-import { GuildMember, MessageAttachment, MessageEmbed, Snowflake } from "discord.js";
+import { CommandError } from "configuration/definitions";
+import { addDays, differenceInDays } from "date-fns";
+import { MessageEmbed } from "discord.js";
+import F from "../../helpers/funcs";
+import { prisma, queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Claims your daily credits",
     options: []
-};
+});
 
 const albumRoles = roles.albums;
+command.setHandler(async (ctx) => {
+    await ctx.reply({
+        embeds: [
+            new MessageEmbed({ description: "Connecting to Daily Electronic Mesage Archive...", color: "#FF0000" })
+        ]
+    });
 
-export const Executor: CommandRunner = async (ctx) => {
-    const { client, connection } = ctx;
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
+    const dailyBox = dbUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: ctx.member.id } }));
 
-    await ctx.defer();
-
-    let userEconomy = await connection.getRepository(Economy).findOne({ userid: ctx.member.id });
-    if (!userEconomy) userEconomy = new Economy({ userid: ctx.member.id });
-
-    //CALCULATE TIME REMAINING
-    const curdate = Date.now();
-    const timeremain = (86400000 - (curdate - userEconomy.dailyBox.lastDaily)) / 3600000;
-    const remain = {
-        hours: Math.floor(timeremain),
-        mins: Math.floor((timeremain - Math.floor(timeremain)) * 60)
-    };
-    if (curdate - userEconomy.dailyBox.lastDaily < 86400000 && ctx.user.id !== userIDs.me) {
-        const { hours, mins } = remain;
-        throw new CommandError(`You have already used !daily today! You have ${hours} hours and ${mins} until the next one`); // prettier-ignore
+    // Calculate time remaining
+    const lastDaily = dailyBox.lastDaily || new Date(0);
+    const daysSinceDaily = differenceInDays(new Date(), lastDaily);
+    if (daysSinceDaily < 1 && userIDs.me !== ctx.member.id) {
+        const nextDaily = addDays(lastDaily, 1);
+        const timestamp = F.discordTimestamp(nextDaily, "relative");
+        throw new CommandError(`You have already used !daily today! You can get your next daily ${timestamp}`); // prettier-ignore
     }
 
-    //DAILY COUNTER
-    userEconomy.dailyBox.dailyCount++;
-    let dailyCounter = await connection
-        .getRepository(Counter)
-        .findOne({ identifier: ctx.member.id, title: "ConsecutiveDaily" });
+    // Daily count
+    const wasConsecutive = daysSinceDaily < 2; // Within 48 hours of the last daily
+    const { consecutiveDailyCount } = await prisma.dailyBox.update({
+        where: { userId: ctx.member.id },
+        data: {
+            dailyCount: { increment: 1 },
+            consecutiveDailyCount: wasConsecutive ? { increment: 1 } : 0,
+            lastDaily: new Date()
+        },
+        select: { consecutiveDailyCount: true }
+    });
+    const isWeeklyBonus = true; //consecutiveDailyCount > 0 && consecutiveDailyCount % 7 === 0;
 
-    if (!dailyCounter)
-        dailyCounter = new Counter({
-            identifier: ctx.member.id,
-            title: "ConsecutiveDaily",
-            count: 0,
-            lastUpdated: curdate
+    // Weekly consecutive bonus
+    if (isWeeklyBonus) {
+        await prisma.user.update({
+            where: { id: ctx.member.id },
+            data: { credits: { increment: 2000 } }
         });
-    if (curdate - userEconomy.dailyBox.lastDaily <= 86400000 * 2) {
-        dailyCounter.count++;
-    } else (dailyCounter.count = 1), (dailyCounter.lastUpdated = curdate);
-    userEconomy.dailyBox.lastDaily = curdate;
-
-    //FIXME: Weekly consecutive bonus
-    if (dailyCounter.count % 7 === 0) {
-        const embed = new MessageEmbed()
-            .setDescription(
-                "**Weekly `!daily` bonus!**\n\nYou've done !daily 7 days in a row, so you've earned 2000 extra credits!"
-            )
-            .setColor("RANDOM");
-        await ctx.embed(embed);
-
-        userEconomy.credits += 2000;
     }
-    await connection.manager.save(dailyCounter);
 
-    //DOUBLEDAILY / GIVE CREDITS
-    const hasDouble = await connection
-        .getRepository(Item)
-        .findOne({ identifier: ctx.user.id, type: "Perk", title: "doubledaily" });
-    let creditsToGive = 200;
-    let badgeLogo = null;
+    // DoubleDaily Perk
+    const perks = await prisma.perk.findMany({
+        where: {
+            type: { in: ["DoubleDailyCredits", "DoubleDailyTokens"] },
+            userId: ctx.member.id
+        }
+    });
+    const hasDoubleCredits = perks.some((p) => p.type === "DoubleDailyCredits");
+    const hasDoubleTokens = perks.some((p) => p.type === "DoubleDailyTokens");
 
-    const member = client.guilds.cache
-        .get((ctx.guildID || "") as Snowflake)
-        ?.members.cache.get(ctx.user.id as Snowflake) as GuildMember;
+    const isCommon = ctx.member.roles.cache.has(roles.common);
+    const creditsToGive = (isCommon ? 300 : 200) * (hasDoubleCredits ? 2 : 1) + (isWeeklyBonus ? 2000 : 0);
+    const badgeLogo = isCommon ? "cf" : hasDoubleCredits ? "dd" : null;
 
-    if (member?.roles.cache.get("332021614256455690")) {
-        creditsToGive = 300;
-        badgeLogo = "cf";
-    }
-    if (hasDouble) {
-        creditsToGive *= 2;
-        badgeLogo = "dd";
-    }
-    userEconomy.credits += creditsToGive;
+    await prisma.user.update({
+        where: { id: ctx.member.id },
+        data: { credits: { increment: creditsToGive } }
+    });
 
     // CHANGE BACKGROUND BASED ON ALBUM ROLE
     // prettier-ignore
@@ -121,90 +108,88 @@ export const Executor: CommandRunner = async (ctx) => {
     while ((measuredTextWidth > maxWidth || measuredTextHeight > maxHeight) && checkingSize > 5) {
         checkingSize--;
         cctx.font = checkingSize + "px futura";
-        const textInfo = cctx.measureText(member.displayName);
+        const textInfo = cctx.measureText(ctx.member.displayName);
         measuredTextWidth = textInfo.width;
         measuredTextHeight = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
     }
 
     //DRAW NAME
-    cctx.fillStyle = member.displayHexColor;
+    cctx.fillStyle = ctx.member.displayHexColor;
     cctx.font = checkingSize + "px futura";
-    cctx.fillText(member.displayName, 120, 65);
+    cctx.fillText(ctx.member.displayName, 120, 65);
 
     //DRAW GOT CREDITS & BADGE
     cctx.fillStyle = "white";
     cctx.font = "40px futura";
-    cctx.fillText(`Got ${creditsToGive} credits!`, 120, 120);
-    if (badgeLogo === "cf") cctx.drawImage(cf, 408, 91, 30, 30);
-    else if (badgeLogo === "dd") cctx.drawImage(dd, 408, 91, 30, 30);
+    const creditsEarnedLine = `Got ${creditsToGive} credits!`;
+    cctx.fillText(creditsEarnedLine, 120, 120);
+    const { width } = cctx.measureText(creditsEarnedLine);
+    if (badgeLogo === "cf") cctx.drawImage(cf, 130 + width, 91, 30, 30);
+    else if (badgeLogo === "dd") cctx.drawImage(dd, 130 + width, 91, 30, 30);
 
-    //GIVE BLURRYTOKEN
-    const hasTokenInc = await connection
-        .getRepository(Item)
-        .findOne({ identifier: ctx.user.id, type: "Perk", title: "blurryboxinc" });
-    const bTokensToGive = hasTokenInc ? 2 : 1;
+    // Give tokens
+    const currentTokens = dailyBox.tokens;
+    const tokensToGive = hasDoubleTokens ? 2 : 1;
+    const tokenSum = currentTokens + tokensToGive;
 
-    const before = userEconomy.dailyBox.tokens;
-    const after = Math.min(before + bTokensToGive, 5); //LIMIT TO 5
-    userEconomy.dailyBox.tokens = after;
+    const newTokens = Math.min(tokenSum, 5); // Limit to 5
 
-    let tokenMessage = "None";
+    await prisma.dailyBox.update({
+        where: { userId: ctx.member.id },
+        data: { tokens: newTokens }
+    });
 
-    if (after > before && after === 5) {
-        //JUST REACHED 5
-        tokenMessage = `You earned **${after - before} token${
-            after - before === 1 ? "" : "s"
-        }**! You have now reached the **maximum number of 5 tokens**, so you should spend them with \`/econ resupply\``;
-    } else if (after === before && after === 5) {
-        //STILL AT 5
-        tokenMessage = "**You have the maximum number of tokens, so you did not earn any today!** Spend them with `/econ resupply`."; // prettier-ignore
-    } else {
-        //EARNED SOME
-        tokenMessage = `You earned **${after - before} token${
-            after - before === 1 ? "" : "s"
-        }**! You now have **${after} token${after === 1 ? "" : "s"} total**- you can spend ${
-            after === 1 ? "it" : "them"
-        } with \`/econ resupply\``;
-    }
-
-    try {
-        await connection.manager.save(userEconomy);
-    } catch (e) {
-        console.log(e);
-        throw new CommandError("<@221465443297263618> failed to save userEconomy");
-    }
+    const tokenMessage = (() => {
+        if (tokenSum === newTokens) {
+            return `You earned ${tokensToGive} token${F.plural(tokensToGive)}!`;
+        } else if (newTokens === currentTokens) {
+            return `You have the maximum number of tokens, so you did not earn any today. Spend them with the \`/econ resupply\` command`;
+        } else {
+            return `You have reached the maximum number of tokens! Spend one with the \`/econ resupply\` command to ensure you earn one tomorrow.`;
+        }
+    })();
 
     const facts = [
-        // "If you're going to a concert, there are concert channels! Simply say `!concert CityName` to join yours.",
-        // "If you boost the server with nitro, you can add a custom emoji! Use the `!boostemoji` command.",
+        "If you're going to a concert, there are concert channels! Use the `/concert` command to find yours.",
         `You can buy color roles from <#${channelIDs.shop}>! To view and equip your color roles, use the \`/roles colors\` command.`,
-        // "The `!createtag` command can be used to add a snippet of text that you can later make the bot send with the `!tag` command!",
+        "The `/tags create` command can be used to add a snippet of text that you can later make the bot send with the `/tags use` command!",
         `You can submit an interview to <#${channelIDs.interviews}> with the \`/submit interview\` command.`,
         "Use the `/roles topfeed` command to get a ping when Tyler or Josh post on social media, as well as when dmaorg.info updates!",
         "You can follow us on [Twitter](https://twitter.com/discordclique) or on [Instagram](https://www.instagram.com/discordclique/)!",
-        // "We have a music bot - <@470705413885788160>! You can use `!play Clear twenty one pilots` to play the best song in existence.",
         `We have theory channels for talking about dmaorg.info/new stuff! <#${channelIDs.leakstheories}> is available to everyone, and <#${channelIDs.verifiedtheories}> is available to anyone who passes a short quiz!\nUse \`/apply verified\` to take the quiz!`,
         `Check out <#${channelIDs.creations}> and <#${channelIDs.bestcreations}> to see user-submitted art!`,
         `Check out <#${channelIDs.positivity}> for cute pets and words of encouragement!`,
-        // `Check out <#${channelIDs.hiatusmemes}> for era-related memes!`,
         `Check out <#${channelIDs.polls}> to vote on polls created by staff members!`,
         `Head over to <#${channelIDs.suggestions}> to submit a suggestion about the server!`,
         `Find a message really funny, or a piece of art really amazing? React with :gold: to give them gold. \n\nTheir message will show up in <#${channelIDs.houseofgold}>!`
     ];
 
-    const randomFact = facts[Math.floor(Math.random() * facts.length)];
+    const randomFact = F.randomValueInArray(facts);
     const embed = new MessageEmbed()
-        .setColor("RANDOM")
-        .setTitle(member.displayName + "'s Daily")
-        .setFooter("Have an idea for another server tip? Submit it with !suggest");
-    embed.addField("Server Fact", randomFact);
-    embed.addField("Blurrytokens Earned", tokenMessage);
-    embed.setImage("attachment://daily.png");
-    await ctx.send({
-        embeds: [embed.toJSON()],
-        file: {
-            name: "daily.png",
-            file: canvas.toBuffer()
-        }
+        .setColor("#FF0000")
+        .setTitle(`${ctx.member.displayName}'s Daily`)
+        .setFooter("Have an idea for another server tip? Submit it with !suggest")
+        .addField("Server Fact", randomFact)
+        .addField("Tokens Earned", `${tokenMessage}`)
+        .addField("Total tokens", `You have **${newTokens}** token${F.plural(newTokens)}.`)
+        .setImage("attachment://daily.png");
+
+    if (isWeeklyBonus) {
+        embed.addField(
+            "Weekly daily bonus!",
+            "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
+        );
+    }
+
+    await ctx.editReply({
+        embeds: [embed],
+        files: [
+            {
+                name: "daily.png",
+                attachment: canvas.toBuffer()
+            }
+        ]
     });
-};
+});
+
+export default command;

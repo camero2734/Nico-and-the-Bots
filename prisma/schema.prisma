@@ -12,13 +12,14 @@ generator client {
 }
 
 model DailyBox {
-  tokens     Int    @default(0)
-  steals     Int    @default(0)
-  blocks     Int    @default(0)
-  lastDaily  Int    @default(0)
-  dailyCount Int    @default(0)
-  user       User?  @relation(fields: [userId], references: [id])
-  userId     String @id
+  tokens                Int       @default(0)
+  steals                Int       @default(0)
+  blocks                Int       @default(0)
+  lastDaily             DateTime?
+  dailyCount            Int       @default(0)
+  consecutiveDailyCount Int       @default(0)
+  user                  User?     @relation(fields: [userId], references: [id])
+  userId                String    @id
 }
 
 model User {

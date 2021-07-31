@@ -3,6 +3,7 @@ import { EmbedField, Message, MessageActionRow, MessageEmbed, MessageSelectMenu 
 import EmojiReg from "emoji-regex";
 import { PartialEmoji } from "slash-create";
 import progressBar from "string-progressbar";
+import { channelIDs } from "../../configuration/config";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 
@@ -32,6 +33,8 @@ const command = new SlashCommand(<const>{
 type ParsedOption = { text: string; emoji?: string };
 command.setHandler(async (ctx) => {
     await ctx.defer();
+
+    const shouldCreateThread = ctx.channel.id === channelIDs.polls;
 
     const { title, option1, option2, ...optDict } = ctx.opts;
 
@@ -68,11 +71,8 @@ command.setHandler(async (ctx) => {
     });
 
     const embed = new MessageEmbed()
-        .setTitle(title)
-        .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL())
-        .setFooter(
-            "Press one of the buttons below to vote. Your vote will be reflected in the message stats, and you can only vote once."
-        );
+        .setTitle(title) //
+        .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL());
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
@@ -89,6 +89,15 @@ command.setHandler(async (ctx) => {
     const actionRow = new MessageActionRow().addComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
+    if (shouldCreateThread) {
+        const m = (await ctx.fetchReply()) as Message;
+        await ctx.channel.threads.create({
+            name: title,
+            autoArchiveDuration: 4320,
+            reason: "Auto poll thread",
+            startMessage: m
+        });
+    }
 });
 
 const genPollResId = command.addInteractionListener("pollresponse", <const>["pollId"], async (ctx, args) => {
@@ -145,12 +154,18 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         votes[vote.choice]++;
     }
 
+    const optionsWithVotes = parsedOptions
+        .map((opt, idx) => ({ opt, count: votes[idx] }))
+        .sort((opt1, opt2) => opt2.count - opt1.count);
+
     const tempEmbed = new MessageEmbed();
 
-    parsedOptions.forEach((opt, idx) => {
-        const [progress] = progressBar.filledBar(totalVotes === 0 ? 1 : totalVotes, votes[idx], 20);
+    optionsWithVotes.forEach(({ opt, count }) => {
+        const [progress] = progressBar.filledBar(totalVotes === 0 ? 1 : totalVotes, count, 20);
         const emoji = opt.emoji ? `${opt.emoji} ` : "";
-        tempEmbed.addField(`${emoji}${opt.text}`.trim(), `${progress} [${votes[idx]}/${totalVotes}]`);
+        const basePercent = (100 * count) / totalVotes;
+        const percent = (isFinite(basePercent) ? basePercent : 0).toPrecision(3);
+        tempEmbed.addField(`${emoji}${opt.text}`.trim(), `${progress}  👥 ${count} (${percent}%)`);
     });
 
     return tempEmbed.fields;

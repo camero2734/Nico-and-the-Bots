@@ -1,6 +1,6 @@
+import { DailyBox, User } from "@prisma/client";
 import { channelIDs, roles } from "configuration/config";
-import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Economy } from "database/entities/Economy";
+import { CommandError } from "configuration/definitions";
 import { format } from "date-fns";
 import {
     EmojiIdentifierResolvable,
@@ -16,28 +16,22 @@ import {
 } from "discord.js";
 import fs from "fs";
 import F from "helpers/funcs";
-import { ComponentActionRow } from "slash-create";
-import { Connection } from "typeorm";
-import { Item } from "../../database/entities/Item";
-import { sendViolationNotice } from "../../helpers/dema-notice";
+import { prisma, queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
     options: []
-};
+});
 
-const answerListener = new CommandComponentListener("banditosBishopsSelect", []);
-const buttonListener = new CommandComponentListener("banditosBishopsButton", []);
-export const ComponentListeners: CommandComponentListener[] = [answerListener, buttonListener];
-
-export const Executor: CommandRunner = async (ctx) => {
+command.setHandler(async (ctx) => {
     await ctx.defer();
 
     const buffer = await fs.promises.readFile("src/assets/images/banditos.gif");
 
-    const userEconomy = await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id });
-    const tokens = userEconomy?.dailyBox.tokens;
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
+    const tokens = dbUser.dailyBox?.tokens;
 
     if (!tokens) throw new CommandError("You don't have any tokens! Use the `/econ daily` command to get some.");
 
@@ -72,179 +66,63 @@ export const Executor: CommandRunner = async (ctx) => {
         emoji: { id: d.emoji } as EmojiIdentifierResolvable
     }));
 
-    console.log(options);
-
     const menu = new MessageSelectMenu()
         .addOptions(options)
         .setPlaceholder("Select a district to search")
-        .setCustomId(answerListener.generateCustomID({}));
+        .setCustomId(genSelectId({}));
 
-    const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
+    const actionRow = new MessageActionRow().addComponents(menu);
 
-    const buttonActionRow = new MessageActionRow()
-        .addComponents(
-            new MessageButton({
-                label: "View Supply List",
-                customId: buttonListener.generateCustomID({}),
-                style: "PRIMARY"
-            })
-        )
-        .toJSON() as ComponentActionRow;
+    const buttonActionRow = new MessageActionRow().addComponents(
+        new MessageButton({
+            label: "View Supply List",
+            customId: genButtonId({}),
+            style: "PRIMARY"
+        })
+    );
 
     await ctx.send({
         embeds: [embed.toJSON()],
-        file: [{ name: "file.gif", file: buffer }],
+        files: [{ name: "file.gif", attachment: buffer }],
         components: [actionRow, buttonActionRow]
     });
-};
+});
 
-async function memberCaught(
-    interaction: SelectMenuInteraction,
-    connection: Connection,
-    district: typeof districts[number],
-    userEconomy: Economy
-): Promise<void> {
-    await (<Message>interaction.message).removeAttachments();
+const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], async (ctx) => {
+    if (!ctx.isSelectMenu() || !ctx.member) return;
+    ctx.deferred = true;
 
-    const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
-    const tokensRemaining = `${userEconomy.dailyBox.tokens} token${
-        userEconomy.dailyBox.tokens === 1 ? "" : "s"
-    } remaining`;
-
-    const embed = new MessageEmbed()
-        .setColor("#EA523B")
-        .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
-        .setAuthor(district.bishop, emojiURL)
-        .setDescription(
-            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
-        )
-        .setFooter(`You win nothing. ${tokensRemaining}`);
-
-    await sendViolationNotice(interaction.member as GuildMember, connection, {
-        identifiedAs: "CONSPIRACY TO COMMIT TREASON",
-        found: "trespassing while conspiring against the Dema Council",
-        reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
-        issuingBishop: district.bishop
-    });
-
-    await connection.manager.save(userEconomy);
-
-    await interaction.editReply({
-        embeds: [embed],
-        components: []
-    });
-}
-
-async function memberWon(
-    interaction: SelectMenuInteraction,
-    connection: Connection,
-    district: typeof districts[number],
-    userEconomy: Economy
-) {
-    const prize = district.pickPrize();
-    const tokensRemaining = `${userEconomy.dailyBox.tokens} token${
-        userEconomy.dailyBox.tokens === 1 ? "" : "s"
-    } remaining`;
-    const member = interaction.member as GuildMember;
-
-    let prizeDescription = `You now have ${userEconomy.credits} credits.`;
-    switch (prize.type) {
-        case PrizeType.Credits:
-            userEconomy.credits += prize.amount;
-            break;
-        case PrizeType.Role: {
-            const isColorRole = Object.values(roles.colors).some((group) => Object.values(group).some((id) => id === prize.id)); // prettier-ignore
-            if (isColorRole) {
-                const colorRoleData = { identifier: member.id, type: "ColorRole", title: prize.id };
-                const colorRole =  (await connection.getRepository(Item).findOne(colorRoleData)) || new Item(colorRoleData); // prettier-ignore
-                await connection.manager.save(colorRole);
-                prizeDescription = `You may equip this role using the \`/roles color\` command.`;
-            } else await member.roles.add(prize.id);
-            break;
-        }
-        case PrizeType.Item: {
-            if (prize.item === "BOUNTY") {
-                userEconomy.dailyBox.steals++;
-                prizeDescription =
-                    "A `Bounty` may be used against another member of the server to report them to the Bishops. If they do not have a `Jumpsuit`, they will receive a violation notice and you will receive 1000 credits as the bounty reward";
-            } else if (prize.item === "JUMPSUIT") {
-                userEconomy.dailyBox.blocks++;
-                prizeDescription =
-                    "A `Jumpsuit` will protect you if another member sends the Bishops after you with a `Bounty`. It will prevent the Bishops from finding you, effectively cancelling their `Bounty`.";
-            }
-            break;
-        }
-    }
-
-    const prizeName = getPrizeName(prize);
-
-    const embed = new MessageEmbed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#FCE300")
-        .setThumbnail("attachment://file.gif")
-        .setTitle(`You found a ${prizeName}!`)
-        .setDescription(prizeDescription)
-        .setFooter(tokensRemaining);
-
-    await connection.manager.save(userEconomy);
-
-    await interaction.editReply({
-        embeds: [embed],
-        components: []
-    });
-}
-
-async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
-    const reply = (await interaction.fetchReply()) as Message;
-    const originalEmbed = reply.embeds[0];
-    originalEmbed.fields = [];
-    originalEmbed
-        .setDescription(description)
-        .addField(
-            "**WARNING**",
-            "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
-        )
-        .setFooter(
-            "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
-        )
-        .setThumbnail("attachment://file.gif");
-
-    await interaction.editReply({ components: [], embeds: [originalEmbed] });
-}
-
-answerListener.handler = async (interaction, connection) => {
-    const member = interaction.member as GuildMember;
-    if (!interaction.isSelectMenu() || !member) return;
-    interaction.deferred = true;
-
-    const [_districtNum] = interaction.values || [];
+    const [_districtNum] = ctx.values || [];
     if (!_districtNum) return;
 
     const districtNum = +_districtNum;
     const district = districts[districtNum];
 
-    await sendWaitingMessage(interaction, `Searching ${district.bishop}'s district...`);
+    await sendWaitingMessage(ctx, `Searching ${district.bishop}'s district...`);
     await F.wait(1500);
 
-    const userEconomy = await connection.getRepository(Economy).findOne({ userid: member.id });
-    const tokens = userEconomy?.dailyBox.tokens;
-    if (!userEconomy || !tokens) return interaction.deleteReply();
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
+    const tokens = dbUser.dailyBox?.tokens;
+    if (!dbUser.dailyBox || !tokens) return ctx.deleteReply();
 
-    userEconomy.dailyBox.tokens--; // Take away a token
+    await prisma.dailyBox.update({
+        where: { userId: ctx.member.id },
+        data: { tokens: { decrement: 1 } }
+    });
 
     const CHANCE_CAUGHT = District.catchPercent(districtNum);
 
     const ran = Math.random();
     const isCaught = ran < CHANCE_CAUGHT;
 
-    if (isCaught) return memberCaught(interaction, connection, district, userEconomy);
-    else return memberWon(interaction, connection, district, userEconomy);
-};
+    if (isCaught) return memberCaught(ctx, district, dbUser.dailyBox);
+    else return memberWon(ctx, district, dbUser as User & { dailyBox: DailyBox });
+});
 
-buttonListener.handler = async (interaction) => {
-    interaction.deferred = true;
+const genButtonId = command.addInteractionListener("banditosBishopsButton", [], async (ctx) => {
+    ctx.deferred = true;
 
-    await sendWaitingMessage(interaction, "Downloading `supplyList.txt` from `B@ND1?0S`...");
+    await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
 
     const embed = new MessageEmbed()
@@ -284,5 +162,122 @@ buttonListener.handler = async (interaction) => {
         embed.addField(`What is a ${item.toLowerCase()}?`, description, true);
     }
 
-    await interaction.editReply({ embeds: [embed.toJSON()], components: [] });
-};
+    await ctx.editReply({ embeds: [embed], components: [] });
+});
+
+async function memberCaught(
+    ctx: SelectMenuInteraction,
+    district: typeof districts[number],
+    dailyBox: DailyBox
+): Promise<void> {
+    await (<Message>ctx.message).removeAttachments();
+
+    const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
+    const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
+
+    const embed = new MessageEmbed()
+        .setColor("#EA523B")
+        .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
+        .setAuthor(district.bishop, emojiURL)
+        .setDescription(
+            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
+        )
+        .setFooter(`You win nothing. ${tokensRemaining}`);
+
+    // await sendViolationNotice(interaction.member as GuildMember, {
+    //     identifiedAs: "CONSPIRACY TO COMMIT TREASON",
+    //     found: "trespassing while conspiring against the Dema Council",
+    //     reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
+    //     issuingBishop: district.bishop
+    // });
+
+    await ctx.editReply({
+        embeds: [embed],
+        components: []
+    });
+}
+
+async function memberWon(
+    ctx: SelectMenuInteraction,
+    district: typeof districts[number],
+    dbUserWithBox: User & { dailyBox: DailyBox }
+) {
+    const prize = district.pickPrize();
+    const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${
+        dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
+    } remaining`;
+    const member = ctx.member as GuildMember;
+
+    let prizeDescription = `You now have ${dbUserWithBox.credits} credits.`;
+    switch (prize.type) {
+        case PrizeType.Credits:
+            dbUserWithBox.credits += prize.amount;
+            break;
+        case PrizeType.Role: {
+            const isColorRole = Object.values(roles.colors).some((group) => Object.values(group).some((id) => id === prize.id)); // prettier-ignore
+            if (isColorRole) {
+                await prisma.colorRole.upsert({
+                    where: { roleId_userId: { roleId: prize.id, userId: member.id } },
+                    update: {},
+                    create: { amountPaid: 0, roleId: prize.id, userId: member.id }
+                });
+
+                prizeDescription = `You may equip this role using the \`/roles color\` command.`;
+            } else await member.roles.add(prize.id);
+            break;
+        }
+        case PrizeType.Item: {
+            if (prize.item === "BOUNTY") {
+                dbUserWithBox.dailyBox.steals++;
+                prizeDescription =
+                    "A `Bounty` may be used against another member of the server to report them to the Bishops. If they do not have a `Jumpsuit`, they will receive a violation notice and you will receive 1000 credits as the bounty reward";
+            } else if (prize.item === "JUMPSUIT") {
+                dbUserWithBox.dailyBox.blocks++;
+                prizeDescription =
+                    "A `Jumpsuit` will protect you if another member sends the Bishops after you with a `Bounty`. It will prevent the Bishops from finding you, effectively cancelling their `Bounty`.";
+            }
+            break;
+        }
+    }
+
+    const prizeName = getPrizeName(prize);
+
+    const embed = new MessageEmbed()
+        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setColor("#FCE300")
+        .setThumbnail("attachment://file.gif")
+        .setTitle(`You found a ${prizeName}!`)
+        .setDescription(prizeDescription)
+        .setFooter(tokensRemaining);
+
+    const { steals, blocks } = dbUserWithBox.dailyBox;
+    await prisma.user.update({
+        where: { id: member.id },
+        data: { credits: dbUserWithBox.credits, dailyBox: { update: { steals, blocks } } }
+    });
+
+    await ctx.editReply({
+        embeds: [embed],
+        components: []
+    });
+}
+
+async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
+    const reply = (await interaction.fetchReply()) as Message;
+    const originalEmbed = reply.embeds[0];
+    originalEmbed.fields = [];
+    originalEmbed
+        .setDescription(description)
+        .addField(
+            "**WARNING**",
+            "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
+        )
+        .setFooter(
+            "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
+        )
+        .setThumbnail("attachment://file.gif");
+
+    await interaction.editReply({ components: [], embeds: [originalEmbed] });
+}
+
+export default command;

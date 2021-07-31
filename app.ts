@@ -1,11 +1,9 @@
 import { TopfeedBot } from "altbots/topfeed/topfeed";
 import { registerFont } from "canvas";
 import { channelIDs, guildID } from "configuration/config";
-import { CommandReactionHandler } from "configuration/definitions";
 import * as secrets from "configuration/secrets.json";
 import * as Discord from "discord.js";
-import { Collection, MessageComponentInteraction } from "discord.js";
-import * as helpers from "helpers";
+import { Collection } from "discord.js";
 import { setupAllCommands, updateUserScore } from "helpers";
 import AutoReact from "helpers/auto-react";
 import SlurFilter from "helpers/slur-filter";
@@ -14,13 +12,7 @@ import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
-import {
-    ErrorHandler,
-    InteractionListener,
-    ReactionListener,
-    RequiredDiscordValues,
-    SlashCommand
-} from "./src/helpers/slash-command";
+import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
 
 // let ready = false;
 let connection: Connection;
@@ -85,7 +77,7 @@ client.on("ready", async () => {
     //     .catch(console.log)
     //     .finally(() => process.exit(0));
 
-    sacarverBot = new SacarverBot(connection);
+    sacarverBot = new SacarverBot();
 
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
@@ -100,8 +92,6 @@ client.on("ready", async () => {
 });
 
 client.on("messageCreate", async (msg: Discord.Message) => {
-    if (!connection) return;
-
     const wasSlur = await SlurFilter(msg);
     if (wasSlur) return;
 
@@ -180,7 +170,7 @@ function setup() {
 
     registerFont(`./src/assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
 
-    Scheduler(client, connection);
+    Scheduler(client);
 }
 
 // async function dynamicCommandSetup(commands: Command[]): Promise<void> {

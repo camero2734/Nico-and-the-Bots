@@ -49,6 +49,8 @@ model User {
   colorRoles          ColorRole[]
   warnings            Warning[]            @relation("Warning_warnedUser")
   issuedWarnings      Warning[]            @relation("Warning_issuedByUser")
+  mutes               Mute[]               @relation("Mute_mutedUser")
+  issuedMutes         Mute[]               @relation("Mute_issuedByUser")
   submittedInterviews SubmittedInterview[]
   reminders           Reminder[]
   verifiedQuizAnswers VerifiedQuizAnswer[]
@@ -220,5 +222,22 @@ model VerifiedQuizAnswer {
   userId String
 
   answer    Int
+  createdAt DateTime @default(now())
+}
+
+model Mute {
+  id Int @id @default(autoincrement())
+
+  reason    String?
+  channelId String
+  endsAt    DateTime
+  finished  Boolean  @default(false)
+
+  mutedUser   User?  @relation("Mute_mutedUser", fields: [mutedUserId], references: [id])
+  mutedUserId String
+
+  issuedByUser   User?  @relation("Mute_issuedByUser", fields: [issuedByUserId], references: [id])
+  issuedByUserId String
+
   createdAt DateTime @default(now())
 }

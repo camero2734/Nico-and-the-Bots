@@ -18,7 +18,7 @@ import * as fs from "fs";
 import { ApplicationCommandData, Guild } from "discord.js";
 import { Collection } from "discord.js";
 import { GuildApplicationCommandPermissionData } from "discord.js";
-import { guildID, userIDs } from "../configuration/config";
+import { guildID, roles, userIDs } from "../configuration/config";
 
 const basePath = join(__dirname, "../slashcommands");
 
@@ -179,8 +179,8 @@ export async function setupAllCommands(
         id: s.id,
         permissions: [
             {
-                id: userIDs.me,
-                type: "USER",
+                id: roles.staff,
+                type: "ROLE",
                 permission: true
             }
         ]

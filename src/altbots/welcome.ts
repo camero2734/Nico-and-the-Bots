@@ -16,7 +16,7 @@ import {
     TextChannel
 } from "discord.js";
 import F from "helpers/funcs";
-import { Connection } from "typeorm";
+import { queries } from "../helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
 
@@ -28,7 +28,7 @@ export class SacarverBot {
     client: Client;
     ready: Promise<void>;
     mutex = new Mutex();
-    constructor(private connection: Connection) {
+    constructor() {
         this.client = new Client({
             intents: [
                 "GUILDS",
@@ -66,19 +66,9 @@ export class SacarverBot {
     }
 
     async getMemberNumber(member: GuildMember): Promise<number> {
-        const econRepository = this.connection.getMongoRepository(Economy);
-        const economy = await econRepository.findOne({ userid: member.user.id });
+        const dbUser = await queries.findOrCreateUser(member.id);
 
-        // Completely new user
-        if (!economy) {
-            const newEconomy = new Economy({ userid: member.user.id, joinedAt: member.joinedAt });
-            await this.connection.manager.save(newEconomy);
-            const memberNum = await econRepository.count();
-            return memberNum;
-        }
-
-        // Returning user
-        else return await economy.getJoinedNum();
+        return await queries.getJoinedNum(dbUser.joinedAt);
     }
 
     async welcomeMember(member: GuildMember): Promise<void> {

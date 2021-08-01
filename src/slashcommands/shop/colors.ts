@@ -1,73 +1,183 @@
-import { roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, Role, Snowflake } from "discord.js";
+import { CommandError } from "configuration/definitions";
+import { EmojiIdentifierResolvable, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
 import { MessageTools } from "helpers";
-import { sendViolationNotice } from "helpers/dema-notice";
 import F from "helpers/funcs";
-import { ButtonStyle, ComponentActionRow, ComponentButton, ComponentType } from "slash-create";
-import { prisma } from "../../helpers/prisma-init";
-import { ColorCategory } from "./_consts";
+import { SlashCommand } from "helpers/slash-command";
+import { prisma, queries } from "../../helpers/prisma-init";
+import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts";
 
-export const Options: CommandOptions = {
+enum ActionTypes {
+    View,
+    Purchase,
+    // Delete
+}
+
+const command = new SlashCommand(<const>{
     description: "Opens the shop menu for color roles",
     options: []
-};
+});
 
-const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clancy", "dmaorg"];
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
-export const Executor: CommandRunner = async (ctx) => {
-    await ctx.defer(true);
+    const initialMsg = await generateMainMenuEmbed(ctx.member);
+    await ctx.send(initialMsg);
+});
 
-    const colorRoles = roles.colors;
+// Main Menu
+const genMainMenuId = command.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
+    await ctx.defer({ ephemeral: true });
+    const initialMsg = await generateMainMenuEmbed(ctx.member);
+    await ctx.editReply(initialMsg);
+});
 
-    const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
-        Object.values(roleIds).map((r) => ctx.member.guild.roles.cache.get(r) as Role);
+// Category submenu
+const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
+    await ctx.defer({ephemeral: true});
 
-    const tier1 = new ColorCategory(tierToRoles(colorRoles.tier1), { credits: 7500, level: 10 });
-    const tier2 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 20 });
-    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 25000, level: 50 });
-    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
-    const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
+    const categories = getColorRoleCategories(ctx.member.roles);
+    const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
+    if (!name || !category) return;
 
-    const dbUser = await prisma.user.upsert({
-        where: { id: ctx.member.id },
-        update: {}, // No update, just return
-        create: { id: ctx.member.id, dailyBox: { create: {} } },
-        include: { colorRoles: true }
-    });
+    const dbUser = await queries.findOrCreateUser(ctx.member.id);
 
-    const userRoles = dbUser.colorRoles.map(r => r.roleId); // prettier-ignore
+    const embed = new MessageEmbed()
+                .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
+                .setTitle(name)
+                .setColor("#D07A21")
+                .setDescription(`*${category.description}*\n`)
+                .addField("Credits", `${category.data.credits}`)
+                .addField("\u200b", category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063")
+                .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
-    const categories = {
-        "The Scaled Back Collection": {
-            id: "ScaledBack",
-            data: tier1,
-            description: "Looking for basic colors? The Scaled Back Collection has you covered."
-        },
-        "Violets of Vetomo": {
-            id: "Violet",
-            data: tier2,
-            description: "Ready to branch out into more vibrant colors? Violets of Vetomo is here to help."
-        },
-        "Saturation Creations": {
-            id: "Saturation",
-            data: tier3,
-            description:
-                "Do you want to stand out in the crowd? Saturation Creations provides a variety of bright, colors to increase your saturation. Because saturation is happiness™."
-        },
-        "DEMA's Dreamers": {
-            id: "DEMA",
-            data: tier4,
-            description:
-                "VIOLATION WARNING: This page contains highly controlled contraband items. The Sacred Municipality of Dema will take any action necessary to keep its citizens safe from this dangerous material."
-        },
-        "Here Be Dragons": {
-            id: "Dragons",
-            data: DExclusive,
-            description:
-                "Trash the Dragon sponsored this collection himself. Browse this exclusive merchandise as a Firebreather."
+    const cantAfford = dbUser.credits < category.data.credits;
+    const missingCredits = category.data.credits - dbUser.credits;
+
+    const actionRow = new MessageActionRow().addComponents(category.data.roles.map((role) => {
+        const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
+        const ownsRole = ctx.member.roles.cache.has(role.id);
+        const defaultStyle = contraband ? "DANGER" : "PRIMARY";
+
+        return new MessageButton({
+            disabled: cantAfford,
+            style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
+            label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
+            customId: !ownsRole ? genItemId({itemId: role.id, action: `${ActionTypes.View}`}) : undefined,
+            emoji: contraband ? <EmojiIdentifierResolvable>{ name: "🩸" } : undefined
+        })
+    }))
+
+    actionRow.addComponents(new MessageButton({
+        style: "DANGER",
+        label: "Go back",
+        customId: genMainMenuId({})
+    }))
+
+    const components = MessageTools.allocateButtonsIntoRows(actionRow.components);
+
+    ctx.editReply({ embeds: [embed], components });
+});
+
+// Viewing a specific item
+const genItemId = command.addInteractionListener("shopColorItem", <const>["itemId", "action"], async (ctx, args) => {
+    const actionType = +args.action;
+
+    const categories = getColorRoleCategories(ctx.member.roles);
+    const [categoryName, category] = Object.entries(categories).find(([_, category]) => category.data.roles.some(r => r.id === args.itemId)) || [];
+    const role = category?.data.roles.find(r => r.id === args.itemId);
+
+    if (!categoryName || !category || !role) return;
+
+    const dbUser = await queries.findOrCreateUser(ctx.member.id);
+
+    // Change some stuff if the item is contraband
+    const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
+    let title = "Good Day Dema® Discord Shop";
+    if (contraband) title = F.randomizeLetters(title);
+    const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
+    const footer = contraband
+            ? F.randomizeLetters("thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_", 0.1) // prettier-ignore
+            : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
+
+    const embed = new MessageEmbed()
+        .setAuthor(title, shopImage)
+        .setTitle(role.name)
+        .setColor(role.color)
+        .setFooter(footer); // prettier-ignore
+
+    if (actionType === ActionTypes.View) {
+        embed.setDescription(`Would you like to purchase this item?`)
+            .addField("Cost", `${category.data.credits}`, true)
+            .addField("Your credits", `${dbUser.credits} → ${dbUser.credits - category.data.credits}`, true)
+            
+
+        if (contraband) {
+            embed.addField(
+                "WARNING",
+                "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave."
+            );
         }
-    };
+
+        const roleComponents = MessageTools.allocateButtonsIntoRows([
+            new MessageButton({style: "SUCCESS", label: "Purchase", customId: genItemId({action: `${ActionTypes.Purchase}`, itemId: args.itemId})}),
+            new MessageButton({style: "DANGER", label: "Go back", customId: genSubmenuId({categoryId: category.id})})
+        ]);
+
+        await ctx.editReply({embeds: [embed], components: roleComponents});
+    } else if (actionType === ActionTypes.Purchase) {
+        // Purchase
+        if (!category.data.purchasable(role.id, ctx.member, dbUser))
+            throw new CommandError("You do not have enough credits to purchase this item");
+
+        // Add role to user's color roles list
+        if (ctx.member.roles.cache.some((r) => r.id === role.id)) throw new CommandError("You already have this role!");
+
+        // Use transaction to ensure user receives role and has their credits deducted
+        await prisma.$transaction([
+            prisma.colorRole.create({
+                data: { userId: ctx.user.id, roleId: role.id, amountPaid: category.data.credits }
+            }),
+            prisma.user.update({
+                where: { id: dbUser.id },
+                data: { credits: { decrement: category.data.credits } }
+            })
+        ]);
+
+        const purchaseEmbed = new MessageEmbed()
+
+        embed.setDescription(`Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`) // prettier-ignore
+            .addField(
+            `How do I "equip" this role?`,
+            "To actually apply this role, simply use the `/role color` command. You may only have one color role applied at a time (but you can own as many as you want)."
+        );
+        let sent = false;
+        try {
+            const dm = await ctx.member.createDM();
+            dm.send({ embeds: [embed] });
+            sent = true;
+        } catch (e) {
+            //
+        } finally {
+            embed.fields = [];
+            embed.description += ` This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}` // prettier-ignore
+            ctx.editReply({ embeds: [embed], components: [] });
+        }
+
+        // if (contraband)
+        //     sendViolationNotice(ctx.member, ctx.connection, {
+        //         identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
+        //         reason: `Possession of ${role.name.toUpperCase()}`,
+        //         found: "in possession of regulated materials that have been outlawed by the Dema Council"
+        //     });
+    }
+
+    
+})
+
+async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOptions> {
+    const categories = getColorRoleCategories(member.roles);
+
+    const dbUser = await queries.findOrCreateUser(member.id);
 
     const MenuEmbed = new MessageEmbed()
         .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
@@ -81,178 +191,24 @@ export const Executor: CommandRunner = async (ctx) => {
         )
         .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
-    const MenuComponents: ComponentActionRow[] = [
-        {
-            type: ComponentType.ACTION_ROW,
-            components: Object.entries(categories).map(([label, item], idx) => {
-                const unlocked = item.data.unlockedFor(ctx.member, dbUser);
-                return {
-                    type: ComponentType.BUTTON,
-                    style: unlocked ? ButtonStyle.PRIMARY : ButtonStyle.SECONDARY,
-                    label: unlocked
-                        ? `${idx + 1}. ${label}`
-                        : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
-                    custom_id: unlocked ? item.id : "nothing",
-                    emoji: unlocked ? undefined : { name: "🔒" }
-                };
-            })
-        }
-    ];
+    const menuActionRow = new MessageActionRow().addComponents(Object.entries(categories).map(([label, item], idx) => {
+        const unlocked = item.data.unlockedFor(member, dbUser);
+        return new MessageButton({
+            style: unlocked ? "PRIMARY" : "SECONDARY",
+            label: unlocked
+                ? `${idx + 1}. ${label}`
+                : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
+            customId: unlocked ? genSubmenuId({ categoryId: item.id }) : undefined,
+            emoji: unlocked ? undefined : { name: "🔒" } as EmojiIdentifierResolvable
+        })
+    }));
 
     for (const [name, item] of Object.entries(categories)) {
+        console.log(item.data.roles.map(r => r?.id));
         MenuEmbed.addField(name, item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063");
     }
 
-    await ctx.send({ components: MenuComponents, embeds: [MenuEmbed.toJSON()] });
+    return { embeds: [MenuEmbed], components: [menuActionRow] };
+}
 
-    // If a button with custom_id "MainMenu" is pressed, the main menu is resent
-    ctx.registerComponent("MainMenu", (btnCtx) => {
-        btnCtx.editOriginal({ components: MenuComponents, embeds: [MenuEmbed.toJSON()] });
-    });
-
-    // Add button press listeners for the categories
-    for (const [name, item] of Object.entries(categories)) {
-        // When the category is pressed, send the appropriate submenu
-        ctx.registerComponent(item.id, async (btnCtx) => {
-            const embed = new MessageEmbed()
-                .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
-                .setTitle(name)
-                .setColor("#D07A21")
-                .setDescription(`*${item.description}*\n`)
-                .addField("Credits", `${item.data.credits}`)
-                .addField("\u200b", item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063")
-                .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
-
-            const cantAfford = dbUser.credits < item.data.credits;
-            const missingCredits = item.data.credits - dbUser.credits;
-
-            const categoryButtons: ComponentButton[] = item.data.roles.map((role) => {
-                const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-                const ownsRole = userRoles.includes(role.id);
-                const defaultColor = contraband ? ButtonStyle.DESTRUCTIVE : ButtonStyle.PRIMARY;
-
-                return {
-                    type: ComponentType.BUTTON,
-                    disabled: cantAfford,
-                    style: cantAfford || ownsRole ? ButtonStyle.SECONDARY : defaultColor,
-                    label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
-                    custom_id: !ownsRole ? role.id : "nothing",
-                    emoji: contraband ? { name: "🩸" } : undefined
-                };
-            });
-            categoryButtons.push({
-                type: ComponentType.BUTTON,
-                style: ButtonStyle.DESTRUCTIVE,
-                label: "Go back",
-                custom_id: "MainMenu"
-            });
-
-            const components = MessageTools.allocateButtonsIntoRows(
-                categoryButtons as any
-            ) as unknown as ComponentActionRow[];
-
-            btnCtx.editParent({ embeds: [embed.toJSON()], components });
-        });
-
-        // Add button press listeners for the color items themselves
-        for (const role of item.data.roles) {
-            const BUY_ID = `buy:${role.id}`;
-
-            // Change some stuff if the item is contraband
-            const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-            let title = "Good Day Dema® Discord Shop";
-            const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
-            const footer = contraband
-                ? F.randomizeLetters("thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_", 0.1) // prettier-ignore
-                : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
-            if (contraband) title = F.randomizeLetters(title);
-
-            const roleEmbed = new MessageEmbed()
-                .setAuthor(title, shopImage)
-                .setTitle(role.name)
-                .setColor(role.color)
-                .setDescription(`Would you like to purchase this item?`)
-                .addField("Cost", `${item.data.credits}`, true)
-                .addField("Your credits", `${dbUser.credits} → ${dbUser.credits - item.data.credits}`, true)
-                .setFooter(footer); // prettier-ignore
-
-            if (contraband) {
-                roleEmbed.addField(
-                    "WARNING",
-                    "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave."
-                );
-            }
-
-            const roleComponents = MessageTools.allocateButtonsIntoRows([
-                {
-                    type: ComponentType.BUTTON,
-                    style: ButtonStyle.SUCCESS,
-                    label: "Purchase",
-                    custom_id: BUY_ID,
-                    emoji: { name: "💰" }
-                },
-                {
-                    type: ComponentType.BUTTON,
-                    style: ButtonStyle.DESTRUCTIVE,
-                    label: "Go back",
-                    custom_id: item.id // Will go back to parent menu
-                }
-            ] as any) as unknown as ComponentActionRow[];
-
-            // Listen for role being pressed in subcategory
-            ctx.registerComponent(role.id, async (btnCtx) => {
-                btnCtx.editOriginal({
-                    embeds: [roleEmbed.toJSON()],
-                    components: roleComponents
-                });
-            });
-
-            // When someone clicks "Purchase"
-            ctx.registerComponent(BUY_ID, async (btnCtx) => {
-                // Purchase
-                if (!item.data.purchasable(role.id, ctx.member, dbUser))
-                    throw new CommandError("You do not have enough credits to purchase this item");
-
-                // Add role to user's color roles list
-                if (userRoles.some((r) => r === role.id)) throw new CommandError("You already have this role!");
-
-                // Use transaction to ensure user receives role and has their credits deducted
-                await prisma.$transaction([
-                    prisma.colorRole.create({
-                        data: { userId: ctx.user.id, roleId: role.id, amountPaid: item.data.credits }
-                    }),
-                    prisma.user.update({
-                        where: { id: dbUser.id },
-                        data: { credits: { decrement: item.data.credits } }
-                    })
-                ]);
-
-                roleEmbed.fields = [];
-                roleEmbed.setDescription(`Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`); // prettier-ignore
-                roleEmbed.addField(
-                    `How do I "equip" this role?`,
-                    "To actually apply this role, simply use the `/role color` command. You may only have one color role applied at a time (but you can own as many as you want)."
-                );
-                let sent = false;
-                try {
-                    const dm = await ctx.member.createDM();
-                    dm.send({ embeds: [roleEmbed] });
-                    sent = true;
-                } catch (e) {
-                    //
-                } finally {
-                    roleEmbed.fields = [];
-                    roleEmbed.description += ` This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}` // prettier-ignore
-                    btnCtx.editOriginal({ embeds: [roleEmbed.toJSON()], components: [] });
-                }
-
-                if (contraband)
-                    sendViolationNotice(ctx.member, ctx.connection, {
-                        identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
-                        reason: `Possession of ${role.name.toUpperCase()}`,
-                        found: "in possession of regulated materials that have been outlawed by the Dema Council"
-                    });
-            });
-        }
-    }
-};
+export default command;

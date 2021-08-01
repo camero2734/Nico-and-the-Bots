@@ -1,19 +1,19 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandError } from "configuration/definitions";
 import { Snowflake } from "discord.js";
 import { badgeLoader, LevelCalculator } from "helpers";
-import { CommandOptionType } from "slash-create";
+import { SlashCommand } from "helpers/slash-command";
 import { prisma, queries } from "../../helpers/prisma-init";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "View your score card",
     options: [
-        { name: "user", description: "The user to check the score for", required: false, type: CommandOptionType.USER }
+        { name: "user", description: "The user to check the score for", required: false, type: "USER" }
     ]
-};
+})
 
-export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const albumRoles = roles.albums;
     const options = ctx.opts;
 
@@ -40,7 +40,7 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     const placeNum = await queries.alltimePlaceNum(dbUser.score);
 
     // Get images to place on card as badges
-    const badges = await badgeLoader(member, dbUser.golds.length, placeNum, ctx.connection);
+    const badges = await badgeLoader(member, dbUser.golds.length, placeNum);
 
     // Calculate progress to next level
 
@@ -69,16 +69,15 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     const goldcircle = await loadImage("./src/assets/badges/goldcircle.png");
 
     // prettier-ignore
-    const backgroundName = (() => {
-        switch(src) {
-            case albumRoles.ST: return "self_titled";
-            case albumRoles.RAB: return "rab";
-            case albumRoles.VSL: return "vessel"
-            case albumRoles.BF: return "blurryface";
-            case albumRoles.TRENCH: return "trench";
-            default: return "sai";
-        }
-    })();
+    const backgroundName = {
+        [albumRoles.ST]: "self_titled",
+        [albumRoles.RAB]: "rab",
+        [albumRoles.VSL]: "vessel",
+        [albumRoles.BF]: "blurryface",
+        [albumRoles.TRENCH]: "trench",
+        [albumRoles.SAI]: "sai"
+    }[src];
+
     const background = await loadImage(`./src/assets/images/score_cards/${backgroundName}.png`);
 
     //FIND SHORTEST NAME FOR USER
@@ -182,6 +181,6 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     await ctx.send({
         content: `Took ${Date.now() - START_TIME} ms`,
         embeds: [],
-        file: [{ name: "score.png", file: canvas.toBuffer() }]
+        files: [{ name: "score.png", attachment: canvas.toBuffer() }]
     });
-};
+})

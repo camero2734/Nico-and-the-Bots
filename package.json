@@ -49,6 +49,7 @@
         "diff": "^5.0.0",
         "discord.js": "^13.0.0-dev.4886ae2.1627257843",
         "emoji-regex": "^7.0.3",
+        "esbuild": "^0.12.17",
         "eslint": "^7.26.0",
         "fastify": "^3.15.1",
         "file-type": "^16.5.0",
@@ -89,6 +90,7 @@
         "youtube-info-streams": "^1.0.5"
     },
     "devDependencies": {
+        "esbuild-node-tsc": "^1.6.0",
         "husky": "^7.0.1"
     }
 }

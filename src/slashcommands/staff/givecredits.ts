@@ -1,13 +1,7 @@
-import { CommandError, CommandRunner, createOptions, OptsType } from "configuration/definitions";
-import { CommandOptionType } from "slash-create";
-import { roles } from "../../configuration/config";
-import parseDuration from "parse-duration";
-import { Item } from "../../database/entities/Item";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { millisecondsToMinutes } from "date-fns";
-import { Economy } from "../../database/entities/Economy";
-import { SlashCommand } from "../../helpers/slash-command";
 import { prisma, queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
 const command = new SlashCommand(<const>{
     description: "Gives the specified number of credits to the user",

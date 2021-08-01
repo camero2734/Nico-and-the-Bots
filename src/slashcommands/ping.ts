@@ -1,4 +1,3 @@
-import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { SlashCommand } from "../helpers/slash-command";
 

@@ -1,5 +1,5 @@
-import { channelIDs, roles, userIDs } from "configuration/config";
-import { CommandOptions, CommandRunner } from "configuration/definitions";
+import { channelIDs, roles, userIDs } from "../../configuration/config";
+import { CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { ComponentActionRow } from "slash-create";
 

@@ -1,5 +1,5 @@
 import { cairoVersion } from "canvas";
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";

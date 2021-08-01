@@ -1,5 +1,5 @@
-import { roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { roles } from "../../configuration/config";
+import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
 

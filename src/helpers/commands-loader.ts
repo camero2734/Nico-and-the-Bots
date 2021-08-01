@@ -6,26 +6,22 @@
  * so the max nest level is 3
  */
 
+import { ApplicationCommandData, Collection, Guild, GuildApplicationCommandPermissionData } from "discord.js";
+import * as fs from "fs";
+import { join, resolve, sep } from "path";
+import { roles } from "../configuration/config";
 import {
-    InteractionListener,
-    ListenerCustomIdGenerator,
-    ReactionListener,
+    InteractionListener, ReactionListener,
     SlashCommand,
     SlashCommandData
 } from "./slash-command";
-import { join, resolve, sep } from "path";
-import * as fs from "fs";
-import { ApplicationCommandData, Guild } from "discord.js";
-import { Collection } from "discord.js";
-import { GuildApplicationCommandPermissionData } from "discord.js";
-import { guildID, roles, userIDs } from "../configuration/config";
 
 const basePath = join(__dirname, "../slashcommands");
 
 async function readDirectory(path: string): Promise<string[]> {
     try {
         const directoryFiles = await fs.promises.readdir(path);
-        return directoryFiles.map((fileOrFolder) => resolve(path, fileOrFolder));
+        return directoryFiles.map((fileOrFolder) => resolve(path, fileOrFolder)).filter(f => !f.endsWith(".map"));
     } catch (e) {
         return [];
     }
@@ -47,7 +43,7 @@ async function parseCommandFolderStructure(): Promise<ParsedFile[]> {
             currentNodes.map(async (path) => {
                 const isDirectory = (await fs.promises.stat(path)).isDirectory();
                 if (!isDirectory) {
-                    const slashCommand = (await import(path)).default;
+                    const slashCommand = (await import(`file:///${path}`)).default.default;
                     if (!slashCommand || !(slashCommand instanceof SlashCommand)) return [];
 
                     const parts = path.split(sep).reverse();

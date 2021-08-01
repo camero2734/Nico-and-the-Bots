@@ -1,21 +1,17 @@
-import { TopfeedBot } from "altbots/topfeed/topfeed";
+import { TopfeedBot } from "./src/altbots/topfeed/topfeed";
 import { registerFont } from "canvas";
-import { channelIDs, guildID } from "configuration/config";
-import * as secrets from "configuration/secrets.json";
+import { channelIDs, guildID } from "./src/configuration/config";
+import secrets from "./src/configuration/secrets";
 import * as Discord from "discord.js";
 import { Collection } from "discord.js";
-import { setupAllCommands, updateUserScore } from "helpers";
-import AutoReact from "helpers/auto-react";
-import SlurFilter from "helpers/slur-filter";
-import { Connection } from "typeorm";
+import { setupAllCommands, updateUserScore } from "./src/helpers";
+import AutoReact from "./src/helpers/auto-react";
+import SlurFilter from "./src/helpers/slur-filter";
 import { KeonsBot } from "./src/altbots/shop";
 import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
-
-// let ready = false;
-let connection: Connection;
 
 const client = new Discord.Client({
     intents: [

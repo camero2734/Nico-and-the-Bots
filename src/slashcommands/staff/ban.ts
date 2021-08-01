@@ -1,5 +1,5 @@
-import { roles } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { SlashCommand } from "../../helpers/slash-command";
 

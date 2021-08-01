@@ -1,4 +1,3 @@
-import { Topfeed } from "database/entities/Topfeed";
 import { MessageOptions, Snowflake } from "discord.js";
 import { Connection } from "typeorm";
 
@@ -15,12 +14,13 @@ export abstract class Watcher<T> {
 
     async checkItems(items: Checked<T>[]): Promise<Checked<T>[]> {
         const uniqueIDs = items.map((item) => item.uniqueIdentifier);
+        return [];
 
-        const alreadyExist = await this.connection
-            .getMongoRepository(Topfeed)
-            .find({ where: { hash: { $in: uniqueIDs }, type: this.type } });
+        // const alreadyExist = await this.connection
+        //     .getMongoRepository(Topfeed)
+        //     .find({ where: { hash: { $in: uniqueIDs }, type: this.type } });
 
-        return items.filter((item) => !alreadyExist.some((tf) => tf.hash === item.uniqueIdentifier));
+        // return items.filter((item) => !alreadyExist.some((tf) => tf.hash === item.uniqueIdentifier));
     }
 
     async fetchNewItems(): Promise<Checked<T>[]> {

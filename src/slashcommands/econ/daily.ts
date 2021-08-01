@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "canvas";
-import { channelIDs, roles, userIDs } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { channelIDs, roles, userIDs } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { addDays, differenceInDays } from "date-fns";
 import { MessageEmbed } from "discord.js";
 import F from "../../helpers/funcs";

@@ -1,4 +1,4 @@
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
 import { MessageEmbed } from "discord.js";
 import parseDuration from "parse-duration";

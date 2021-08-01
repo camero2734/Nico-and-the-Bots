@@ -1,8 +1,8 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandError, CommandRunner, createOptions, ExtendedContext, OptsType } from "configuration/definitions";
+import { CommandError, CommandRunner, createOptions, ExtendedContext, OptsType } from "../../configuration/definitions";
 import { GuildMember } from "discord.js";
-import { badgeLoader } from "helpers";
-import { LevelCalculator } from "helpers/score-manager";
+import { badgeLoader } from "../../helpers";
+import { LevelCalculator } from "../../helpers/score-manager";
 import fetch from "node-fetch";
 import { CommandOptionType } from "slash-create";
 import { queries, prisma } from "../../helpers/prisma-init";

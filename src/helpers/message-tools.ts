@@ -1,7 +1,7 @@
 import { Poll, Vote } from "@prisma/client";
 import { Mutex } from "async-mutex";
-import { constants } from "configuration/config";
-import { CommandComponentListener } from "configuration/definitions";
+import { constants } from "../configuration/config";
+import { CommandComponentListener } from "../configuration/definitions";
 import {
     Collection,
     Interaction,

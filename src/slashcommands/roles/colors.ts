@@ -1,5 +1,5 @@
-import { channelIDs, userIDs } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { channelIDs, userIDs } from "../../configuration/config";
+import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType } from "slash-create";
 import { prisma } from "../../helpers/prisma-init";

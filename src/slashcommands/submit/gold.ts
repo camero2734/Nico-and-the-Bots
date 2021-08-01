@@ -1,5 +1,5 @@
-import { channelIDs, emojiIDs, roles } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { channelIDs, emojiIDs, roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import {
     EmojiIdentifierResolvable,
     GuildMember,

@@ -1,5 +1,5 @@
 import { createCanvas, Image, loadImage } from "canvas";
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { SlashCommand } from "../../helpers/slash-command";

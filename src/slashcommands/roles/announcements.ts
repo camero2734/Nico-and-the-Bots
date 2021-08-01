@@ -1,4 +1,4 @@
-import { CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { roles } from "../../configuration/config";
 

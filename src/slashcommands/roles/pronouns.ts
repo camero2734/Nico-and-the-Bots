@@ -1,8 +1,8 @@
 import { CommandOptionType } from "slash-create";
-import { CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import * as R from "ramda";
-import { channelIDs, roles } from "configuration/config";
+import { channelIDs, roles } from "../../configuration/config";
 
 const pronounOptsList = <const>["pronoun1", "pronoun2", "pronoun3"];
 type OptsType = Record<typeof pronounOptsList[number], string>;

@@ -1,6 +1,6 @@
 import { DailyBox, User } from "@prisma/client";
-import { channelIDs, roles } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { channelIDs, roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { format } from "date-fns";
 import {
     EmojiIdentifierResolvable,
@@ -15,7 +15,7 @@ import {
     SelectMenuInteraction
 } from "discord.js";
 import fs from "fs";
-import F from "helpers/funcs";
+import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
@@ -28,7 +28,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.defer();
 
-    const buffer = await fs.promises.readFile("src/assets/images/banditos.gif");
+    const buffer = await fs.promises.readFile("./src/assets/images/banditos.gif");
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;

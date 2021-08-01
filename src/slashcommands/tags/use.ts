@@ -1,4 +1,4 @@
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { prisma } from "../../helpers/prisma-init";
 import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";

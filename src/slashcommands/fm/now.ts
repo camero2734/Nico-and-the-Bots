@@ -1,4 +1,4 @@
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../configuration/config";

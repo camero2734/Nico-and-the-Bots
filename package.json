@@ -4,10 +4,10 @@
     "description": "Main bot for Discord Clique",
     "main": "app.ts",
     "scripts": {
+        "build": "etsc && cp -r src/assets dist/src/assets",
         "dev": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register app.ts",
         "devtest": "ts-node-dev --transpile-only --ignore-watch node_modules -r tsconfig-paths/register test.ts",
         "dev:debug": "set DEBUG=consola && yarn dev",
-        "build": "tsc",
         "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/app.js",
         "update": "npm-check -u",
         "deploy": "bash ./deploy.sh",
@@ -91,6 +91,8 @@
     },
     "devDependencies": {
         "esbuild-node-tsc": "^1.6.0",
-        "husky": "^7.0.1"
+        "esbuild-register": "^2.6.0",
+        "husky": "^7.0.1",
+        "ts-eager": "^2.0.2"
     }
 }

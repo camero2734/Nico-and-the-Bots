@@ -1,5 +1,5 @@
-import { channelIDs, roles, userIDs } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { channelIDs, roles, userIDs } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";

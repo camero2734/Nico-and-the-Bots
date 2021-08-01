@@ -1,4 +1,4 @@
-import { CommandError, CommandRunner, createOptions, extendContext, OptsType } from "configuration/definitions";
+import { CommandError, CommandRunner, createOptions, extendContext, OptsType } from "../../configuration/definitions";
 import {
     CommandContext,
     CommandMember,

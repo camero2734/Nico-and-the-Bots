@@ -1,5 +1,5 @@
-import { channelIDs, roles } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { channelIDs, roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { DMChannel, EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";

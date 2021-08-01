@@ -1,8 +1,6 @@
-import { CommandError, CommandRunner, createOptions, OptsType } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { addMilliseconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
-import { Reminder } from "../../database/entities/Reminder";
 import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
@@ -42,12 +40,10 @@ command.setHandler(async (ctx) => {
 
     const sendAt = addMilliseconds(new Date(), intime);
 
-    const reminder = new Reminder({ text, userid: ctx.member.id, sendAt });
-
     const confirmEmbed = new MessageEmbed()
         .setTitle("Created reminder")
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .addField("Reminder", reminder.text)
+        .addField("Reminder", text)
         .addField("Send time", F.discordTimestamp(sendAt, "longDateTime"));
 
     await prisma.reminder.create({

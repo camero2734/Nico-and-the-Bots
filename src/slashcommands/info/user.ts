@@ -1,12 +1,8 @@
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
-import { Economy } from "database/entities/Economy";
-import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
-import ago from "s-ago";
+import { CommandError } from "../../configuration/definitions";
+import { MessageEmbed } from "discord.js";
 import ordinal from "ordinal";
-import { CommandOptionType } from "slash-create";
-import { SlashCommand } from "../../helpers/slash-command";
 import { queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
 const command = new SlashCommand(<const>{
     description: "Displays some information about a user",

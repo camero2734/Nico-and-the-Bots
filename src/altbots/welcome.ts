@@ -1,8 +1,7 @@
 import { Mutex } from "async-mutex";
 import { createCanvas, loadImage } from "canvas";
-import { channelIDs, roles } from "configuration/config";
-import * as secrets from "configuration/secrets.json";
-import { Economy } from "database/entities/Economy";
+import { channelIDs, roles } from "../configuration/config";
+import secrets from "../configuration/secrets";
 import {
     Client,
     GuildMember,
@@ -15,7 +14,7 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
-import F from "helpers/funcs";
+import F from "../helpers/funcs";
 import { queries } from "../helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";

@@ -1,8 +1,8 @@
 import { Client, Guild, Intents, MessageAttachment, TextChannel } from "discord.js";
 import { Connection } from "typeorm";
 import { SiteWatcher } from "./types/websites";
-import * as secrets from "configuration/secrets.json";
-import { channelIDs, guildID } from "configuration/config";
+import secrets from "../../configuration/secrets";
+import { channelIDs, guildID } from "../../configuration/config";
 import { setupInstagram, InstaWatcher } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";
 import { Watcher } from "./types/base";

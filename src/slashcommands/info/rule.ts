@@ -1,4 +1,4 @@
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import Fuse from "fuse.js";
 import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";

@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";

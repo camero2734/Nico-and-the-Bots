@@ -1,7 +1,7 @@
 import { MessageEmbed } from "discord.js";
-import F from "helpers/funcs";
+import F from "../../../helpers/funcs";
 import fetch from "node-fetch";
-import * as secrets from "../../../configuration/secrets.json";
+import secrets from "../../../configuration/secrets";
 import { Checked, Watcher } from "./base";
 
 export interface ReferencedTweet {

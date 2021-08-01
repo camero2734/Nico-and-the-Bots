@@ -1,6 +1,6 @@
 import { Client, Intents, MessageEmbed, TextChannel } from "discord.js";
-import * as secrets from "configuration/secrets.json";
-import { channelIDs, guildID } from "configuration/config";
+import secrets from "../configuration/secrets";
+import { channelIDs, guildID } from "../configuration/config";
 
 export class KeonsBot {
     client: Client;

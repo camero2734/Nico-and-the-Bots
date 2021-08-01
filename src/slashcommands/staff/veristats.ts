@@ -1,8 +1,8 @@
 import { VerifiedQuizAnswer } from "@prisma/client";
 import { MessageEmbed } from "discord.js";
-import F from "helpers/funcs";
 import R from "ramda";
 import progressBar from "string-progressbar";
+import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 import QuizQuestions from "../../helpers/verified-quiz/quiz";

@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import * as secrets from "../../configuration/secrets.json";
+import secrets from "../../configuration/secrets";
 
 type GeniusQueryHit = {
     highlights: unknown[];

@@ -1,4 +1,4 @@
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
 import { CommandOptionType, MessageEmbedOptions } from "slash-create";
 

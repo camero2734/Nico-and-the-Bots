@@ -1,4 +1,4 @@
-import * as secrets from "configuration/secrets.json";
+import secrets from "../../configuration/secrets";
 import { GuildMember } from "discord.js";
 import { CommandError } from "../../configuration/definitions";
 import { prisma } from "../../helpers/prisma-init";

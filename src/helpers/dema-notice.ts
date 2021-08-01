@@ -1,7 +1,6 @@
 import { Mutex } from "async-mutex";
 import { createCanvas, loadImage } from "canvas";
-import { channelIDs } from "configuration/config";
-import { Counter } from "database/entities/Counter";
+import { channelIDs } from "../configuration/config";
 import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import { Connection, LessThan } from "typeorm";
 import F from "./funcs";
@@ -34,85 +33,85 @@ export async function sendViolationNotice(
     connection: Connection,
     options: { identifiedAs: string; found: string; reason: string; issuingBishop?: string }
 ): Promise<void> {
-    const { identifiedAs, reason, issuingBishop, found } = options;
+    // const { identifiedAs, reason, issuingBishop, found } = options;
 
-    const chan = member.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
-    if (!chan) return;
+    // const chan = member.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
+    // if (!chan) return;
 
-    await F.wait(1000);
+    // await F.wait(1000);
 
-    const counters = connection.getRepository(Counter);
+    // const counters = connection.getRepository(Counter);
 
-    // Use a mutex to ensure each contraband message is assigned a unique number
-    mutex.runExclusive(async () => {
-        let counter = await counters.findOne({ identifier: "ContrabandCounter", title: "ContrabandCounter" });
-        if (!counter) counter = new Counter({ identifier: "ContrabandCounter", title: "ContrabandCounter" });
+    // // Use a mutex to ensure each contraband message is assigned a unique number
+    // mutex.runExclusive(async () => {
+    //     let counter = await counters.findOne({ identifier: "ContrabandCounter", title: "ContrabandCounter" });
+    //     if (!counter) counter = new Counter({ identifier: "ContrabandCounter", title: "ContrabandCounter" });
 
-        const infractionNo = ++counter.count;
-        const bishop = issuingBishop || F.randomValueInArray(["Nico", "Reisdro", "Sacarver", "Nills", "Keons", "Lisden", "Andre", "Vetomo", "Listo"]); // prettier-ignore
+    //     const infractionNo = ++counter.count;
+    //     const bishop = issuingBishop || F.randomValueInArray(["Nico", "Reisdro", "Sacarver", "Nills", "Keons", "Lisden", "Andre", "Vetomo", "Listo"]); // prettier-ignore
 
-        const width = 1800;
-        const height = 1800;
-        // const fontSize = 50;
+    //     const width = 1800;
+    //     const height = 1800;
+    //     // const fontSize = 50;
 
-        const canvas = createCanvas(width, height);
-        const cctx = canvas.getContext("2d");
+    //     const canvas = createCanvas(width, height);
+    //     const cctx = canvas.getContext("2d");
 
-        const img = await loadImage("./src/assets/images/dema_notice.png");
-        cctx.drawImage(img, 0, 0, width, height);
+    //     const img = await loadImage("./src/assets/images/dema_notice.png");
+    //     cctx.drawImage(img, 0, 0, width, height);
 
-        // Draw IDENTIFIED AS ___________ BY DEMA COUNCIL
-        cctx.fillStyle = "white";
-        cctx.font = "900 80px Lucida Console";
-        cctx.textAlign = "center";
+    //     // Draw IDENTIFIED AS ___________ BY DEMA COUNCIL
+    //     cctx.fillStyle = "white";
+    //     cctx.font = "900 80px Lucida Console";
+    //     cctx.textAlign = "center";
 
-        const compressBy = 0.95;
-        const originalWidth = cctx.measureText(identifiedAs).width;
-        cctx.fillText(identifiedAs, 900, 282, originalWidth * compressBy);
+    //     const compressBy = 0.95;
+    //     const originalWidth = cctx.measureText(identifiedAs).width;
+    //     cctx.fillText(identifiedAs, 900, 282, originalWidth * compressBy);
 
-        // Draw main text body
-        cctx.font = "45px Arial Narrow";
-        cctx.textAlign = "left";
-        const mx = 163;
-        const body = `You are in volation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found ${found}. Further actions will be taken to ensure these violations will not occur again`;
-        fillParagraph(cctx, `NOTICE: ${body}.\n\nWe have people on the way. We want you home safe.`, mx, 540, width - 2 * mx); // prettier-ignore
+    //     // Draw main text body
+    //     cctx.font = "45px Arial Narrow";
+    //     cctx.textAlign = "left";
+    //     const mx = 163;
+    //     const body = `You are in volation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found ${found}. Further actions will be taken to ensure these violations will not occur again`;
+    //     fillParagraph(cctx, `NOTICE: ${body}.\n\nWe have people on the way. We want you home safe.`, mx, 540, width - 2 * mx); // prettier-ignore
 
-        // Infraction No.
-        cctx.font = "50px Arial Narrow";
-        cctx.textAlign = "center";
-        cctx.translate(900, 990);
-        cctx.fillText(`Infraction No. ${formatInfractionNumber(infractionNo)}`, 0, 0);
+    //     // Infraction No.
+    //     cctx.font = "50px Arial Narrow";
+    //     cctx.textAlign = "center";
+    //     cctx.translate(900, 990);
+    //     cctx.fillText(`Infraction No. ${formatInfractionNumber(infractionNo)}`, 0, 0);
 
-        // Draw Reason
-        cctx.translate(0, 75);
-        cctx.fillText(reason, 0, 0);
+    //     // Draw Reason
+    //     cctx.translate(0, 75);
+    //     cctx.fillText(reason, 0, 0);
 
-        // Issued by
-        cctx.translate(0, 75);
-        cctx.fillText(`Issued by ${bishop}`, 0, 0);
+    //     // Issued by
+    //     cctx.translate(0, 75);
+    //     cctx.fillText(`Issued by ${bishop}`, 0, 0);
 
-        await connection.manager.save(counter);
+    //     await connection.manager.save(counter);
 
-        // Allow user to see channel
-        await chan.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true });
+    //     // Allow user to see channel
+    //     await chan.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true });
 
-        const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
-        const m = await chan.send({ content: `${member}`, embeds: [transmissionEmbed] });
-        for (let i = 0; i < 5; i++) {
-            const description = transmissionEmbed.description as string;
-            transmissionEmbed.description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
-            await F.wait(1000);
-            await m.edit({ embeds: [transmissionEmbed] });
-        }
+    //     const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
+    //     const m = await chan.send({ content: `${member}`, embeds: [transmissionEmbed] });
+    //     for (let i = 0; i < 5; i++) {
+    //         const description = transmissionEmbed.description as string;
+    //         transmissionEmbed.description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
+    //         await F.wait(1000);
+    //         await m.edit({ embeds: [transmissionEmbed] });
+    //     }
 
-        await F.wait(1000);
+    //     await F.wait(1000);
 
-        await m.edit({
-            content: `${member}`,
-            embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")]
-        });
-        await chan.send({files: [new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)]}); // prettier-ignore
-    });
+    //     await m.edit({
+    //         content: `${member}`,
+    //         embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")]
+    //     });
+    //     await chan.send({files: [new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)]}); // prettier-ignore
+    // });
 }
 
 function formatInfractionNumber(infractionNo: number) {

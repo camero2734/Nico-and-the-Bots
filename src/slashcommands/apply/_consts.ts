@@ -1,6 +1,6 @@
 import { hoursToMilliseconds } from "date-fns";
 import { DMChannel, EmbedField, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { Question } from "helpers/verified-quiz/question";
+import { Question } from "../../helpers/verified-quiz/question";
 import { roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
 import F from "../../helpers/funcs";

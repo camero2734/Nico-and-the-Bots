@@ -1,10 +1,8 @@
-import { guildID } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Economy } from "database/entities/Economy";
+import { guildID } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
-import { CommandOptionType } from "slash-create";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";

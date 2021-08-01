@@ -1,5 +1,5 @@
 import { WarningType } from "@prisma/client";
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { subYears } from "date-fns";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { roles } from "../../configuration/config";

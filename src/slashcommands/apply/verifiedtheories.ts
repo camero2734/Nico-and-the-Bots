@@ -1,8 +1,8 @@
-import { channelIDs, guildID, roles } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { channelIDs, guildID, roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import F from "helpers/funcs";
-import { Question } from "helpers/verified-quiz/question";
+import F from "../../helpers/funcs";
+import { Question } from "../../helpers/verified-quiz/question";
 import R from "ramda";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";

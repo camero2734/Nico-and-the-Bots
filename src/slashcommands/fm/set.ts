@@ -1,5 +1,5 @@
-import { CommandError } from "configuration/definitions";
-import * as secrets from "configuration/secrets.json";
+import { CommandError } from "../../configuration/definitions";
+import secrets from "../../configuration/secrets";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../helpers/prisma-init";

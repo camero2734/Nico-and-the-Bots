@@ -6,11 +6,12 @@ import R from "ramda";
 import PageRes from "pageres";
 import { Connection } from "typeorm";
 import normalizeURL from "normalize-url";
-import { Topfeed } from "database/entities/Topfeed";
 import { Client, MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
+
+class Topfeed {} //
 
 type CheckReturn = {
     isNew: boolean;
@@ -101,25 +102,26 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const validResponses = response.filter((r) => r.isNew);
         if (validResponses.length === 0) return { allResponses: response };
 
-        const obj = Object.fromEntries(
-            watchMethods.map((t) => [t, validResponses.find((vr) => vr.type === t)]).filter((ent) => ent[1])
-        ) as CheckObj;
+        // // const obj = Object.fromEntries(
+        // //     watchMethods.map((t) => [t, validResponses.find((vr) => vr.type === t)]).filter((ent) => ent[1])
+        // // ) as CheckObj;
 
-        const desc = [
-            obj.HTML ? `\`\`\`diff\n${obj.HTML.data.diff.substring(0, 1850)}\`\`\`` : undefined,
-            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED.data.lastModified}` : undefined
-        ]
-            .filter((d) => d !== undefined)
-            .join("\n");
+        // // const desc = [
+        // //     obj.HTML ? `\`\`\`diff\n${obj.HTML.data.diff.substring(0, 1850)}\`\`\`` : undefined,
+        // //     obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED.data.lastModified}` : undefined
+        // // ]
+        // //     .filter((d) => d !== undefined)
+        // //     .join("\n");
 
-        const hashes = Object.values(obj)
-            .map((r) => r.hash)
-            .join(", ");
-        const file = obj.VISUAL?.data.image || undefined;
+        // // const hashes = Object.values(obj)
+        // //     .map((r) => r.hash)
+        // //     .join(", ");
+        // // const file = obj.VISUAL?.data.image || undefined;
 
-        const messageOpts = this.generateEmbed(R.keys(obj), desc, hashes, file);
+        // // const messageOpts = this.generateEmbed(R.keys(obj), desc, hashes, file);
 
-        return { msgOpts: messageOpts, allResponses: response };
+        // return { msgOpts: messageOpts, allResponses: response };
+        return null as any;
     }
 
     async #checkHTML(): Promise<CheckReturn> {
@@ -130,12 +132,13 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const html = buff.toString("utf-8");
         const hash = SiteWatcher.hash(html);
 
-        const old = (await this.getTopfeedObject(type)) || new Topfeed({ url: this.url, type, hash: "" });
+        // const old = (await this.getTopfeedObject(type)) || new Topfeed({ url: this.url, type, hash: "" });
 
-        const isNew = old?.hash !== hash;
-        const diff = Diff.createPatch(this.id, old.data || "", html);
+        // const isNew = old?.hash !== hash;
+        // const diff = Diff.createPatch(this.id, old.data || "", html);
 
-        return { data: { html, diff }, isNew, ping: isNew, type, hash };
+        // return { data: { html, diff }, isNew, ping: isNew, type, hash };
+        return null as any;
     }
 
     async #checkLastModified(): Promise<CheckReturn> {
@@ -145,11 +148,12 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const lastModified = res.headers.get("last-modified") || "Wed, 21 Oct 2015 07:28:00 GMT";
         const hash = SiteWatcher.hash(lastModified);
 
-        const old = (await this.getTopfeedObject(type)) || new Topfeed({ url: this.url, type, hash: "" });
+        // const old = (await this.getTopfeedObject(type)) || new Topfeed({ url: this.url, type, hash: "" });
 
-        const isNew = old?.hash !== hash;
+        // const isNew = old?.hash !== hash;
 
-        return { data: { lastModified }, isNew, ping: isNew, type, hash };
+        // return { data: { lastModified }, isNew, ping: isNew, type, hash };
+        return null as any;
     }
 
     async #checkVisual(): Promise<CheckReturn> {
@@ -159,11 +163,12 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const base64 = screenshot.toString("base64");
         const hash = SiteWatcher.hash(base64);
 
-        const old =
-            (await this.getTopfeedObject("VISUAL")) || new Topfeed({ url: this.httpURL, type: "VISUAL", hash: "" });
+        // const old =
+        //     (await this.getTopfeedObject("VISUAL")) || new Topfeed({ url: this.httpURL, type: "VISUAL", hash: "" });
 
-        const isNew = old?.hash !== hash;
+        // const isNew = old?.hash !== hash;
 
-        return { data: { image: screenshot }, isNew, ping: isNew, type, hash };
+        // return { data: { image: screenshot }, isNew, ping: isNew, type, hash };
+        return null as any;
     }
 }

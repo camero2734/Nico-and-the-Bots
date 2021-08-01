@@ -1,18 +1,13 @@
-import { CommandOptionType, ComponentActionRow } from "slash-create";
-import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import {
     EmojiIdentifierResolvable,
-    GuildMember,
-    Message,
-    MessageActionRow,
+    GuildMember, MessageActionRow,
     MessageEmbed,
     MessageSelectMenu,
     Snowflake
 } from "discord.js";
-import * as R from "ramda";
-import F from "helpers/funcs";
-import { roles, userIDs } from "configuration/config";
-import { MessageContext } from "helpers";
+import { CommandOptionType, ComponentActionRow } from "slash-create";
+import { roles, userIDs } from "../../configuration/config";
+import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
 
 export const Options: CommandOptions = {
     description: "Gives you notification roles for topfeed channels (when someone posts on SM, DMAORG updates, etc.)",

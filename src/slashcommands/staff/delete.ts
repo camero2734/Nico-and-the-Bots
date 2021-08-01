@@ -1,8 +1,7 @@
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, Snowflake } from "discord.js";
-import { MessageTools } from "helpers";
-import F from "helpers/funcs";
+import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
+import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
+import F from "../../helpers/funcs";
 
 export const Options: CommandOptions = {
     description: "Deletes a certain number of messages",

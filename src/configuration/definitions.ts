@@ -13,7 +13,7 @@ import {
     TextChannel,
     User
 } from "discord.js";
-import F from "helpers/funcs";
+import F from "../helpers/funcs";
 import {
     ApplicationCommandOption,
     ApplicationCommandOptionChoice,

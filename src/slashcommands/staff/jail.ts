@@ -1,21 +1,13 @@
-import { categoryIDs, channelIDs, guildID, roles } from "configuration/config";
-import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
 import {
     GuildMember,
-    GuildMemberRoleManager,
-    Message,
-    MessageAttachment,
-    MessageComponentInteraction,
-    TextChannel
+    GuildMemberRoleManager, MessageActionRow, MessageAttachment, MessageButton, MessageComponentInteraction, MessageEmbed, OverwriteData, Snowflake, TextChannel
 } from "discord.js";
-import { MessageButton } from "discord.js";
-import { MessageActionRow } from "discord.js";
-import { MessageEmbed, OverwriteData, Snowflake } from "discord.js";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
-import F from "helpers/funcs";
-import { MessageContext, MessageTools } from "helpers";
 import fetch from "node-fetch";
-import { ListenerCustomIdGenerator, ListenerInteraction, SlashCommand } from "../../helpers/slash-command";
+import { categoryIDs, channelIDs, roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
+import { MessageTools } from "../../helpers";
+import F from "../../helpers/funcs";
+import { ListenerInteraction, SlashCommand } from "../../helpers/slash-command";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 
 const command = new SlashCommand(<const>{

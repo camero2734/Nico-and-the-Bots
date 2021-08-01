@@ -1,5 +1,5 @@
-import { channelIDs, roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
+import { channelIDs, roles } from "../../configuration/config";
+import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { CommandOptionType } from "slash-create";
 

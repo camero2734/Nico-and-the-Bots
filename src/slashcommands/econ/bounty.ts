@@ -1,5 +1,5 @@
-import { userIDs } from "configuration/config";
-import { CommandError } from "configuration/definitions";
+import { userIDs } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";

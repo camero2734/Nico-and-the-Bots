@@ -1,8 +1,8 @@
-import { CommandError } from "configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { EmojiIdentifierResolvable, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import { MessageTools } from "helpers";
-import F from "helpers/funcs";
-import { SlashCommand } from "helpers/slash-command";
+import { MessageTools } from "../../helpers";
+import F from "../../helpers/funcs";
+import { SlashCommand } from "../../helpers/slash-command";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts";
 

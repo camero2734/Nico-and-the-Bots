@@ -1,5 +1,5 @@
 import SpotifyAPI from "spotify-web-api-node";
-import * as secrets from "../../configuration/secrets.json";
+import secrets from "../../configuration/secrets";
 
 export const SpotifyClient = new SpotifyAPI({
     clientId: secrets.apis.spotify.client_id,

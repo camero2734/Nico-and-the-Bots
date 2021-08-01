@@ -91,11 +91,19 @@ command.setHandler(async (ctx) => {
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {
         const m = (await ctx.fetchReply()) as Message;
-        await ctx.channel.threads.create({
+        const thread = await ctx.channel.threads.create({
             name: title,
             autoArchiveDuration: 4320,
             reason: "Auto poll thread",
             startMessage: m
+        });
+        await thread.send({
+            embeds: [
+                new MessageEmbed({
+                    description:
+                        "Welcome to the discussion for the poll! Unfortunately, Discord's thread notifications is currently a little weird, so here are some tips:\n\n`1.` When you send a message here, Discord signs you up for all notifications. You can change this by hitting the bell icon and changing to `Only mentions` or `Nothing`.\n\n`2.` If you want to remove the thread from your channel list, right click the thread channel and hit `Leave thread`.\n\nWe expect Discord to fix these issues soon, so if any other issues arise please let the staff know!"
+                })
+            ]
         });
     }
 });

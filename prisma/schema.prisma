@@ -1,0 +1,244 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["orderByAggregateGroup"]
+}
+
+model DailyBox {
+  tokens                Int       @default(0)
+  steals                Int       @default(0)
+  blocks                Int       @default(0)
+  lastDaily             DateTime?
+  dailyCount            Int       @default(0)
+  consecutiveDailyCount Int       @default(0)
+  user                  User?     @relation(fields: [userId], references: [id])
+  userId                String    @id
+}
+
+model User {
+  // Basic info
+  id       String   @id
+  joinedAt DateTime @default(now())
+
+  // Economy
+  credits Int @default(0)
+  score   Int @default(0)
+  level   Int @default(0)
+
+  // Timers
+  lastMessageSent    DateTime  @default(now())
+  lastCreationUpload DateTime?
+
+  // Relations
+  dailyBox            DailyBox?
+  lastFM              UserLastFM?
+  verifiedQuiz        VerifiedQuiz?
+  tags                Tag[]
+  messageHistory      MessageHistory[]
+  perks               Perk[]
+  givenGolds          Gold[]               @relation("Gold_fromUser")
+  golds               Gold[]               @relation("Gold_toUser")
+  polls               Poll[]
+  votesCasted         Vote[]
+  colorRoles          ColorRole[]
+  warnings            Warning[]            @relation("Warning_warnedUser")
+  issuedWarnings      Warning[]            @relation("Warning_issuedByUser")
+  mutes               Mute[]               @relation("Mute_mutedUser")
+  issuedMutes         Mute[]               @relation("Mute_issuedByUser")
+  submittedInterviews SubmittedInterview[]
+  reminders           Reminder[]
+  verifiedQuizAnswers VerifiedQuizAnswer[]
+}
+
+model Tag {
+  name      String   @id
+  text      String
+  createdAt DateTime @default(now())
+  uses      Int      @default(0)
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model MessageHistory {
+  date         DateTime
+  messageCount Int      @default(0)
+  pointsEarned Int      @default(0)
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  @@id([date, userId])
+}
+
+enum PerkType {
+  DoubleDailyCredits
+  DoubleDailyTokens
+  LevelCredits
+}
+
+model Perk {
+  id   Int      @id @default(autoincrement())
+  type PerkType
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  @@unique([userId, type])
+}
+
+model Gold {
+  id   Int   @id @default(autoincrement())
+  from User? @relation("Gold_fromUser", fields: [fromUserId], references: [id])
+  to   User? @relation("Gold_toUser", fields: [toUserId], references: [id])
+
+  // The message the gold was given for
+  messageId String
+  // The channel the gold was given in
+  channelId String
+
+  createdAt DateTime @default(now())
+
+  fromUserId String
+  toUserId   String
+}
+
+model Poll {
+  id      Int      @id @default(autoincrement())
+  name    String
+  options String[]
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+  votes  Vote[]
+}
+
+model Vote {
+  id Int @id @default(autoincrement())
+
+  choice Int
+  poll   Poll? @relation(fields: [pollId], references: [id])
+  pollId Int
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  @@unique([pollId, userId])
+}
+
+model ColorRole {
+  roleId String
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  amountPaid Int
+
+  @@id([roleId, userId])
+}
+
+enum WarningType {
+  BotheringOthers
+  Drama
+  Spam
+  NsfwOrSlurs
+  Other
+}
+
+model Warning {
+  id Int @id @default(autoincrement())
+
+  reason    String
+  type      WarningType
+  severity  Int
+  channelId String
+
+  warnedUser   User?  @relation("Warning_warnedUser", fields: [warnedUserId], references: [id])
+  warnedUserId String
+
+  issuedByUser   User?  @relation("Warning_issuedByUser", fields: [issuedByUserId], references: [id])
+  issuedByUserId String
+
+  createdAt DateTime @default(now())
+  editedAt  DateTime @updatedAt
+}
+
+model SubmittedInterview {
+  id       Int     @id @default(autoincrement())
+  url      String  @unique
+  approved Boolean @default(false)
+
+  submittedByUser   User?  @relation(fields: [submittedByUserId], references: [id])
+  submittedByUserId String
+}
+
+model TemporaryText {
+  id    Int    @id @default(autoincrement())
+  value String
+}
+
+model UserLastFM {
+  username String @id
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  createdAt   DateTime @default(now())
+  lastUpdated DateTime @updatedAt
+}
+
+model Reminder {
+  id Int @id @default(autoincrement())
+
+  text String
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  sendAt      DateTime
+  createdAt   DateTime @default(now())
+  lastUpdated DateTime @updatedAt
+}
+
+model VerifiedQuiz {
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String @id
+
+  answersGiven Int[]
+  timesTaken   Int      @default(0)
+  lastTaken    DateTime
+}
+
+model VerifiedQuizAnswer {
+  id         Int @id @default(autoincrement())
+  questionId Int
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  answer    Int
+  createdAt DateTime @default(now())
+}
+
+model Mute {
+  id Int @id @default(autoincrement())
+
+  reason    String?
+  channelId String
+  endsAt    DateTime
+  finished  Boolean  @default(false)
+
+  mutedUser   User?  @relation("Mute_mutedUser", fields: [mutedUserId], references: [id])
+  mutedUserId String
+
+  issuedByUser   User?  @relation("Mute_issuedByUser", fields: [issuedByUserId], references: [id])
+  issuedByUserId String
+
+  createdAt DateTime @default(now())
+}

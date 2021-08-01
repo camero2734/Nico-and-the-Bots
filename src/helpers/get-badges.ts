@@ -1,5 +1,4 @@
 import { Image, loadImage } from "canvas";
-import { Counter } from "database/entities/Counter";
 import { Item } from "database/entities/Item";
 import { GuildMember } from "discord.js";
 import { Connection } from "typeorm";
@@ -10,7 +9,7 @@ function wrap(text: string, noPNG = false) {
 
 export const badgeLoader = async (
     member: GuildMember,
-    userGold: Counter,
+    numGolds: number,
     placeNum: number,
     connection?: Connection
 ): Promise<Image[]> => {
@@ -181,7 +180,7 @@ export const badgeLoader = async (
 
     await createBadge("gold100.png", async function () {
         return new Promise((resolve) => {
-            if (userGold && userGold.count >= 100) {
+            if (numGolds >= 100) {
                 ignore.push(...[50, 25, 10, 5].map((n) => wrap(`gold${n}`)));
                 resolve(true);
             } else resolve(false);
@@ -190,7 +189,7 @@ export const badgeLoader = async (
 
     await createBadge("gold50.png", async function () {
         return new Promise((resolve) => {
-            if (userGold && userGold.count >= 50) {
+            if (numGolds >= 50) {
                 ignore.push(...[25, 10, 5].map((n) => wrap(`gold${n}`)));
                 resolve(true);
             } else resolve(false);
@@ -199,7 +198,7 @@ export const badgeLoader = async (
 
     await createBadge("gold25.png", async function () {
         return new Promise((resolve) => {
-            if (userGold && userGold.count >= 25) {
+            if (numGolds >= 25) {
                 ignore.push(...[10, 5].map((n) => wrap(`gold${n}`)));
                 resolve(true);
             } else resolve(false);
@@ -207,7 +206,7 @@ export const badgeLoader = async (
     });
     await createBadge("gold10.png", async function () {
         return new Promise((resolve) => {
-            if (userGold && userGold.count >= 10) {
+            if (numGolds >= 10) {
                 ignore.push(wrap("gold5"));
                 resolve(true);
             } else resolve(false);
@@ -216,7 +215,7 @@ export const badgeLoader = async (
 
     await createBadge("gold5.png", async function () {
         return new Promise((resolve) => {
-            if (userGold && userGold.count >= 5) {
+            if (numGolds >= 5) {
                 resolve(true);
             } else resolve(false);
         });

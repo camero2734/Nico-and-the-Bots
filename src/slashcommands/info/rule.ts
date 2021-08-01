@@ -1,7 +1,7 @@
-import { CommandError, CommandRunner, createOptions, ExtendedContext, OptsType } from "configuration/definitions";
+import { CommandError } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import Fuse from "fuse.js";
-import { CommandOptionType } from "slash-create";
+import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
 
 class Rule {
     static ruleNum = 0;
@@ -11,7 +11,7 @@ class Rule {
         this.text = `**${rule}**\n${description}`;
         this.num = ++Rule.ruleNum;
     }
-    send(ctx: ExtendedContext) {
+    send(ctx: ExtendedInteraction<[]>) {
         const embed = new MessageEmbed()
             .setColor("#E6FAFC")
             .setTitle(`Rule ${this.num}`)
@@ -95,19 +95,19 @@ const options = {
 };
 const fuse = new Fuse(rules, options);
 
-export const Options = createOptions(<const>{
+const command = new SlashCommand(<const>{
     description: "Displays a server rule",
     options: [
         {
             name: "rule",
             description: "A rule to search for, or a rule number",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
 });
 
-export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const { rule } = ctx.opts;
 
     const ruleNum = Number(rule);
@@ -120,4 +120,6 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
         if (!rule) throw new CommandError("Rule not found");
         rule.send(ctx);
     }
-};
+});
+
+export default command;

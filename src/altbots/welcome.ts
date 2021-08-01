@@ -16,7 +16,7 @@ import {
     TextChannel
 } from "discord.js";
 import F from "helpers/funcs";
-import { Connection } from "typeorm";
+import { queries } from "../helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
 
@@ -28,12 +28,29 @@ export class SacarverBot {
     client: Client;
     ready: Promise<void>;
     mutex = new Mutex();
-    constructor(private connection: Connection) {
-        this.client = new Client({ intents: Intents.ALL });
+    constructor() {
+        this.client = new Client({
+            intents: [
+                "GUILDS",
+                "DIRECT_MESSAGES",
+                "DIRECT_MESSAGE_REACTIONS",
+                "GUILDS",
+                "GUILD_BANS",
+                "GUILD_EMOJIS_AND_STICKERS",
+                "GUILD_MEMBERS",
+                "GUILD_MESSAGES",
+                "GUILD_MESSAGE_REACTIONS",
+                "GUILD_INTEGRATIONS",
+                "GUILD_INVITES",
+                "GUILD_PRESENCES",
+                "GUILD_VOICE_STATES",
+                "GUILD_WEBHOOKS"
+            ]
+        });
         this.client.login(secrets.bots.sacarver);
 
         this.ready = new Promise((resolve) => {
-            this.client.on("ready", resolve);
+            this.client.on("ready", () => resolve());
         });
     }
 
@@ -44,30 +61,20 @@ export class SacarverBot {
 
         this.client.on("interaction", (interaction) => {
             if (!interaction.isMessageComponent()) return;
-            if (interaction.customID === ANNOUNCEMENTS_ID) return this.giveAnnouncementsRole(interaction);
+            if (interaction.customId === ANNOUNCEMENTS_ID) return this.giveAnnouncementsRole(interaction);
         });
     }
 
     async getMemberNumber(member: GuildMember): Promise<number> {
-        const econRepository = this.connection.getMongoRepository(Economy);
-        const economy = await econRepository.findOne({ userid: member.user.id });
+        const dbUser = await queries.findOrCreateUser(member.id);
 
-        // Completely new user
-        if (!economy) {
-            const newEconomy = new Economy({ userid: member.user.id, joinedAt: member.joinedAt });
-            await this.connection.manager.save(newEconomy);
-            const memberNum = await econRepository.count();
-            return memberNum;
-        }
-
-        // Returning user
-        else return await economy.getJoinedNum();
+        return await queries.getJoinedNum(dbUser.joinedAt);
     }
 
     async welcomeMember(member: GuildMember): Promise<void> {
         const welcomeChan = member.guild.channels.cache.get(channelIDs.welcometest) as TextChannel;
 
-        await member.roles.add(roles.banditos);
+        // await member.roles.add(roles.banditos);
 
         const memberNum = await this.getMemberNumber(member);
         console.log(`Member #${memberNum} joined`);
@@ -121,7 +128,7 @@ export class SacarverBot {
             new MessageButton({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",
-                customID: ANNOUNCEMENTS_ID,
+                customId: ANNOUNCEMENTS_ID,
                 ...emoji("📢")
             })
         ]);

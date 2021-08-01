@@ -116,7 +116,7 @@ export type ExtendedContext<T extends CommandOption = {}> = Omit<
     isExtended: boolean;
 };
 
-async function extendContext<T extends CommandOption>(
+export async function extendContext<T extends CommandOption>(
     ctx: CommandContext,
     client: Client,
     connection: Connection

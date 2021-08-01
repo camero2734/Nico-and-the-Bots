@@ -1,39 +1,23 @@
-import { channelIDs, guildID, roles, userIDs } from "configuration/config";
-import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
-import { Poll } from "database/entities/Poll";
-import { hoursToMilliseconds, millisecondsToHours } from "date-fns";
-import areIntervalsOverlappingWithOptions from "date-fns/fp/areIntervalsOverlappingWithOptions";
+import { channelIDs, guildID, roles } from "configuration/config";
+import { CommandError } from "configuration/definitions";
 import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { MessageContext } from "helpers";
 import F from "helpers/funcs";
 import { Question } from "helpers/verified-quiz/question";
 import R from "ramda";
-import { ComponentActionRow } from "slash-create";
-import { Connection } from "typeorm";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import QuizQuestions from "../../helpers/verified-quiz/quiz"; // .gitignored
+import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
+export { VerifiedQuizConsts } from "./_consts";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Opens an application for the verified-theories channel",
     options: []
-};
+});
 
-// TODO: Use global ComponentListener to avoid having to timeout things
-const answerListener = new CommandComponentListener("veriquiz", <const>[
-    "currentID",
-    "questionIDs",
-    "previousAnswers",
-    "chosenAnswer"
-]);
-
-export const ComponentListeners: CommandComponentListener[] = [answerListener];
-
-const NUM_QUESTIONS = 15;
-
-const DELAY_HOURS = 12;
-const DELAY_BETWEEN_TAKING = hoursToMilliseconds(DELAY_HOURS);
-export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
-    await ctx.defer(true);
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
@@ -41,11 +25,13 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     }
 
     // Ensure they can't retake the quiz for N hours
-    const waitTime =
-        (await ctx.connection.getRepository(Counter).findOne({ identifier: ctx.member.id, title: "VerifiedQuiz" })) ||
-        new Counter({ identifier: ctx.member.id, title: "VerifiedQuiz", lastUpdated: 0 });
+    const waitTime = await prisma.verifiedQuiz.upsert({
+        where: { userId: ctx.member.id },
+        create: { userId: ctx.member.id, lastTaken: new Date(0) },
+        update: {}
+    });
 
-    const remainingTime = waitTime.lastUpdated + DELAY_BETWEEN_TAKING - Date.now();
+    const remainingTime = waitTime.lastTaken.getTime() + VerifiedQuizConsts.DELAY_BETWEEN_TAKING - Date.now();
     if (remainingTime > 0 && !ctx.member.roles.cache.has(roles.staff)) {
         const hours = (remainingTime / (1000 * 60 * 60)).toFixed(2);
         throw new CommandError(`You must wait ${hours} hours before applying again.`);
@@ -55,54 +41,48 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     const initialEmbed = new MessageEmbed()
         .setTitle("Verified Theories Quiz")
         .setDescription(
-            `This quiz asks various questions related to the lore of the band. There are ${NUM_QUESTIONS} questions and you must answer them *all* correctly.\n\n**If you fail the quiz, you must wait ${DELAY_HOURS} hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.\n\n*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
+            [
+                `This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,
+                `**If you fail the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.`,
+                `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
+            ].join("\n\n")
         )
         .addField(
             "Cheating is not allowed",
             "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
         );
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Begin", style: "SUCCESS", customID: "verifbegin" }),
-        new MessageButton({ label: "Cancel", style: "DANGER", customID: "verifcancel" })
-    ]);
-
-    let m: Message;
+    let dmMessage: Message;
     try {
         const dm = await ctx.member.createDM();
-        m = await dm.send({ embeds: [initialEmbed.toJSON()], components: [actionRow] });
+        dmMessage = await dm.send({ embeds: [initialEmbed], components: [] });
     } catch (e) {
         throw new CommandError("You must have server DMs enabled to use this command");
     }
 
-    const dmActionRow = (<unknown>(
-        new MessageActionRow().addComponents([new MessageButton({ style: "LINK", url: m.url, label: "View message" })])
-    )) as ComponentActionRow;
+    const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
+    const [beginId, cancelId] = timedListener.customIDs;
+
+    const actionRow = new MessageActionRow().addComponents([
+        new MessageButton({ label: "Begin", style: "SUCCESS", customId: beginId }),
+        new MessageButton({ label: "Cancel", style: "DANGER", customId: cancelId })
+    ]);
+
+    await dmMessage.edit({ components: [actionRow] });
+
+    const dmActionRow = new MessageActionRow().addComponents([
+        new MessageButton({ style: "LINK", url: dmMessage.url, label: "View message" })
+    ]);
 
     await ctx.send({
         embeds: [new MessageEmbed().setDescription("The quiz was DM'd to you!").toJSON()],
         components: [dmActionRow]
     });
 
-    const mctx = MessageContext(m);
+    const buttonPressed = await timedListener.wait();
 
-    const res = await new Promise<boolean | undefined>((resolve) => {
-        const timeout = setTimeout(resolve, 120 * 1000, undefined); // Avoid a memory leak
-        mctx.registerComponent("verifbegin", async () => {
-            clearTimeout(timeout);
-            resolve(true);
-        });
-        mctx.registerComponent("verifcancel", async () => {
-            clearTimeout(timeout);
-            resolve(false);
-        });
-    });
-    mctx.unregisterComponent("begin");
-    mctx.unregisterComponent("verifcancel");
-
-    // If undefined (timed out) or false (clicked cancel), edit the message
-    if (!res) {
-        await m.edit({
+    if (buttonPressed !== beginId) {
+        await dmMessage.edit({
             embeds: [new MessageEmbed().setDescription("Okay, you may restart the quiz at any time.")],
             components: []
         });
@@ -110,98 +90,34 @@ export const Executor: CommandRunner<{ code: string }> = async (ctx) => {
     }
 
     // Update database
-    waitTime.lastUpdated = Date.now();
-    waitTime.count++;
-    await ctx.connection.manager.save(waitTime);
+    await prisma.verifiedQuiz.update({
+        where: { userId: ctx.user.id },
+        data: { lastTaken: new Date(), timesTaken: { increment: 1 } }
+    });
 
     // Generate initial variables
-    const questionList = F.shuffle(QuizQuestions).slice(0, NUM_QUESTIONS);
+    const questionList = F.shuffle(QuizQuestions).slice(0, VerifiedQuizConsts.NUM_QUESTIONS);
     const answerEncoder = new PreviousAnswersEncoder(questionList);
     const questionIDs = QuestionIDEncoder.encode(questionList);
-    const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.connection, ctx.member); // prettier-ignore
+    const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.member); // prettier-ignore
 
-    await m.edit({
+    await dmMessage.edit({
         embeds: [quizEmbed.toJSON()],
         components: quizComponents
     });
-};
+});
 
-/**
- * We need to jam the state of the quiz into the 100 character customID field
- * It needs to include:
- *  - The questions being asked and their order
- *  - The current question being asked
- *  - The previous answers
- * 8 bits are encoded into a character by using a custom 256 character alphabet
- */
-
-/**
- *! Encoding question order
- * Use 8 bits for question "id". Maximum of a pool of 256 questions
- * One character for every question
- * So: 10 questions = 10 characters, 15 questions = 15 characters
- */
-
-class QuestionIDEncoder {
-    static decode(base256: string): Question[] {
-        const bitValues = F.base256Decode(base256);
-        const questionIDs = [...bitValues];
-
-        const questions = questionIDs.map((qid) => QuizQuestions.find((q) => q.id === qid));
-
-        return questions.filter((q): q is Question => q !== undefined);
-    }
-    static encode(chosenQuestions: Question[]) {
-        const ids = chosenQuestions.map((q) => q.id);
-        const characters = F.base256Encode(Uint8Array.from(ids));
-        return characters;
-    }
-}
-
-/**
- *! Encoding previous answers
- * Use 8 bits for answer index (so up to 256 answers supported, beyond plenty since there can only be 25 buttons max)
- * So: 10 questions = 10 characters, 15 questions = 15 characters
- */
-class PreviousAnswersEncoder {
-    public answerIndices: Map<Question, number> = new Map();
-    constructor(private questions: Question[]) {}
-
-    markAnswer(question: Question, answer: number | string): boolean {
-        if (!this.questions.includes(question)) return false;
-
-        const idx = +answer;
-        if (idx === -1) return false;
-
-        this.answerIndices.set(question, idx);
-        return true;
-    }
-    fromString(base256: string): this {
-        const bitValues = F.base256Decode(base256);
-
-        const answerIdxs = [...bitValues];
-
-        for (let i = 0; i < this.questions.length; i++) {
-            const idx = answerIdxs[i];
-            const question = this.questions[i];
-            this.markAnswer(question, idx);
-        }
-
-        return this;
-    }
-    toString() {
-        const arr = this.questions.map((q) => this.answerIndices.get(q) ?? 0);
-        return F.base256Encode(Uint8Array.from(arr));
-    }
-}
-
-answerListener.handler = async (interaction, connection, args) => {
+const veriquizArgs = <const>["currentID", "questionIDs", "previousAnswers", "chosenAnswer"];
+const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, async (ctx, args) => {
     const { currentID, questionIDs, previousAnswers, chosenAnswer } = args;
+    ctx.deferred = true;
+    await ctx.editReply({ components: [] }); // Remove buttons to prevent multiple presses
 
-    const guild = await interaction.client.guilds.fetch(guildID);
-    const member = await guild.members.fetch(interaction.user.id);
+    const guild = await ctx.client.guilds.fetch(guildID);
 
-    if (!member) return console.log(`[Verified Quiz] Member does not exist: ${interaction.user.id}`);
+    const member = await guild.members.fetch(ctx.user.id);
+
+    if (!member) return console.log(`[Verified Quiz] Member does not exist: ${ctx.user.id}`);
 
     const questionList = QuestionIDEncoder.decode(questionIDs);
 
@@ -220,27 +136,24 @@ answerListener.handler = async (interaction, connection, args) => {
         questionList,
         answerEncode,
         questionIDs,
-        connection,
         member
     );
 
-    interaction.deferred = true; // The original int. was deferred, discord.js throws an error when editing if not manually overriden
-    await interaction.editReply({ embeds: [embed], components });
-};
+    await ctx.editReply({ embeds: [embed], components });
+});
 
 async function generateEmbedAndButtons(
     currentIndex: number,
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
-    connection: Connection,
     member: GuildMember
 ): Promise<[MessageEmbed, MessageActionRow[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
 
-    if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, connection, member);
+    if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, member);
 
     const newQuestion = questionList[newIndex];
     const embed = new MessageEmbed()
@@ -255,7 +168,7 @@ async function generateEmbedAndButtons(
             return new MessageButton({
                 label: answer,
                 style: "PRIMARY",
-                customID: answerListener.generateCustomID({
+                customId: genVeriquizId({
                     currentID: newQuestion.hexID,
                     questionIDs,
                     previousAnswers: answerEncode.toString(),
@@ -273,7 +186,6 @@ async function generateEmbedAndButtons(
 async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
-    connection: Connection,
     member: GuildMember
 ): Promise<[MessageEmbed, MessageActionRow[]]> {
     const answers = answerEncode.answerIndices;
@@ -291,15 +203,13 @@ async function sendFinalEmbed(
         staffEmbed.addField(q.question.split("\n")[0], `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`);
 
         // Record question answer
-        const poll =
-            (await connection.getRepository(Poll).findOne({ identifier: `VFQZ${q.hexID}` })) ||
-            new Poll({ identifier: `VFQZ${q.hexID}`, userid: "" });
-        poll.votes.push({ userid: member.id, index: answerGiven });
-        await connection.manager.save(poll);
+        await prisma.verifiedQuizAnswer.create({
+            data: { userId: member.id, answer: answerGiven, questionId: q.id }
+        });
     }
     const correct = questionList.length - incorrect;
     const passed = incorrect === 0;
-    const hours = millisecondsToHours(DELAY_BETWEEN_TAKING);
+    const hours = VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS;
 
     staffEmbed
         .setTitle(`${passed ? "Passed" : "Failed"}: ${correct}/${questionList.length} correct`)
@@ -333,3 +243,5 @@ async function sendFinalEmbed(
 
     return [embed, []];
 }
+
+export default command;

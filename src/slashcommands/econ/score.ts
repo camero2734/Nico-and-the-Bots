@@ -1,11 +1,10 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "configuration/config";
 import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { Counter } from "database/entities/Counter";
-import { Economy } from "database/entities/Economy";
 import { Snowflake } from "discord.js";
-import { badgeLoader } from "helpers";
+import { badgeLoader, LevelCalculator } from "helpers";
 import { CommandOptionType } from "slash-create";
+import { prisma, queries } from "../../helpers/prisma-init";
 
 export const Options: CommandOptions = {
     description: "View your score card",
@@ -17,7 +16,6 @@ export const Options: CommandOptions = {
 export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     const albumRoles = roles.albums;
     const options = ctx.opts;
-    const { connection } = ctx;
 
     await ctx.defer();
 
@@ -31,34 +29,26 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
     // Fetch user's information
-    let userGold = await connection.getRepository(Counter).findOne({ identifier: userID, title: "GoldCount" });
-    if (!userGold) userGold = new Counter({ identifier: userID, title: "GoldCount" });
-    let userEconomy = await connection.getRepository(Economy).findOne({ userid: userID });
-    if (!userEconomy) userEconomy = new Economy({ userid: userID });
+    const dbUser = await prisma.user.findUnique({
+        where: { id: userID },
+        include: { golds: true, dailyBox: true }
+    });
 
-    // Calculate a users place
-    const placeNum = await userEconomy.getPlaceNum();
+    if (!dbUser) throw new CommandError("Unable to find user's score.");
+
+    // Calculate a users all-time place
+    const placeNum = await queries.alltimePlaceNum(dbUser.score);
 
     // Get images to place on card as badges
-    const badges = await badgeLoader(member, userGold, placeNum, connection);
+    const badges = await badgeLoader(member, dbUser.golds.length, placeNum, ctx.connection);
 
-    //CALCULATE POINTS TO NEXT LEVEL
-    let rq = 100;
-    let totalscore = 0;
-    let cL = 0;
-    let previousScore = 0;
+    // Calculate progress to next level
 
-    console.log(userEconomy.level);
-    while (cL < userEconomy.level + 1) {
-        if (cL === userEconomy.level) previousScore = totalscore;
-        totalscore += rq;
-        rq += 21 - Math.pow(1.001450824, rq);
-        cL++;
-    }
+    const totalBetweenLevels = LevelCalculator.pointsToNextLevel(LevelCalculator.calculateScore(dbUser.level));
+    const remainingBetweenLevels = LevelCalculator.pointsToNextLevel(dbUser.score);
+    const percent = (1 - remainingBetweenLevels / totalBetweenLevels).toFixed(3);
 
-    const rem = Math.floor(totalscore - userEconomy.score) + 1; //REMAINING TO NEXT LEVEL
-    const diff = Math.floor(totalscore - previousScore); //TOTAL TO NEXT LEVEL
-    const percent = Math.max(0, 1 - rem / diff).toFixed(3); //RATIO OF REMAINING TO TOTAL
+    console.log({ totalBetweenLevels, remainingBetweenLevels, percent });
 
     //FIND USER ALBUM ROLE (SAI => DEFAULT)
     const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.SAI;
@@ -132,18 +122,18 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     cctx.save();
 
     cctx.translate(35, 380);
-    cctx.strokeText(`${userEconomy.level}`, 0, 0);
-    cctx.fillText(`${userEconomy.level}`, 0, 0);
+    cctx.strokeText(`${dbUser.level}`, 0, 0);
+    cctx.fillText(`${dbUser.level}`, 0, 0);
 
     //POINTS
     cctx.translate(0, 130);
-    cctx.strokeText(`${userEconomy.score}`, 0, 0);
-    cctx.fillText(`${userEconomy.score}`, 0, 0);
+    cctx.strokeText(`${dbUser.score}`, 0, 0);
+    cctx.fillText(`${dbUser.score}`, 0, 0);
 
     //CREDITS
     cctx.translate(0, 130);
-    cctx.strokeText(`${userEconomy.credits}`, 0, 0);
-    cctx.fillText(`${userEconomy.credits}`, 0, 0);
+    cctx.strokeText(`${dbUser.credits}`, 0, 0);
+    cctx.fillText(`${dbUser.credits}`, 0, 0);
 
     //LEVEL UP BAR / POINTS TO NEXT LEVEL
     cctx.translate(0, 130);
@@ -157,12 +147,12 @@ export const Executor: CommandRunner<{ user: Snowflake }> = async (ctx) => {
     cctx.fillStyle = "white";
     cctx.strokeStyle = "black";
     cctx.lineWidth = 3;
-    cctx.strokeText(`${rem}`, 186, 0);
-    cctx.fillText(`${rem}`, 186, 0);
+    cctx.strokeText(`${remainingBetweenLevels}`, 186, 0);
+    cctx.fillText(`${remainingBetweenLevels}`, 186, 0);
     cctx.restore();
 
     //GOLD
-    const goldnum = userGold?.count || 0;
+    const goldnum = dbUser.golds.length;
     cctx.textAlign = "start";
     cctx.translate(0, 65);
     cctx.drawImage(goldcircle, 0, -50, 60, 60);

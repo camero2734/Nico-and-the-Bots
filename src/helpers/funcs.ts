@@ -2,6 +2,7 @@ import * as bigintConversion from "bigint-conversion";
 import { Snowflake } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
+import * as crypto from "crypto";
 
 /**
  * Just some commonly used short functions
@@ -103,12 +104,23 @@ const F = {
         if (text.length <= len) return text;
         else return text.substring(0, len - 3) + "...";
     },
-    discordTimestamp(
+    discordTimestamp<T extends keyof typeof timestampTypes = "shortDateTime">(
         d: Date,
-        format: keyof typeof timestampTypes = "shortDateTime"
-    ): `<t:${bigint}:${typeof timestampTypes[keyof typeof timestampTypes]}>` {
+        format: T = "shortDateTime" as T
+    ): `<t:${bigint}:${typeof timestampTypes[T]}>` {
         const time = Math.floor(d.getTime() / 1000).toString() as `${bigint}`;
         return `<t:${time}:${timestampTypes[format]}>`;
+    },
+    hash(text: string, algorithm: "md5" | "sha1" | "sha256" = "sha1"): string {
+        return crypto.createHash(algorithm).update(text).digest("base64");
+    },
+    isValidURL(url: string): boolean {
+        try {
+            new URL(url);
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 };
 

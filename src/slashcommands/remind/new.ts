@@ -4,34 +4,39 @@ import { MessageEmbed } from "discord.js";
 import { CommandOptionType } from "slash-create";
 import { Reminder } from "../../database/entities/Reminder";
 import F from "../../helpers/funcs";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 import { ERRORS, REMINDER_LIMIT, REMINDER_TIMES } from "./_consts";
 
-export const Options = createOptions(<const>{
+const command = new SlashCommand(<const>{
     description: "Sets up a reminder from Nico",
     options: [
         {
             name: "text",
             description: "What you want to be reminded about",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         },
         {
             name: "intime",
             description: "When the reminder should be sent",
             required: true,
-            type: CommandOptionType.INTEGER,
-            choices: Object.entries(REMINDER_TIMES).map(([name, value]) => ({ name, value }))
+            type: "INTEGER",
+            choices: Object.entries(REMINDER_TIMES).map(([name, value]) => <const>{ name, value })
         }
     ]
 });
 
-export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
-    await ctx.defer(true);
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
     const { text, intime } = ctx.opts;
 
-    const reminders = await ctx.connection.getMongoRepository(Reminder).count({ userid: ctx.member.id });
-    if (reminders >= REMINDER_LIMIT) {
+    const remindersCount = await prisma.reminder.count({
+        where: { userId: ctx.user.id }
+    });
+
+    if (remindersCount >= REMINDER_LIMIT) {
         throw new CommandError(ERRORS.TOO_MANY_REMINDERS); // prettier-ignore
     }
 
@@ -45,7 +50,11 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
         .addField("Reminder", reminder.text)
         .addField("Send time", F.discordTimestamp(sendAt, "longDateTime"));
 
-    await ctx.connection.manager.save(reminder);
+    await prisma.reminder.create({
+        data: { userId: ctx.user.id, text, sendAt }
+    });
 
-    await ctx.send({ embeds: [confirmEmbed.toJSON()] });
-};
+    await ctx.send({ embeds: [confirmEmbed] });
+});
+
+export default command;

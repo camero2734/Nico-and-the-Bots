@@ -5,20 +5,23 @@ import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import { CommandOptionType } from "slash-create";
+import F from "../../helpers/funcs";
+import { prisma, queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Sets your join date",
     options: [
         {
             name: "messageurl",
             description: "The link to the first message you sent in the server.",
             required: false,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ messageurl?: string }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const rawURL = ctx.opts.messageurl;
 
     const explainEmbed = new MessageEmbed().setDescription(
@@ -59,25 +62,26 @@ export const Executor: CommandRunner<{ messageurl?: string }> = async (ctx) => {
 
     if (msg.author.id !== ctx.user.id) throw new CommandError("This is not your message");
 
-    const economy =
-        (await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id })) ||
-        new Economy({ userid: ctx.member.id });
+    const dbUser = await queries.findOrCreateUser(ctx.member.id);
 
-    if (economy.joinedAt < msg.createdAt) throw new CommandError("Your join date is already before this message.");
+    if (dbUser.joinedAt < msg.createdAt) throw new CommandError("Your join date is already before this message.");
 
-    const oldJoinedNum = await economy.getJoinedNum();
-
-    economy.joinedAt = msg.createdAt;
-    const newJoinedNum = await economy.getJoinedNum();
+    const oldJoinedNum = await queries.getJoinedNum(dbUser.joinedAt);
+    const newJoinedNum = await queries.getJoinedNum(msg.createdAt);
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
         .setDescription("Your join date was updated!")
         .addField("Reference message", msg.content || "*No content*")
-        .addField("New join date", `${economy.joinedAt}`)
+        .addField("New join date", F.discordTimestamp(msg.createdAt))
         .addField("Member num change", `${ordinal(oldJoinedNum)} → ${ordinal(newJoinedNum)}`);
 
-    await ctx.connection.manager.save(economy);
+    await prisma.user.update({
+        where: { id: dbUser.id },
+        data: { joinedAt: msg.createdAt }
+    });
 
     await ctx.send({ embeds: [embed.toJSON()] });
-};
+});
+
+export default command;

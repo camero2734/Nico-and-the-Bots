@@ -92,7 +92,11 @@ export const userIDs = <const>{
 };
 
 export const emojiIDs = <const>{
-    gold: "389216023141941249"
+    gold: "389216023141941249",
+    upvote: "850586748765077514",
+    downvote: "850586787805265990",
+    spotify: "869731229853970432",
+    genius: "869733049347211374"
 };
 
 export const roles = <const>{
@@ -109,6 +113,7 @@ export const roles = <const>{
     artistmusician: "341029793954922496",
     verifiedtheories: "475388751711830066",
     dema: "451217741584793601",
+    common: "332021614256455690",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",

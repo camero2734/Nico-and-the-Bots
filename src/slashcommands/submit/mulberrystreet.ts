@@ -1,34 +1,36 @@
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import fetch from "node-fetch";
-import FileType from "file-type";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
-import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs, roles, userIDs } from "configuration/config";
-import { Counter } from "database/entities/Counter";
-import ago from "s-ago";
+import { CommandError } from "configuration/definitions";
+import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import FileType from "file-type";
+import fetch from "node-fetch";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
+import F from "../../helpers/funcs";
+import { prisma, queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Submits an image, video, or audio file to #mulberry-street",
     options: [
         {
             name: "title",
             description: "The title of your piece of art",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         },
         {
             name: "url",
             description: "A direct link to the image, video, or audio file. Max 50MB.",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ title: string; url: string }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const MAX_FILE_SIZE = 50000000; // 50MB
     const MS_24_HOURS = 1000 * 60 * 60 * 24; // 24 hours in ms
-    const { title, url } = ctx.opts;
+    const { title } = ctx.opts;
+    const url = ctx.opts.url.trim();
 
     const chan = ctx.channel.guild.channels.cache.get(channelIDs.mulberrystreet) as TextChannel;
 
@@ -37,33 +39,23 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
             `Only users with the <@&${roles.artistmusician}> role can submit to Mulberry Street Creations™`
         );
 
-    await ctx.defer(true);
+    await ctx.defer({ ephemeral: true });
 
     // Only allow submissions once/day
-    let submissionsCounter = await ctx.connection
-        .getRepository(Counter)
-        .findOne({ identifier: ctx.user.id, title: "MulberryCreations" });
+    const dbUser = await queries.findOrCreateUser(ctx.user.id);
+    const lastSubmitted = dbUser.lastCreationUpload ? dbUser.lastCreationUpload.getTime() : 0;
 
-    if (!submissionsCounter) {
-        submissionsCounter = new Counter({ identifier: ctx.user.id, title: "MulberryCreations", lastUpdated: 0 });
-        submissionsCounter.lastUpdated = 0;
+    if (Date.now() - lastSubmitted < MS_24_HOURS && ctx.user.id !== userIDs.me) {
+        const ableToSubmitAgainDate = new Date(lastSubmitted + MS_24_HOURS);
+        const timestamp = F.discordTimestamp(ableToSubmitAgainDate, "relative");
+        throw new CommandError(`You've already submitted! You can submit again ${timestamp}.`);
     }
-
-    console.log(submissionsCounter.lastUpdated, /LAST_UPDATED/);
-
-    if (Date.now() - submissionsCounter.lastUpdated < MS_24_HOURS && ctx.user.id !== userIDs.me) {
-        const msRemaining = submissionsCounter.lastUpdated + MS_24_HOURS - Date.now();
-        const timeRemaining = ago(new Date(Date.now() + msRemaining), "hour");
-        throw new CommandError(`You need to wait ${timeRemaining} before submitting another creation!`);
-    }
-
-    submissionsCounter.count++;
-    submissionsCounter.lastUpdated = Date.now();
 
     // Validate and fetch url
-    if (!isValidURL(url)) throw new CommandError("Invalid URL given");
+    if (!F.isValidURL(url)) throw new CommandError("Invalid URL given");
 
-    const res = await fetch(url, { size: MAX_FILE_SIZE }).catch(() => {
+    const res = await fetch(url, { size: MAX_FILE_SIZE }).catch((E) => {
+        console.log(E);
         throw new CommandError("Unable to get the file from that URL.");
     });
 
@@ -89,44 +81,48 @@ export const Executor: CommandRunner<{ title: string; url: string }> = async (ct
         .addField("URL", url)
         .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
 
+    const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
+    const [yesId] = timedListener.customIDs;
+
     const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "SUCCESS", label: "Submit", customID: "submit-mulberry" })
+        new MessageButton({ style: "SUCCESS", label: "Submit", customId: yesId })
     ]);
 
-    const componentActionRow = (<unknown>actionRow) as ComponentActionRow;
-    await ctx.send({ embeds: [embed.toJSON()], components: [componentActionRow] });
+    await ctx.send({ embeds: [embed.toJSON()], components: [actionRow] });
 
-    ctx.registerComponent("submit-mulberry", async (btnCtx) => {
-        await ctx.connection.manager.save(submissionsCounter);
-        embed.setDescription("Submitted.");
-        const doneEmbed = embed.toJSON();
-
-        embed.description = "";
-        embed.fields = [];
-
-        const attachment = new MessageAttachment(buffer, fileName);
-
-        if (fileType.mime.startsWith("image")) {
-            embed.setImage(`attachment://${fileName}`);
-        }
-
-        const m = await chan.send({ embeds: [embed], files: [attachment] });
-
-        m.react("💙");
-
-        const newActionRow = (<unknown>(
-            new MessageActionRow().addComponents([new MessageButton({ style: "LINK", label: "View post", url: m.url })])
-        )) as ComponentActionRow;
-
-        await btnCtx.editParent({ embeds: [doneEmbed], components: [newActionRow] });
-    });
-};
-
-function isValidURL(url: string): boolean {
-    try {
-        new URL(url);
-        return true;
-    } catch (err) {
-        return false;
+    const buttonPressed = await timedListener.wait();
+    if (buttonPressed !== yesId) {
+        await ctx.editReply({
+            embeds: [new MessageEmbed({ description: "Submission cancelled." })],
+            components: []
+        });
+        return;
     }
-}
+
+    // User submitted it
+
+    await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
+
+    embed.setDescription("Submitted.");
+    const doneEmbed = embed.toJSON();
+
+    embed.description = "";
+    embed.fields = [];
+
+    const attachment = new MessageAttachment(buffer, fileName);
+
+    if (fileType.mime.startsWith("image")) {
+        embed.setImage(`attachment://${fileName}`);
+    }
+
+    const m = await chan.send({ embeds: [embed], files: [attachment] });
+    m.react("💙");
+
+    const newActionRow = new MessageActionRow().addComponents([
+        new MessageButton({ style: "LINK", label: "View post", url: m.url })
+    ]);
+
+    await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });
+});
+
+export default command;

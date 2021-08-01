@@ -1,47 +1,47 @@
-import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { Poll } from "database/entities/Poll";
+import { VerifiedQuizAnswer } from "@prisma/client";
 import { MessageEmbed } from "discord.js";
 import F from "helpers/funcs";
-import { Question } from "helpers/verified-quiz/question";
 import R from "ramda";
-import { CommandOptionType } from "slash-create";
 import progressBar from "string-progressbar";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 import QuizQuestions from "../../helpers/verified-quiz/quiz";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Shows stats about verified questions",
     options: [
         {
             name: "stat",
             description: "The stat to display",
-            required: false,
-            type: CommandOptionType.STRING,
+            required: true,
+            type: "STRING",
             choices: [
                 { name: "Hardest Questions", value: "hardest" },
                 { name: "Easiest Questions", value: "easiest" }
             ]
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ stat: "hardest" | "easiest" }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     await ctx.defer();
-    const stats = await ctx.connection.getMongoRepository(Poll).find({ where: { identifier: { $regex: /^VFQZ/ } } });
+    const allAnswers = await prisma.verifiedQuizAnswer.findMany();
+    const results = QuizQuestions.map((q) => ({
+        question: q,
+        answers: allAnswers.filter((a) => a.questionId === q.id)
+    })).filter((q) => q.answers.length > 0);
 
-    const partitionByCorrectness = R.partition((vote: Poll["votes"][number]): boolean => vote.index === 0);
+    const partitionByCorrectness = R.partition((a: VerifiedQuizAnswer): boolean => a.answer === 0);
 
-    const fullStats = stats.map((stat) => {
-        const [correct, incorrect] = partitionByCorrectness(stat.votes);
-        const questionID = Number(stat.identifier.replace(/VFQZ/, ""));
-
-        const question = QuizQuestions.find((q) => q.id === questionID) as Question;
+    const fullStats = results.map((result) => {
+        const { answers, question } = result;
+        const [correct, incorrect] = partitionByCorrectness(answers);
 
         return {
             correct: correct.length,
             incorrect: incorrect.length,
-            total: stat.votes.length,
-            percent: correct.length / stat.votes.length,
-            stat,
+            total: answers.length,
+            percent: correct.length / answers.length,
             question
         };
     });
@@ -60,4 +60,6 @@ export const Executor: CommandRunner<{ stat: "hardest" | "easiest" }> = async (c
     }
 
     await ctx.send({ embeds: [embed.toJSON()] });
-};
+});
+
+export default command;

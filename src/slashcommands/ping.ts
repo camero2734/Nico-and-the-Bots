@@ -1,5 +1,6 @@
 import { CommandOptions, CommandRunner } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
+import { SlashCommand } from "../helpers/slash-command";
 
 interface Ping {
     ping: number;
@@ -8,18 +9,18 @@ interface Ping {
 
 const previousPings: Ping[] = [];
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Checks the bot's ping",
     options: []
-};
+});
 
-export const Executor: CommandRunner = async (ctx) => {
+command.setHandler(async (ctx) => {
     const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
 
-    await ctx.send("Pinging...");
+    await ctx.send({ content: "Pinging..." });
 
     const prior = Date.now();
-    const after = ctx.invokedAt;
+    const after = ctx.createdAt.getTime();
 
     const currentPing = Math.abs(after - prior);
 
@@ -44,5 +45,7 @@ export const Executor: CommandRunner = async (ctx) => {
         .setTitle(`Pinged ${currentPing}ms`)
         .addField("Heartbeat", `${Math.floor(ctx.client.ws.ping)}ms`)
         .addField("Average ping", `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}`);
-    await ctx.editOriginal({ embeds: [embed.toJSON()] });
-};
+    await ctx.editReply({ embeds: [embed.toJSON()] });
+});
+
+export default command;

@@ -1,58 +1,82 @@
-import { CommandError, CommandRunner, createOptions, OptsType } from "configuration/definitions";
-import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
-import { Tag } from "../../database/entities/Tag";
-import { MessageTools } from "../../helpers";
+import { cairoVersion } from "canvas";
+import { CommandError } from "configuration/definitions";
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options = createOptions(<const>{
+const command = new SlashCommand(<const>{
     description: "Creates (or edits) a command that sends a short snippet of text",
     options: [
-        { name: "name", description: "The name of the tag", required: true, type: CommandOptionType.STRING },
+        { name: "name", description: "The name of the tag", required: true, type: "STRING" },
         {
             name: "text",
             description: "The text that gets sent with the tag",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
 });
 
-export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
-    await ctx.defer(true);
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
-    const tagRepo = ctx.connection.getRepository(Tag);
+    const existingTag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
 
-    const existingTag = await tagRepo.findOne({ identifier: ctx.opts.name });
-    if (existingTag) {
-        if (existingTag.userid !== ctx.member.id) throw new CommandError("This tag already exists");
+    if (existingTag?.userId) {
+        if (existingTag.userId.toSnowflake() !== ctx.user.id) throw new CommandError("This tag already exists");
         existingTag.text = ctx.opts.text;
-        await ctx.connection.manager.save(existingTag);
+
+        await prisma.tag.update({
+            where: { name: existingTag.name },
+            data: { text: ctx.opts.text }
+        });
+
         const embed = new MessageEmbed()
             .setTitle(`Your tag \`${ctx.opts.name}\` was successfully edited`)
             .setDescription(ctx.opts.text);
-        return ctx.send({ embeds: [embed.toJSON()] });
+        await ctx.send({ embeds: [embed.toJSON()] });
+        return;
     }
+
+    const textLookup = await prisma.temporaryText.create({
+        data: { value: ctx.opts.text }
+    });
 
     const embed = new MessageEmbed()
         .setTitle(`Create tag \`${ctx.opts.name}\`?`)
         .setDescription(ctx.opts.text)
         .setFooter("Select yes or no");
 
-    const agreed = await MessageTools.askYesOrNo(ctx, { embeds: [embed.toJSON()] });
-    if (!agreed) {
-        return ctx.editOriginal({
-            embeds: [new MessageEmbed().setDescription("Okay, your tag wasn't made.").toJSON()],
-            components: []
-        });
-    }
+    const actionRow = new MessageActionRow().addComponents(
+        new MessageButton({
+            label: "Yes",
+            style: "SUCCESS",
+            customId: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
+        })
+    );
 
-    const tag = new Tag({ text: ctx.opts.text, userid: ctx.member.id, identifier: ctx.opts.name });
-    await ctx.connection.manager.save(tag);
+    await ctx.send({ embeds: [embed], components: [actionRow] });
+});
+
+const generateYesID = command.addInteractionListener("tcYes", <const>["name", "textLookup"], async (ctx, args) => {
+    await ctx.defer({ ephemeral: true });
+
+    const { value: text, id } = (await prisma.temporaryText.findUnique({ where: { id: +args.textLookup } })) || {};
+    if (!text) return;
+
+    const [createdTag] = await prisma.$transaction([
+        prisma.tag.create({
+            data: { text, userId: ctx.user.id, name: args.name }
+        }),
+        prisma.temporaryText.delete({ where: { id } })
+    ]);
 
     const doneEmbed = new MessageEmbed()
-        .setTitle(`Tag created: \`${ctx.opts.name}\``)
-        .setDescription(ctx.opts.text)
-        .addField("Usage", `Use this tag with the command \`/tags use ${tag.identifier}\``);
+        .setTitle(`Tag created: \`${args.name}\``)
+        .setDescription(text)
+        .addField("Usage", `Use this tag with the command \`/tags use ${createdTag.name}\``);
 
-    await ctx.editOriginal({ embeds: [doneEmbed.toJSON()], components: [] });
-};
+    await ctx.editReply({ embeds: [doneEmbed], components: [] });
+});
+
+export default command;

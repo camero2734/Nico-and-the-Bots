@@ -1,16 +1,16 @@
-import { CommandError, CommandOptions, CommandRunner, createOptions, OptsType } from "configuration/definitions";
+import { createCanvas, loadImage } from "canvas";
+import { CommandError } from "configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
-import { createCanvas, loadImage } from "canvas";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options = createOptions(<const>{
+const command = new SlashCommand(<const>{
     description: "Put an image onto a clown's monitor 🤡",
-    options: [{ name: "image", description: "The URL to the image", required: true, type: CommandOptionType.STRING }]
+    options: [{ name: "image", description: "The URL to the image", required: true, type: "STRING" }]
 });
 
-export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
+command.setHandler(async (ctx) => {
     await ctx.defer();
 
     const url = normalizeUrl(ctx.opts.image, { stripProtocol: true, stripAuthentication: true });
@@ -34,5 +34,7 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
 
     const embed = new MessageEmbed().setImage("attachment://clown.png");
 
-    await ctx.send({ embeds: [embed.toJSON()], file: { name: "clown.png", file: canvas.toBuffer() } });
-};
+    await ctx.send({ embeds: [embed], files: [{ name: "clown.png", attachment: canvas.toBuffer() }] });
+});
+
+export default command;

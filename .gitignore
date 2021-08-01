@@ -3,3 +3,4 @@ node_modules
 dist
 discord.sqlite*
 /**/verified-quiz/quiz.ts
+.env

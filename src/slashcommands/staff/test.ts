@@ -1,21 +1,29 @@
-import { CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageAttachment, MessageEmbed, Snowflake } from "discord.js";
-import { sendViolationNotice } from "helpers/dema-notice";
-import F from "helpers/funcs";
-import fetch from "node-fetch";
-import R from "ramda";
+import { CommandError, CommandRunner, createOptions, extendContext, OptsType } from "configuration/definitions";
+import {
+    CommandContext,
+    CommandMember,
+    CommandOptionType,
+    InteractionRequestData,
+    InteractionType
+} from "slash-create";
+import { prisma } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
+import * as jail from "./jail";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Test command",
-    options: []
-};
+    options: [
+        {
+            name: "user",
+            description: "User",
+            required: false,
+            type: "USER"
+        }
+    ]
+});
 
-export const Executor: CommandRunner = async (ctx) => {
-    const member = await ctx.member.guild.members.fetch("298244234912333824");
-    sendViolationNotice(ctx.member, ctx.connection, {
-        identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
-        reason: "Possession of BANDITO GREEN",
-        found: "in possession of regulated materials that have been outlawed by the Dema Council"
-    });
-    await ctx.delete();
-};
+command.setHandler(async (ctx) => {
+    //
+});
+
+export default command;

@@ -1,31 +1,44 @@
 import { channelIDs, roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner, ExtendedContext } from "configuration/definitions";
-import { Economy } from "database/entities/Economy";
-import { Item } from "database/entities/Item";
+import { CommandError } from "configuration/definitions";
 import { DMChannel, EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { ComponentActionRow } from "slash-create";
+import { queries } from "../../helpers/prisma-init";
+import { SlashCommand } from "../../helpers/slash-command";
+import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
+import { createFBApplication } from "./_consts";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Opens an application to the Firebreathers role",
     options: []
-};
+});
 
-export const Executor: CommandRunner = async (ctx) => {
-    const application = await withContext(ctx);
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
 
-    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is not available yet.");
+    if (!ctx.member.roles.cache.has(roles.staff)) {
+        throw new CommandError("This command is not available yet.");
+    }
 
-    await ctx.defer(true);
+    let dmMessage: Message;
+    try {
+        const dm = await ctx.member.createDM();
+        dmMessage = await dm.send({ embeds: [new MessageEmbed({ description: "Setting up the application..." })] });
+    } catch {
+        await ctx.send({
+            embeds: [new MessageEmbed({ description: "Your DMs must be enabled for this command to work." })]
+        });
+        return;
+    }
 
-    const economy =
-        (await ctx.connection.getRepository(Economy).findOne({ userid: ctx.member.id })) ||
-        new Economy({ userid: ctx.member.id });
-    const warnings = await ctx.connection.getMongoRepository(Item).count({ id: ctx.user.id, type: "Warning" });
+    const application = await createFBApplication(dmMessage, ctx.member);
+
+    await ctx.send({ embeds: [new MessageEmbed({ description: "The application was DM'd to you!" })] });
+
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { warnings: true });
 
     const activityDescription = [
-        `**Level:** ${economy.level}`,
-        `**Joined on:** ${ctx.member.joinedAt}`,
-        `**Warnings:** ${warnings}`
+        `**Level:** ${dbUser.level}`,
+        `**Joined on:** ${dbUser.joinedAt}`,
+        `**Warnings:** ${dbUser.warnings.length}`
     ].join("\n");
 
     await application.askQuestion(
@@ -69,7 +82,7 @@ export const Executor: CommandRunner = async (ctx) => {
 
     const confirmationEmbed = new MessageEmbed()
         .setTitle("Firebreathers Application")
-        .setAuthor(ctx.member.displayName, ctx.user.avatarURL)
+        .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL())
         .setDescription(
             "Please ensure that the answers below are correct. If it is not, you may dismiss this message and restart."
         );
@@ -78,102 +91,38 @@ export const Executor: CommandRunner = async (ctx) => {
         confirmationEmbed.addField(question, answer);
     }
 
+    const timedListener = new TimedInteractionListener(ctx, <const>["submitId"]);
+    const [submitId] = timedListener.customIDs;
+
     const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Submit", customID: "submit", style: "SUCCESS" })
+        new MessageButton({ label: "Submit", customId: submitId, style: "SUCCESS" })
     ]);
-    await ctx.editOriginal({
-        embeds: [confirmationEmbed.toJSON()],
-        components: [(<unknown>actionRow) as ComponentActionRow]
+
+    await ctx.editReply({
+        embeds: [confirmationEmbed],
+        components: [actionRow]
     });
 
-    ctx.registerComponent("submit", async () => {
-        const staffChan = ctx.member.guild.channels.cache.get(channelIDs.deapplications) as TextChannel;
-        confirmationEmbed.setDescription("");
-        confirmationEmbed.setFooter(ctx.user.id);
-        confirmationEmbed.addField("\u200b", "\u200b");
-        confirmationEmbed.addField("To approve/deny", `\`/staff answerfb applicationid:`);
-        const cm = await staffChan.send({ embeds: [confirmationEmbed] });
-        const field = confirmationEmbed.fields.find((f) => f.name === "To approve/deny") as EmbedField;
-        field.value += ` ${cm.id}\``;
-        await cm.edit({ embeds: [confirmationEmbed] });
+    const buttonPressed = await timedListener.wait();
 
-        const sentEmbed = new MessageEmbed().setDescription(
-            "Submitted to the staff team!\n\nWe will get back to you as soon as possible."
-        );
-        ctx.editOriginal({ embeds: [sentEmbed.toJSON()], components: [] });
-        ctx.unregisterComponent("submit");
-    });
-};
+    if (buttonPressed !== submitId) {
+        ctx.editReply({ embeds: [new MessageEmbed({ description: "Your application was not submitted." })] });
+    }
 
-const withContext = async (ctx: ExtendedContext) => {
-    const channel = (<unknown>ctx.channel) as DMChannel;
-    const role = await ctx.member.guild.roles.fetch(roles.deatheaters);
-    const NO_RESPONSE = "*Nothing yet*";
+    const staffChan = ctx.member.guild.channels.cache.get(channelIDs.deapplications) as TextChannel;
+    confirmationEmbed.setDescription("");
+    confirmationEmbed.setFooter(ctx.user.id);
+    confirmationEmbed.addField("\u200b", "\u200b");
+    confirmationEmbed.addField("To approve/deny", `\`/staff answerfb applicationid:`);
+    const cm = await staffChan.send({ embeds: [confirmationEmbed] });
+    const field = confirmationEmbed.fields.find((f) => f.name === "To approve/deny") as EmbedField;
+    field.value += ` ${cm.id}\``;
+    await cm.edit({ embeds: [confirmationEmbed] });
 
-    if (!role) throw new Error("No deatheaters role");
+    const sentEmbed = new MessageEmbed().setDescription(
+        "Submitted to the staff team!\n\nWe will get back to you as soon as possible."
+    );
+    ctx.editReply({ embeds: [sentEmbed], components: [] });
+});
 
-    const answers: Record<string, string> = {};
-
-    return {
-        async askQuestion(question: string, description: string, requiresAnswer = true): Promise<string> {
-            const embed = new MessageEmbed()
-                .setTitle(question)
-                .setColor(role.color)
-                .setDescription(description)
-                .addField("\u200b", "\u200b")
-                .addField("Your response", NO_RESPONSE)
-                .setFooter(
-                    "Submit an answer by sending a message with your response. You may edit your response by sending another message. Press 'Continue' to submit your response."
-                );
-
-            const actionRow = new MessageActionRow();
-            actionRow.addComponents([new MessageButton({ label: "Continue", customID: "continue", style: "PRIMARY" })]);
-
-            await ctx.editOriginal({
-                embeds: [embed.toJSON()],
-                components: [(<unknown>actionRow) as ComponentActionRow]
-            });
-
-            // Listen for user messages
-            const field = embed.fields.find((f) => f.name === "Your response") as EmbedField;
-            const listener = channel.createMessageCollector({
-                filter: (m) => m.author.id === ctx.user.id,
-                time: undefined
-            });
-            let answer = field.value;
-            listener.on("collect", async (m: Message) => {
-                answer = m.content;
-                field.value = "```\n" + m.content + "```";
-
-                await ctx.editOriginal({
-                    embeds: [embed.toJSON()],
-                    components: [(<unknown>actionRow) as ComponentActionRow]
-                });
-                await m.delete();
-            });
-
-            // Wait for user to press the button
-            await new Promise((resolve) => {
-                ctx.registerComponent("continue", (context) => {
-                    if (requiresAnswer && field.value === NO_RESPONSE) {
-                        embed.setColor("#FF0000");
-                        ctx.editOriginal({
-                            embeds: [embed.toJSON()],
-                            components: [(<unknown>actionRow) as ComponentActionRow]
-                        });
-                        return;
-                    }
-                    listener.stop();
-                    ctx.unregisterComponent("continue");
-                    resolve(context);
-                });
-            });
-
-            answers[question] = answer;
-            return answer;
-        },
-        getAnswers(): Record<string, string> {
-            return answers;
-        }
-    };
-};
+export default command;

@@ -21,7 +21,7 @@ export const Executor: CommandRunner<{
 
     const actionRow = (<unknown>(
         new MessageActionRow().addComponents([
-            new MessageButton({ label: "Purge role", style: "DANGER", customID: "purgeverified" })
+            new MessageButton({ label: "Purge role", style: "DANGER", customId: "purgeverified" })
         ])
     )) as ComponentActionRow;
 

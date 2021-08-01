@@ -1,22 +1,19 @@
+import { Poll, Vote } from "@prisma/client";
 import { Mutex } from "async-mutex";
 import { constants } from "configuration/config";
-import { CommandComponentListener, ExtendedContext } from "configuration/definitions";
-import { Poll } from "database/entities/Poll";
+import { CommandComponentListener } from "configuration/definitions";
 import {
     Collection,
-    CollectorFilter,
     Interaction,
     Message,
     MessageActionRow,
     MessageButton,
-    MessageComponentInteraction,
-    MessageComponentInteractionCollector,
     MessageEmbed,
     Snowflake,
     TextChannel
 } from "discord.js";
-import { ComponentActionRow, ComponentType, MessageOptions } from "slash-create";
 import F from "./funcs";
+import { prisma } from "./prisma-init";
 
 export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {
     const baseEmbed = new MessageEmbed().setDescription(strings.join(""));
@@ -38,7 +35,7 @@ export const MessageTools = {
     },
 
     /** Takes an array of buttons and places them into an array of Action Row components */
-    allocateButtonsIntoRows<T extends ComponentActionRow | MessageActionRow>(buttons: T["components"][number][]): T[] {
+    allocateButtonsIntoRows<T extends MessageActionRow>(buttons: T["components"][number][]): T[] {
         const components: T[] = [];
 
         if (buttons.length > constants.ACTION_ROW_MAX_ITEMS * constants.MAX_ACTION_ROWS)
@@ -47,7 +44,7 @@ export const MessageTools = {
         for (let i = 0; i < buttons.length; i += constants.ACTION_ROW_MAX_ITEMS) {
             const slicedButtons = buttons.slice(i, i + constants.ACTION_ROW_MAX_ITEMS);
             components.push(<T>{
-                type: ComponentType.ACTION_ROW,
+                type: "ACTION_ROW",
                 components: slicedButtons
             });
         }
@@ -72,47 +69,23 @@ export const MessageTools = {
         }
 
         return allMessages;
-    },
-
-    async askYesOrNo(ctx: ExtendedContext, msg: MessageOptions): Promise<boolean> {
-        const actionRow = new MessageActionRow()
-            .addComponents([
-                new MessageButton({ label: "Yes", customID: "yes", style: "SUCCESS" }),
-                new MessageButton({ label: "No", customID: "no", style: "DANGER" })
-            ])
-            .toJSON();
-        await ctx.send({ ...msg, components: [actionRow as ComponentActionRow] });
-
-        return new Promise((resolve, reject) => {
-            const timeOut = setTimeout(() => reject(), 120 * 1000); // Automatically cancel after 120 secs
-            for (const t of ["yes", "no"]) {
-                ctx.registerComponent(t, () => {
-                    clearTimeout(timeOut);
-                    ctx.unregisterComponent("yes");
-                    ctx.unregisterComponent("no");
-                    resolve(t === "yes");
-                });
-            }
-        });
     }
 };
 
 /** Things that extend a Message object */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function MessageContext(msg: Message) {
-    const listeners: Collection<string, MessageComponentInteractionCollector> = new Collection();
+    const listeners: Collection<string, any> = new Collection();
     return {
         msg,
         // Copying the functionality of slash create for use with discord.js
         registerComponent(customID: string, handler: (interaction: Interaction) => Promise<void>): void {
-            const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customID === customID; // prettier-ignore
-            const collector = msg.createMessageComponentInteractionCollector({ filter });
-
-            console.log("Created collector");
-            listeners.set(customID, collector);
-
-            collector.on("collect", handler);
-            collector.on("end", () => console.log(`${customID} collector ended`));
+            // const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customID === customID; // prettier-ignore
+            // const collector = msg.createMessageComponentInteractionCollector({ filter });
+            // console.log("Created collector");
+            // listeners.set(customID, collector);
+            // collector.on("collect", handler);
+            // collector.on("end", () => console.log(`${customID} collector ended`));
         },
         unregisterComponent(customID: string): boolean {
             const collector = listeners.get(customID);
@@ -130,6 +103,7 @@ export function MessageContext(msg: Message) {
  * Deletes the original message if too many downvotes
  * @param name The name passed to the CommandComponentListener
  */
+type PollWithVotes = Poll & { votes: Vote[] };
 export function generateUpvoteDownvoteListener(name: string): CommandComponentListener {
     const answerListener = new CommandComponentListener(name, <const>["isUpvote", "pollID"]);
     const mutex = new Mutex();
@@ -139,25 +113,30 @@ export function generateUpvoteDownvoteListener(name: string): CommandComponentLi
             const { isUpvote, pollID } = args;
             const m = interaction.message as Message;
 
-            const poll = await connection.getRepository(Poll).findOne({ identifier: pollID });
+            const poll = await prisma.poll.findUnique({ where: { id: +pollID }, include: { votes: true } });
             if (!poll) return;
 
-            const vote = poll.votes.find((v) => v.userid === interaction.user.id);
-            if (vote) vote.index = +isUpvote;
-            else poll.votes.push({ index: +isUpvote, userid: interaction.user.id });
+            const previousVote = poll.votes.find((v) => v.userId === interaction.user.id);
 
-            await connection.manager.save(poll);
+            const castVote = await prisma.vote.upsert({
+                where: { id: previousVote?.id || -1 },
+                update: { choice: +isUpvote },
+                create: { choice: +isUpvote, userId: interaction.user.id, pollId: poll.id }
+            });
+
+            if (previousVote) previousVote.choice = castVote.choice;
+            else poll.votes.push(castVote);
 
             await updateMessage(m, poll, +isUpvote);
         });
     };
 
-    async function updateMessage(msg: Message, poll: Poll, lastVote: number) {
+    async function updateMessage(msg: Message, poll: PollWithVotes, lastVote: number) {
         const [actionRow] = msg.components;
 
         let upvotes = 0;
         for (const vote of poll.votes) {
-            if (vote.index === 1) upvotes++;
+            if (vote.choice === 1) upvotes++;
         }
         const downvotes = poll.votes.length - upvotes;
 

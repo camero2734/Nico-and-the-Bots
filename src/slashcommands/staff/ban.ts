@@ -1,26 +1,23 @@
 import { roles } from "configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "configuration/definitions";
-import { MessageEmbed, Snowflake } from "discord.js";
-import { CommandOptionType } from "slash-create";
+import { CommandError } from "configuration/definitions";
+import { MessageEmbed } from "discord.js";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Bans a member",
     options: [
-        { name: "user", description: "The member to ban", required: true, type: CommandOptionType.USER },
+        { name: "user", description: "The member to ban", required: true, type: "USER" },
         {
             name: "purge",
             description: "Whether to delete all messages or not",
             required: false,
-            type: CommandOptionType.BOOLEAN
+            type: "BOOLEAN"
         },
-        { name: "reason", description: "Reason for banning", required: false, type: CommandOptionType.STRING }
+        { name: "reason", description: "Reason for banning", required: false, type: "STRING" }
     ]
-};
+});
 
-export const Executor: CommandRunner<{
-    user: Snowflake;
-    purge: boolean;
-}> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const { user, purge } = ctx.opts;
     const member = await ctx.member.guild.members.fetch(user);
     if (!member) throw new CommandError("Could not find this member. They may have already been banned or left.");
@@ -32,4 +29,6 @@ export const Executor: CommandRunner<{
     await member.ban({ days: purge ? 7 : 0 });
 
     await ctx.send({ embeds: [new MessageEmbed({ description: `${member.toString()} was banned.` }).toJSON()] });
-};
+});
+
+export default command;

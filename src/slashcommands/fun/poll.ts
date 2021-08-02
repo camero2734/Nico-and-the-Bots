@@ -2,7 +2,7 @@ import { Poll, Vote } from "@prisma/client";
 import { EmbedField, GuildEmoji, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
-import { channelIDs } from "../../configuration/config";
+import { channelIDs, emojiIDs } from "../../configuration/config";
 import { prisma } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 
@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
 
     if (!option1 || !option2) throw new Error("First two options should be required");
 
-    const options = [option1, option2, ...Object.values(optDict).filter((a): a is string => a)];
+    const options = [option1, option2, ...Object.values(optDict).filter((a): a is string => a)].map((o) => o.trim());
 
     const discordEmojiRegex = /<a{0,1}:(?<name>.*?):(?<id>\d+)>/;
 
@@ -69,9 +69,7 @@ command.setHandler(async (ctx) => {
         include: { votes: true }
     });
 
-    const embed = new MessageEmbed()
-        .setTitle(title) //
-        .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL());
+    const embed = new MessageEmbed().setAuthor(title, ctx.user.displayAvatarURL());
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
@@ -82,7 +80,7 @@ command.setHandler(async (ctx) => {
     for (let i = 0; i < parsedOptions.length; i++) {
         const option = parsedOptions[i];
         const emoji = option.emoji;
-        selectMenu.addOptions({ label: option.text, emoji, value: `${i}` });
+        selectMenu.addOptions({ label: option.text.substring(0, 25), emoji, value: `${i}` });
     }
 
     const actionRow = new MessageActionRow().addComponents(selectMenu);
@@ -92,7 +90,7 @@ command.setHandler(async (ctx) => {
         const m = (await ctx.fetchReply()) as Message;
         const thread = await ctx.channel.threads.create({
             name: title,
-            autoArchiveDuration: 4320,
+            autoArchiveDuration: 1440,
             reason: "Auto poll thread",
             startMessage: m
         });
@@ -144,8 +142,7 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
         }
     }
 
-    const embed = msg.embeds[0];
-
+    const embed = ctx.message.embeds[0];
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
     await msg.edit({ embeds: [embed] });
@@ -167,12 +164,19 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
 
     const tempEmbed = new MessageEmbed();
 
+    const toEmoji = (id: string) => `<:name:${id}>`;
+    const startEmoji = toEmoji(emojiIDs.poll.start);
+    const filledEmoji = toEmoji(emojiIDs.poll.filled);
+    const emptyEmoji = toEmoji(emojiIDs.poll.empty);
+    const endEmoji = toEmoji(emojiIDs.poll.end);
+
     optionsWithVotes.forEach(({ opt, count }) => {
-        const [progress] = progressBar.filledBar(totalVotes === 0 ? 1 : totalVotes, count, 20);
+        const [progress] = progressBar.filledBar(totalVotes === 0 ? 1 : totalVotes, count, 8, emptyEmoji, filledEmoji);
         const emoji = opt.emoji ? `${opt.emoji} ` : "";
         const basePercent = (100 * count) / totalVotes;
         const percent = (isFinite(basePercent) ? basePercent : 0).toPrecision(3);
-        tempEmbed.addField(`${emoji}${opt.text}`.trim(), `${progress}  👥 ${count} (${percent}%)`);
+
+        tempEmbed.addField(`${emoji}${opt.text}`.trim(), `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`);
     });
 
     return tempEmbed.fields;

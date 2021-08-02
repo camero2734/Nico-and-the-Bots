@@ -96,7 +96,13 @@ export const emojiIDs = <const>{
     upvote: "850586748765077514",
     downvote: "850586787805265990",
     spotify: "869731229853970432",
-    genius: "869733049347211374"
+    genius: "869733049347211374",
+    poll: {
+        start: "871795753293578240",
+        filled: "871795752760918018",
+        empty: "871795753251639306",
+        end: "871795752786071693"
+    }
 };
 
 export const roles = <const>{

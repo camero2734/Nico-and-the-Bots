@@ -1,6 +1,6 @@
 import { TopfeedBot } from "./src/altbots/topfeed/topfeed";
 import { registerFont } from "canvas";
-import { channelIDs, guildID } from "./src/configuration/config";
+import { channelIDs, guildID, userIDs } from "./src/configuration/config";
 import secrets from "./src/configuration/secrets";
 import * as Discord from "discord.js";
 import { Collection } from "discord.js";
@@ -92,6 +92,11 @@ client.on("ready", async () => {
 client.on("messageCreate", async (msg: Discord.Message) => {
     const wasSlur = await SlurFilter(msg);
     if (wasSlur) return;
+
+    if (msg.channel.id === channelIDs.polls && !(msg.author.bot || msg.author.id === userIDs.me)) {
+        msg.delete();
+        return;
+    }
 
     AutoReact(msg);
     updateUserScore(msg); // Add to score

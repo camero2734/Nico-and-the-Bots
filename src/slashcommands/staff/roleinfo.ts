@@ -1,30 +1,27 @@
-import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
 import { MessageEmbed, Snowflake } from "discord.js";
-import { CommandOptionType, MessageEmbedOptions } from "slash-create";
+import { CommandError } from "../../configuration/definitions";
+import { SlashCommand } from "../../helpers/slash-command";
 
 const names = <const>["role1", "role2", "role3", "role4", "role5"];
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Retrieves information for a role",
-    options: names.map((name, idx) => ({
-        name,
-        description: `Role #${idx} to look up information for`,
-        required: idx === 0,
-        type: CommandOptionType.ROLE
-    }))
-};
+    options: names.map(
+        (name, idx) =>
+            <const>{
+                name,
+                description: `Role #${idx} to look up information for`,
+                required: idx === 0,
+                type: "ROLE"
+            }
+    )
+});
 
-export const Executor: CommandRunner<{
-    role1: Snowflake;
-    role2?: Snowflake;
-    role3?: Snowflake;
-    role4?: Snowflake;
-    role5?: Snowflake;
-}> = async (ctx) => {
+command.setHandler(async (ctx) => {
     await ctx.defer();
-    const roles = Object.values(ctx.opts);
+    const roles = Object.values(ctx.opts).filter((r): r is Snowflake => !!r);
 
-    const embeds: MessageEmbedOptions[] = [];
+    const embeds: MessageEmbed[] = [];
 
     for (const roleID of roles) {
         const role = ctx.channel.guild.roles.cache.get(roleID);
@@ -38,10 +35,12 @@ export const Executor: CommandRunner<{
         embed.addField("Created", `${role.createdAt}`);
         embed.addField("ID", role.id);
 
-        embeds.push(embed.toJSON());
+        embeds.push(embed);
     }
 
     if (embeds.length === 0) throw new CommandError("A valid role was not provided.");
 
     await ctx.send({ embeds });
-};
+});
+
+export default command;

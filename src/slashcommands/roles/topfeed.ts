@@ -1,25 +1,14 @@
 import {
     EmojiIdentifierResolvable,
-    GuildMember, MessageActionRow,
+    GuildMember,
+    MessageActionRow,
     MessageEmbed,
     MessageSelectMenu,
     Snowflake
 } from "discord.js";
-import { CommandOptionType, ComponentActionRow } from "slash-create";
 import { roles, userIDs } from "../../configuration/config";
-import { CommandComponentListener, CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
-
-export const Options: CommandOptions = {
-    description: "Gives you notification roles for topfeed channels (when someone posts on SM, DMAORG updates, etc.)",
-    options: [
-        {
-            name: "removeall",
-            description: "Removes all your topfeed roles",
-            type: CommandOptionType.BOOLEAN,
-            required: false
-        }
-    ]
-};
+import { CommandError } from "../../configuration/definitions";
+import { SlashCommand } from "../../helpers/slash-command";
 
 const tf = roles.topfeed.selectable;
 const emojiMap: Record<typeof tf[keyof typeof tf], Snowflake> = {
@@ -34,13 +23,22 @@ const emojiMap: Record<typeof tf[keyof typeof tf], Snowflake> = {
     [tf.other]: "694781760407601233"
 };
 
-const answerListener = new CommandComponentListener("topfeedChoose", []);
-export const ComponentListeners: CommandComponentListener[] = [answerListener];
+const command = new SlashCommand(<const>{
+    description: "Gives you notification roles for topfeed channels (when someone posts on SM, DMAORG updates, etc.)",
+    options: [
+        {
+            name: "removeall",
+            description: "Removes all your topfeed roles",
+            type: "BOOLEAN",
+            required: false
+        }
+    ]
+});
 
-export const Executor: CommandRunner<{ removeall?: boolean }> = async (ctx) => {
+command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) throw new CommandError("This command is under construction");
 
-    await ctx.defer(true);
+    await ctx.defer({ ephemeral: true });
 
     if (ctx.opts.removeall) {
         for (const role of Object.values(tf)) {
@@ -63,9 +61,9 @@ export const Executor: CommandRunner<{ removeall?: boolean }> = async (ctx) => {
         .setPlaceholder("Select the topfeed role(s) you want")
         .setMinValues(0)
         .setMaxValues(options.length)
-        .setCustomId(answerListener.generateCustomID({}));
+        .setCustomId(genChoiceId({}));
 
-    const actionRow = new MessageActionRow().addComponents(menu).toJSON() as ComponentActionRow;
+    const actionRow = new MessageActionRow().addComponents(menu);
 
     const embed = new MessageEmbed().setDescription(
         "Select your topfeed roles below. You will receive a ping when the channel receives an update."
@@ -73,16 +71,16 @@ export const Executor: CommandRunner<{ removeall?: boolean }> = async (ctx) => {
 
     await ctx.send({
         components: [actionRow],
-        embeds: [embed.toJSON()]
+        embeds: [embed]
     });
-};
+});
 
-answerListener.handler = async (interaction) => {
-    if (!interaction.isSelectMenu() || !interaction.member) return;
+const genChoiceId = command.addInteractionListener("topfeedChoose", [], async (ctx) => {
+    if (!ctx.isSelectMenu() || !ctx.member) return;
 
-    const member = interaction.member as GuildMember;
+    const member = ctx.member as GuildMember;
 
-    const selected = interaction.values as Snowflake[];
+    const selected = ctx.values as Snowflake[];
     if (!Array.isArray(selected) || selected.length < 1) return;
 
     const allRoles: Snowflake[] = Object.values(tf);
@@ -99,6 +97,8 @@ answerListener.handler = async (interaction) => {
 
     const text = `You now have the following topfeed roles:\n${selected.map((s) => `<@&${s}>`).join(" ")}`;
 
-    interaction.deferred = true;
-    await interaction.editReply({ embeds: [new MessageEmbed().setDescription(text)], components: [] });
-};
+    ctx.deferred = true;
+    await ctx.editReply({ embeds: [new MessageEmbed().setDescription(text)], components: [] });
+});
+
+export default command;

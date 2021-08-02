@@ -12,7 +12,7 @@ import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
-import 'source-map-support/register'
+import "source-map-support/register";
 
 const client = new Discord.Client({
     intents: [
@@ -82,9 +82,10 @@ client.on("ready", async () => {
 
     const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
     await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
-    await guild.members.fetch();
-    await botChan.send({
-        embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
+    guild.members.fetch().then(() => {
+        botChan.send({
+            embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
+        });
     });
 });
 

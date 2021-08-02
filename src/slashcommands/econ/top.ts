@@ -1,27 +1,29 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandError, CommandRunner, createOptions, ExtendedContext, OptsType } from "../../configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import { GuildMember } from "discord.js";
 import { badgeLoader } from "../../helpers";
 import { LevelCalculator } from "../../helpers/score-manager";
 import fetch from "node-fetch";
-import { CommandOptionType } from "slash-create";
 import { queries, prisma } from "../../helpers/prisma-init";
+import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
 
-export const Options = createOptions(<const>{
+const PAGE_SIZE = 10;
+
+const command = new SlashCommand(<const>{
     description: "Displays the server point leaderboard",
     options: [
         {
             name: "page",
             description: "The page number of the leaderboard to check",
             required: false,
-            type: CommandOptionType.INTEGER,
+            type: "INTEGER",
             choices: []
         },
         {
             name: "timeperiod",
             description: "The time period over which to display statistics. Defaults to 1 month.",
             required: false,
-            type: CommandOptionType.INTEGER,
+            type: "INTEGER",
             choices: [
                 { name: "Last week", value: 1 },
                 { name: "Last month", value: 4 },
@@ -34,9 +36,7 @@ export const Options = createOptions(<const>{
     ]
 });
 
-const PAGE_SIZE = 10;
-
-export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const { page } = ctx.opts;
     const pageNum = page && page > 0 ? page - 1 : 0; // Computers tend to like to start at zero. Also negative pages don't make sense
     const timeperiod = ctx.opts.timeperiod || 0;
@@ -51,18 +51,20 @@ export const Executor: CommandRunner<OptsType<typeof Options>> = async (ctx) => 
 
     if (memberScores.length === 0) throw new CommandError("This page doesn't exist!");
 
-    const choice = Options.options?.find((o) => o.name === "timeperiod")?.choices?.find((c) => c.value === timeperiod);
+    const choice = command.commandData.options
+        ?.find((o) => o.name === "timeperiod")
+        ?.choices?.find((c) => c.value === timeperiod);
     const timePeriodStr = (timeperiod && choice?.name) || "All time";
 
     const buffer = await generateImage(memberScores, pageNum, timePeriodStr);
 
-    await ctx.send(`Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`, {
-        file: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, file: buffer }]
+    await ctx.send({
+        content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
+        files: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, attachment: buffer }]
     });
-};
-
+});
 async function getMemberScores(
-    ctx: ExtendedContext,
+    ctx: ExtendedInteraction,
     pageNum: number,
     timeperiod?: number
 ): Promise<{ member: GuildMember; score: number }[]> {
@@ -79,7 +81,7 @@ async function getMemberScores(
 }
 
 async function getAlltimeScores(
-    ctx: ExtendedContext,
+    ctx: ExtendedInteraction,
     pageNum: number
 ): Promise<{ member: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
@@ -92,10 +94,12 @@ async function getAlltimeScores(
     });
 
     return await Promise.all(
-        paginatedUsers.map(async (u) => ({
-            member: await ctx.member.guild.members.fetch(u.id.toSnowflake()),
-            score: u.score
-        }))
+        paginatedUsers.map(async (u) => {
+            return {
+                member: await ctx.member.guild.members.fetch(u.id.toSnowflake()),
+                score: u.score
+            };
+        })
     );
 }
 
@@ -162,6 +166,7 @@ async function generateImage(
 
         // Avatar
         cctx.translate(10, 0);
+        if (!member.user) console.log(member.constructor.name);
         const avatarRes = await fetch(member.user.displayAvatarURL({ format: "png", size: 128 }));
         const avatar = await loadImage(await avatarRes.buffer());
 
@@ -214,3 +219,5 @@ async function generateImage(
 
     return canvas.toBuffer();
 }
+
+export default command;

@@ -1,5 +1,4 @@
 import { MessageOptions, Snowflake } from "discord.js";
-import { Connection } from "typeorm";
 
 export interface Checked<T> {
     msg: MessageOptions;
@@ -8,7 +7,7 @@ export interface Checked<T> {
 }
 
 export abstract class Watcher<T> {
-    constructor(public handle: string, public channel: Snowflake, protected connection: Connection) {}
+    constructor(public handle: string, public channel: Snowflake, protected connection: any) {}
     abstract type: string;
     abstract fetchRecentItems(): Promise<Checked<T>[]>;
 

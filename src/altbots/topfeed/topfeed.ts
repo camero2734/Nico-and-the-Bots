@@ -1,5 +1,4 @@
 import { Client, Guild, Intents, MessageAttachment, TextChannel } from "discord.js";
-import { Connection } from "typeorm";
 import { SiteWatcher } from "./types/websites";
 import secrets from "../../configuration/secrets";
 import { channelIDs, guildID } from "../../configuration/config";
@@ -14,8 +13,8 @@ export class TopfeedBot {
     websites: SiteWatcher<any>[] = [];
     instagrams: InstaWatcher[] = [];
     twitters: TwitterWatcher[];
-    ctx: { connection: Connection; client: Client };
-    constructor(private connection: Connection) {
+    ctx: { connection: any; client: Client };
+    constructor(private connection: any) {
         this.client = new Client({
             intents: [
                 "GUILDS",

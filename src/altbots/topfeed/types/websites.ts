@@ -1,12 +1,9 @@
-import fetch from "node-fetch";
-import https from "https";
 import crypto from "crypto";
-import * as Diff from "diff";
-import R from "ramda";
-import PageRes from "pageres";
-import { Connection } from "typeorm";
-import normalizeURL from "normalize-url";
 import { Client, MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
+import https from "https";
+import fetch from "node-fetch";
+import normalizeURL from "normalize-url";
+import PageRes from "pageres";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
@@ -47,7 +44,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         public url: string,
         public displayName: string,
         public watchMethods: T,
-        protected ctx: { connection: Connection; client: Client }
+        protected ctx: { connection: any; client: Client }
     ) {
         this.displayedURL = url;
     }

@@ -1,6 +1,5 @@
 import { Image, loadImage } from "canvas";
 import { GuildMember } from "discord.js";
-import { Connection } from "typeorm";
 
 function wrap(text: string, noPNG = false) {
     return `./src/assets/badges/${text}${noPNG ? "" : ".png"}`;
@@ -10,7 +9,6 @@ export const badgeLoader = async (
     member: GuildMember,
     numGolds: number,
     placeNum: number,
-    connection?: Connection
 ): Promise<Image[]> => {
     const badges: Image[] = [];
     const ignore: string[] = [];

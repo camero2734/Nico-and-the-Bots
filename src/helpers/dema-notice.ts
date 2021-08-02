@@ -1,9 +1,5 @@
 import { Mutex } from "async-mutex";
-import { createCanvas, loadImage } from "canvas";
-import { channelIDs } from "../configuration/config";
-import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
-import { Connection, LessThan } from "typeorm";
-import F from "./funcs";
+import { GuildMember } from "discord.js";
 
 // Thanks https://stackoverflow.com/questions/22998551/how-to-paragraph-text-drawn-onto-canvas
 function fillParagraph(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number) {
@@ -30,7 +26,6 @@ function fillParagraph(ctx: CanvasRenderingContext2D, text: string, x: number, y
 const mutex = new Mutex();
 export async function sendViolationNotice(
     member: GuildMember,
-    connection: Connection,
     options: { identifiedAs: string; found: string; reason: string; issuingBishop?: string }
 ): Promise<void> {
     // const { identifiedAs, reason, issuingBishop, found } = options;

@@ -1,52 +1,50 @@
-import { CommandOptionType } from "slash-create";
-import { CommandOptions, CommandRunner } from "../../configuration/definitions";
-import { MessageEmbed, Snowflake } from "discord.js";
+import { MessageActionRow, MessageEmbed, MessageSelectMenu, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../configuration/config";
+import { SlashCommand } from "../../helpers/slash-command";
 
-const pronounOptsList = <const>["pronoun1", "pronoun2", "pronoun3"];
-type OptsType = Record<typeof pronounOptsList[number], string>;
+const command = new SlashCommand(<const>{
+    description: "Sends a message that allows you to select pronoun roles",
+    options: []
+});
 
-const pronounRoles = roles.pronouns;
+command.setHandler(async (ctx) => {
+    await ctx.defer({ ephemeral: true });
+    const selectMenu = new MessageSelectMenu()
+        .setCustomId(genSelectId({}))
+        .setMaxValues(Object.keys(roles.pronouns).length)
+        .setPlaceholder("Select your pronoun role(s) from the list")
+        .addOptions(Object.entries(roles.pronouns).map(([name, id]) => ({ label: name, value: id })));
 
-export const Options: CommandOptions = {
-    description: "Overwrites all of your pronoun roles with up to three that you specify",
-    options: pronounOptsList.map((name, i) => ({
-        name,
-        description: `Pronoun #${i + 1}`,
-        required: i === 0,
-        type: CommandOptionType.STRING,
-        choices: [
-            ...Object.entries(pronounRoles).map(([name, value]) => ({ name, value })),
-            { name: "I'd like to suggest a pronoun be added to the list", value: "notExist" }
-        ]
-    }))
-};
+    const selectEmbed = new MessageEmbed()
+        .setTitle("Select your pronoun role(s)")
+        .setDescription(
+            `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
+        );
 
-export const Executor: CommandRunner<OptsType> = async (ctx) => {
-    let pronounRoles = pronounOptsList.map((p) => ctx.opts[p]).filter((p) => p);
+    const actionRow = new MessageActionRow().addComponents(selectMenu);
 
-    if (pronounRoles.some(R.equals("notExist"))) {
-        const embed = new MessageEmbed()
-            .setAuthor(ctx.member.displayName, ctx.user.avatarURL)
-            .setDescription(`You can suggest a pronoun role that doesn't exist yet in <#${channelIDs.suggestions}>!`);
-        ctx.embed(embed);
-    }
+    await ctx.send({ embeds: [selectEmbed], components: [actionRow] });
+});
 
-    pronounRoles = pronounRoles.filter((p) => p !== "notExist") as Snowflake[]; // Ignore this one
+const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[], async (ctx) => {
+    if (!ctx.isSelectMenu()) return;
 
-    if (pronounRoles.length === 0) return;
+    const rolesSelected = ctx.values as Snowflake[];
+    if (rolesSelected.length === 0) return;
 
     // Remove any pronoun roles not mentioned
-    const toRemove = R.difference(Object.values(roles.pronouns), pronounRoles) as Snowflake[];
+    const toRemove = R.difference(Object.values(roles.pronouns), rolesSelected);
     for (const r of toRemove) await ctx.member.roles.remove(r);
 
     // Give the pronoun roles mentioned
-    for (const r of pronounRoles as Snowflake[]) await ctx.member.roles.add(r);
+    for (const r of rolesSelected) await ctx.member.roles.add(r);
 
     const embed = new MessageEmbed()
-        .setAuthor(ctx.member.displayName, ctx.user.avatarURL)
+        .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL())
         .setDescription(`Your pronoun roles have been updated!`);
 
-    await ctx.embed(embed);
-};
+    await ctx.editReply({ embeds: [embed], components: [] });
+});
+
+export default command;

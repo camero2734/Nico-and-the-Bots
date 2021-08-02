@@ -1,4 +1,4 @@
-files=("./src/configuration/secrets.json" "./src/helpers/verified-quiz/quiz.ts")
+files=("./src/configuration/secrets.ts" "./src/helpers/verified-quiz/quiz.ts")
 fileVals=("${a[@]}") 
 
 git switch heroku && # Switch to branch that has secret files

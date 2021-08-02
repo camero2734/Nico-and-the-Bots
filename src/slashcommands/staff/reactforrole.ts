@@ -1,84 +1,97 @@
-import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
-import { MessageEmbed, Snowflake } from "discord.js";
-import { ButtonStyle, CommandOptionType, ComponentType } from "slash-create";
+import { EmojiIdentifierResolvable, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { roles } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+enum ActionTypes {
+    Give,
+    Remove
+}
+
+const command = new SlashCommand(<const>{
     description: "Creates a message that users can react to to receive a role",
     options: [
         {
             name: "text",
             description: "The description text for the embed",
             required: true,
-            type: CommandOptionType.STRING
+            type: "STRING"
         },
         {
             name: "role",
             description: "The role the interaction should give",
             required: true,
-            type: CommandOptionType.ROLE
+            type: "ROLE"
         },
         {
             name: "channel",
             description: "The channel to send it in (defaults to current channel)",
             required: false,
-            type: CommandOptionType.STRING
+            type: "STRING"
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ text: string; role: Snowflake }> = async (ctx) => {
+command.setHandler(async (ctx) => {
+    await ctx.defer();
     const { text, role } = ctx.opts;
 
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");
 
-    await ctx.defer();
-
-    await ctx.send(text, {
-        components: [
-            {
-                type: ComponentType.ACTION_ROW,
-                components: [
-                    {
-                        type: ComponentType.BUTTON,
-                        style: ButtonStyle.SUCCESS,
-                        label: `Get the ${roleObj.name} role`,
-                        custom_id: `add_role`,
-                        emoji: {
-                            name: "😎"
-                        }
-                    },
-                    {
-                        type: ComponentType.BUTTON,
-                        style: ButtonStyle.DESTRUCTIVE,
-                        label: `Remove the ${roleObj.name} role`,
-                        custom_id: `remove_role`,
-                        emoji: {
-                            name: "😔"
-                        }
-                    }
-                ]
+    const actionRow = new MessageActionRow().addComponents([
+        new MessageButton({
+            style: "SUCCESS",
+            label: `Get the ${roleObj.name} role`,
+            customId: genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }),
+            emoji: <EmojiIdentifierResolvable>{
+                name: "😎"
             }
-        ]
+        }),
+        new MessageButton({
+            style: "DANGER",
+            label: `Remove the ${roleObj.name} role`,
+            customId: genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }),
+            emoji: <EmojiIdentifierResolvable>{
+                name: "😔"
+            }
+        })
+    ]);
+
+    const embed = new MessageEmbed()
+        .setTitle("Role Giver™️") //
+        .setDescription(`By clicking the buttons below, you can get/remove the ${roleObj.name} role.`)
+        .addField("Description", text)
+        .addField("Role", `${roleObj}`);
+
+    await ctx.send({ embeds: [embed], components: [actionRow] });
+});
+
+const genActionId = command.addInteractionListener("reactForRole", <const>["roleId", "action"], async (ctx, args) => {
+    const roleId = args.roleId.toSnowflake();
+    const action = +args.action;
+
+    const role = await ctx.guild.roles.fetch(roleId);
+    const highestRoleAllowed = await ctx.guild.roles.fetch(roles.muted);
+    if (!role || !highestRoleAllowed) return;
+
+    // Ensure this isn't giving away the staff role or anything
+    if (role.position >= highestRoleAllowed.position) return;
+
+    if (action === ActionTypes.Give) {
+        await ctx.member.roles.add(role);
+    } else if (action === ActionTypes.Remove) {
+        await ctx.member.roles.remove(role);
+    } else return;
+
+    await ctx.followUp({
+        embeds: [
+            new MessageEmbed({
+                description: `The ${role} role was successfully ${action === ActionTypes.Give ? "added" : "removed"}`
+            })
+        ],
+        ephemeral: true
     });
+});
 
-    ctx.registerComponent(`add_role`, async (btnCtx) => {
-        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as Snowflake);
-        if (!member) return;
-
-        const embed = new MessageEmbed().setDescription(`You now have the ${roleObj.name} role!`);
-
-        await member.roles.add(roleObj.id);
-        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
-    });
-
-    ctx.registerComponent(`remove_role`, async (btnCtx) => {
-        const member = await ctx.channel.guild.members.fetch(btnCtx.user.id as Snowflake);
-        if (!member) return;
-
-        const embed = new MessageEmbed().setDescription(`You no longer have the ${roleObj.name} role!`);
-
-        await member.roles.remove(roleObj.id);
-        btnCtx.send({ ephemeral: true, embeds: [embed.toJSON()] });
-    });
-};
+export default command;

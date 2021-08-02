@@ -1,0 +1,6 @@
+{
+    "watch": ["src", "types", "app.ts"],
+    "ext": "ts,mjs,js,json,graphql",
+    "exec": "yarn build && node ./dist/app.js",
+    "legacyWatch": true
+  }

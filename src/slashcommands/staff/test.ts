@@ -23,7 +23,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    //
+    await ctx.send({content: "Hello"});
 });
 
 export default command;

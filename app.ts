@@ -12,6 +12,7 @@ import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
+import 'source-map-support/register'
 
 const client = new Discord.Client({
     intents: [

@@ -73,7 +73,6 @@
         "require-all": "^3.0.0",
         "s-ago": "^2.2.0",
         "slash-commands": "^1.4.0",
-        "slash-create": "^3.3.0",
         "source-map-support": "^0.5.19",
         "spotify-web-api-node": "^5.0.2",
         "string-progressbar": "^1.0.4",

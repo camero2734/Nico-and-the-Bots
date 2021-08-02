@@ -1,27 +1,25 @@
 import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
-import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
+import { CommandError } from "../../configuration/definitions";
 import F from "../../helpers/funcs";
+import { SlashCommand } from "../../helpers/slash-command";
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Deletes a certain number of messages",
     options: [
         {
             name: "amount",
             description: "The number of messages to delete",
             required: true,
-            type: CommandOptionType.INTEGER
+            type: "INTEGER"
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{
-    amount: number;
-}> = async (ctx) => {
+command.setHandler(async (ctx) => {
     const { amount } = ctx.opts;
     const channel = ctx.channel;
 
-    if (amount > 500) throw new CommandError("You can only delete up to 100 messages at a time");
+    if (amount > 100) throw new CommandError("You can only delete up to 100 messages at a time");
 
     const deleted = await channel.bulkDelete(amount, true);
 
@@ -41,5 +39,7 @@ export const Executor: CommandRunner<{
     }
 
     const embed = new MessageEmbed({ description: `Deleted ${numDeleted} out of the requested ${amount} messages` });
-    await ctx.send({ embeds: [embed.toJSON()] });
-};
+    await ctx.send({ embeds: [embed] });
+});
+
+export default command;

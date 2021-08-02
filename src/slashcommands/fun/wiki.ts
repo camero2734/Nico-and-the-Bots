@@ -1,7 +1,6 @@
-import { CommandError, CommandRunner, createOptions, OptsType } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { CommandOptionType } from "slash-create";
 import WikiJS from "wikijs";
+import { CommandError } from "../../configuration/definitions";
 import F from "../../helpers/funcs";
 import { SlashCommand } from "../../helpers/slash-command";
 

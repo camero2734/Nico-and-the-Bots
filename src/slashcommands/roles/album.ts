@@ -1,7 +1,7 @@
+import { MessageEmbed } from "discord.js";
 import { roles } from "../../configuration/config";
-import { CommandError, CommandOptions, CommandRunner } from "../../configuration/definitions";
-import { MessageEmbed, Snowflake } from "discord.js";
-import { CommandOptionType } from "slash-create";
+import { CommandError } from "../../configuration/definitions";
+import { SlashCommand } from "../../helpers/slash-command";
 
 const { SAI, TRENCH, BF, VSL, RAB, ST } = roles.albums;
 const albumRoles = {
@@ -13,24 +13,24 @@ const albumRoles = {
     "Self Titled": ST
 };
 
-export const Options: CommandOptions = {
+const command = new SlashCommand(<const>{
     description: "Get a role for one of the band's albums",
     options: [
         {
             name: "album",
             description: "The album role to get",
             required: true,
-            type: CommandOptionType.STRING,
+            type: "STRING",
             choices: Object.entries(albumRoles).map(([name, roleID]) => ({
                 name,
                 value: roleID
             }))
         }
     ]
-};
+});
 
-export const Executor: CommandRunner<{ album: Snowflake }> = async (ctx) => {
-    if (!ctx.member.roles.cache.has(roles.staff)) return ctx.send("This command is disabled");
+command.setHandler(async (ctx) => {
+    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is disabled");
     const roleID = ctx.opts.album;
 
     const idList = Object.values(albumRoles);
@@ -45,11 +45,18 @@ export const Executor: CommandRunner<{ album: Snowflake }> = async (ctx) => {
         }
     }
 
-    if (removedAll) return ctx.embed(new MessageEmbed().setDescription("Your album role was removed"));
+    if (removedAll) {
+        const embed = new MessageEmbed({ description: "Your album role was removed" });
+        return ctx.send({ embeds: [embed] });
+    }
 
     await ctx.member.roles.add(roleID);
     const role = await ctx.member.guild.roles.fetch(roleID);
     if (!role) throw new CommandError("Unable to find role");
 
-    ctx.embed(new MessageEmbed().setDescription(`You now have the ${role.name} album role!`).setColor(role.color));
-};
+    const embed = new MessageEmbed().setDescription(`You now have the ${role.name} album role!`).setColor(role.color);
+
+    ctx.send({ embeds: [embed] });
+});
+
+export default command;

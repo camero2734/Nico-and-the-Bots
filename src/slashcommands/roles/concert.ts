@@ -1,31 +1,33 @@
-import { CommandOptions, CommandRunner } from "../../configuration/definitions";
-import { MessageEmbed, Role, Snowflake, TextChannel } from "discord.js";
+// TODO: FIX
 
-export const Options: CommandOptions = {
-    description: "Selects a concert channel",
-    options: [
-        /**
-         * These are automatically populated from concert-channels.ts concerts
-         */
-    ]
-};
+// import { CommandOptions, CommandRunner } from "../../configuration/definitions";
+// import { MessageEmbed, Role, Snowflake, TextChannel } from "discord.js";
 
-export const Executor: CommandRunner<Record<string, Snowflake>> = async (ctx) => {
-    await ctx.defer(true);
-    const channels = Object.values(ctx.opts).map((cid) => ctx.channel.guild.channels.cache.get(cid) as TextChannel);
+// export const Options: CommandOptions = {
+//     description: "Selects a concert channel",
+//     options: [
+//         /**
+//          * These are automatically populated from concert-channels.ts concerts
+//          */
+//     ]
+// };
 
-    const allRoles = await ctx.channel.guild.roles.fetch();
-    const rolesToGive = channels.map((c) => allRoles.find((r) => r?.name === c?.name)) as Role[];
+// export const Executor: CommandRunner<Record<string, Snowflake>> = async (ctx) => {
+//     await ctx.defer(true);
+//     const channels = Object.values(ctx.opts).map((cid) => ctx.channel.guild.channels.cache.get(cid) as TextChannel);
 
-    const text = rolesToGive.map((r) => `${r}`).join(", ");
+//     const allRoles = await ctx.channel.guild.roles.fetch();
+//     const rolesToGive = channels.map((c) => allRoles.find((r) => r?.name === c?.name)) as Role[];
 
-    for (const role of rolesToGive) {
-        await ctx.member.roles.add(role);
-    }
+//     const text = rolesToGive.map((r) => `${r}`).join(", ");
 
-    const embed = new MessageEmbed()
-        .setTitle("Concert role(s) successfully added!")
-        .setDescription(`You got the following role(s): ${text}`);
+//     for (const role of rolesToGive) {
+//         await ctx.member.roles.add(role);
+//     }
 
-    await ctx.send({ embeds: [embed.toJSON()], allowedMentions: { roles: [], everyone: false } });
-};
+//     const embed = new MessageEmbed()
+//         .setTitle("Concert role(s) successfully added!")
+//         .setDescription(`You got the following role(s): ${text}`);
+
+//     await ctx.send({ embeds: [embed.toJSON()], allowedMentions: { roles: [], everyone: false } });
+// };

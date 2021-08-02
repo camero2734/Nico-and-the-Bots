@@ -2215,11 +2215,6 @@ event-target-shim@^5.0.0:
   resolved "https://registry.npmjs.org/event-target-shim/-/event-target-shim-5.0.1.tgz"
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
 
-eventemitter3@^4.0.7:
-  version "4.0.7"
-  resolved "https://registry.npmjs.org/eventemitter3/-/eventemitter3-4.0.7.tgz"
-  integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
-
 execa@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npmjs.org/execa/-/execa-0.2.2.tgz"
@@ -3837,11 +3832,6 @@ lodash.clonedeep@^4.5.0:
   resolved "https://registry.npmjs.org/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz"
   integrity sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
 
-lodash.isequal@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.npmjs.org/lodash.isequal/-/lodash.isequal-4.5.0.tgz"
-  integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
-
 lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.2.tgz"
@@ -3871,11 +3861,6 @@ lodash.truncate@^4.4.2:
   version "4.4.2"
   resolved "https://registry.npmjs.org/lodash.truncate/-/lodash.truncate-4.4.2.tgz"
   integrity sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=
-
-lodash.uniq@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.npmjs.org/lodash.uniq/-/lodash.uniq-4.5.0.tgz"
-  integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
 "lodash@4.6.1 || ^4.16.1", lodash@^4.17.11, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.3.0:
   version "4.17.21"
@@ -5603,18 +5588,6 @@ slash-commands@^1.4.0:
   integrity sha512-JLU3wj7LbrxYC2+xNVGscaTNeWqTIpv8eMXTNQsNVnIC845GK/LV1ISYcChzrlIfkLhEDltDGrFDb4YyL6xdWQ==
   dependencies:
     centra "^2.4.2"
-    tweetnacl "^1.0.3"
-
-slash-create@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.npmjs.org/slash-create/-/slash-create-3.3.0.tgz"
-  integrity sha512-dH80fs7rVzYXxgt9thliJJaz/0GKfhMHgUOjQTgIHP5HjVf0kWjd9d774OJ1bvEoklH6xt3Nhr7pti7KgdNufg==
-  dependencies:
-    "@discordjs/collection" "^0.1.6"
-    eventemitter3 "^4.0.7"
-    lodash.isequal "^4.5.0"
-    lodash.uniq "^4.5.0"
-    require-all "^3.0.0"
     tweetnacl "^1.0.3"
 
 slash@^2.0.0:

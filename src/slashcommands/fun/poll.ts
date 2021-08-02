@@ -1,7 +1,6 @@
 import { Poll, Vote } from "@prisma/client";
-import { EmbedField, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
+import { EmbedField, GuildEmoji, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
 import EmojiReg from "emoji-regex";
-import { PartialEmoji } from "slash-create";
 import progressBar from "string-progressbar";
 import { channelIDs } from "../../configuration/config";
 import { prisma } from "../../helpers/prisma-init";
@@ -139,9 +138,9 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
         if (selectMenu.type !== "SELECT_MENU") return;
 
         for (const option of selectMenu.options) {
-            const emoji = option.emoji as PartialEmoji;
+            const emoji = option.emoji as GuildEmoji;
             const emojiString = emoji?.id ? (await guild.emojis.fetch(emoji.id.toSnowflake())).toString() : emoji?.name;
-            parsedOptions.push({ text: option.label as string, emoji: emojiString });
+            parsedOptions.push({ text: option.label as string, emoji: emojiString as string | undefined });
         }
     }
 

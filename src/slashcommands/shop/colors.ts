@@ -44,7 +44,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
     const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
 
-    const dbUser = await queries.findOrCreateUser(ctx.member.id);
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
 
     const embed = new MessageEmbed()
                 .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
@@ -61,7 +61,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
     const actionRow = new MessageActionRow().addComponents(
         category.data.roles.map((role) => {
             const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-            const ownsRole = ctx.member.roles.cache.has(role.id);
+            const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
             const defaultStyle = contraband ? "DANGER" : "PRIMARY";
 
             return new MessageButton({

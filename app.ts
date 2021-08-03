@@ -123,16 +123,6 @@ client.on("messageReactionAdd", async (reaction, user) => {
     }
 });
 
-// client.on("messageReactionAdd", async (reaction, user) => {
-// const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
-// const fullUser = user.partial ? await user.fetch() : user;
-//     for (const reactionHandler of reactionHandlers) {
-//         // If a command's handler returns true, it handled the reaction; no need to continue
-//         const retVal = await reactionHandler({ reaction: fullReaction, user: fullUser, connection, interactions });
-//         if (retVal) return;
-//     }
-// });
-
 client.on("interactionCreate", async (interaction) => {
     if (interaction.isCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);

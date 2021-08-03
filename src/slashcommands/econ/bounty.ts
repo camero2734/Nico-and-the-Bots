@@ -108,10 +108,8 @@ command.setHandler(async (ctx) => {
         );
 
         sendViolationNotice(member, {
-            identifiedAs: "FailedPerimeterEscape",
-            found: "",
-            issuingBishop: assignedBishop.bishop,
-            reason: ""
+            violation: "FailedPerimeterEscape",
+            issuingBishop: assignedBishop.bishop
         });
 
         await ctx.editReply({ embeds: [winEmbed.toJSON()] });

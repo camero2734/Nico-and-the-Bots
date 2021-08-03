@@ -187,9 +187,8 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
 
         if (contraband) {
             sendViolationNotice(ctx.member, {
-                identifiedAs: "PossessionOfContraband",
-                reason: `Possession of ${role.name.toUpperCase()}`,
-                found: "in possession of regulated materials that have been outlawed by the Dema Council"
+                violation: "PossessionOfContraband",
+                data: role.name
             });
         }
     }

@@ -28,21 +28,42 @@ function fillParagraph(ctx: CanvasRenderingContext2D, text: string, x: number, y
     return y;
 }
 
+type ViolationDataGenerator = (bishop: BishopType, inData: string) => { name: string; found: string; reason: string };
+const violationData: Record<ViolationType, ViolationDataGenerator> = {
+    PossessionOfContraband: (bishop, roleName) => ({
+        name: "POSSESSION OF ILLEGAL CONTRABAND",
+        found: "in possession of regulated materials that have been outlawed by the Dema Council",
+        reason: `Possession of ${roleName.toUpperCase()}`
+    }),
+    FailedPerimeterEscape: () => ({
+        name: "FAILED PERIMETER ESCAPE",
+        found: "",
+        reason: ""
+    }),
+    ConspiracyAndTreason: (bishop) => ({
+        name: "CONSPIRACY TO COMMIT TREASON",
+        found: "trespassing while conspiring against the Dema Council",
+        reason: `Unlawful access in DST. ${bishop.toUpperCase()}`
+    })
+};
+
 export async function sendViolationNotice(
     member: GuildMember,
-    options: { identifiedAs: ViolationType; found: string; reason: string; issuingBishop?: BishopType }
+    options: { violation: ViolationType; data?: string; issuingBishop?: BishopType }
 ): Promise<void> {
-    const { identifiedAs, reason, issuingBishop, found } = options;
+    const { violation, issuingBishop } = options;
 
     const chan = member.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
     if (!chan) return;
 
     const bishop = issuingBishop || F.randomValueInArray(Object.values(BishopType));
 
-    const violation = await prisma.violationNotice.create({
-        data: { givenBy: bishop, violation: identifiedAs, userId: member.id }
+    const notice = await prisma.violationNotice.create({
+        data: { givenBy: bishop, violation, userId: member.id }
     });
-    const infractionNo = violation.infractionNumber;
+    const infractionNo = notice.infractionNumber;
+
+    const { name, found, reason } = violationData[violation](bishop, options.data || "");
 
     await F.wait(1000);
 
@@ -61,8 +82,8 @@ export async function sendViolationNotice(
     cctx.textAlign = "center";
 
     const compressBy = 0.95;
-    const originalWidth = cctx.measureText(identifiedAs).width;
-    cctx.fillText(identifiedAs, 900, 282, originalWidth * compressBy);
+    const originalWidth = cctx.measureText(name).width;
+    cctx.fillText(name, 900, 282, originalWidth * compressBy);
 
     // Draw main text body
     cctx.font = "45px Arial Narrow";

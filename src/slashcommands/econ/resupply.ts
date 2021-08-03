@@ -186,9 +186,7 @@ async function memberCaught(
         .setFooter(`You win nothing. ${tokensRemaining}`);
 
     await sendViolationNotice(ctx.member as GuildMember, {
-        identifiedAs: "ConspiracyAndTreason",
-        found: "trespassing while conspiring against the Dema Council",
-        reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
+        violation: "ConspiracyAndTreason",
         issuingBishop: district.bishop
     });
 

@@ -3,7 +3,7 @@ import { EmbedField, GuildEmoji, Message, MessageActionRow, MessageEmbed, Messag
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../configuration/config";
-import { prisma } from "../../helpers/prisma-init";
+import { prisma, queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -76,6 +76,9 @@ command.setHandler(async (ctx) => {
             parsedOptions.push({ text, emoji });
         }
     }
+
+    // Create user if not exists
+    await queries.findOrCreateUser(ctx.user.id);
 
     const poll = await prisma.poll.create({
         data: { userId: ctx.user.id, name: title, options: parsedOptions.map((p) => p.text) },

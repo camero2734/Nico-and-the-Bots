@@ -19,6 +19,7 @@ import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
+import { sendViolationNotice } from "../../helpers/dema-notice";
 
 const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
@@ -184,12 +185,12 @@ async function memberCaught(
         )
         .setFooter(`You win nothing. ${tokensRemaining}`);
 
-    // await sendViolationNotice(interaction.member as GuildMember, {
-    //     identifiedAs: "CONSPIRACY TO COMMIT TREASON",
-    //     found: "trespassing while conspiring against the Dema Council",
-    //     reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
-    //     issuingBishop: district.bishop
-    // });
+    await sendViolationNotice(ctx.member as GuildMember, {
+        identifiedAs: "ConspiracyAndTreason",
+        found: "trespassing while conspiring against the Dema Council",
+        reason: `Unlawful access in DST. ${district.bishop.toUpperCase()}`,
+        issuingBishop: district.bishop
+    });
 
     await ctx.editReply({
         embeds: [embed],

@@ -55,6 +55,7 @@ model User {
   submittedInterviews SubmittedInterview[]
   reminders           Reminder[]
   verifiedQuizAnswers VerifiedQuizAnswer[]
+  violationNotices    ViolationNotice[]
 }
 
 model Tag {
@@ -239,6 +240,36 @@ model Mute {
 
   issuedByUser   User?  @relation("Mute_issuedByUser", fields: [issuedByUserId], references: [id])
   issuedByUserId String
+
+  createdAt DateTime @default(now())
+}
+
+enum ViolationType {
+  PossessionOfContraband
+  FailedPerimeterEscape
+  ConspiracyAndTreason
+}
+
+enum BishopType {
+  Nico
+  Reisdro
+  Sacarver
+  Nills
+  Keons
+  Lisden
+  Andre
+  Vetomo
+  Listo
+}
+
+model ViolationNotice {
+  infractionNumber Int @id @default(autoincrement())
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  violation ViolationType
+  givenBy   BishopType
 
   createdAt DateTime @default(now())
 }

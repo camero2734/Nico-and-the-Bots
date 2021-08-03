@@ -5,6 +5,7 @@ import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { SlashCommand } from "../../helpers/slash-command";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
+import { sendViolationNotice } from "../../helpers/dema-notice";
 
 const command = new SlashCommand(<const>{
     description: "Reaps bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
@@ -106,12 +107,12 @@ command.setHandler(async (ctx) => {
             `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${BOUNTY_NUM_CREDITS}\` credits.`
         );
 
-        // sendViolationNotice(member, {
-        //     identifiedAs: "FAILED PERIMETER ESCAPE",
-        //     found: "",
-        //     issuingBishop: assignedBishop.bishop,
-        //     reason: ""
-        // });
+        sendViolationNotice(member, {
+            identifiedAs: "FailedPerimeterEscape",
+            found: "",
+            issuingBishop: assignedBishop.bishop,
+            reason: ""
+        });
 
         await ctx.editReply({ embeds: [winEmbed.toJSON()] });
     }

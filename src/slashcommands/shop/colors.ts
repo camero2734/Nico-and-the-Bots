@@ -1,14 +1,22 @@
 import { CommandError } from "../../configuration/definitions";
-import { EmojiIdentifierResolvable, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import {
+    EmojiIdentifierResolvable,
+    GuildMember,
+    MessageActionRow,
+    MessageButton,
+    MessageEmbed,
+    MessageOptions
+} from "discord.js";
 import { MessageTools } from "../../helpers";
 import F from "../../helpers/funcs";
 import { SlashCommand } from "../../helpers/slash-command";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts";
+import { sendViolationNotice } from "../../helpers/dema-notice";
 
 enum ActionTypes {
     View,
-    Purchase,
+    Purchase
     // Delete
 }
 
@@ -33,7 +41,7 @@ const genMainMenuId = command.addInteractionListener("shopColorMenu", <const>[],
 
 // Category submenu
 const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
-    await ctx.defer({ephemeral: true});
+    await ctx.defer({ ephemeral: true });
 
     const categories = getColorRoleCategories(ctx.member.roles);
     const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
@@ -53,25 +61,29 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
 
-    const actionRow = new MessageActionRow().addComponents(category.data.roles.map((role) => {
-        const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-        const ownsRole = ctx.member.roles.cache.has(role.id);
-        const defaultStyle = contraband ? "DANGER" : "PRIMARY";
+    const actionRow = new MessageActionRow().addComponents(
+        category.data.roles.map((role) => {
+            const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
+            const ownsRole = ctx.member.roles.cache.has(role.id);
+            const defaultStyle = contraband ? "DANGER" : "PRIMARY";
 
-        return new MessageButton({
-            disabled: cantAfford,
-            style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
-            label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
-            customId: !ownsRole ? genItemId({itemId: role.id, action: `${ActionTypes.View}`}) : undefined,
-            emoji: contraband ? <EmojiIdentifierResolvable>{ name: "🩸" } : undefined
+            return new MessageButton({
+                disabled: cantAfford,
+                style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
+                label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
+                customId: !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : undefined,
+                emoji: contraband ? <EmojiIdentifierResolvable>{ name: "🩸" } : undefined
+            });
         })
-    }))
+    );
 
-    actionRow.addComponents(new MessageButton({
-        style: "DANGER",
-        label: "Go back",
-        customId: genMainMenuId({})
-    }))
+    actionRow.addComponents(
+        new MessageButton({
+            style: "DANGER",
+            label: "Go back",
+            customId: genMainMenuId({})
+        })
+    );
 
     const components = MessageTools.allocateButtonsIntoRows(actionRow.components);
 
@@ -83,8 +95,9 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
     const actionType = +args.action;
 
     const categories = getColorRoleCategories(ctx.member.roles);
-    const [categoryName, category] = Object.entries(categories).find(([_, category]) => category.data.roles.some(r => r.id === args.itemId)) || [];
-    const role = category?.data.roles.find(r => r.id === args.itemId);
+    const [categoryName, category] =
+        Object.entries(categories).find(([_, category]) => category.data.roles.some((r) => r.id === args.itemId)) || [];
+    const role = category?.data.roles.find((r) => r.id === args.itemId);
 
     if (!categoryName || !category || !role) return;
 
@@ -96,8 +109,8 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
     if (contraband) title = F.randomizeLetters(title);
     const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
     const footer = contraband
-            ? F.randomizeLetters("thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_", 0.1) // prettier-ignore
-            : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
+        ? F.randomizeLetters("thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_", 0.1) // prettier-ignore
+        : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
     const embed = new MessageEmbed()
         .setAuthor(title, shopImage)
@@ -106,10 +119,10 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
         .setFooter(footer); // prettier-ignore
 
     if (actionType === ActionTypes.View) {
-        embed.setDescription(`Would you like to purchase this item?`)
+        embed
+            .setDescription(`Would you like to purchase this item?`)
             .addField("Cost", `${category.data.credits}`, true)
-            .addField("Your credits", `${dbUser.credits} → ${dbUser.credits - category.data.credits}`, true)
-            
+            .addField("Your credits", `${dbUser.credits} → ${dbUser.credits - category.data.credits}`, true);
 
         if (contraband) {
             embed.addField(
@@ -119,11 +132,19 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
         }
 
         const roleComponents = MessageTools.allocateButtonsIntoRows([
-            new MessageButton({style: "SUCCESS", label: "Purchase", customId: genItemId({action: `${ActionTypes.Purchase}`, itemId: args.itemId})}),
-            new MessageButton({style: "DANGER", label: "Go back", customId: genSubmenuId({categoryId: category.id})})
+            new MessageButton({
+                style: "SUCCESS",
+                label: "Purchase",
+                customId: genItemId({ action: `${ActionTypes.Purchase}`, itemId: args.itemId })
+            }),
+            new MessageButton({
+                style: "DANGER",
+                label: "Go back",
+                customId: genSubmenuId({ categoryId: category.id })
+            })
         ]);
 
-        await ctx.editReply({embeds: [embed], components: roleComponents});
+        await ctx.editReply({ embeds: [embed], components: roleComponents });
     } else if (actionType === ActionTypes.Purchase) {
         // Purchase
         if (!category.data.purchasable(role.id, ctx.member, dbUser))
@@ -143,13 +164,14 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
             })
         ]);
 
-        const purchaseEmbed = new MessageEmbed()
-
-        embed.setDescription(`Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`) // prettier-ignore
+        embed
+            .setDescription(
+                `Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`
+            ) // prettier-ignore
             .addField(
-            `How do I "equip" this role?`,
-            "To actually apply this role, simply use the `/role color` command. You may only have one color role applied at a time (but you can own as many as you want)."
-        );
+                `How do I "equip" this role?`,
+                "To actually apply this role, simply use the `/role color` command. You may only have one color role applied at a time (but you can own as many as you want)."
+            );
         let sent = false;
         try {
             const dm = await ctx.member.createDM();
@@ -163,16 +185,15 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
             ctx.editReply({ embeds: [embed], components: [] });
         }
 
-        // if (contraband)
-        //     sendViolationNotice(ctx.member, ctx.connection, {
-        //         identifiedAs: "POSSESSION OF ILLEGAL CONTRABAND",
-        //         reason: `Possession of ${role.name.toUpperCase()}`,
-        //         found: "in possession of regulated materials that have been outlawed by the Dema Council"
-        //     });
+        if (contraband) {
+            sendViolationNotice(ctx.member, {
+                identifiedAs: "PossessionOfContraband",
+                reason: `Possession of ${role.name.toUpperCase()}`,
+                found: "in possession of regulated materials that have been outlawed by the Dema Council"
+            });
+        }
     }
-
-    
-})
+});
 
 async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOptions> {
     const categories = getColorRoleCategories(member.roles);
@@ -191,20 +212,22 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
         )
         .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
-    const menuActionRow = new MessageActionRow().addComponents(Object.entries(categories).map(([label, item], idx) => {
-        const unlocked = item.data.unlockedFor(member, dbUser);
-        return new MessageButton({
-            style: unlocked ? "PRIMARY" : "SECONDARY",
-            label: unlocked
-                ? `${idx + 1}. ${label}`
-                : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
-            customId: unlocked ? genSubmenuId({ categoryId: item.id }) : undefined,
-            emoji: unlocked ? undefined : { name: "🔒" } as EmojiIdentifierResolvable
+    const menuActionRow = new MessageActionRow().addComponents(
+        Object.entries(categories).map(([label, item], idx) => {
+            const unlocked = item.data.unlockedFor(member, dbUser);
+            return new MessageButton({
+                style: unlocked ? "PRIMARY" : "SECONDARY",
+                label: unlocked
+                    ? `${idx + 1}. ${label}`
+                    : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
+                customId: unlocked ? genSubmenuId({ categoryId: item.id }) : undefined,
+                emoji: unlocked ? undefined : ({ name: "🔒" } as EmojiIdentifierResolvable)
+            });
         })
-    }));
+    );
 
     for (const [name, item] of Object.entries(categories)) {
-        console.log(item.data.roles.map(r => r?.id));
+        console.log(item.data.roles.map((r) => r?.id));
         MenuEmbed.addField(name, item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063");
     }
 

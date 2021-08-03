@@ -1,4 +1,4 @@
-import { CommandError } from "../../configuration/definitions";
+import { CommandError, NULL_CUSTOM_ID } from "../../configuration/definitions";
 import {
     EmojiIdentifierResolvable,
     GuildMember,
@@ -68,7 +68,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
                 disabled: cantAfford,
                 style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
                 label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
-                customId: !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : undefined,
+                customId: !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID,
                 emoji: contraband ? <EmojiIdentifierResolvable>{ name: "🩸" } : undefined
             });
         })
@@ -218,15 +218,13 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
                 label: unlocked
                     ? `${idx + 1}. ${label}`
                     : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
-                customId: unlocked ? genSubmenuId({ categoryId: item.id }) : undefined,
+                customId: unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID,
                 emoji: unlocked ? undefined : ({ name: "🔒" } as EmojiIdentifierResolvable)
             });
         })
     );
 
     for (const [name, item] of Object.entries(categories)) {
-        console.log(item.data.roles.map((r) => r?.id));
-        console.log(item.data, /DATA/);
         MenuEmbed.addField(name, item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063");
     }
 

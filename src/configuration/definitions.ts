@@ -5,3 +5,4 @@ export class CommandError extends Error {
         super(message);
     }
 }
+export const NULL_CUSTOM_ID = "__null__";

@@ -146,8 +146,8 @@ export class SlashCommand<T extends CommandOptions = []> {
             const pollId = +args.pollID;
             await prisma.vote.upsert({
                 where: { pollId_userId: { userId: ctx.user.id, pollId } },
-                create: { pollId, userId: ctx.user.id, choice: isUpvote },
-                update: { choice: isUpvote }
+                create: { pollId, userId: ctx.user.id, choices: [isUpvote] },
+                update: { choices: [isUpvote] }
             });
 
             const msg = ctx.message as Message;
@@ -157,7 +157,7 @@ export class SlashCommand<T extends CommandOptions = []> {
 
             let upvotes = 0;
             for (const vote of poll.votes) {
-                if (vote.choice === 1) upvotes++;
+                if (vote.choices[0] === 1) upvotes++;
             }
             const downvotes = poll.votes.length - upvotes;
 

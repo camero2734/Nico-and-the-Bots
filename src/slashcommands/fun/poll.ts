@@ -108,9 +108,9 @@ command.setHandler(async (ctx) => {
 const genPollResId = command.addInteractionListener("pollresponse", <const>["pollId"], async (ctx, args) => {
     if (!ctx.isSelectMenu()) return;
     const { pollId } = args;
-    const index = ctx.values?.[0];
+    const indices = ctx.values?.map((n) => parseInt(n)).filter((n) => n >= 0 && !isNaN(n));
     const guild = ctx.guild;
-    if (typeof index === "undefined" || !guild) return;
+    if (indices.length < 1 || !guild) return;
 
     const msg = ctx.message as Message;
 
@@ -122,12 +122,12 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
 
     const castVote = await prisma.vote.upsert({
         where: { id: previousVote?.id || -1 },
-        update: { choice: +index },
-        create: { choice: +index, userId: ctx.user.id, pollId: poll.id }
+        update: { choices: indices },
+        create: { choices: indices, userId: ctx.user.id, pollId: poll.id }
     });
 
     // Update poll object
-    if (previousVote) previousVote.choice = castVote.choice;
+    if (previousVote) previousVote.choices = castVote.choices;
     else poll.votes.push(castVote);
 
     const parsedOptions: ParsedOption[] = [];
@@ -155,7 +155,9 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
     const totalVotes = poll.votes.length;
 
     for (const vote of poll.votes) {
-        votes[vote.choice]++;
+        for (const choice of vote.choices) {
+            votes[choice]++;
+        }
     }
 
     const optionsWithVotes = parsedOptions

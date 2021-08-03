@@ -72,15 +72,20 @@ export type ReactionListener = (
     safeExecute: (promise: Promise<void>) => Promise<void>
 ) => Promise<boolean>;
 
-export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel, e: unknown) => {
+// prettier-ignore
+export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel | MessageComponentInteraction, e: unknown) => {
+    const isMessageInteraction = ctx instanceof MessageComponentInteraction;
+    const ectx: ExtendedInteraction = ctx as unknown as ExtendedInteraction;
+    ectx.send = (ectx.send ? ectx.send : ((ectx.replied || ectx.deferred) ? ectx.followUp : ectx.reply)) as (typeof ectx)["send"];
+
     if (e instanceof CommandError) {
         const embed = new MessageEmbed()
             .setDescription(e.message)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet machine broke");
-        ctx.send({
+        ectx.send({
             embeds: [embed],
-            ephemeral: e.sendEphemeral,
+            ephemeral: isMessageInteraction || e.sendEphemeral,
             allowedMentions: { users: [], roles: [] }
         });
     } else {
@@ -88,7 +93,7 @@ export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel,
         const embed = new MessageEmbed()
             .setTitle("An unknown error occurred!")
             .setFooter("DEMA internet machine really broke");
-        ctx.send({ embeds: [embed] });
+        ectx.send({ embeds: [embed] });
     }
 };
 

@@ -13,6 +13,7 @@ import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
 import "source-map-support/register";
+import { CommandError } from "./src/configuration/definitions";
 
 const client = new Discord.Client({
     intents: [
@@ -148,7 +149,14 @@ client.on("interactionCreate", async (interaction) => {
         const interactionHandler = interactionHandlers.get(interactionID);
         if (!interactionHandler) return;
 
-        interactionHandler.handler(interaction as any, interactionHandler.pattern.toDict(interaction.customId));
+        try {
+            await interactionHandler.handler(
+                interaction as any,
+                interactionHandler.pattern.toDict(interaction.customId)
+            );
+        } catch (e) {
+            ErrorHandler(interaction, e);
+        }
     }
     // if (!interaction.isMessageComponent()) return;
 

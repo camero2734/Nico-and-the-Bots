@@ -185,7 +185,7 @@ async function memberCaught(
         )
         .setFooter(`You win nothing. ${tokensRemaining}`);
 
-    await sendViolationNotice(ctx.member as GuildMember, {
+    sendViolationNotice(ctx.member as GuildMember, {
         violation: "ConspiracyAndTreason",
         issuingBishop: district.bishop
     });

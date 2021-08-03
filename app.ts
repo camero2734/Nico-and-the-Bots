@@ -173,6 +173,11 @@ function setup() {
 
     registerFont(`./src/assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
 
+    registerFont(`./src/assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
+    registerFont(`./src/assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
+    registerFont(`./src/assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
+    registerFont(`./src/assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
+
     Scheduler(client);
 }
 

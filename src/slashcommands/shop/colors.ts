@@ -34,14 +34,13 @@ command.setHandler(async (ctx) => {
 
 // Main Menu
 const genMainMenuId = command.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
-    await ctx.defer({ ephemeral: true });
     const initialMsg = await generateMainMenuEmbed(ctx.member);
     await ctx.editReply(initialMsg);
 });
 
 // Category submenu
 const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
-    const categories = await getColorRoleCategories(ctx.guild.roles);
+    const categories = getColorRoleCategories(ctx.guild.roles);
     const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
 
@@ -99,7 +98,9 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
 
     if (!categoryName || !category || !role) return;
 
-    const dbUser = await queries.findOrCreateUser(ctx.member.id);
+    // Ensure user doesn't have role already
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
+    if (dbUser.colorRoles.some((r) => r.roleId === role.id)) throw new CommandError("You already have this role!");
 
     // Change some stuff if the item is contraband
     const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));

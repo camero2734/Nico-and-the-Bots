@@ -1,5 +1,4 @@
 import { BishopType, ViolationType } from "@prisma/client";
-import { Mutex } from "async-mutex";
 import { createCanvas, loadImage } from "canvas";
 import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs } from "../configuration/config";

@@ -85,7 +85,7 @@ export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel 
             .setFooter("DEMA internet machine broke");
         ectx.send({
             embeds: [embed],
-            ephemeral: isMessageInteraction || e.sendEphemeral,
+            ephemeral: true,
             allowedMentions: { users: [], roles: [] }
         });
     } else {
@@ -93,7 +93,7 @@ export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel 
         const embed = new MessageEmbed()
             .setTitle("An unknown error occurred!")
             .setFooter("DEMA internet machine really broke");
-        ectx.send({ embeds: [embed] });
+        ectx.send({ embeds: [embed], ephemeral: true });
     }
 };
 

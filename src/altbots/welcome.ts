@@ -1,11 +1,7 @@
-import { Mutex } from "async-mutex";
 import { createCanvas, loadImage } from "canvas";
-import { channelIDs, roles } from "../configuration/config";
-import secrets from "../configuration/secrets";
 import {
     Client,
     GuildMember,
-    Intents,
     MessageActionRow,
     MessageAttachment,
     MessageButton,
@@ -14,6 +10,8 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
+import { channelIDs, roles } from "../configuration/config";
+import secrets from "../configuration/secrets";
 import F from "../helpers/funcs";
 import { queries } from "../helpers/prisma-init";
 
@@ -26,7 +24,6 @@ const emoji = (name: string, id: Snowflake | null = null): any => ({
 export class SacarverBot {
     client: Client;
     ready: Promise<void>;
-    mutex = new Mutex();
     constructor() {
         this.client = new Client({
             intents: [

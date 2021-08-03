@@ -41,9 +41,7 @@ const genMainMenuId = command.addInteractionListener("shopColorMenu", <const>[],
 
 // Category submenu
 const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
-    await ctx.defer({ ephemeral: true });
-
-    const categories = getColorRoleCategories(ctx.member.roles);
+    const categories = await getColorRoleCategories(ctx.guild.roles);
     const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
 
@@ -94,7 +92,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
 const genItemId = command.addInteractionListener("shopColorItem", <const>["itemId", "action"], async (ctx, args) => {
     const actionType = +args.action;
 
-    const categories = getColorRoleCategories(ctx.member.roles);
+    const categories = getColorRoleCategories(ctx.guild.roles);
     const [categoryName, category] =
         Object.entries(categories).find(([_, category]) => category.data.roles.some((r) => r.id === args.itemId)) || [];
     const role = category?.data.roles.find((r) => r.id === args.itemId);
@@ -195,7 +193,7 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
 });
 
 async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOptions> {
-    const categories = getColorRoleCategories(member.roles);
+    const categories = getColorRoleCategories(member.guild.roles);
 
     const dbUser = await queries.findOrCreateUser(member.id);
 
@@ -227,6 +225,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
 
     for (const [name, item] of Object.entries(categories)) {
         console.log(item.data.roles.map((r) => r?.id));
+        console.log(item.data, /DATA/);
         MenuEmbed.addField(name, item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063");
     }
 

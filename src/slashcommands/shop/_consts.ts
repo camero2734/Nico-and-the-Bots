@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { GuildMember, GuildMemberRoleManager, Snowflake } from "discord.js";
+import { GuildMember, GuildMemberRoleManager, RoleManager, Snowflake } from "discord.js";
 import { Role } from "discord.js";
 import { roles } from "../../configuration/config";
 
@@ -35,7 +35,7 @@ export const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clanc
 
 const colorRoles = roles.colors;
 
-export function getColorRoleCategories(roleManager: GuildMemberRoleManager) {
+export function getColorRoleCategories(roleManager: RoleManager) {
     const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
         Object.values(roleIds).map((r) => roleManager.cache.get(r) as Role);
 
@@ -44,8 +44,6 @@ export function getColorRoleCategories(roleManager: GuildMemberRoleManager) {
     const tier3 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 25000, level: 50 });
     const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
     const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
-
-    console.log(tier1.roles, /ROLES/);
 
     return {
         "The Scaled Back Collection": {
@@ -78,4 +76,3 @@ export function getColorRoleCategories(roleManager: GuildMemberRoleManager) {
         }
     };
 }
-

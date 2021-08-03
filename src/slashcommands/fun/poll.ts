@@ -17,6 +17,7 @@ const command = new SlashCommand(<const>{
             required: true,
             type: "STRING"
         },
+
         ...options.map(
             (num) =>
                 <const>{
@@ -25,7 +26,19 @@ const command = new SlashCommand(<const>{
                     required: num <= 2,
                     type: "STRING"
                 }
-        )
+        ),
+        {
+            name: "min_choices",
+            description: "The min number of choices a user must choose",
+            required: false,
+            type: "INTEGER"
+        },
+        {
+            name: "max_choices",
+            description: "The max number of choices a user must choose",
+            required: false,
+            type: "INTEGER"
+        }
     ]
 });
 
@@ -35,11 +48,11 @@ command.setHandler(async (ctx) => {
 
     const shouldCreateThread = ctx.channel.id === channelIDs.polls;
 
-    const { title, option1, option2, ...optDict } = ctx.opts;
+    const { title, option1, option2, min_choices, max_choices, ...optDict } = ctx.opts;
 
     if (!option1 || !option2) throw new Error("First two options should be required");
 
-    const options = [option1, option2, ...Object.values(optDict).filter((a): a is string => a)].map((o) => o.trim());
+    const options: string[] = [option1, option2, ...Object.values(optDict).filter((a) => a)].map((o) => o.trim());
 
     const discordEmojiRegex = /<a{0,1}:(?<name>.*?):(?<id>\d+)>/;
 
@@ -56,10 +69,10 @@ command.setHandler(async (ctx) => {
         // Doesn't have a Discord emoji, might have a unicode emoji
         else {
             const emojiReg = EmojiReg();
-            const possibleEmoji = option.split(" ")[0];
-            const isEmoji = emojiReg.test(possibleEmoji);
-            const text = isEmoji ? option.split(" ").slice(1).join(" ") : option;
-            const emoji = isEmoji ? possibleEmoji : undefined;
+            const possibleEmoji = option.split(" ")[0].trim();
+            const [emoji] = possibleEmoji.match(emojiReg) || [];
+
+            const text = emoji ? option.replace(emoji, "").trim() : option;
             parsedOptions.push({ text, emoji });
         }
     }
@@ -75,6 +88,8 @@ command.setHandler(async (ctx) => {
 
     const selectMenu = new MessageSelectMenu()
         .setCustomId(genPollResId({ pollId: poll.id.toString() }))
+        .setMinValues((min_choices as number) || 1)
+        .setMaxValues((max_choices as number) || 1)
         .setPlaceholder("Select a poll choice");
 
     for (let i = 0; i < parsedOptions.length; i++) {

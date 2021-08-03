@@ -43,7 +43,7 @@
         "consola": "^2.15.3",
         "date-fns": "^2.22.1",
         "discord.js": "^13.0.0-dev.4886ae2.1627257843",
-        "emoji-regex": "^7.0.3",
+        "emoji-regex": "^9.2.2",
         "eslint": "^7.26.0",
         "file-type": "^16.5.0",
         "fuse.js": "^6.4.6",

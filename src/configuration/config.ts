@@ -74,7 +74,14 @@ export const channelIDs = <const>{
     demacouncil: "849323629388627978",
     mulberrystreet: "759830064518266880",
     verifiedapplications: "470428222237179905",
-    tourhelp: "857258422293757972"
+    tourhelp: "857258422293757972",
+    logs: {
+        ban: "689685441485733952",
+        staffCommands: "488076541499277333",
+        deleteEdit: "470417935865741312",
+        slur: "470418391182868481",
+        gold: "623555322367311902"
+    }
 };
 export const categoryIDs = <const>{
     chilltown: "625524136785215498",

@@ -10,6 +10,7 @@ import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
 import secrets from "./src/configuration/secrets";
 import { setupAllCommands, updateUserScore } from "./src/helpers";
 import AutoReact from "./src/helpers/auto-react";
+import { BotLogInteractionListener } from "./src/helpers/interaction-listeners/bot-logs";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
@@ -54,6 +55,7 @@ client.on("ready", async () => {
     const guild = await client.guilds.fetch(guildID);
 
     [slashCommands, interactionHandlers, reactionHandlers] = await setupAllCommands(guild);
+    addManualInteractionHandlers();
 
     // Initialize everything
     // await Promise.all([
@@ -179,6 +181,11 @@ function setup() {
     registerFont(`./src/assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
 
     Scheduler(client);
+}
+
+function addManualInteractionHandlers() {
+    // Listens for "More Info" on items in log channels
+    interactionHandlers.set(BotLogInteractionListener.name, BotLogInteractionListener.interaction);
 }
 
 // async function dynamicCommandSetup(commands: Command[]): Promise<void> {

@@ -74,7 +74,6 @@ export type ReactionListener = (
 
 // prettier-ignore
 export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel | MessageComponentInteraction, e: unknown) => {
-    const isMessageInteraction = ctx instanceof MessageComponentInteraction;
     const ectx: ExtendedInteraction = ctx as unknown as ExtendedInteraction;
     ectx.send = (ectx.send ? ectx.send : ((ectx.replied || ectx.deferred) ? ectx.followUp : ectx.reply)) as (typeof ectx)["send"];
 
@@ -95,6 +94,25 @@ export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel 
             .setFooter("DEMA internet machine really broke");
         ectx.send({ embeds: [embed], ephemeral: true });
     }
+};
+
+export const createInteractionListener = <T extends Readonly<string[]> = any>(
+    name: string,
+    args: T,
+    interactionHandler: ListenerCustomIdGenerator<T>
+): [string, InteractionListener, (args: ReturnType<CustomIDPattern<T>["toDict"]>) => string] => {
+    const argsHash = F.hash(args.join(",")).slice(0, 4); // Invalidate interactions when args are updated
+    const encodedName = `${name}.${argsHash}`;
+    const pattern = new CustomIDPattern(args);
+
+    const customIdGenerator = (args: ReturnType<CustomIDPattern<T>["toDict"]>): string => {
+        // Ensure order is preserved
+        const ordered = F.entries(args).sort(([key1], [key2]) => pattern.args.indexOf(key1) - pattern.args.indexOf(key2)); // prettier-ignore
+        const values = ordered.map((a) => a[1]);
+        return [encodedName, ...values].join(pattern.delimiter);
+    };
+
+    return [encodedName, { handler: interactionHandler, pattern }, customIdGenerator];
 };
 
 export class SlashCommand<T extends CommandOptions = []> {
@@ -126,16 +144,9 @@ export class SlashCommand<T extends CommandOptions = []> {
         args: T,
         interactionHandler: ListenerCustomIdGenerator<T>
     ): (args: ReturnType<CustomIDPattern<T>["toDict"]>) => string {
-        const argsHash = F.hash(args.join(",")).slice(0, 4); // Invalidate interactions when args are updated
-        const encodedName = `${name}.${argsHash}`;
-        const pattern = new CustomIDPattern(args);
-        this.interactionListeners.set(encodedName, { handler: interactionHandler, pattern });
-        return (args: ReturnType<CustomIDPattern<T>["toDict"]>): string => {
-            // Ensure order is preserved
-            const ordered = F.entries(args).sort(([key1], [key2]) => pattern.args.indexOf(key1) - pattern.args.indexOf(key2)); // prettier-ignore
-            const values = ordered.map((a) => a[1]);
-            return [encodedName, ...values].join(pattern.delimiter);
-        };
+        const [listenerName, listener, customIdGenerator] = createInteractionListener(name, args, interactionHandler);
+        this.interactionListeners.set(listenerName, listener);
+        return customIdGenerator;
     }
     addReactionListener(name: string, handler: ReactionListener): void {
         this.reactionListeners.set(name, handler);

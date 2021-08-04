@@ -15,7 +15,7 @@ const command = new SlashCommand(<const>{
     description: "Checks the bot's ping",
     options: [
         {
-            name: "some_name",
+            name: "kangaroo",
             description: "The description of the option",
             required: false,
             type: "STRING"
@@ -25,6 +25,9 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     // ... Some command logic
+
+    // Through some Typescript magic, Typescript correctly types the ctx.opts object
+    const { kangaroo } = ctx.opts; // kangaroo is string | undefined (because it's not required, it can be undefined)
 
     await ctx.send(/* Some content */);
 });

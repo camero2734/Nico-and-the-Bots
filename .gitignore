@@ -4,3 +4,4 @@ dist
 discord.sqlite*
 /**/verified-quiz/quiz.ts
 .env
+FUTURE_README.md

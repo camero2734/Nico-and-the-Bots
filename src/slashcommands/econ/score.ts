@@ -8,10 +8,8 @@ import { prisma, queries } from "../../helpers/prisma-init";
 
 const command = new SlashCommand(<const>{
     description: "View your score card",
-    options: [
-        { name: "user", description: "The user to check the score for", required: false, type: "USER" }
-    ]
-})
+    options: [{ name: "user", description: "The user to check the score for", required: false, type: "USER" }]
+});
 
 command.setHandler(async (ctx) => {
     const albumRoles = roles.albums;
@@ -179,8 +177,9 @@ command.setHandler(async (ctx) => {
     cctx.fillText(`${placeNum}`, 85, 100);
 
     await ctx.send({
-        content: `Took ${Date.now() - START_TIME} ms`,
         embeds: [],
         files: [{ name: "score.png", attachment: canvas.toBuffer() }]
     });
-})
+});
+
+export default command;

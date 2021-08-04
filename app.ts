@@ -1,19 +1,19 @@
-import { TopfeedBot } from "./src/altbots/topfeed/topfeed";
 import { registerFont } from "canvas";
-import { channelIDs, guildID, userIDs } from "./src/configuration/config";
-import secrets from "./src/configuration/secrets";
 import * as Discord from "discord.js";
 import { Collection } from "discord.js";
+import "source-map-support/register";
+import { KeonsBot } from "./src/altbots/shop";
+import { TopfeedBot } from "./src/altbots/topfeed/topfeed";
+import { SacarverBot } from "./src/altbots/welcome";
+import { channelIDs, guildID, userIDs } from "./src/configuration/config";
+import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
+import secrets from "./src/configuration/secrets";
 import { setupAllCommands, updateUserScore } from "./src/helpers";
 import AutoReact from "./src/helpers/auto-react";
-import SlurFilter from "./src/helpers/slur-filter";
-import { KeonsBot } from "./src/altbots/shop";
-import { SacarverBot } from "./src/altbots/welcome";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
-import "source-map-support/register";
-import { CommandError, NULL_CUSTOM_ID } from "./src/configuration/definitions";
+import SlurFilter from "./src/helpers/slur-filter";
 
 const client = new Discord.Client({
     intents: [

@@ -9,9 +9,9 @@
 import { ApplicationCommandData, Collection, Guild, GuildApplicationCommandPermissionData } from "discord.js";
 import * as fs from "fs";
 import { join, resolve, sep } from "path";
-import { roles } from "../configuration/config";
-import { InteractionListener } from "./interaction-listener";
-import { ReactionListener, SlashCommand, SlashCommandData } from "./slash-command";
+import { roles } from "../../configuration/config";
+import { InteractionListener } from "../interaction-listener";
+import { ReactionListener, SlashCommand, SlashCommandData } from "../slash-command";
 
 const basePath = join(__dirname, "../slashcommands");
 

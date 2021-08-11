@@ -7,6 +7,7 @@ import {
     Collection,
     CommandInteraction,
     CommandInteractionOption,
+    ContextMenuInteraction,
     DMChannel,
     Guild,
     GuildMember,
@@ -73,7 +74,7 @@ export type ReactionListener = (
 ) => Promise<boolean>;
 
 // prettier-ignore
-export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel | MessageComponentInteraction, e: unknown) => {
+export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel | MessageComponentInteraction | ContextMenuInteraction, e: unknown) => {
     const ectx: ExtendedInteraction = ctx as unknown as ExtendedInteraction;
     ectx.send = (ectx.send ? ectx.send : ((ectx.replied || ectx.deferred) ? ectx.followUp : ectx.reply)) as (typeof ectx)["send"];
 

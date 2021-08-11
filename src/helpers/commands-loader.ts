@@ -1,19 +1,15 @@
-/** There are three types of usable commands:
- * 1. Commands
- * 2. Command > Subcommand
- * 3. Command > Subcommand Group > Subcommand
- *
- * so the max nest level is 3
- */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ApplicationCommandData, Collection, Guild, GuildApplicationCommandPermissionData } from "discord.js";
 import * as fs from "fs";
 import { join, resolve, sep } from "path";
-import { roles } from "../../configuration/config";
-import { InteractionListener } from "../interaction-listener";
-import { ReactionListener, SlashCommand, SlashCommandData } from "../slash-command";
+import { roles } from "../configuration/config";
+import ContextMenu from "./context-menus/contextMenu";
+import { InteractionListener } from "./interaction-listener";
+import { ReactionListener, SlashCommand, SlashCommandData } from "./slash-command";
 
-const basePath = join(__dirname, "../slashcommands");
+const slashCommandsBasePath = join(__dirname, "../slashcommands");
+const contextMenusBasePath = join(__dirname, "../contextmenus");
 
 async function readDirectory(path: string): Promise<string[]> {
     try {
@@ -24,6 +20,14 @@ async function readDirectory(path: string): Promise<string[]> {
     }
 }
 
+/** There are three types of usable commands:
+ * 1. Commands
+ * 2. Command > Subcommand
+ * 3. Command > Subcommand Group > Subcommand
+ *
+ * so the max nest level is 3
+ */
+
 // Step 1: Walk the file structure to extract SlashCommands and their path
 type ParsedFile = {
     topName: string;
@@ -32,7 +36,7 @@ type ParsedFile = {
 };
 async function parseCommandFolderStructure(): Promise<ParsedFile[]> {
     const parsedFiles: ParsedFile[] = [];
-    let currentNodes = await readDirectory(basePath);
+    let currentNodes = await readDirectory(slashCommandsBasePath);
 
     let maxDepth = 3;
     while (currentNodes.length !== 0 && maxDepth-- > 0) {
@@ -135,12 +139,29 @@ async function generateCommandData(parsedFile: ParsedFile): Promise<[Application
     return [commandData, slashCommands];
 }
 
+// Step 2.5: Import all Context Menu handlers
+async function generateContextMenuData(): Promise<ContextMenu<any>[]> {
+    const nodes = await readDirectory(contextMenusBasePath);
+    console.log(nodes, /NODES/);
+
+    const result = await Promise.all(
+        nodes.map(async (path) => {
+            const contextMenu = (await import(`file:///${path}`)).default.default;
+            return contextMenu;
+        })
+    );
+    const contextMenus = result.filter((cm): cm is ContextMenu<any> => cm instanceof ContextMenu);
+
+    return contextMenus;
+}
+
 // Step 3: Wrap it all up
 export async function setupAllCommands(
     guild: Guild
 ): Promise<
     [
         Collection<string, SlashCommand<[]>>,
+        Collection<string, ContextMenu<any>>,
         Collection<string, InteractionListener>,
         Collection<string, ReactionListener>
     ]
@@ -155,10 +176,17 @@ export async function setupAllCommands(
         allSlashCommands.push(...slashCommands);
     }
 
+    // Context Menus
+    const contextMenus = await generateContextMenuData();
+    console.log(contextMenus, /CTX_MENUS/);
+    const ctxMenuApplicationData = contextMenus.map((cm) => cm.commandData);
+
     // Set guild commands
-    const savedData = await guild.commands.set(dataFromCommands.map((p) => ({ ...p, defaultPermission: false })));
+    const applicationCommandData = [...dataFromCommands, ...ctxMenuApplicationData];
+    const savedData = await guild.commands.set(applicationCommandData.map((p) => ({ ...p, defaultPermission: false })));
 
     const slashCommandCollection = new Collection<string, SlashCommand>();
+    const contextMenuCollection = new Collection<string, ContextMenu<any>>();
     let intListenerCollection = new Collection<string, InteractionListener>();
     let reactionListenerCollection = new Collection<string, ReactionListener>();
 
@@ -166,6 +194,10 @@ export async function setupAllCommands(
         slashCommandCollection.set(slashCommand.commandIdentifier, slashCommand);
         intListenerCollection = intListenerCollection.concat(slashCommand.interactionListeners);
         reactionListenerCollection = reactionListenerCollection.concat(slashCommand.reactionListeners);
+    }
+
+    for (const ctxMenu of contextMenus) {
+        contextMenuCollection.set(ctxMenu.name, ctxMenu);
     }
 
     const fullPermissions: GuildApplicationCommandPermissionData[] = savedData.map((s) => ({
@@ -181,5 +213,5 @@ export async function setupAllCommands(
 
     await guild.commands.permissions.set({ fullPermissions });
 
-    return [slashCommandCollection, intListenerCollection, reactionListenerCollection];
+    return [slashCommandCollection, contextMenuCollection, intListenerCollection, reactionListenerCollection];
 }

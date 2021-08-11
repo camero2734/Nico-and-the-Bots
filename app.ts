@@ -10,6 +10,7 @@ import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
 import secrets from "./src/configuration/secrets";
 import { setupAllCommands, updateUserScore } from "./src/helpers";
 import AutoReact from "./src/helpers/auto-react";
+import ContextMenu from "./src/helpers/context-menus/contextMenu";
 import { InteractionListener } from "./src/helpers/interaction-listener";
 import { BotLogInteractionListener } from "./src/helpers/interaction-listeners/bot-logs";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
@@ -47,6 +48,8 @@ client.login(secrets.bots.nico);
 console.log("Script started");
 
 let slashCommands = new Collection<string, SlashCommand<[]>>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let contextMenus = new Collection<string, ContextMenu<any>>();
 let interactionHandlers = new Collection<string, InteractionListener>();
 let reactionHandlers = new Collection<string, ReactionListener>();
 
@@ -55,7 +58,7 @@ client.on("ready", async () => {
 
     const guild = await client.guilds.fetch(guildID);
 
-    [slashCommands, interactionHandlers, reactionHandlers] = await setupAllCommands(guild);
+    [slashCommands, contextMenus, interactionHandlers, reactionHandlers] = await setupAllCommands(guild);
     addManualInteractionHandlers();
 
     // Initialize everything
@@ -147,6 +150,12 @@ client.on("interactionCreate", async (interaction) => {
         } catch (e) {
             ErrorHandler(interaction, e);
         }
+    } else if (interaction.isContextMenu()) {
+        const ctxMenuName = interaction.commandName;
+        const contextMenu = contextMenus.get(ctxMenuName);
+        if (!contextMenu) return console.log(`Failed to find context menu ${ctxMenuName}`);
+
+        contextMenu.run(interaction);
     }
     // if (!interaction.isMessageComponent()) return;
 

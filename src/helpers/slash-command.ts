@@ -25,7 +25,14 @@ import {
 import R from "ramda";
 import { emojiIDs } from "../configuration/config";
 import { CommandError } from "../configuration/definitions";
+import { LogCommand } from "./bot-logs";
 import F from "./funcs";
+import {
+    createInteractionListener,
+    CustomIDPattern,
+    InteractionListener,
+    ListenerCustomIdGenerator
+} from "./interaction-listener";
 import { prisma } from "./prisma-init";
 
 type DeepReadonly<T> = {
@@ -57,14 +64,6 @@ export type ExtendedInteraction<T extends CommandOptions = []> = BaseInteraction
 
 type SlashCommandHandler<T extends CommandOptions> = (ctx: ExtendedInteraction<T>) => Promise<any>;
 
-export type ListenerInteraction = MessageComponentInteraction & RequiredDiscordValues & { message: Message };
-
-export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
-    ctx: ListenerInteraction,
-    args: ReturnType<CustomIDPattern<T>["toDict"]>
-) => Promise<void>;
-
-export type InteractionListener = { handler: ListenerCustomIdGenerator<any>; pattern: CustomIDPattern<any> };
 export type ReactionListener = (
     reaction: MessageReaction,
     user: User,
@@ -96,25 +95,6 @@ export const ErrorHandler = (ctx: ExtendedInteraction | TextChannel | DMChannel 
     }
 };
 
-export const createInteractionListener = <T extends Readonly<string[]> = any>(
-    name: string,
-    args: T,
-    interactionHandler: ListenerCustomIdGenerator<T>
-): [string, InteractionListener, (args: ReturnType<CustomIDPattern<T>["toDict"]>) => string] => {
-    const argsHash = F.hash(args.join(",")).slice(0, 4); // Invalidate interactions when args are updated
-    const encodedName = `${name}.${argsHash}`;
-    const pattern = new CustomIDPattern(args);
-
-    const customIdGenerator = (args: ReturnType<CustomIDPattern<T>["toDict"]>): string => {
-        // Ensure order is preserved
-        const ordered = F.entries(args).sort(([key1], [key2]) => pattern.args.indexOf(key1) - pattern.args.indexOf(key2)); // prettier-ignore
-        const values = ordered.map((a) => a[1]);
-        return [encodedName, ...values].join(pattern.delimiter);
-    };
-
-    return [encodedName, { handler: interactionHandler, pattern }, customIdGenerator];
-};
-
 export class SlashCommand<T extends CommandOptions = []> {
     #handler: SlashCommandHandler<T>;
     public interactionListeners = new Collection<string, InteractionListener>();
@@ -135,6 +115,7 @@ export class SlashCommand<T extends CommandOptions = []> {
         ctx.opts = opts || extractOptsFromInteraction(interaction as CommandInteraction);
         try {
             await this.#handler(ctx);
+            LogCommand(ctx);
         } catch (e) {
             ErrorHandler(ctx, e);
         }
@@ -239,21 +220,6 @@ export class SlashCommand<T extends CommandOptions = []> {
         const subcommand = interaction.options.data.find((o) => o.type === "SUB_COMMAND");
         if (!subcommand) return interaction.commandName;
         else return `${subcommand.name}:${interaction.commandName}`;
-    }
-}
-/**
- * Encodes/decodes key-value pairs into the customID field
- */
-export class CustomIDPattern<T extends Readonly<string[]>> {
-    constructor(public args: T, public delimiter = ":") {}
-    toDict(input: string): { [K in T[number]]: string } {
-        const [_name, ...parts] = input.split(this.delimiter);
-        const dict = {} as { [K in T[number]]: string };
-        for (let i = 0; i < parts.length; i++) {
-            const key: T[number] = this.args[i];
-            dict[key] = parts[i];
-        }
-        return dict;
     }
 }
 

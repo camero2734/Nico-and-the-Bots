@@ -10,18 +10,15 @@ import { ApplicationCommandData, Collection, Guild, GuildApplicationCommandPermi
 import * as fs from "fs";
 import { join, resolve, sep } from "path";
 import { roles } from "../configuration/config";
-import {
-    InteractionListener, ReactionListener,
-    SlashCommand,
-    SlashCommandData
-} from "./slash-command";
+import { InteractionListener } from "./interaction-listener";
+import { ReactionListener, SlashCommand, SlashCommandData } from "./slash-command";
 
 const basePath = join(__dirname, "../slashcommands");
 
 async function readDirectory(path: string): Promise<string[]> {
     try {
         const directoryFiles = await fs.promises.readdir(path);
-        return directoryFiles.map((fileOrFolder) => resolve(path, fileOrFolder)).filter(f => !f.endsWith(".map"));
+        return directoryFiles.map((fileOrFolder) => resolve(path, fileOrFolder)).filter((f) => !f.endsWith(".map"));
     } catch (e) {
         return [];
     }

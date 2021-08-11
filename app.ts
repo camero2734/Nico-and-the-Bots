@@ -10,10 +10,11 @@ import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
 import secrets from "./src/configuration/secrets";
 import { setupAllCommands, updateUserScore } from "./src/helpers";
 import AutoReact from "./src/helpers/auto-react";
+import { InteractionListener } from "./src/helpers/interaction-listener";
 import { BotLogInteractionListener } from "./src/helpers/interaction-listeners/bot-logs";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
-import { ErrorHandler, InteractionListener, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
+import { ErrorHandler, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
 import SlurFilter from "./src/helpers/slur-filter";
 
 const client = new Discord.Client({
@@ -95,11 +96,6 @@ client.on("ready", async () => {
 client.on("messageCreate", async (msg: Discord.Message) => {
     const wasSlur = await SlurFilter(msg);
     if (wasSlur) return;
-
-    if (msg.channel.id === channelIDs.polls && !(msg.author.bot || msg.author.id === userIDs.me)) {
-        msg.delete();
-        return;
-    }
 
     AutoReact(msg);
     updateUserScore(msg); // Add to score

@@ -1,13 +1,22 @@
 import {
     GuildMember,
-    GuildMemberRoleManager, MessageActionRow, MessageAttachment, MessageButton, MessageComponentInteraction, MessageEmbed, OverwriteData, Snowflake, TextChannel
+    GuildMemberRoleManager,
+    MessageActionRow,
+    MessageAttachment,
+    MessageButton,
+    MessageComponentInteraction,
+    MessageEmbed,
+    OverwriteData,
+    Snowflake,
+    TextChannel
 } from "discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
 import { MessageTools } from "../../helpers";
 import F from "../../helpers/funcs";
-import { ListenerInteraction, SlashCommand } from "../../helpers/slash-command";
+import { ListenerInteraction } from "../../helpers/interaction-listener";
+import { SlashCommand } from "../../helpers/slash-command";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 
 const command = new SlashCommand(<const>{

@@ -38,7 +38,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) throw new CommandError("This command is under construction");
 
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     if (ctx.opts.removeall) {
         for (const role of Object.values(tf)) {
@@ -84,7 +84,7 @@ const genChoiceId = command.addInteractionListener("topfeedChoose", [], async (c
     if (!Array.isArray(selected) || selected.length < 1) return;
 
     const allRoles: Snowflake[] = Object.values(tf);
-    const hasRoles = member.roles.cache.array().filter((r) => allRoles.includes(r.id));
+    const hasRoles = [...member.roles.cache.values()].filter((r) => allRoles.includes(r.id));
 
     // Remove old roles first
     await member.roles.remove(hasRoles);

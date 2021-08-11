@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
             `Only users with the <@&${roles.artistmusician}> role can submit to Mulberry Street Creations™`
         );
 
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     // Only allow submissions once/day
     const dbUser = await queries.findOrCreateUser(ctx.user.id);

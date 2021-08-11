@@ -18,7 +18,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     const existingTag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
 
@@ -59,7 +59,7 @@ command.setHandler(async (ctx) => {
 });
 
 const generateYesID = command.addInteractionListener("tcYes", <const>["name", "textLookup"], async (ctx, args) => {
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     const { value: text, id } = (await prisma.temporaryText.findUnique({ where: { id: +args.textLookup } })) || {};
     if (!text) return;

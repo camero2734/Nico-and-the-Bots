@@ -6,8 +6,8 @@ import { ExtendedInteraction, SlashCommand } from "./slash-command";
 
 function recoverFullCommandName(ctx: CommandInteraction) {
     const baseCommand = ctx.commandName;
-    const subcommandGroup = ctx.options.getSubCommandGroup(false);
-    const subcommand = ctx.options.getSubCommand(false);
+    const subcommandGroup = ctx.options.getSubcommandGroup(false);
+    const subcommand = ctx.options.getSubcommand(false);
 
     return [baseCommand, subcommandGroup, subcommand].filter((a) => a).join(" ");
 }

@@ -28,7 +28,7 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     const { user, time, reason } = ctx.opts;
-    await ctx.defer();
+    await ctx.deferReply();
 
     const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
 

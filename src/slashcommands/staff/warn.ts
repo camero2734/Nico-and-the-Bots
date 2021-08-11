@@ -41,7 +41,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const { user, rule, severity, explanation } = ctx.opts;
 
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     const ruleBroken = rules.find((r) => r.toLowerCase().startsWith(rule[0].toLowerCase()));
 

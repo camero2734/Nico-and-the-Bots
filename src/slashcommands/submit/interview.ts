@@ -15,7 +15,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const rawUrl = ctx.opts.link;
 
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     let id = "";
     if (rawUrl.indexOf("youtube.com/watch?v=") !== -1) {

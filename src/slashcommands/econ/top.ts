@@ -41,7 +41,7 @@ command.setHandler(async (ctx) => {
     const pageNum = page && page > 0 ? page - 1 : 0; // Computers tend to like to start at zero. Also negative pages don't make sense
     const timeperiod = ctx.opts.timeperiod || 0;
 
-    await ctx.defer();
+    await ctx.deferReply();
 
     const startTime = Date.now();
     const memberScores =

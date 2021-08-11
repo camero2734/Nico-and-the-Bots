@@ -27,7 +27,7 @@ class FileReact implements BaseReactType {
     }
 
     appliesTo(msg: Message): boolean {
-        const files: { url: string | null }[] = msg.attachments.array();
+        const files: { url: string | null }[] = [...msg.attachments.values()];
         if (this.checkRawURLs) files.push(...msg.embeds); // If a url is used, then it gets embedded (usually)
         return files.some((f) => f.url && this.checkFile(f.url));
     }

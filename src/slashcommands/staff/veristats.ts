@@ -24,7 +24,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
     const allAnswers = await prisma.verifiedQuizAnswer.findMany();
     const results = QuizQuestions.map((q) => ({
         question: q,

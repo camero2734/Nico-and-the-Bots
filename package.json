@@ -16,7 +16,7 @@
         "prisma:update": "prisma migrate dev"
     },
     "engines": {
-        "node": "16.x"
+        "node": ">= 16.6.0"
     },
     "author": "",
     "license": "ISC",
@@ -41,7 +41,7 @@
         "chalk": "^4.1.1",
         "consola": "^2.15.3",
         "date-fns": "^2.22.1",
-        "discord.js": "^13.0.0-dev.4886ae2.1627257843",
+        "discord.js": "^13.1.0-dev.1628640678.0266f28",
         "emoji-regex": "^9.2.2",
         "eslint": "^7.26.0",
         "file-type": "^16.5.0",

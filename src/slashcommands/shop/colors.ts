@@ -26,7 +26,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);
     await ctx.send(initialMsg);

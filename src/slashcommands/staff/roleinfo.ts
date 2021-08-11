@@ -18,7 +18,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
     const roles = Object.values(ctx.opts).filter((r): r is Snowflake => !!r);
 
     const embeds: MessageEmbed[] = [];

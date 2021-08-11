@@ -33,7 +33,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
     const { text, role } = ctx.opts;
 
     const roleObj = await ctx.channel.guild.roles.fetch(role);

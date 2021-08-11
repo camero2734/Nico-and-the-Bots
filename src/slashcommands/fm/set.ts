@@ -13,7 +13,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     const fmUsername = ctx.opts.username;
     if (!fmUsername) {

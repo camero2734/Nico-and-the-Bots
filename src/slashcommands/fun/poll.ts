@@ -44,7 +44,7 @@ const command = new SlashCommand(<const>{
 
 type ParsedOption = { text: string; emoji?: string };
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
 
     const shouldCreateThread = ctx.channel.id === channelIDs.polls;
 

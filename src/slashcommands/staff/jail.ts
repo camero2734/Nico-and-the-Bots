@@ -283,7 +283,8 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     let html =
         "<head>\n  <style>\n    body {background-color: #36393f}\n  	.avatar {border-radius: 100%; }\n    .timestamp {font-size: 10px; color: #777777}\n    .textcontent {font-size: 12px; color: white}\n    .username {color: white; font-size: 30px}\n  </style>\n</head>";
 
-    for (const message of messages.array().reverse()) {
+    const reverseMessages = [...messages.values()].reverse();
+    for (const message of reverseMessages) {
         if (!message.content && !message.attachments && !message.embeds?.[0]?.description) continue;
         let mhtml = "";
 
@@ -300,7 +301,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
             mhtml += `<p class="textcontent">${fixEmojis(content)}</p>`;
         }
         if (message.attachments) {
-            const attachments = message.attachments.array();
+            const attachments = [...message.attachments.values()];
             for (const a of attachments) {
                 if (a.name?.endsWith("png") || a.name?.endsWith("gif") || a.name?.endsWith("jpg")) {
                     const _file = await fetch(a.url);

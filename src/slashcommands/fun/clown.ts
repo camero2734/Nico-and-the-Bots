@@ -11,7 +11,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
 
     const url = normalizeUrl(ctx.opts.image, { stripProtocol: true, stripAuthentication: true });
     const filePath = url.split("/").slice(1).join(""); // website.something.com/path/to/image.png => path/to/image.png

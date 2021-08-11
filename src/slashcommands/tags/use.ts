@@ -9,7 +9,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
 
     const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
     if (!tag?.userId) return sendSuggestionList(ctx);

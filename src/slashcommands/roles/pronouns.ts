@@ -9,7 +9,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
     const selectMenu = new MessageSelectMenu()
         .setCustomId(genSelectId({}))
         .setMaxValues(Object.keys(roles.pronouns).length)

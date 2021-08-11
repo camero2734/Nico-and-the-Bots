@@ -17,7 +17,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
 
     const hours = ctx.opts.hours || 24;
     const after = subHours(new Date(), hours);

@@ -51,8 +51,7 @@ command.setHandler(async (ctx) => {
     }
 
     // All good - remove any current color roles and add the requested one
-    const currentlyEquippedRoles = ctx.member.roles.cache
-        .array()
+    const currentlyEquippedRoles = [...ctx.member.roles.cache.values()]
         .filter((r) => roleIDs.includes(r.id))
         .map((r) => r.id);
 

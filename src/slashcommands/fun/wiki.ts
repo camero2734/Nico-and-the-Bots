@@ -23,7 +23,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
 
     let condensedSummary: string | undefined;
     const fields: { title: string; content: string }[] = [];

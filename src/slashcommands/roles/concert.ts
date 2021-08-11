@@ -13,7 +13,7 @@
 // };
 
 // export const Executor: CommandRunner<Record<string, Snowflake>> = async (ctx) => {
-//     await ctx.defer(true);
+//     await ctx.deferReply(true);
 //     const channels = Object.values(ctx.opts).map((cid) => ctx.channel.guild.channels.cache.get(cid) as TextChannel);
 
 //     const allRoles = await ctx.channel.guild.roles.fetch();

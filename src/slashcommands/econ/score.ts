@@ -15,7 +15,7 @@ command.setHandler(async (ctx) => {
     const albumRoles = roles.albums;
     const options = ctx.opts;
 
-    await ctx.defer();
+    await ctx.deferReply();
 
     const START_TIME = Date.now();
 

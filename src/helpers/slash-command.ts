@@ -44,6 +44,7 @@ export type SlashCommandData<T extends CommandOptions = ApplicationCommandOption
     ApplicationCommandData,
     "options" | "name"
 > & {
+    description: string;
     options: T;
 };
 

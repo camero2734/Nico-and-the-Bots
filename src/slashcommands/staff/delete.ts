@@ -31,7 +31,7 @@ command.setHandler(async (ctx) => {
     if (remaining > 0) {
         const fetched = await channel.messages.fetch({ limit: Math.min(remaining, 100) });
 
-        for (const m of fetched.array()) {
+        for (const m of fetched.values()) {
             await m.delete();
             await F.wait(750);
         }

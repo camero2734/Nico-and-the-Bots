@@ -103,7 +103,7 @@ class ConcertChannelManager {
             // this.concertChannels = [];
             const channelsCollection = this.concertCategory.children;
             channelsCollection.delete(channelIDs.tourhelp);
-            const channels = channelsCollection.array();
+            const channels = [...channelsCollection.values()];
 
             // Channels in JSON list that don't have a channel
             const toAdd = this.concertChannels.filter((c) => !channels.some((c2) => c.channelName === c2.name));

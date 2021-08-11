@@ -17,7 +17,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
 
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {

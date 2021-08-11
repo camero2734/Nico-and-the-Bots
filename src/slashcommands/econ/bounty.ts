@@ -23,7 +23,7 @@ command.setHandler(async (ctx) => {
     const user = ctx.opts.user;
     const isInventoryCmd = !user;
 
-    await ctx.defer({ ephemeral: isInventoryCmd });
+    await ctx.deferReply({ ephemeral: isInventoryCmd });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const dailyBox = dbUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: ctx.member.id } }));

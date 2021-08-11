@@ -27,7 +27,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.defer();
+    await ctx.deferReply();
 
     const buffer = await fs.promises.readFile("./src/assets/images/banditos.gif");
 

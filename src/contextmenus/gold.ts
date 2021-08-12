@@ -1,4 +1,4 @@
-import MessageContextMenu from "../helpers/context-menus/messageMenu";
+import { MessageContextMenu } from "../structures/EntrypointContextMenu";
 
 const ctxMenu = new MessageContextMenu("🪙 Gold Message");
 

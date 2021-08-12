@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CollectorFilter, Message, MessageComponentInteraction } from "discord.js";
+import { SlashCommand } from "../structures/EntrypointSlashCommand";
 import F from "./funcs";
-import { ExtendedInteraction } from "./slash-command";
 
 type IDsMapped<IDs extends Readonly<string[]>> = {
     [Index in keyof IDs]: IDs[Index] extends string ? `eph&${IDs[Index]}${string}` : never;
@@ -9,7 +9,7 @@ type IDsMapped<IDs extends Readonly<string[]>> = {
 
 export class TimedInteractionListener<IDs extends Readonly<string[]>> {
     customIDs: IDsMapped<IDs>;
-    constructor(private ctx: ExtendedInteraction | Message, private names: IDs) {
+    constructor(private ctx: typeof SlashCommand.GenericContextType | Message, names: IDs) {
         this.customIDs = names.map((n) => {
             const hash = F.hash(names.join(",") + ctx.id + ctx.member?.id).slice(0, 10);
             return `eph&${n}${hash}`;

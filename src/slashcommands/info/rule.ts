@@ -1,7 +1,7 @@
 import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import Fuse from "fuse.js";
-import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 class Rule {
     static ruleNum = 0;
@@ -11,7 +11,7 @@ class Rule {
         this.text = `**${rule}**\n${description}`;
         this.num = ++Rule.ruleNum;
     }
-    send(ctx: ExtendedInteraction<[]>) {
+    send(ctx: typeof command.ContextType) {
         const embed = new MessageEmbed()
             .setColor("#E6FAFC")
             .setTitle(`Rule ${this.num}`)

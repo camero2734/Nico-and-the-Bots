@@ -1,7 +1,7 @@
 import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Approves or denies a user's application for Firebreathers",

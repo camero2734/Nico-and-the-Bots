@@ -1,9 +1,9 @@
 import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { prisma } from "../../helpers/prisma-init";
-import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
-const command = new SlashCommand({
+const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",
     options: [{ name: "name", description: "The name of the tag to use", required: false, type: "STRING" }]
 });
@@ -33,7 +33,7 @@ command.setHandler(async (ctx) => {
 });
 
 // TODO: Send a drop down list that sends the selected one
-async function sendSuggestionList(ctx: ExtendedInteraction): Promise<void> {
+async function sendSuggestionList(ctx: typeof command["ContextType"]): Promise<void> {
     const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 10 });
 
     const embed = new MessageEmbed().setTitle(

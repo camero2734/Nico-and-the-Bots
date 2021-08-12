@@ -1,11 +1,10 @@
-import { CommandError } from "../../configuration/definitions";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../configuration/config";
+import { CommandError } from "../../configuration/definitions";
 import { GeniusClient } from "../../helpers/apis/genius";
 import { SpotifyClient } from "../../helpers/apis/spotify";
-import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import {
     AlbumResponse,
     ArtistResponse,

@@ -1,5 +1,5 @@
 import { MessageEmbed } from "discord.js";
-import { createInteractionListener } from "../interaction-listener";
+import { createInteractionListener } from "../../structures/ListenerInteraction";
 
 const [name, interaction, genCustomId] = createInteractionListener("botLog", <const>[], async (ctx, args) => {
     await ctx.editReply({ components: [] });

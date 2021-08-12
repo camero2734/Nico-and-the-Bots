@@ -15,9 +15,9 @@ import { categoryIDs, channelIDs, roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
 import { MessageTools } from "../../helpers";
 import F from "../../helpers/funcs";
-import { ListenerInteraction } from "../../helpers/interaction-listener";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
+import { ListenerInteraction } from "../../structures/ListenerInteraction";
 
 const command = new SlashCommand(<const>{
     description: "Adds user(s) to a jail channel and removes their ability to view all other channels",

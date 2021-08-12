@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 import { roles } from "../../configuration/config";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Enables or disables the announcements role",

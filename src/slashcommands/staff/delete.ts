@@ -1,7 +1,7 @@
 import { MessageEmbed } from "discord.js";
 import { CommandError } from "../../configuration/definitions";
 import F from "../../helpers/funcs";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Deletes a certain number of messages",

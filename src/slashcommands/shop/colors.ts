@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import { MessageTools } from "../../helpers";
 import F from "../../helpers/funcs";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { prisma, queries } from "../../helpers/prisma-init";
 import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts";
 import { sendViolationNotice } from "../../helpers/dema-notice";

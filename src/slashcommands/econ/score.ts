@@ -3,7 +3,7 @@ import { roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
 import { Snowflake } from "discord.js";
 import { badgeLoader, LevelCalculator } from "../../helpers";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { prisma, queries } from "../../helpers/prisma-init";
 
 const command = new SlashCommand(<const>{

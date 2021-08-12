@@ -3,7 +3,7 @@ import secrets from "../../configuration/secrets";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import { RecentTracksResponse } from "./_consts";
 

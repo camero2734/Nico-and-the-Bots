@@ -6,7 +6,7 @@ import fetch from "node-fetch";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Submits an image, video, or audio file to #mulberry-street",

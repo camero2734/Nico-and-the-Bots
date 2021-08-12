@@ -1,5 +1,5 @@
 import { MessageEmbed } from "discord.js";
-import { SlashCommand } from "../helpers/slash-command";
+import { SlashCommand } from "../structures/EntrypointSlashCommand";
 
 interface Ping {
     ping: number;

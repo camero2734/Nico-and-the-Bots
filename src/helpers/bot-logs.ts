@@ -1,8 +1,8 @@
 import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs } from "../configuration/config";
+import { SlashCommand } from "../structures/EntrypointSlashCommand";
 import F from "./funcs";
 import { BotLogInteractionListener } from "./interaction-listeners/bot-logs";
-import { ExtendedInteraction, SlashCommand } from "./slash-command";
 
 function recoverFullCommandName(ctx: CommandInteraction) {
     const baseCommand = ctx.commandName;
@@ -12,7 +12,7 @@ function recoverFullCommandName(ctx: CommandInteraction) {
     return [baseCommand, subcommandGroup, subcommand].filter((a) => a).join(" ");
 }
 
-async function logStaffCommand(ctx: ExtendedInteraction) {
+async function logStaffCommand(ctx: typeof SlashCommand.GenericContextType) {
     const staffLog = (await ctx.guild.channels.fetch(channelIDs.logs.staffCommands)) as TextChannel;
     if (!staffLog || !ctx.isCommand()) return;
 
@@ -41,7 +41,7 @@ async function logStaffCommand(ctx: ExtendedInteraction) {
     await staffLog.send({ embeds: [embed], components: [actionRow] });
 }
 
-export const LogCommand = (ctx: ExtendedInteraction) => {
+export const LogCommand = (ctx: typeof SlashCommand.GenericContextType) => {
     if (!ctx.isCommand()) return;
 
     if (ctx.commandName.startsWith("staff")) return logStaffCommand(ctx);

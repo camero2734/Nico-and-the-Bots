@@ -5,7 +5,7 @@ import { addDays, differenceInDays } from "date-fns";
 import { MessageEmbed } from "discord.js";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Claims your daily credits",

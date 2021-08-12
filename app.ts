@@ -10,13 +10,15 @@ import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
 import secrets from "./src/configuration/secrets";
 import { setupAllCommands, updateUserScore } from "./src/helpers";
 import AutoReact from "./src/helpers/auto-react";
-import ContextMenu from "./src/helpers/context-menus/contextMenu";
-import { InteractionListener } from "./src/helpers/interaction-listener";
 import { BotLogInteractionListener } from "./src/helpers/interaction-listeners/bot-logs";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
-import { ErrorHandler, ReactionListener, SlashCommand } from "./src/helpers/slash-command";
 import SlurFilter from "./src/helpers/slur-filter";
+import { ContextMenu } from "./src/structures/EntrypointContextMenu";
+import { SlashCommand } from "./src/structures/EntrypointSlashCommand";
+import { ErrorHandler } from "./src/structures/Errors";
+import { InteractionListener } from "./src/structures/ListenerInteraction";
+import { ReactionListener } from "./src/structures/ListenerReaction";
 
 const client = new Discord.Client({
     intents: [
@@ -130,7 +132,7 @@ client.on("interactionCreate", async (interaction) => {
         const command = slashCommands.get(commandIdentifier);
         if (!command) return console.log(`Failed to find command ${commandIdentifier}`);
 
-        command.run(interaction);
+        command.run(interaction, undefined);
     } else if (interaction.isMessageComponent()) {
         if (interaction.customId === NULL_CUSTOM_ID) return;
 

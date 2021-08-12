@@ -3,7 +3,7 @@ import { addMilliseconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
 import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { ERRORS, REMINDER_LIMIT, REMINDER_TIMES } from "./_consts";
 
 const command = new SlashCommand(<const>{

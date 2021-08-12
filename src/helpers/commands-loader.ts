@@ -4,9 +4,11 @@ import { ApplicationCommandData, Collection, Guild, GuildApplicationCommandPermi
 import * as fs from "fs";
 import { join, resolve, sep } from "path";
 import { roles } from "../configuration/config";
-import ContextMenu from "./context-menus/contextMenu";
-import { InteractionListener } from "./interaction-listener";
-import { ReactionListener, SlashCommand, SlashCommandData } from "./slash-command";
+import { ContextMenu } from "../structures/EntrypointContextMenu";
+import { SlashCommand } from "../structures/EntrypointSlashCommand";
+import { InteractionListener } from "../structures/ListenerInteraction";
+import { ReactionListener } from "../structures/ListenerReaction";
+import { SlashCommandData } from "../structures/SlashCommandOptions";
 
 const slashCommandsBasePath = join(__dirname, "../slashcommands");
 const contextMenusBasePath = join(__dirname, "../contextmenus");
@@ -98,16 +100,18 @@ async function generateCommandData(parsedFile: ParsedFile): Promise<[Application
                                 name: p.name
                             }
                     )
-                ]
+                ],
+                type: "CHAT_INPUT"
             },
             parsedFile.files.map((f) => f.command)
         ];
     }
 
-    const commandData: SlashCommandData & { name: string } = {
+    const commandData: SlashCommandData & { name: string; type: "CHAT_INPUT" } = {
         name: parsedFile.topName,
         description: parsedFile.topName,
-        options: []
+        options: [],
+        type: "CHAT_INPUT"
     };
 
     const subcommandsSet = new Set<string>();
@@ -142,7 +146,6 @@ async function generateCommandData(parsedFile: ParsedFile): Promise<[Application
 // Step 2.5: Import all Context Menu handlers
 async function generateContextMenuData(): Promise<ContextMenu<any>[]> {
     const nodes = await readDirectory(contextMenusBasePath);
-    console.log(nodes, /NODES/);
 
     const result = await Promise.all(
         nodes.map(async (path) => {
@@ -178,11 +181,11 @@ export async function setupAllCommands(
 
     // Context Menus
     const contextMenus = await generateContextMenuData();
-    console.log(contextMenus, /CTX_MENUS/);
     const ctxMenuApplicationData = contextMenus.map((cm) => cm.commandData);
 
     // Set guild commands
     const applicationCommandData = [...dataFromCommands, ...ctxMenuApplicationData];
+    await guild.commands.set([]);
     const savedData = await guild.commands.set(applicationCommandData.map((p) => ({ ...p, defaultPermission: false })));
 
     const slashCommandCollection = new Collection<string, SlashCommand>();

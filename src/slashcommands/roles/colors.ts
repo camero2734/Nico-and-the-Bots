@@ -2,7 +2,7 @@ import { MessageEmbed } from "discord.js";
 import { channelIDs, userIDs } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Chooses a color role purchased from the shop",

@@ -5,7 +5,7 @@ import { badgeLoader } from "../../helpers";
 import { LevelCalculator } from "../../helpers/score-manager";
 import fetch from "node-fetch";
 import { queries, prisma } from "../../helpers/prisma-init";
-import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const PAGE_SIZE = 10;
 
@@ -64,7 +64,7 @@ command.setHandler(async (ctx) => {
     });
 });
 async function getMemberScores(
-    ctx: ExtendedInteraction,
+    ctx: typeof command.ContextType,
     pageNum: number,
     timeperiod?: number
 ): Promise<{ member: GuildMember; score: number }[]> {
@@ -81,7 +81,7 @@ async function getMemberScores(
 }
 
 async function getAlltimeScores(
-    ctx: ExtendedInteraction,
+    ctx: typeof command.ContextType,
     pageNum: number
 ): Promise<{ member: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;

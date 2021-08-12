@@ -1,7 +1,7 @@
 import { CommandError } from "../../configuration/definitions";
 import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import * as ytdl from "youtube-dl";
 import { parse } from "date-fns";
 import F from "../../helpers/funcs";

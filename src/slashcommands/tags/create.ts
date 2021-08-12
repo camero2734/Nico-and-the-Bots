@@ -1,8 +1,7 @@
-import { cairoVersion } from "canvas";
+import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { CommandError } from "../../configuration/definitions";
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Creates (or edits) a command that sends a short snippet of text",

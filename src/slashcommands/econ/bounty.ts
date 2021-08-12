@@ -3,7 +3,7 @@ import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
 import { sendViolationNotice } from "../../helpers/dema-notice";
 

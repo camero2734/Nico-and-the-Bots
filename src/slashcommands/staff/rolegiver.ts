@@ -1,7 +1,7 @@
 import { EmojiIdentifierResolvable, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 enum ActionTypes {
     Give,

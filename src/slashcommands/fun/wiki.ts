@@ -2,7 +2,7 @@ import { MessageEmbed } from "discord.js";
 import WikiJS from "wikijs";
 import { CommandError } from "../../configuration/definitions";
 import F from "../../helpers/funcs";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const wikipediaLogo =
     "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/440px-Wikipedia-logo-v2.svg.png";

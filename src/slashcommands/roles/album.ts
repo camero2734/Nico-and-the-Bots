@@ -1,7 +1,7 @@
 import { MessageEmbed } from "discord.js";
 import { roles } from "../../configuration/config";
 import { CommandError } from "../../configuration/definitions";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const { SAI, TRENCH, BF, VSL, RAB, ST } = roles.albums;
 const albumRoles = {

@@ -4,7 +4,7 @@ import R from "ramda";
 import progressBar from "string-progressbar";
 import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import QuizQuestions from "../../helpers/verified-quiz/quiz";
 
 const command = new SlashCommand(<const>{

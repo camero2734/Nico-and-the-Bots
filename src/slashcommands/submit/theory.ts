@@ -1,6 +1,6 @@
 import { channelIDs } from "../../configuration/config";
 import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Submits a theory to #theory-list",

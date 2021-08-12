@@ -1,7 +1,7 @@
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from "discord.js";
 import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { formatReminderDate } from "./_consts";
 
 enum ActionTypes {

@@ -5,7 +5,7 @@ import F from "../../helpers/funcs";
 import { Question } from "../../helpers/verified-quiz/question";
 import R from "ramda";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import QuizQuestions from "../../helpers/verified-quiz/quiz"; // .gitignored
 import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";

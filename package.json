@@ -41,7 +41,7 @@
         "chalk": "^4.1.1",
         "consola": "^2.15.3",
         "date-fns": "^2.22.1",
-        "discord.js": "^13.1.0-dev.1628640678.0266f28",
+        "discord.js": "13.1.0-dev.1628726724.cd40292",
         "emoji-regex": "^9.2.2",
         "eslint": "^7.26.0",
         "file-type": "^16.5.0",

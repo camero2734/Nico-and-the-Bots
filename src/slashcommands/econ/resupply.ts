@@ -17,7 +17,7 @@ import {
 import fs from "fs";
 import F from "../../helpers/funcs";
 import { prisma, queries } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
 import { sendViolationNotice } from "../../helpers/dema-notice";
 

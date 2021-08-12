@@ -5,8 +5,8 @@ import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "disc
 import { roles } from "../../configuration/config";
 import { TimedInteractionListener } from "../../helpers/timed-interaction-listener";
 import { prisma, queries } from "../../helpers/prisma-init";
-import { ExtendedInteraction, SlashCommand } from "../../helpers/slash-command";
 import JailCommand from "./jail";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const rules = Object.values(WarningType);
 
@@ -115,7 +115,7 @@ command.setHandler(async (ctx) => {
     autoJailCheck(ctx, member);
 });
 
-async function autoJailCheck(ctx: ExtendedInteraction, member: GuildMember) {
+async function autoJailCheck(ctx: typeof command["ContextType"], member: GuildMember) {
     const oneYearAgo = subYears(new Date(), 1);
     const recentWarns = await prisma.warning.count({
         where: { warnedUserId: member.id, createdAt: { gt: oneYearAgo } }

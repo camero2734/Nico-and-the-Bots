@@ -5,7 +5,7 @@ import parseDuration from "parse-duration";
 import { roles } from "../../configuration/config";
 import F from "../../helpers/funcs";
 import { prisma } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Mutes a user",

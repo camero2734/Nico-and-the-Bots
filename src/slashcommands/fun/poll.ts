@@ -4,7 +4,7 @@ import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../configuration/config";
 import { prisma, queries } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 

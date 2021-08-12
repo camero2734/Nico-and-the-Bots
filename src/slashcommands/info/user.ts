@@ -2,7 +2,7 @@ import { CommandError } from "../../configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import ordinal from "ordinal";
 import { queries } from "../../helpers/prisma-init";
-import { SlashCommand } from "../../helpers/slash-command";
+import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Displays some information about a user",

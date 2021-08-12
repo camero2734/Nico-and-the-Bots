@@ -1,0 +1,147 @@
+import {
+    CommandInteraction,
+    Guild,
+    GuildMember,
+    Message,
+    MessageActionRow,
+    MessageButton,
+    MessageOptions,
+    Snowflake,
+    TextChannel
+} from "discord.js";
+import { emojiIDs } from "../configuration/config";
+import F from "../helpers/funcs";
+import { prisma } from "../helpers/prisma-init";
+import { BaseInteraction } from "./EntrypointBase";
+import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
+
+type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
+    opts: OptsType<SlashCommandData<T>>;
+    member: GuildMember;
+    channel: TextChannel;
+    guild: Guild;
+    guildId: Snowflake;
+    send(payload: MessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
+};
+type SlashCommandHandler<T extends CommandOptions = []> = (ctx: SlashCommandInteraction<T>) => Promise<unknown>;
+
+export class SlashCommand<T extends CommandOptions = []> extends BaseInteraction<
+    SlashCommandHandler<T>,
+    [OptsType<SlashCommandData<T>>]
+> {
+    public commandIdentifier: string;
+
+    static GenericContextType: SlashCommandInteraction;
+    public ContextType: SlashCommandInteraction<T>;
+
+    commandData: SlashCommandData<T> & { type: "CHAT_INPUT" };
+
+    constructor(commandData: SlashCommandData<T>) {
+        super();
+        this.commandData = { ...commandData, type: "CHAT_INPUT" };
+    }
+    setHandler(handler: SlashCommandHandler<T>): this {
+        this.handler = handler;
+        return this;
+    }
+    async _run(interaction: CommandInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
+        const ctx = interaction as SlashCommandInteraction<T>;
+        ctx.send = async (payload) => {
+            if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
+            else return ctx.reply(payload);
+        };
+        ctx.opts =
+            opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
+
+        await this.handler(ctx);
+        // LogCommand(ctx);
+    }
+
+    upvoteDownVoteListener(name: string) {
+        const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
+            if (!ctx.isButton()) return;
+
+            const isUpvote = args.isUpvote === "1" ? 1 : 0;
+            const pollId = +args.pollID;
+            await prisma.vote.upsert({
+                where: { pollId_userId: { userId: ctx.user.id, pollId } },
+                create: { pollId, userId: ctx.user.id, choices: [isUpvote] },
+                update: { choices: [isUpvote] }
+            });
+
+            const msg = ctx.message as Message;
+            const poll = await prisma.poll.findUnique({ where: { id: pollId }, include: { votes: true } });
+            const [actionRow] = msg.components || [];
+            if (!actionRow || !poll) return;
+
+            let upvotes = 0;
+            for (const vote of poll.votes) {
+                if (vote.choices[0] === 1) upvotes++;
+            }
+            const downvotes = poll.votes.length - upvotes;
+
+            // If the post is heavily downvoted
+            if (downvotes >= Math.max(5, upvotes)) {
+                await msg.delete();
+                await prisma.poll.delete({ where: { id: poll.id } });
+                return;
+            }
+
+            const getMessageButtonWithEmoji = (name: string): MessageButton | undefined => {
+                return actionRow.components.find(
+                    (c) => c.type === "BUTTON" && c.emoji?.name?.startsWith(name)
+                ) as MessageButton;
+            };
+            const upvoteButton = getMessageButtonWithEmoji("upvote");
+            const downvoteButton = getMessageButtonWithEmoji("downvote");
+            if (!upvoteButton || !downvoteButton) return; // prettier-ignore
+
+            if (isUpvote) upvoteButton.setStyle("SUCCESS");
+            else downvoteButton.setStyle("DANGER");
+
+            upvoteButton.label = `${upvotes}`;
+            downvoteButton.label = `${downvotes}`;
+
+            await msg.edit({ components: [actionRow] });
+
+            await F.wait(1000);
+
+            upvoteButton.setStyle("SECONDARY");
+            downvoteButton.setStyle("SECONDARY");
+
+            await msg.edit({ components: [actionRow] });
+        });
+
+        const createActionRow = async (ctx: SlashCommandInteraction<T> | Message, title?: string) => {
+            const poll = await prisma.poll.create({
+                data: {
+                    userId: ctx.member?.id,
+                    name: title || `${name}-${Date.now()}`,
+                    options: ["downvote", "upvote"]
+                }
+            });
+            return new MessageActionRow().addComponents([
+                new MessageButton({
+                    emoji: emojiIDs.upvote,
+                    style: "SECONDARY",
+                    label: "0",
+                    customId: gen({ isUpvote: "1", pollID: `${poll.id}` })
+                }),
+                new MessageButton({
+                    emoji: emojiIDs.downvote,
+                    style: "SECONDARY",
+                    label: "0",
+                    customId: gen({ isUpvote: "0", pollID: `${poll.id}` })
+                })
+            ]);
+        };
+
+        return createActionRow;
+    }
+
+    static getIdentifierFromInteraction(interaction: CommandInteraction): string {
+        const subcommand = interaction.options.data.find((o) => o.type === "SUB_COMMAND");
+        if (!subcommand) return interaction.commandName;
+        else return `${subcommand.name}:${interaction.commandName}`;
+    }
+}

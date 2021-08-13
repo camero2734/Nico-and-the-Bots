@@ -198,8 +198,9 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
     }
 
     static getIdentifierFromInteraction(interaction: CommandInteraction): string {
+        const subcommandGroup = interaction.options.getSubcommandGroup(false);
         const subcommand = interaction.options.getSubcommand(false);
-        if (!subcommand) return interaction.commandName;
-        else return `${subcommand}:${interaction.commandName}`;
+
+        return [interaction.commandName, subcommandGroup, subcommand].filter((s) => s).join(":");
     }
 }

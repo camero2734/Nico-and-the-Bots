@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { ApplicationCommand, ApplicationCommandData, Collection } from "discord.js";
+import { ApplicationCommandData, Collection } from "discord.js";
 import { ContextMenu } from "./EntrypointContextMenu";
 import { SlashCommand } from "./EntrypointSlashCommand";
 import { InteractionListener } from "./ListenerInteraction";

@@ -21,11 +21,6 @@ export abstract class ContextMenu<T extends keyof TargetTypes> extends BaseInter
     }
     protected abstract getTarget(ctx: ContextMenuInteraction): TargetTypes[T];
 
-    setHandler(handler: ContextMenuHandler<T>): this {
-        this.handler = handler;
-        return this;
-    }
-
     async _run(ctx: ContextMenuInteraction): Promise<void> {
         const target = this.getTarget(ctx);
         await this.handler(ctx, target);

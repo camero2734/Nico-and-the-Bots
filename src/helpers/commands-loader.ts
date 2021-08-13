@@ -186,9 +186,7 @@ export async function setupAllCommands(
     // Set guild commands
     const applicationCommandData = [...dataFromCommands, ...ctxMenuApplicationData];
     await guild.commands.set([]);
-    const savedData = await guild.commands.set(
-        applicationCommandData.map((p) => ({ description: "Not provided", ...p, defaultPermission: false }))
-    );
+    const savedData = await guild.commands.set(applicationCommandData.map((p) => ({ ...p, defaultPermission: false })));
 
     const slashCommandCollection = new Collection<string, SlashCommand>();
     const contextMenuCollection = new Collection<string, ContextMenu<any>>();

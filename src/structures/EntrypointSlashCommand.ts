@@ -40,10 +40,7 @@ export class SlashCommand<T extends CommandOptions = []> extends BaseInteraction
         super();
         this.commandData = { ...commandData, type: "CHAT_INPUT" };
     }
-    setHandler(handler: SlashCommandHandler<T>): this {
-        this.handler = handler;
-        return this;
-    }
+
     async _run(interaction: CommandInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
         const ctx = interaction as SlashCommandInteraction<T>;
         ctx.send = async (payload) => {

@@ -13,6 +13,11 @@ export abstract class BaseInteraction<
 
     protected handler: HandlerType;
 
+    setHandler(handler: HandlerType): this {
+        this.handler = handler;
+        return this;
+    }
+
     addInteractionListener<T extends Readonly<string[]>>(
         name: string,
         args: T,

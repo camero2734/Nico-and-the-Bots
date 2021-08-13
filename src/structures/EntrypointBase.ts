@@ -1,15 +1,19 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Collection, Interaction } from "discord.js";
+import { Collection, Guild, Interaction } from "discord.js";
+import { InteractionHandlers, ReactionHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import { createInteractionListener, InteractionListener, ListenerCustomIdGenerator } from "./ListenerInteraction";
 import { ReactionListener } from "./ListenerReaction";
 
-export abstract class BaseInteraction<
+export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,
     HandlerArgs extends any[] = []
 > {
     public interactionListeners = new Collection<string, InteractionListener>();
     public reactionListeners = new Collection<string, ReactionListener>();
+
+    public identifier: string;
 
     protected handler: HandlerType;
 
@@ -41,5 +45,14 @@ export abstract class BaseInteraction<
         } catch (e) {
             ErrorHandler(ctx, e);
         }
+    }
+
+    protected abstract _register(path: string[]): string;
+
+    register(path: string[]): void {
+        for (const [name, listener] of this.interactionListeners) InteractionHandlers.set(name, listener);
+        for (const [name, listener] of this.reactionListeners) ReactionHandlers.set(name, listener);
+
+        this.identifier = this._register(path);
     }
 }

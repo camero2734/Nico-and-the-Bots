@@ -1,6 +1,7 @@
-import { ApplicationCommandData, ContextMenuInteraction, GuildMember, Message } from "discord.js";
+import { ApplicationCommandData, ContextMenuInteraction, Guild, GuildMember, Message } from "discord.js";
 import { CommandError } from "./Errors";
-import { BaseInteraction } from "./EntrypointBase";
+import { InteractionEntrypoint } from "./EntrypointBase";
+import { ContextMenus } from "./data";
 
 type TargetTypes = {
     MESSAGE: Message;
@@ -12,7 +13,7 @@ export type ContextMenuHandler<T extends keyof TargetTypes> = (
     target: TargetTypes[T]
 ) => Promise<unknown>;
 
-export abstract class ContextMenu<T extends keyof TargetTypes> extends BaseInteraction<ContextMenuHandler<T>> {
+export abstract class ContextMenu<T extends keyof TargetTypes> extends InteractionEntrypoint<ContextMenuHandler<T>> {
     commandData: ApplicationCommandData;
 
     constructor(public name: string, type: T) {
@@ -24,6 +25,11 @@ export abstract class ContextMenu<T extends keyof TargetTypes> extends BaseInter
     async _run(ctx: ContextMenuInteraction): Promise<void> {
         const target = this.getTarget(ctx);
         await this.handler(ctx, target);
+    }
+
+    _register(): string {
+        ContextMenus.set(this.name, this);
+        return this.name;
     }
 }
 

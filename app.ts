@@ -1,24 +1,28 @@
 import { registerFont } from "canvas";
 import * as Discord from "discord.js";
-import { Collection } from "discord.js";
 import "source-map-support/register";
 import { KeonsBot } from "./src/altbots/shop";
 import { TopfeedBot } from "./src/altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/altbots/welcome";
-import { channelIDs, guildID, userIDs } from "./src/configuration/config";
+import { channelIDs, guildID } from "./src/configuration/config";
 import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
 import secrets from "./src/configuration/secrets";
-import { setupAllCommands, updateUserScore } from "./src/helpers";
+import { updateUserScore } from "./src/helpers";
 import AutoReact from "./src/helpers/auto-react";
+import { registerAllEntrypoints } from "./src/helpers/entrypoint-loader";
 import { BotLogInteractionListener } from "./src/helpers/interaction-listeners/bot-logs";
 import { extendPrototypes } from "./src/helpers/prototype-extend";
 import Scheduler from "./src/helpers/scheduler";
 import SlurFilter from "./src/helpers/slur-filter";
-import { ContextMenu } from "./src/structures/EntrypointContextMenu";
+import {
+    ApplicationData,
+    ContextMenus,
+    InteractionHandlers,
+    ReactionHandlers,
+    SlashCommands
+} from "./src/structures/data";
 import { SlashCommand } from "./src/structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/structures/Errors";
-import { InteractionListener } from "./src/structures/ListenerInteraction";
-import { ReactionListener } from "./src/structures/ListenerReaction";
 
 const client = new Discord.Client({
     intents: [
@@ -49,18 +53,16 @@ client.login(secrets.bots.nico);
 
 console.log("Script started");
 
-let slashCommands = new Collection<string, SlashCommand<[]>>();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let contextMenus = new Collection<string, ContextMenu<any>>();
-let interactionHandlers = new Collection<string, InteractionListener>();
-let reactionHandlers = new Collection<string, ReactionListener>();
+const entrypointsReady = registerAllEntrypoints();
 
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
     const guild = await client.guilds.fetch(guildID);
 
-    [slashCommands, contextMenus, interactionHandlers, reactionHandlers] = await setupAllCommands(guild);
+    await entrypointsReady;
+    await guild.commands.set(ApplicationData);
+
     addManualInteractionHandlers();
 
     // Initialize everything
@@ -110,7 +112,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
     const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
     const fullUser = user.partial ? await user.fetch() : user;
 
-    for (const [name, handler] of reactionHandlers.entries()) {
+    for (const [name, handler] of ReactionHandlers.entries()) {
         const wasSuccessful = await handler(fullReaction, fullUser, async (promise) => {
             try {
                 await promise;
@@ -129,7 +131,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 client.on("interactionCreate", async (interaction) => {
     if (interaction.isCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
-        const command = slashCommands.get(commandIdentifier);
+        const command = SlashCommands.get(commandIdentifier);
         if (!command) return console.log(`Failed to find command ${commandIdentifier}`);
 
         command.run(interaction, undefined);
@@ -141,7 +143,7 @@ client.on("interactionCreate", async (interaction) => {
         const [interactionID] = interaction.customId.split(":");
         if (!interactionID) return;
 
-        const interactionHandler = interactionHandlers.get(interactionID);
+        const interactionHandler = InteractionHandlers.get(interactionID);
         if (!interactionHandler) return;
 
         try {
@@ -154,7 +156,7 @@ client.on("interactionCreate", async (interaction) => {
         }
     } else if (interaction.isContextMenu()) {
         const ctxMenuName = interaction.commandName;
-        const contextMenu = contextMenus.get(ctxMenuName);
+        const contextMenu = ContextMenus.get(ctxMenuName);
         if (!contextMenu) return console.log(`Failed to find context menu ${ctxMenuName}`);
 
         contextMenu.run(interaction);
@@ -192,7 +194,7 @@ function setup() {
 
 function addManualInteractionHandlers() {
     // Listens for "More Info" on items in log channels
-    interactionHandlers.set(BotLogInteractionListener.name, BotLogInteractionListener.interaction);
+    InteractionHandlers.set(BotLogInteractionListener.name, BotLogInteractionListener.interaction);
 }
 
 // async function dynamicCommandSetup(commands: Command[]): Promise<void> {

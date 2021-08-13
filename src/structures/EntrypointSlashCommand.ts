@@ -1,4 +1,9 @@
 import {
+    ApplicationCommand,
+    ApplicationCommandData,
+    ApplicationCommandOptionData,
+    ChatInputApplicationCommandData,
+    Collection,
     CommandInteraction,
     Guild,
     GuildMember,
@@ -7,12 +12,15 @@ import {
     MessageButton,
     MessageOptions,
     Snowflake,
-    TextChannel
+    TextChannel,
+    UserApplicationCommandData
 } from "discord.js";
+import R from "ramda";
 import { emojiIDs } from "../configuration/config";
 import F from "../helpers/funcs";
 import { prisma } from "../helpers/prisma-init";
-import { BaseInteraction } from "./EntrypointBase";
+import { ApplicationData, SlashCommands } from "./data";
+import { InteractionEntrypoint } from "./EntrypointBase";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
 
 type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
@@ -25,7 +33,7 @@ type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction
 };
 type SlashCommandHandler<T extends CommandOptions = []> = (ctx: SlashCommandInteraction<T>) => Promise<unknown>;
 
-export class SlashCommand<T extends CommandOptions = []> extends BaseInteraction<
+export class SlashCommand<T extends CommandOptions = []> extends InteractionEntrypoint<
     SlashCommandHandler<T>,
     [OptsType<SlashCommandData<T>>]
 > {
@@ -52,6 +60,59 @@ export class SlashCommand<T extends CommandOptions = []> extends BaseInteraction
 
         await this.handler(ctx);
         // LogCommand(ctx);
+    }
+
+    _register(path: string[]): string {
+        const possibleSteps = <const>[
+            ["COMMAND"],
+            ["COMMAND", "SUBCOMMAND"],
+            ["COMMAND", "SUBCOMMAND_GROUP", "SUBCOMMAND"]
+        ];
+        const steps = R.zip(possibleSteps[path.length - 1], path);
+
+        const commandData = this.commandData as unknown as ChatInputApplicationCommandData;
+
+        const data = ApplicationData;
+        let command = {} as ChatInputApplicationCommandData;
+        let subcommandGroup: ApplicationCommandOptionData | undefined;
+        for (const [index, [step, value]] of steps.entries()) {
+            const isLast = index === steps.length - 1;
+            if (step === "COMMAND") {
+                const foundCommand = data.find((p) => p.name === value) as ChatInputApplicationCommandData;
+                command = foundCommand || {
+                    description: value,
+                    options: [],
+                    ...(isLast ? commandData : {}),
+                    name: value,
+                    type: "CHAT_INPUT"
+                };
+                if (!foundCommand) data.push(command);
+            } else if (step === "SUBCOMMAND_GROUP") {
+                const foundSubcommandGroup = command.options?.find((o) => o.name === value);
+                subcommandGroup = foundSubcommandGroup || {
+                    name: value,
+                    description: "",
+                    options: [],
+                    type: "SUB_COMMAND_GROUP"
+                };
+                if (!foundSubcommandGroup) command.options?.push(subcommandGroup);
+            } else if (step === "SUBCOMMAND") {
+                const parent = subcommandGroup || command;
+                if (parent.options?.some((o) => o.name === value)) continue;
+
+                parent.options?.push({
+                    description: "Not provided",
+                    ...(isLast ? commandData : {}),
+                    name: value,
+                    type: "SUB_COMMAND"
+                });
+            }
+        }
+
+        const id = path.join(":");
+        SlashCommands.set(id, this as unknown as SlashCommand<[]>);
+
+        return id;
     }
 
     upvoteDownVoteListener(name: string) {
@@ -137,8 +198,8 @@ export class SlashCommand<T extends CommandOptions = []> extends BaseInteraction
     }
 
     static getIdentifierFromInteraction(interaction: CommandInteraction): string {
-        const subcommand = interaction.options.data.find((o) => o.type === "SUB_COMMAND");
+        const subcommand = interaction.options.getSubcommand(false);
         if (!subcommand) return interaction.commandName;
-        else return `${subcommand.name}:${interaction.commandName}`;
+        else return `${subcommand}:${interaction.commandName}`;
     }
 }

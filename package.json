@@ -44,6 +44,7 @@
         "date-fns": "^2.22.1",
         "discord.js": "^13.2.0-dev.1628899443.615afab",
         "emoji-regex": "^9.2.2",
+        "esbuild-node-tsc": "^1.6.0",
         "eslint": "^7.26.0",
         "file-type": "^16.5.0",
         "fuse.js": "^6.4.6",
@@ -72,7 +73,6 @@
         "youtube-dl": "3.4.0"
     },
     "devDependencies": {
-        "esbuild-node-tsc": "^1.6.0",
         "husky": "^7.0.1",
         "nodemon": "^2.0.12"
     }

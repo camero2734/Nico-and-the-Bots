@@ -3,6 +3,7 @@
  */
 
 import {
+    ApplicationCommandChoicesData,
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
     ApplicationCommandOptionData,
@@ -15,9 +16,11 @@ export type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-export type CommandOptions = DeepReadonly<ApplicationCommandOptionData[]>;
+type ApplicationDataType = ApplicationCommandOptionData & Pick<ApplicationCommandChoicesData, "choices">;
+
+export type CommandOptions = DeepReadonly<ApplicationDataType[]>;
 // prettier-ignore
-export type SlashCommandData<T extends CommandOptions = ApplicationCommandOptionData[]> = Omit<ApplicationCommandData, "options" | "name" | "type"> & {
+export type SlashCommandData<T extends CommandOptions = ApplicationDataType[]> = Omit<ApplicationCommandData, "options" | "name"> & {
     description: string;
     options: T;
 };

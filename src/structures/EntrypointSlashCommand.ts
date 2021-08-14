@@ -1,9 +1,6 @@
 import {
-    ApplicationCommand,
-    ApplicationCommandData,
     ApplicationCommandOptionData,
     ChatInputApplicationCommandData,
-    Collection,
     CommandInteraction,
     Guild,
     GuildMember,
@@ -12,8 +9,7 @@ import {
     MessageButton,
     MessageOptions,
     Snowflake,
-    TextChannel,
-    UserApplicationCommandData
+    TextChannel
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../configuration/config";
@@ -96,7 +92,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 };
                 if (!foundSubcommandGroup) command.options?.push(subcommandGroup);
             } else if (step === "SUBCOMMAND") {
-                const parent = subcommandGroup || command;
+                const parent = (subcommandGroup || command) as ChatInputApplicationCommandData;
                 if (parent.options?.some((o) => o.name === value)) continue;
 
                 parent.options?.push({
@@ -104,7 +100,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     ...(isLast ? commandData : {}),
                     name: value,
                     type: "SUB_COMMAND"
-                });
+                } as ApplicationCommandOptionData);
             }
         }
 

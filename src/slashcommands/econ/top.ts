@@ -9,6 +9,15 @@ import { SlashCommand } from "../../structures/EntrypointSlashCommand";
 
 const PAGE_SIZE = 10;
 
+const timePeriodChoices = <const>[
+    { name: "Last week", value: 1 },
+    { name: "Last month", value: 4 },
+    { name: "Last 3 months", value: 13 },
+    { name: "Last 6 months", value: 26 },
+    { name: "Last year", value: 52 },
+    { name: "All time", value: 0 }
+];
+
 const command = new SlashCommand(<const>{
     description: "Displays the server point leaderboard",
     options: [
@@ -24,14 +33,7 @@ const command = new SlashCommand(<const>{
             description: "The time period over which to display statistics. Defaults to 1 month.",
             required: false,
             type: "INTEGER",
-            choices: [
-                { name: "Last week", value: 1 },
-                { name: "Last month", value: 4 },
-                { name: "Last 3 months", value: 13 },
-                { name: "Last 6 months", value: 26 },
-                { name: "Last year", value: 52 },
-                { name: "All time", value: 0 }
-            ]
+            choices: timePeriodChoices
         }
     ]
 });
@@ -51,9 +53,7 @@ command.setHandler(async (ctx) => {
 
     if (memberScores.length === 0) throw new CommandError("This page doesn't exist!");
 
-    const choice = command.commandData.options
-        ?.find((o) => o.name === "timeperiod")
-        ?.choices?.find((c) => c.value === timeperiod);
+    const choice = timePeriodChoices.find((c) => c.value === timeperiod);
     const timePeriodStr = (timeperiod && choice?.name) || "All time";
 
     const buffer = await generateImage(memberScores, pageNum, timePeriodStr);

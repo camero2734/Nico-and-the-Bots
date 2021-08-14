@@ -1,11 +1,11 @@
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import * as ytdl from "youtube-dl";
 import { parse } from "date-fns";
-import F from "../../../helpers/funcs";
-import { channelIDs, roles } from "../../../configuration/config";
+import F from "../../../Helpers/funcs";
+import { channelIDs, roles } from "../../../Configuration/config";
 
 const command = new SlashCommand(<const>{
     description: "Submits an interview to the interview channel",

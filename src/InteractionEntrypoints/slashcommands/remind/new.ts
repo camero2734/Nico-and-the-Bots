@@ -1,9 +1,9 @@
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { addMilliseconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
-import F from "../../../helpers/funcs";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { ERRORS, REMINDER_LIMIT, REMINDER_TIMES } from "./_consts";
 
 const command = new SlashCommand(<const>{

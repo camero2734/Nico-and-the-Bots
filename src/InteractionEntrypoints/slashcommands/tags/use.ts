@@ -1,7 +1,7 @@
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",

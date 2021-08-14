@@ -1,6 +1,6 @@
-import { channelIDs } from "../../../configuration/config";
+import { channelIDs } from "../../../Configuration/config";
 import { MessageEmbed, TextChannel } from "discord.js";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Submits a suggestion to the staff",

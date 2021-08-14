@@ -4,7 +4,7 @@
     "description": "Main bot for Discord Clique",
     "main": "app.ts",
     "scripts": {
-        "build": "etsc && cp -r src/assets dist/src/assets",
+        "build": "etsc && cp -r src/Assets dist/src/Assets",
         "dev": "nodemon",
         "dev:debug": "set DEBUG=consola && yarn dev",
         "start": "yarn build && node dist/app.js",

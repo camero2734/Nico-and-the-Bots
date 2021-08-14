@@ -1,7 +1,7 @@
 import { BishopType, ViolationType } from "@prisma/client";
 import { createCanvas, loadImage } from "canvas";
 import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
-import { channelIDs } from "../configuration/config";
+import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
@@ -72,7 +72,7 @@ export async function sendViolationNotice(
     const canvas = createCanvas(width, height);
     const cctx = canvas.getContext("2d");
 
-    const img = await loadImage("./src/assets/images/dema_notice.png");
+    const img = await loadImage("./src/Assetsimages/dema_notice.png");
     cctx.drawImage(img, 0, 0, width, height);
 
     // Draw IDENTIFIED AS ___________ BY DEMA COUNCIL

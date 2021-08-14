@@ -1,5 +1,5 @@
-import { channelIDs, emojiIDs, roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import {
     EmojiIdentifierResolvable,
     GuildMember,
@@ -11,10 +11,10 @@ import {
     TextChannel,
     User
 } from "discord.js";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
-import F from "../../../helpers/funcs";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: `This command is a placeholder. Gold messages by reacting :gold: on them.`,

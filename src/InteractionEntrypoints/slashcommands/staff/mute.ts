@@ -1,11 +1,11 @@
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
 import { MessageEmbed } from "discord.js";
 import parseDuration from "parse-duration";
-import { roles } from "../../../configuration/config";
-import F from "../../../helpers/funcs";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { roles } from "../../../Configuration/config";
+import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Mutes a user",

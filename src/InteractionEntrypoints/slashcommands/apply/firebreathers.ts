@@ -1,9 +1,9 @@
-import { channelIDs, roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { channelIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { DMChannel, EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { queries } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
+import { queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
 import { createFBApplication } from "./_consts";
 
 const command = new SlashCommand(<const>{

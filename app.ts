@@ -1,28 +1,28 @@
 import { registerFont } from "canvas";
 import * as Discord from "discord.js";
 import "source-map-support/register";
-import { KeonsBot } from "./src/altbots/shop";
-import { TopfeedBot } from "./src/altbots/topfeed/topfeed";
-import { SacarverBot } from "./src/altbots/welcome";
-import { channelIDs, guildID } from "./src/configuration/config";
-import { NULL_CUSTOM_ID } from "./src/configuration/definitions";
-import secrets from "./src/configuration/secrets";
-import { updateUserScore } from "./src/helpers";
-import AutoReact from "./src/helpers/auto-react";
-import { registerAllEntrypoints } from "./src/helpers/entrypoint-loader";
-import { BotLogInteractionListener } from "./src/helpers/interaction-listeners/bot-logs";
-import { extendPrototypes } from "./src/helpers/prototype-extend";
-import Scheduler from "./src/helpers/scheduler";
-import SlurFilter from "./src/helpers/slur-filter";
+import { KeonsBot } from "./src/Altbots/shop";
+import { TopfeedBot } from "./src/Altbots/topfeed/topfeed";
+import { SacarverBot } from "./src/Altbots/welcome";
+import { channelIDs, guildID } from "./src/Configuration/config";
+import { NULL_CUSTOM_ID } from "./src/Configuration/definitions";
+import secrets from "./src/Configuration/secrets";
+import { updateUserScore } from "./src/Helpers";
+import AutoReact from "./src/Helpers/auto-react";
+import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
+import { BotLogInteractionListener } from "./src/Helpers/interaction-listeners/bot-logs";
+import { extendPrototypes } from "./src/Helpers/prototype-extend";
+import Scheduler from "./src/Helpers/scheduler";
+import SlurFilter from "./src/Helpers/slur-filter";
 import {
     ApplicationData,
     ContextMenus,
     InteractionHandlers,
     ReactionHandlers,
     SlashCommands
-} from "./src/structures/data";
-import { SlashCommand } from "./src/structures/EntrypointSlashCommand";
-import { ErrorHandler } from "./src/structures/Errors";
+} from "./src/Structures/data";
+import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
+import { ErrorHandler } from "./src/Structures/Errors";
 
 const client = new Discord.Client({
     intents: [
@@ -178,14 +178,14 @@ client.on("interactionCreate", async (interaction) => {
 function setup() {
     //LOAD FONTS
     const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
-    for (const font of fonts) registerFont(`./src/assets/fonts/${font}.ttf`, { family: "futura" });
+    for (const font of fonts) registerFont(`./src/Assetsfonts/${font}.ttf`, { family: "futura" });
 
-    registerFont(`./src/assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
+    registerFont(`./src/Assetsfonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
 
-    registerFont(`./src/assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
-    registerFont(`./src/assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
-    registerFont(`./src/assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
-    registerFont(`./src/assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
+    registerFont(`./src/Assetsfonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
+    registerFont(`./src/Assetsfonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
+    registerFont(`./src/Assetsfonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
+    registerFont(`./src/Assetsfonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
 
     Scheduler(client);
 }

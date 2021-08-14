@@ -4,7 +4,7 @@
 
 import { secondsToMilliseconds } from "date-fns";
 import { Client, Guild, GuildMember, MessageEmbed, MessageOptions, Snowflake } from "discord.js";
-import { guildID, roles } from "../configuration/config";
+import { guildID, roles } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 

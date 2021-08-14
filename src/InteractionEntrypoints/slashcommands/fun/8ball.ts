@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
-import F from "../../../helpers/funcs";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Dusts off the old 8-ball and gives you an answer to your most burning yes/no questions",

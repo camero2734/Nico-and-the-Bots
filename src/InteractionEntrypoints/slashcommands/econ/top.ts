@@ -1,11 +1,11 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { GuildMember } from "discord.js";
-import { badgeLoader } from "../../../helpers";
-import { LevelCalculator } from "../../../helpers/score-manager";
+import { badgeLoader } from "../../../Helpers";
+import { LevelCalculator } from "../../../Helpers/score-manager";
 import fetch from "node-fetch";
-import { queries, prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { queries, prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const PAGE_SIZE = 10;
 
@@ -119,7 +119,7 @@ async function generateImage(
 
     cctx.scale(ACTUAl_WIDTH / UNIT_WIDTH, ACTUAL_HEIGHT / UNIT_HEIGHT);
 
-    const img = await loadImage("./src/assets/images/leaderboard_background2.png");
+    const img = await loadImage("./src/Assetsimages/leaderboard_background2.png");
     cctx.drawImage(img, 0, 0, UNIT_WIDTH, UNIT_HEIGHT);
 
     const drawText = (text: string, x: number, y: number, maxWidth?: number) => {

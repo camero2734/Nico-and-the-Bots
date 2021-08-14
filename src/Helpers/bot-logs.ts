@@ -1,6 +1,6 @@
 import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { channelIDs } from "../configuration/config";
-import { SlashCommand } from "../structures/EntrypointSlashCommand";
+import { channelIDs } from "../Configuration/config";
+import { SlashCommand } from "../Structures/EntrypointSlashCommand";
 import F from "./funcs";
 import { BotLogInteractionListener } from "./interaction-listeners/bot-logs";
 

@@ -1,10 +1,10 @@
 import { createCanvas, loadImage } from "canvas";
-import { roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { Snowflake } from "discord.js";
-import { badgeLoader, LevelCalculator } from "../../../helpers";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
-import { prisma, queries } from "../../../helpers/prisma-init";
+import { badgeLoader, LevelCalculator } from "../../../Helpers";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { prisma, queries } from "../../../Helpers/prisma-init";
 
 const command = new SlashCommand(<const>{
     description: "View your score card",
@@ -62,7 +62,7 @@ command.setHandler(async (ctx) => {
     if (!avatar_url) avatar_url = `https://ui-avatars.com/api/?background=random&name=${member.displayName}`;
 
     const img = await loadImage(avatar_url);
-    const goldcircle = await loadImage("./src/assets/badges/goldcircle.png");
+    const goldcircle = await loadImage("./src/Assetsbadges/goldcircle.png");
 
     // prettier-ignore
     const backgroundName = {
@@ -74,7 +74,7 @@ command.setHandler(async (ctx) => {
         [albumRoles.SAI]: "sai"
     }[src];
 
-    const background = await loadImage(`./src/assets/images/score_cards/${backgroundName}.png`);
+    const background = await loadImage(`./src/Assetsimages/score_cards/${backgroundName}.png`);
 
     //FIND SHORTEST NAME FOR USER
     let username = member.displayName;

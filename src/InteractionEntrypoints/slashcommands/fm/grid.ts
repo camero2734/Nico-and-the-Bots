@@ -1,9 +1,9 @@
 import { createCanvas, Image, loadImage } from "canvas";
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Generates a weekly overview for your last.fm stats",

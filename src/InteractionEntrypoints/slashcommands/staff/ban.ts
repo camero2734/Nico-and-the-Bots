@@ -1,7 +1,7 @@
-import { roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Bans a member",

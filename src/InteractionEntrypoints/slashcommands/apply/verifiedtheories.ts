@@ -1,13 +1,13 @@
-import { channelIDs, guildID, roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { channelIDs, guildID, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import F from "../../../helpers/funcs";
-import { Question } from "../../../helpers/verified-quiz/question";
+import F from "../../../Helpers/funcs";
+import { Question } from "../../../Helpers/verified-quiz/question";
 import R from "ramda";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
-import QuizQuestions from "../../../helpers/verified-quiz/quiz"; // .gitignored
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 

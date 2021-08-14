@@ -10,10 +10,10 @@ import {
     Snowflake,
     TextChannel
 } from "discord.js";
-import { channelIDs, roles } from "../configuration/config";
-import secrets from "../configuration/secrets";
-import F from "../helpers/funcs";
-import { queries } from "../helpers/prisma-init";
+import { channelIDs, roles } from "../Configuration/config";
+import secrets from "../Configuration/secrets";
+import F from "../Helpers/funcs";
+import { queries } from "../Helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
 

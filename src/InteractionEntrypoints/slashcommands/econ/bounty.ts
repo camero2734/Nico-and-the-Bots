@@ -1,11 +1,11 @@
-import { userIDs } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { userIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import F from "../../../helpers/funcs";
-import { prisma, queries } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { prisma, queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
-import { sendViolationNotice } from "../../../helpers/dema-notice";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
 
 const command = new SlashCommand(<const>{
     description: "Reaps bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",

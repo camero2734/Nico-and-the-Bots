@@ -1,6 +1,6 @@
 import { MessageEmbed, Snowflake } from "discord.js";
-import { CommandError } from "../../../configuration/definitions";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { CommandError } from "../../../Configuration/definitions";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const names = <const>["role1", "role2", "role3", "role4", "role5"];
 

@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 import { IgApiClient, UserFeedResponseItemsItem } from "instagram-private-api";
-import secrets from "../../../configuration/secrets";
+import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";
 
 const ig = new IgApiClient();

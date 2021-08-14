@@ -12,9 +12,9 @@ import {
     TextChannel
 } from "discord.js";
 import R from "ramda";
-import { emojiIDs } from "../configuration/config";
-import F from "../helpers/funcs";
-import { prisma } from "../helpers/prisma-init";
+import { emojiIDs } from "../Configuration/config";
+import F from "../Helpers/funcs";
+import { prisma } from "../Helpers/prisma-init";
 import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";

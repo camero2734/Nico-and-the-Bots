@@ -1,6 +1,6 @@
 import { DailyBox, User } from "@prisma/client";
-import { channelIDs, roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { channelIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { format } from "date-fns";
 import {
     EmojiIdentifierResolvable,
@@ -15,11 +15,11 @@ import {
     SelectMenuInteraction
 } from "discord.js";
 import fs from "fs";
-import F from "../../../helpers/funcs";
-import { prisma, queries } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { prisma, queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
-import { sendViolationNotice } from "../../../helpers/dema-notice";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
 
 const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
@@ -29,7 +29,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const buffer = await fs.promises.readFile("./src/assets/images/banditos.gif");
+    const buffer = await fs.promises.readFile("./src/Assetsimages/banditos.gif");
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;

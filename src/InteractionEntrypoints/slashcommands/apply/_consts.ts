@@ -1,11 +1,11 @@
 import { hoursToMilliseconds } from "date-fns";
 import { DMChannel, EmbedField, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { Question } from "../../../helpers/verified-quiz/question";
-import { roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
-import F from "../../../helpers/funcs";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
-import QuizQuestions from "../../../helpers/verified-quiz/quiz"; // .gitignored
+import { Question } from "../../../Helpers/verified-quiz/question";
+import { roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 
 const VERIFIED_DELAY_HOURS = 12;
 export const VerifiedQuizConsts = {

@@ -1,4 +1,4 @@
-import { CommandError, NULL_CUSTOM_ID } from "../../../configuration/definitions";
+import { CommandError, NULL_CUSTOM_ID } from "../../../Configuration/definitions";
 import {
     EmojiIdentifierResolvable,
     GuildMember,
@@ -7,12 +7,12 @@ import {
     MessageEmbed,
     MessageOptions
 } from "discord.js";
-import { MessageTools } from "../../../helpers";
-import F from "../../../helpers/funcs";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
-import { prisma, queries } from "../../../helpers/prisma-init";
+import { MessageTools } from "../../../Helpers";
+import F from "../../../Helpers/funcs";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { prisma, queries } from "../../../Helpers/prisma-init";
 import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts";
-import { sendViolationNotice } from "../../../helpers/dema-notice";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
 
 enum ActionTypes {
     View,

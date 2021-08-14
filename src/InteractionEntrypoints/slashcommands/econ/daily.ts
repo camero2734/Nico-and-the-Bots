@@ -1,11 +1,11 @@
 import { createCanvas, loadImage } from "canvas";
-import { channelIDs, roles, userIDs } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { addDays, differenceInDays } from "date-fns";
 import { MessageEmbed } from "discord.js";
-import F from "../../../helpers/funcs";
-import { prisma, queries } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { prisma, queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Claims your daily credits",
@@ -91,9 +91,9 @@ command.setHandler(async (ctx) => {
                 return "sai";
         }
     })();
-    const background = await loadImage(`./src/assets/images/daily_cards/${backgroundName}.png`);
-    const cf = await loadImage("./src/assets/badges/commonfren.png");
-    const dd = await loadImage("./src/assets/badges/firebreather.png");
+    const background = await loadImage(`./src/Assetsimages/daily_cards/${backgroundName}.png`);
+    const cf = await loadImage("./src/Assetsbadges/commonfren.png");
+    const dd = await loadImage("./src/Assetsbadges/firebreather.png");
 
     const canvas = createCanvas(500, 162);
     const cctx = canvas.getContext("2d");

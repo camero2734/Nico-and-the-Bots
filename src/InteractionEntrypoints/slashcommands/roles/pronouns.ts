@@ -1,7 +1,7 @@
 import { MessageActionRow, MessageEmbed, MessageSelectMenu, Snowflake } from "discord.js";
 import * as R from "ramda";
-import { channelIDs, roles } from "../../../configuration/config";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { channelIDs, roles } from "../../../Configuration/config";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Sends a message that allows you to select pronoun roles",

@@ -6,9 +6,9 @@ import {
     MessageSelectMenu,
     Snowflake
 } from "discord.js";
-import { roles, userIDs } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { roles, userIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const tf = roles.topfeed.selectable;
 const emojiMap: Record<typeof tf[keyof typeof tf], Snowflake> = {

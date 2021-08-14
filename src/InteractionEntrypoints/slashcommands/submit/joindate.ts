@@ -1,11 +1,11 @@
-import { guildID } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
+import { guildID } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
-import F from "../../../helpers/funcs";
-import { prisma, queries } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { prisma, queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Sets your join date",

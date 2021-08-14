@@ -1,12 +1,12 @@
 import { WarningType } from "@prisma/client";
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { subYears } from "date-fns";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { roles } from "../../../configuration/config";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
-import { prisma, queries } from "../../../helpers/prisma-init";
+import { roles } from "../../../Configuration/config";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { prisma, queries } from "../../../Helpers/prisma-init";
 import JailCommand from "./jail";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const rules = Object.values(WarningType);
 

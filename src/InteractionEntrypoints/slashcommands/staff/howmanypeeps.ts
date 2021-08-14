@@ -1,8 +1,8 @@
 import { subHours } from "date-fns";
 import { MessageEmbed } from "discord.js";
-import F from "../../../helpers/funcs";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Deletes a certain number of messages",

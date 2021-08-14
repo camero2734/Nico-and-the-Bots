@@ -2,9 +2,9 @@
 import { glob as g } from "glob";
 import path from "path";
 import { promisify } from "util";
-import { InteractionEntrypoint } from "../structures/EntrypointBase";
-import { ContextMenu } from "../structures/EntrypointContextMenu";
-import { SlashCommand } from "../structures/EntrypointSlashCommand";
+import { InteractionEntrypoint } from "../Structures/EntrypointBase";
+import { ContextMenu } from "../Structures/EntrypointContextMenu";
+import { SlashCommand } from "../Structures/EntrypointSlashCommand";
 
 const glob = promisify(g);
 

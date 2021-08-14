@@ -1,7 +1,7 @@
-import secrets from "../../../configuration/secrets";
+import secrets from "../../../Configuration/secrets";
 import { GuildMember } from "discord.js";
-import { CommandError } from "../../../configuration/definitions";
-import { prisma } from "../../../helpers/prisma-init";
+import { CommandError } from "../../../Configuration/definitions";
+import { prisma } from "../../../Helpers/prisma-init";
 
 export class Album {
     artist: string;

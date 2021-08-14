@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CollectorFilter, Message, MessageComponentInteraction } from "discord.js";
-import { SlashCommand } from "../structures/EntrypointSlashCommand";
+import { SlashCommand } from "../Structures/EntrypointSlashCommand";
 import F from "./funcs";
 
 type IDsMapped<IDs extends Readonly<string[]>> = {

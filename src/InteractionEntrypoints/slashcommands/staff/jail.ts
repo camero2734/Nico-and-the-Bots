@@ -11,13 +11,13 @@ import {
     TextChannel
 } from "discord.js";
 import fetch from "node-fetch";
-import { categoryIDs, channelIDs, roles } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
-import { MessageTools } from "../../../helpers";
-import F from "../../../helpers/funcs";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
-import { ListenerInteraction } from "../../../structures/ListenerInteraction";
+import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { MessageTools } from "../../../Helpers";
+import F from "../../../Helpers/funcs";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { ListenerInteraction } from "../../../Structures/ListenerInteraction";
 
 const command = new SlashCommand(<const>{
     description: "Adds user(s) to a jail channel and removes their ability to view all other channels",

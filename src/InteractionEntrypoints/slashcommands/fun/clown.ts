@@ -1,9 +1,9 @@
 import { createCanvas, loadImage } from "canvas";
-import { CommandError } from "../../../configuration/definitions";
+import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Put an image onto a clown's monitor 🤡",
@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
     const canvas = createCanvas(856 * scale, 480 * scale);
     const cctx = canvas.getContext("2d");
 
-    const bg = await loadImage("./src/assets/images/clown.png");
+    const bg = await loadImage("./src/Assetsimages/clown.png");
     const img = await loadImage(ctx.opts.image);
 
     cctx.drawImage(bg, 0, 0, 856 * scale, 480 * scale);

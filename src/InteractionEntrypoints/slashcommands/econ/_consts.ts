@@ -1,6 +1,6 @@
 import { Snowflake } from "discord.js";
 import R from "ramda";
-import { roles } from "../../../configuration/config";
+import { roles } from "../../../Configuration/config";
 
 export const BOUNTY_NUM_CREDITS = 1000;
 

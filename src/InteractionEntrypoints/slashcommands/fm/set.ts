@@ -1,10 +1,10 @@
-import { CommandError } from "../../../configuration/definitions";
-import secrets from "../../../configuration/secrets";
+import { CommandError } from "../../../Configuration/definitions";
+import secrets from "../../../Configuration/secrets";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../helpers/timed-interaction-listener";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
 import { RecentTracksResponse } from "./_consts";
 
 const command = new SlashCommand(<const>{

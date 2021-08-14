@@ -1,4 +1,4 @@
-import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../configuration/config";
+import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { format } from "date-fns";
 import { CategoryChannel, Client, Guild, GuildChannel, OverwriteData, Role, TextChannel } from "discord.js";
 import fetch from "node-fetch";

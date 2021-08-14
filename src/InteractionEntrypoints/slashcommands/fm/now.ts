@@ -1,10 +1,10 @@
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
-import { emojiIDs } from "../../../configuration/config";
-import { CommandError } from "../../../configuration/definitions";
-import { GeniusClient } from "../../../helpers/apis/genius";
-import { SpotifyClient } from "../../../helpers/apis/spotify";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { emojiIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { GeniusClient } from "../../../Helpers/apis/genius";
+import { SpotifyClient } from "../../../Helpers/apis/spotify";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
     AlbumResponse,
     ArtistResponse,

@@ -1,7 +1,7 @@
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { CommandError } from "../../../configuration/definitions";
-import { prisma } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { CommandError } from "../../../Configuration/definitions";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Creates (or edits) a command that sends a short snippet of text",

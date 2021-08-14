@@ -2,9 +2,9 @@ import { Poll, Vote } from "@prisma/client";
 import { EmbedField, GuildEmoji, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
-import { channelIDs, emojiIDs } from "../../../configuration/config";
-import { prisma, queries } from "../../../helpers/prisma-init";
-import { SlashCommand } from "../../../structures/EntrypointSlashCommand";
+import { channelIDs, emojiIDs } from "../../../Configuration/config";
+import { prisma, queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 

@@ -1,5 +1,5 @@
 import { Collection, Message, MessageActionRow, MessageEmbed, Snowflake, TextChannel } from "discord.js";
-import { constants } from "../configuration/config";
+import { constants } from "../Configuration/config";
 
 export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {
     const baseEmbed = new MessageEmbed().setDescription(strings.join(""));

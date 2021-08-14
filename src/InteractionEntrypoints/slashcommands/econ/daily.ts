@@ -91,9 +91,9 @@ command.setHandler(async (ctx) => {
                 return "sai";
         }
     })();
-    const background = await loadImage(`./src/Assetsimages/daily_cards/${backgroundName}.png`);
-    const cf = await loadImage("./src/Assetsbadges/commonfren.png");
-    const dd = await loadImage("./src/Assetsbadges/firebreather.png");
+    const background = await loadImage(`./src/Assets/images/daily_cards/${backgroundName}.png`);
+    const cf = await loadImage("./src/Assets/badges/commonfren.png");
+    const dd = await loadImage("./src/Assets/badges/firebreather.png");
 
     const canvas = createCanvas(500, 162);
     const cctx = canvas.getContext("2d");

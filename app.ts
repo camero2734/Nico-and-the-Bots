@@ -178,14 +178,14 @@ client.on("interactionCreate", async (interaction) => {
 function setup() {
     //LOAD FONTS
     const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
-    for (const font of fonts) registerFont(`./src/Assetsfonts/${font}.ttf`, { family: "futura" });
+    for (const font of fonts) registerFont(`./src/Assets/fonts/${font}.ttf`, { family: "futura" });
 
-    registerFont(`./src/Assetsfonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
+    registerFont(`./src/Assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
 
-    registerFont(`./src/Assetsfonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
-    registerFont(`./src/Assetsfonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
-    registerFont(`./src/Assetsfonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
-    registerFont(`./src/Assetsfonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
+    registerFont(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
+    registerFont(`./src/Assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
+    registerFont(`./src/Assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
+    registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
 
     Scheduler(client);
 }

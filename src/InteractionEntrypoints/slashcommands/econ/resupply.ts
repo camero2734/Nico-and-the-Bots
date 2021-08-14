@@ -29,7 +29,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const buffer = await fs.promises.readFile("./src/Assetsimages/banditos.gif");
+    const buffer = await fs.promises.readFile("./src/Assets/images/banditos.gif");
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;

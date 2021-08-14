@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
     const canvas = createCanvas(856 * scale, 480 * scale);
     const cctx = canvas.getContext("2d");
 
-    const bg = await loadImage("./src/Assetsimages/clown.png");
+    const bg = await loadImage("./src/Assets/images/clown.png");
     const img = await loadImage(ctx.opts.image);
 
     cctx.drawImage(bg, 0, 0, 856 * scale, 480 * scale);

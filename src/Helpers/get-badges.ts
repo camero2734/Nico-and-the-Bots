@@ -2,7 +2,7 @@ import { Image, loadImage } from "canvas";
 import { GuildMember } from "discord.js";
 
 function wrap(text: string, noPNG = false) {
-    return `./src/Assetsbadges/${text}${noPNG ? "" : ".png"}`;
+    return `./src/Assets/badges/${text}${noPNG ? "" : ".png"}`;
 }
 
 export const badgeLoader = async (member: GuildMember, numGolds: number, placeNum: number): Promise<Image[]> => {

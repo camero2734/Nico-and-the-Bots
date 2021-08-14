@@ -72,7 +72,7 @@ export async function sendViolationNotice(
     const canvas = createCanvas(width, height);
     const cctx = canvas.getContext("2d");
 
-    const img = await loadImage("./src/Assetsimages/dema_notice.png");
+    const img = await loadImage("./src/Assets/images/dema_notice.png");
     cctx.drawImage(img, 0, 0, width, height);
 
     // Draw IDENTIFIED AS ___________ BY DEMA COUNCIL

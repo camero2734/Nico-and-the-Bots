@@ -88,17 +88,6 @@ client.on("ready", async () => {
 
     addManualInteractionHandlers();
 
-    // Initialize everything
-    // await Promise.all([
-    //     // Wait until commands are loaded, connected to database, etc.
-    //     new Promise((resolve) => {
-    //         helpers.connectToDatabase().then((c) => {
-    //             connection = c;
-    //             resolve(true);
-    //         });
-    //     })
-    // ]);
-
     // await dynamicCommandSetup(commands);
 
     // topfeedBot = new TopfeedBot(connection);
@@ -184,20 +173,6 @@ client.on("interactionCreate", async (interaction) => {
 
         contextMenu.run(interaction);
     }
-    // if (!interaction.isMessageComponent()) return;
-
-    // const id = interaction.customID;
-
-    // console.log(`[interaction] ${id}`);
-
-    // const interactionComponent = interactionHandlers.find((handler) => id.startsWith(handler.name));
-
-    // if (!interactionComponent) {
-    //     console.log(interactionHandlers.map((ih) => ih.name));
-    //     return console.log(`No handler for ${id}`);
-    // }
-
-    // interactionComponent.handler(interaction, connection, interactionComponent.pattern.toDict(id));
 });
 
 function setup() {

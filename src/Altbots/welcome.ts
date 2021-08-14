@@ -158,7 +158,7 @@ export class SacarverBot {
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
 
-        const bg = await loadImage("./src/assets/images/welcome-card.png");
+        const bg = await loadImage("./src/Assets/images/welcome-card.png");
 
         ctx.drawImage(bg, 0, 0, 1000, 500);
 

@@ -273,3 +273,19 @@ model ViolationNotice {
 
   createdAt DateTime @default(now())
 }
+
+enum TopfeedType {
+  Twitter
+  Instagram
+  Website
+}
+
+model TopfeedPost {
+  id   String      @id
+  type TopfeedType
+  subtype String?
+
+  data Json
+
+  createdAt DateTime @default(now())
+}

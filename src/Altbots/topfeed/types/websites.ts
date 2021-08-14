@@ -1,44 +1,41 @@
 import crypto from "crypto";
+import Diff from "diff";
 import { Client, MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
 import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import PageRes from "pageres";
+import R from "ramda";
+import { Checked, Watcher } from "./base";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
 
-class Topfeed {} //
+type ReturnType = { hash: string; html?: string };
 
-type CheckReturn = {
-    isNew: boolean;
-    ping: boolean;
-    type: WATCH_METHOD;
-    hash: string;
-} & (
-    | { type: "HTML"; data: { html: string; diff: string } }
-    | { type: "LAST_MODIFIED"; data: { lastModified: string } }
-    | { type: "VISUAL"; data: { image: Buffer } }
-);
+type CheckReturn = ReturnType & { isNew: boolean } & (
+        | { type: "HTML"; data: { html: string; diff: string } }
+        | { type: "LAST_MODIFIED"; data: { lastModified: string } }
+        | { type: "VISUAL"; data: { image: Buffer } }
+    );
 
-type CheckReturnWithType<T extends WATCH_METHOD> = CheckReturn & { type: T };
-
-type CheckObj = Partial<{
-    HTML: CheckReturnWithType<"HTML">;
-    LAST_MODIFIED: CheckReturnWithType<"LAST_MODIFIED">;
-    VISUAL: CheckReturnWithType<"VISUAL">;
-}>;
+type CheckObj = {
+    HTML: CheckReturn & { type: "HTML" };
+    LAST_MODIFIED: CheckReturn & { type: "LAST_MODIFIED" };
+    VISUAL: CheckReturn & { type: "VISUAL" };
+};
 
 const agent = new https.Agent({
     rejectUnauthorized: false
 });
 
-export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
+export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<ReturnType> {
     static hash(input: string): string {
         return crypto.createHash("sha256").update(input).digest("base64");
     }
 
     displayedURL: string;
+    type = "Website" as const;
 
     constructor(
         public url: string,
@@ -46,6 +43,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         public watchMethods: T,
         protected ctx: { connection: any; client: Client }
     ) {
+        super(url, "859592952108285992");
         this.displayedURL = url;
     }
 
@@ -60,10 +58,6 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
     setDisplayedURL(url: string): this {
         this.displayedURL = url;
         return this;
-    }
-
-    async getTopfeedObject(type: T[number]): Promise<Topfeed | undefined> {
-        return await this.ctx.connection.getRepository(Topfeed).findOne({ url: this.url, type });
     }
 
     generateEmbed(type: Array<T[number]>, description: string, hash: string, file?: Buffer): MessageOptions {
@@ -83,8 +77,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         } else return { embeds: [embed] };
     }
 
-    /** Returns changes ordered by importance (Visual -> HTML -> Last Modified) and a combined MessageObj */
-    async checkForChanges(): Promise<{ msgOpts?: MessageOptions; allResponses: CheckReturn[] }> {
+    async fetchRecentItems(): Promise<Checked<ReturnType>[]> {
         const response = await Promise.all(
             this.watchMethods.map((wm) => {
                 // prettier-ignore
@@ -97,27 +90,27 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         );
 
         const validResponses = response.filter((r) => r.isNew);
-        if (validResponses.length === 0) return { allResponses: response };
+        if (validResponses.length === 0) return [];
 
-        // // const obj = Object.fromEntries(
-        // //     watchMethods.map((t) => [t, validResponses.find((vr) => vr.type === t)]).filter((ent) => ent[1])
-        // // ) as CheckObj;
+        const obj = Object.fromEntries(
+            watchMethods.map((t) => [t, validResponses.find((vr) => vr.type === t)]).filter((ent) => ent[1])
+        ) as CheckObj;
 
-        // // const desc = [
-        // //     obj.HTML ? `\`\`\`diff\n${obj.HTML.data.diff.substring(0, 1850)}\`\`\`` : undefined,
-        // //     obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED.data.lastModified}` : undefined
-        // // ]
-        // //     .filter((d) => d !== undefined)
-        // //     .join("\n");
+        const desc = [
+            obj.HTML ? `\`\`\`diff\n${obj.HTML.data.diff.substring(0, 1850)}\`\`\`` : undefined,
+            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED.data.lastModified}` : undefined
+        ]
+            .filter((d) => d !== undefined)
+            .join("\n");
 
-        // // const hashes = Object.values(obj)
-        // //     .map((r) => r.hash)
-        // //     .join(", ");
-        // // const file = obj.VISUAL?.data.image || undefined;
+        const hashes = Object.values(obj)
+            .map((r) => r.hash)
+            .join(", ");
+        const file = obj.VISUAL?.data.image || undefined;
 
-        // // const messageOpts = this.generateEmbed(R.keys(obj), desc, hashes, file);
+        const messageOpts = this.generateEmbed(R.keys(obj), desc, hashes, file);
 
-        // return { msgOpts: messageOpts, allResponses: response };
+        // return [{ msg: messageOpts, allResponses: response }];
         return null as any;
     }
 
@@ -129,13 +122,12 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const html = buff.toString("utf-8");
         const hash = SiteWatcher.hash(html);
 
-        // const old = (await this.getTopfeedObject(type)) || new Topfeed({ url: this.url, type, hash: "" });
+        const old = await this.getLatestItem(type);
 
-        // const isNew = old?.hash !== hash;
-        // const diff = Diff.createPatch(this.id, old.data || "", html);
+        const isNew = !old || old.data.hash !== hash;
+        const diff = Diff.createPatch(this.id, old?.data.html || "", html);
 
-        // return { data: { html, diff }, isNew, ping: isNew, type, hash };
-        return null as any;
+        return { data: { html, diff }, isNew, type, hash };
     }
 
     async #checkLastModified(): Promise<CheckReturn> {
@@ -145,12 +137,11 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const lastModified = res.headers.get("last-modified") || "Wed, 21 Oct 2015 07:28:00 GMT";
         const hash = SiteWatcher.hash(lastModified);
 
-        // const old = (await this.getTopfeedObject(type)) || new Topfeed({ url: this.url, type, hash: "" });
+        const old = await this.getLatestItem(type);
 
-        // const isNew = old?.hash !== hash;
+        const isNew = !old || old.data.hash !== hash;
 
-        // return { data: { lastModified }, isNew, ping: isNew, type, hash };
-        return null as any;
+        return { data: { lastModified }, isNew, type, hash };
     }
 
     async #checkVisual(): Promise<CheckReturn> {
@@ -160,12 +151,10 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> {
         const base64 = screenshot.toString("base64");
         const hash = SiteWatcher.hash(base64);
 
-        // const old =
-        //     (await this.getTopfeedObject("VISUAL")) || new Topfeed({ url: this.httpURL, type: "VISUAL", hash: "" });
+        const old = await this.getLatestItem(type);
 
-        // const isNew = old?.hash !== hash;
+        const isNew = !old || old.data.hash !== hash;
 
-        // return { data: { image: screenshot }, isNew, ping: isNew, type, hash };
-        return null as any;
+        return { data: { image: screenshot }, isNew, type, hash };
     }
 }

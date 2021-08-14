@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { promisify } from "util";
 import { glob as g } from "glob";
-import { SlashCommand } from "../structures/EntrypointSlashCommand";
 import path from "path";
-import { ContextMenu } from "../structures/EntrypointContextMenu";
+import { promisify } from "util";
 import { InteractionEntrypoint } from "../structures/EntrypointBase";
-import { ApplicationData } from "../structures/data";
+import { ContextMenu } from "../structures/EntrypointContextMenu";
+import { SlashCommand } from "../structures/EntrypointSlashCommand";
 
 const glob = promisify(g);
 
@@ -27,7 +26,7 @@ async function getAllFilesRecursive(pathStr: string): Promise<Path[]> {
 }
 
 async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
-    const paths = await getAllFilesRecursive("dist/src/slashcommands");
+    const paths = await getAllFilesRecursive("dist/src/InteractionEntrypoints/slashcommands");
 
     const slashCommands = (
         await Promise.all(
@@ -47,7 +46,7 @@ async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
 }
 
 async function getAllContextMenus(): Promise<[Path, ContextMenu<any>][]> {
-    const paths = await getAllFilesRecursive("dist/src/contextmenus");
+    const paths = await getAllFilesRecursive("dist/src/InteractionEntrypoints/contextmenus");
 
     const contextMenus = (
         await Promise.all(

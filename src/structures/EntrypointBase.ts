@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Collection, Guild, Interaction } from "discord.js";
+import { ApplicationCommandData, Collection, Guild, Interaction } from "discord.js";
 import { InteractionHandlers, ReactionHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import { createInteractionListener, InteractionListener, ListenerCustomIdGenerator } from "./ListenerInteraction";
@@ -14,8 +14,8 @@ export abstract class InteractionEntrypoint<
     public reactionListeners = new Collection<string, ReactionListener>();
 
     public identifier: string;
-
     protected handler: HandlerType;
+    public abstract commandData: ApplicationCommandData;
 
     setHandler(handler: HandlerType): this {
         this.handler = handler;

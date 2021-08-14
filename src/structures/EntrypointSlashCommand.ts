@@ -38,15 +38,14 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
     [OptsType<SlashCommandData<T>>]
 > {
     public commandIdentifier: string;
+    public commandData: ChatInputApplicationCommandData;
 
     static GenericContextType: SlashCommandInteraction;
     public ContextType: SlashCommandInteraction<T>;
 
-    commandData: SlashCommandData<T> & { type: "CHAT_INPUT" };
-
     constructor(commandData: SlashCommandData<T>) {
         super();
-        this.commandData = { ...commandData, type: "CHAT_INPUT" };
+        this.commandData = { ...commandData, type: "CHAT_INPUT" } as unknown as ChatInputApplicationCommandData;
     }
 
     async _run(interaction: CommandInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {

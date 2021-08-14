@@ -17,8 +17,6 @@ command.setHandler(async (ctx) => {
 
     await ctx.deferReply();
 
-    const START_TIME = Date.now();
-
     const userID = options.user || (ctx.user.id as Snowflake);
 
     const member = await ctx.member.guild.members.fetch(userID);

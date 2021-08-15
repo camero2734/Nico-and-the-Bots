@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
-import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

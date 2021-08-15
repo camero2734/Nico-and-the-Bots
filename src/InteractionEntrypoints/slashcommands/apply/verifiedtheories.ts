@@ -6,7 +6,7 @@ import { Question } from "../../../Helpers/verified-quiz/question";
 import R from "ramda";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";

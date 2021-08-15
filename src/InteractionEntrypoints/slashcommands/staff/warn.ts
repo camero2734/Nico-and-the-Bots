@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { subYears } from "date-fns";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { roles } from "../../../Configuration/config";
-import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import JailCommand from "./jail";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

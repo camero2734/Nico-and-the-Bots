@@ -4,7 +4,7 @@ import { CommandError } from "../Configuration/definitions";
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };
     ectx.send = (
-        ectx.send ? ectx.send : ectx.replied || ectx.deferred ? ectx.followUp : ectx.reply
+        ectx.send ? ectx.send : ectx.replied || ectx.deferred ? ectx.editReply : ectx.reply
     ) as typeof ectx["send"];
 
     if (!ectx.send) return;
@@ -16,6 +16,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
             .setFooter("DEMA internet machine broke");
         ectx.send({
             embeds: [embed],
+            components: [],
             ephemeral: true,
             allowedMentions: { users: [], roles: [] }
         });
@@ -24,6 +25,6 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
         const embed = new MessageEmbed()
             .setTitle("An unknown error occurred!")
             .setFooter("DEMA internet machine really broke");
-        ectx.send({ embeds: [embed], ephemeral: true });
+        ectx.send({ embeds: [embed], components: [], ephemeral: true });
     }
 };

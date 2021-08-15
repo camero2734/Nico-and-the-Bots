@@ -16,7 +16,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import { ListenerInteraction } from "../../../Structures/ListenerInteraction";
 
 const command = new SlashCommand(<const>{

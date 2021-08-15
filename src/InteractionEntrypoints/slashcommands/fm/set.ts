@@ -4,7 +4,7 @@ import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import { RecentTracksResponse } from "./_consts";
 
 const command = new SlashCommand(<const>{

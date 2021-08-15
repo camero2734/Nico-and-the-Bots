@@ -4,7 +4,7 @@ import { Question } from "../../../Helpers/verified-quiz/question";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
-import { TimedInteractionListener } from "../../../Helpers/timed-interaction-listener";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 
 const VERIFIED_DELAY_HOURS = 12;

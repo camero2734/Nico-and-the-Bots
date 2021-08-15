@@ -61,6 +61,12 @@ async function handleGold(ctx: typeof ContextMenu.GenericContextType, msg: Messa
 
     const originalMember = isAdditionalGold ? await ctx.member.guild.members.fetch(originalUserId) : msg.member;
 
+    // Check that the user can give gold
+    if (originalMember.id === ctx.user.id) throw new CommandError("You cannot give gold to yourself");
+
+    const previousGold = await prisma.gold.findFirst({ where: { goldMessageUrl: msg.url, fromUserId: ctx.user.id } });
+    if (previousGold) throw new CommandError("You already gave this message gold!");
+
     const goldBaseEmbed = isAdditionalGold
         ? msg.embeds[0]
         : new MessageEmbed()

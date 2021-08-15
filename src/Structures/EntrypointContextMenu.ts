@@ -1,7 +1,7 @@
 import { ApplicationCommandData, ContextMenuInteraction, Guild, GuildMember, Message } from "discord.js";
-import { CommandError } from "./Errors";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { ApplicationData, ContextMenus } from "./data";
+import { CommandError } from "../Configuration/definitions";
 
 type TargetTypes = {
     MESSAGE: Message;

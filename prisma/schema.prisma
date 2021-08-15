@@ -8,7 +8,7 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["orderByAggregateGroup"]
+  previewFeatures = ["orderByAggregateGroup", "interactiveTransactions"]
 }
 
 model DailyBox {
@@ -99,6 +99,8 @@ model Gold {
   id   Int   @id @default(autoincrement())
   from User? @relation("Gold_fromUser", fields: [fromUserId], references: [id])
   to   User? @relation("Gold_toUser", fields: [toUserId], references: [id])
+
+  goldMessageUrl String
 
   // The message the gold was given for
   messageId String

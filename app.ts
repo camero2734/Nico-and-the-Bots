@@ -128,7 +128,6 @@ client.on("interactionCreate", async (interaction) => {
     } else if (interaction.isMessageComponent()) {
         if (interaction.customId === NULL_CUSTOM_ID) return;
 
-        await interaction.deferUpdate();
         console.log(`Got interaction: ${interaction.customId}`);
         const [interactionID] = interaction.customId.split(":");
         if (!interactionID) return;

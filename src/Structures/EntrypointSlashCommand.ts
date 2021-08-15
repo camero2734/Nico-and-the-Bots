@@ -41,7 +41,8 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
 
     constructor(commandData: SlashCommandData<T>) {
         super();
-        this.commandData = { ...commandData, type: "CHAT_INPUT" } as unknown as ChatInputApplicationCommandData;
+        const defaults: Partial<ChatInputApplicationCommandData> = { type: "CHAT_INPUT" };
+        this.commandData = (<unknown>{ ...commandData, ...defaults }) as ChatInputApplicationCommandData;
     }
 
     async _run(interaction: CommandInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {

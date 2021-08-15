@@ -1,6 +1,5 @@
 import { CommandInteraction, DMChannel, Interaction, MessageEmbed, TextChannel } from "discord.js";
-
-export class CommandError extends Error {}
+import { CommandError } from "../Configuration/definitions";
 
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };

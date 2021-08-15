@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationCommandData, Collection, Guild, Interaction } from "discord.js";
-import { InteractionHandlers, ReactionHandlers } from "./data";
+import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
+import { roles } from "../Configuration/config";
+import { CommandError } from "../Configuration/definitions";
+import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import { createInteractionListener, InteractionListener, ListenerCustomIdGenerator } from "./ListenerInteraction";
 import { ReactionListener } from "./ListenerReaction";
@@ -16,6 +18,20 @@ export abstract class InteractionEntrypoint<
     public identifier: string;
     protected handler: HandlerType;
     public abstract commandData: ApplicationCommandData;
+
+    private commandPermissions = new Collection<Snowflake, boolean>([[roles.staff, true]]);
+
+    public getPermissions() {
+        return this.commandPermissions.clone();
+    }
+
+    public addPermission(id: Snowflake, permission: boolean) {
+        this.commandPermissions.set(id, permission);
+    }
+
+    public clearPermissions() {
+        this.commandPermissions = new Collection<Snowflake, boolean>();
+    }
 
     setHandler(handler: HandlerType): this {
         this.handler = handler;
@@ -41,6 +57,25 @@ export abstract class InteractionEntrypoint<
     async run(ctx: Interaction, ...HandlerArgs: HandlerArgs): Promise<void> {
         try {
             if (!this.handler) throw new Error(`Handler not registered for ${this.constructor.name}`);
+
+            const member = ctx.member as GuildMember;
+            if (!member) throw new Error(`No member`);
+
+            // Check permissions
+            const permissions = this.getPermissions();
+            let canUse = false;
+            let canUseBy: "USER" | "ROLE" | undefined = undefined;
+            for (const [id, value] of permissions.entries()) {
+                if (member.id === id) {
+                    canUseBy = "USER";
+                    canUse = value;
+                } else if (member.roles.cache.has(id) && canUseBy !== "USER") {
+                    canUseBy = "ROLE";
+                    canUse = value;
+                }
+            }
+            if (!canUse) throw new CommandError("You don't have permission to use this command!");
+
             await this._run(ctx, ...HandlerArgs);
         } catch (e) {
             ErrorHandler(ctx, e);
@@ -54,5 +89,15 @@ export abstract class InteractionEntrypoint<
         for (const [name, listener] of this.reactionListeners) ReactionHandlers.set(name, listener);
 
         this.identifier = this._register(path);
+    }
+
+    static async registerAllCommands(guild: Guild): Promise<void> {
+        try {
+            await guild.commands.set(ApplicationData);
+        } catch {
+            //
+        }
+
+        // guild.commands.permissions.set()
     }
 }

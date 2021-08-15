@@ -21,6 +21,7 @@ import {
     ReactionHandlers,
     SlashCommands
 } from "./src/Structures/data";
+import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 
@@ -61,30 +62,7 @@ client.on("ready", async () => {
     const guild = await client.guilds.fetch(guildID);
 
     await entrypointsReady;
-
-    try {
-        await guild.commands.set(ApplicationData);
-        console.log(`Set ${ApplicationData.length} commands`);
-    } catch {
-        console.log(`Failed to .set() commands. Trying .edit() and .create()...`);
-        // Try another way of setting commands
-        let edited = 0;
-        let created = 0;
-
-        const currentCommands = [...(await guild.commands.fetch()).values()];
-        for (const command of ApplicationData) {
-            console.log(`Loading ${command.name} command...`);
-            const currentCommand = currentCommands.find((c) => c.name === command.name);
-            if (currentCommand) {
-                await guild.commands.edit(currentCommand.id, command);
-                edited++;
-            } else {
-                await guild.commands.create(command);
-                created++;
-            }
-        }
-        console.log(`Created ${created} commands and edited ${edited} commands`);
-    }
+    InteractionEntrypoint.registerAllCommands(guild);
 
     addManualInteractionHandlers();
 

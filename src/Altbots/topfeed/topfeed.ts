@@ -1,4 +1,4 @@
-import { Client, Guild, MessageEmbed, TextChannel } from "discord.js";
+import { Client, Guild, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import { Watcher } from "./types/base";
@@ -42,7 +42,7 @@ export class TopfeedBot {
                 await this.#createWatchers();
 
                 // Setup Instagram
-                await setupInstagram();
+                // await setupInstagram();
 
                 resolve();
             });
@@ -87,28 +87,45 @@ export class TopfeedBot {
             for (const msg of msgs) {
                 const partialTitle = msg.embeds?.[0]?.description?.substring(0, 30) || `${watchersType} post`;
                 const THREAD_TITLE = `${partialTitle} - Discussion`.replaceAll("\n", " ").trim();
-
                 if (!msg.embeds || msg.embeds.length === 1) {
                     const chanMsg = await chan.send(msg);
                     await chanMsg.startThread({ name: THREAD_TITLE, autoArchiveDuration: 60 });
                     continue;
                 }
-                // Unroll messages with multiple embeds into a thread
-                const [firstEmbed, ...otherEmbeds] = msg.embeds;
-                msg.embeds = [firstEmbed];
-                const chanMsg = await chan.send(msg);
-                const thread = await chanMsg.startThread({
-                    name: `${THREAD_TITLE} & Additional Content`,
-                    autoArchiveDuration: 60
-                });
-                await thread.send({ embeds: otherEmbeds });
+                // Unroll single embed that has a video into a thread
+                if (msg.embeds.length === 2 && msg.embeds[1].image?.url?.includes(".mp4")) {
+                    const embed = msg.embeds.pop();
+                    if (!embed?.image?.url) return;
+
+                    const imageURL = embed.image.url;
+                    const att = new MessageAttachment(imageURL);
+                    embed.image = undefined;
+
+                    const chanMsg = await chan.send(msg);
+                    const thread = await chanMsg.startThread({
+                        name: `${THREAD_TITLE} & Additional Content`,
+                        autoArchiveDuration: 60
+                    });
+                    await thread.send({ embeds: [embed] });
+                    await thread.send({ embeds: [], files: [att] });
+                } else {
+                    // Unroll messages with multiple embeds OR a video into a thread
+                    const [firstEmbed, ...otherEmbeds] = msg.embeds;
+                    msg.embeds = [firstEmbed];
+                    const chanMsg = await chan.send(msg);
+                    const thread = await chanMsg.startThread({
+                        name: `${THREAD_TITLE} & Additional Content`,
+                        autoArchiveDuration: 60
+                    });
+                    await thread.send({ embeds: otherEmbeds });
+                }
             }
         }
     }
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
-        // await this.#checkGroup(this.twitters);
-        await this.#checkGroup([...this.instagrams]);
+        await this.#checkGroup(this.twitters);
+        // await this.#checkGroup([...this.instagrams]);
     }
 }

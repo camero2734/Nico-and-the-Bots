@@ -1,8 +1,12 @@
-import { MessageEmbed, MessageOptions } from "discord.js";
-import TwitterApi from "twitter-api-v2";
+import { MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
+import TwitterApi, { MediaVideoInfoV1, TweetV1, TweetV2 } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { Checked, Watcher } from "./base";
+import Mime from "mime-types";
+import async from "async";
+import VideoUrl from "video-url-link";
+import normalizeUrl from "normalize-url";
 
 type TweetType = {
     images: string[];
@@ -37,14 +41,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
             max_results: 5
         });
 
-        return tweets.map((tweet) => {
-            const images = (tweet.attachments?.media_keys || [])
-                .map((mk) => includes.media?.find((m) => m.media_key === mk))
-                .map((m) => m?.url || m?.preview_image_url || "")
-                .filter((m) => m);
-
-            const date = new Date(tweet.created_at || Date.now());
-
+        return async.mapSeries(tweets.slice(0, 1), async (tweet) => {
             const referencedTweet = tweet.referenced_tweets?.[0];
             const tweetType = referencedTweet?.type ? F.titleCase(referencedTweet.type) : "Tweeted";
 
@@ -52,13 +49,26 @@ export class TwitterWatcher extends Watcher<TweetType> {
             const tweeterUsername = tweetType === "Retweeted" && nameRes ? nameRes.username : this.handle;
             const tweeterImage = includes.users?.find((u) => u.id === (nameRes?.id || this.userid))?.profile_image_url;
 
+            const url = `https://twitter.com/${tweeterUsername}/status/${tweet.id}`;
+
+            const videoURL = await this.getVideoInTweet(url);
+
+            const images = videoURL
+                ? [videoURL]
+                : (tweet.attachments?.media_keys || [])
+                      .map((mk) => includes.media?.find((m) => m.media_key === mk))
+                      .map((m) => m?.url || m?.preview_image_url || "")
+                      .filter((m) => m);
+
+            const date = new Date(tweet.created_at || Date.now());
+
             return {
                 uniqueIdentifier: tweet.id,
                 ping: true,
                 _data: {
                     images,
                     date,
-                    url: `https://twitter.com/${tweeterUsername}/status/${tweet.id}`,
+                    url,
                     tweeterUsername,
                     tweetType,
                     tweeterImage,
@@ -85,16 +95,40 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            let additionalEmbeds: MessageEmbed[] = [];
+            const msg = { embeds: [mainEmbed] };
+
             if (images.length > 0) {
                 mainEmbed.setImage(images[0]);
-                additionalEmbeds = images.slice(1).map((image, idx) => {
-                    return new MessageEmbed().setTitle(`${idx + 2}/${images.length}`).setImage(image);
-                });
+                for (let i = 0; i < images.length; i++) {
+                    const image = images[i];
+                    const embed = new MessageEmbed().setTitle(`${i + 1}/${images.length}`).setImage(image);
+
+                    msg.embeds.push(embed);
+                }
             }
 
-            return { embeds: [mainEmbed, ...additionalEmbeds] };
+            return msg;
         });
+    }
+
+    /**
+     * Refetch the tweet with V1 since Twitter API V2 doesn't return videos :(
+     * @param tweet The V2 tweet object
+     */
+    async getVideoInTweet(tweetURL: string): Promise<string | undefined> {
+        const url = await new Promise<string | undefined>((resolve) => {
+            VideoUrl.twitter.getInfo(tweetURL, {}, (error, info: { variants: MediaVideoInfoV1["variants"] }) => {
+                if (error) {
+                    console.error(error);
+                    resolve(undefined);
+                } else {
+                    const variants = info?.variants?.sort((v1, v2) => v2.bitrate - v1.bitrate);
+                    resolve(variants[0]?.url);
+                }
+            });
+        });
+
+        return url;
     }
 
     async fetchUserID(): Promise<void> {

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import Diff from "diff";
 import { Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import http from "http";
+import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import PageRes from "pageres";
@@ -21,7 +21,9 @@ type CheckObj = {
 
 type CheckReturn = CheckObj[WATCH_METHOD]["_data"];
 
-const agent = new http.Agent({});
+const agent = new https.Agent({
+    rejectUnauthorized: false
+});
 
 export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<CheckReturn> {
     static hash(input: string): string {

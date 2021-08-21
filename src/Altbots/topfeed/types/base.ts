@@ -36,14 +36,14 @@ export abstract class Watcher<T> {
 
         const newItems = items.filter((item) => !idSet.has(item.uniqueIdentifier));
 
-        // await prisma.topfeedPost.createMany({
-        //     data: newItems.map((item) => ({
-        //         id: item.uniqueIdentifier,
-        //         type: this.type,
-        //         subtype: (<any>item._data).subtype,
-        //         data: item._data
-        //     }))
-        // });
+        await prisma.topfeedPost.createMany({
+            data: newItems.map((item) => ({
+                id: item.uniqueIdentifier,
+                type: this.type,
+                subtype: (<any>item._data).subtype,
+                data: item._data
+            }))
+        });
 
         return newItems;
     }

@@ -1,3 +1,4 @@
+import async from "async";
 import { Client, Guild, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
@@ -53,9 +54,9 @@ export class TopfeedBot {
         // prettier-ignore
         this.websites = [
             // new SiteWatcher("https://dmaorg.info", "DMAORG 404 Page", ["VISUAL", "HTML"], this.ctx),
-            // new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["VISUAL", "HTML"], this.ctx),
-            new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
-                .setDisplayedURL("https://live.twentyonepilots.com"),
+            new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["VISUAL", "HTML"]),
+            // new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
+            //     .setDisplayedURL("https://live.twentyonepilots.com"),
         ];
 
         this.instagrams = [
@@ -82,50 +83,46 @@ export class TopfeedBot {
                 throw new Error("checkGroup must be called with an array of the same types of watchers");
             }
 
-            const [_items, msgs] = await watcher.fetchNewItems();
-            console.log(msgs.length, /MSGS/);
-            for (const msg of msgs) {
-                const partialTitle = msg.embeds?.[0]?.description?.substring(0, 30) || `${watchersType} post`;
-                const THREAD_TITLE = `${partialTitle} - Discussion`.replaceAll("\n", " ").trim();
-                if (!msg.embeds || msg.embeds.length === 1) {
-                    const chanMsg = await chan.send(msg);
-                    await chanMsg.startThread({ name: THREAD_TITLE, autoArchiveDuration: 60 });
+            const [_items, allMsgs] = await watcher.fetchNewItems();
+            for (const post of allMsgs) {
+                // First msg is sent to channel, rest are threaded
+                const [mainMsg, ...threadedMsgs] = post;
+
+                const partialTitle =
+                    `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
+                const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
+
+                const threadStarter = await chan.send(mainMsg);
+                if (threadedMsgs.length < 1) {
+                    watcher.afterCheck(threadStarter);
                     continue;
                 }
-                // Unroll single embed that has a video into a thread
-                if (msg.embeds.length === 2 && msg.embeds[1].image?.url?.includes(".mp4")) {
-                    const embed = msg.embeds.pop();
-                    if (!embed?.image?.url) return;
 
-                    const imageURL = embed.image.url;
-                    const att = new MessageAttachment(imageURL);
-                    embed.image = undefined;
+                const thread = await threadStarter.startThread({
+                    name: threadTitle,
+                    autoArchiveDuration: 60
+                });
 
-                    const chanMsg = await chan.send(msg);
-                    const thread = await chanMsg.startThread({
-                        name: `${THREAD_TITLE} & Additional Content`,
-                        autoArchiveDuration: 60
-                    });
-                    await thread.send({ embeds: [embed] });
-                    await thread.send({ embeds: [], files: [att] });
-                } else {
-                    // Unroll messages with multiple embeds OR a video into a thread
-                    const [firstEmbed, ...otherEmbeds] = msg.embeds;
-                    msg.embeds = [firstEmbed];
-                    const chanMsg = await chan.send(msg);
-                    const thread = await chanMsg.startThread({
-                        name: `${THREAD_TITLE} & Additional Content`,
-                        autoArchiveDuration: 60
-                    });
-                    await thread.send({ embeds: otherEmbeds });
+                try {
+                    for (const msg of threadedMsgs) {
+                        await thread.send(msg);
+                    }
+                } catch (e) {
+                    console.log(e);
                 }
+
+                // Automatically archive the channel
+                await thread.setArchived(true);
+
+                watcher.afterCheck(threadStarter);
             }
         }
     }
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
-        await this.#checkGroup(this.twitters);
-        // await this.#checkGroup([...this.instagrams]);
+        await this.#checkGroup(this.websites);
+        // await this.#checkGroup(this.twitters);
+        // await this.#checkGroup(this.instagrams);
     }
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma, TopfeedPost, TopfeedType } from ".prisma/client";
-import { MessageOptions, Snowflake } from "discord.js";
+import { Message, MessageOptions, Snowflake } from "discord.js";
 import { NicoClient } from "../../../../app";
 import { prisma } from "../../../Helpers/prisma-init";
 
@@ -15,9 +15,13 @@ export abstract class Watcher<T> {
     abstract type: TopfeedType;
 
     protected abstract fetchRecentItems(): Promise<Checked<T>[]>;
-    public abstract generateMessages(checkedItems: Checked<T>[]): MessageOptions[];
+    public abstract generateMessages(checkedItems: Checked<T>[]): Promise<MessageOptions[][]>;
 
     protected client = NicoClient;
+
+    async afterCheck(msg: Message): Promise<void> {
+        // Override in child to do something
+    }
 
     async #checkItems(items: Checked<T>[]): Promise<Checked<T>[]> {
         const uniqueIDs = items.map((item) => item.uniqueIdentifier);
@@ -44,10 +48,10 @@ export abstract class Watcher<T> {
         return newItems;
     }
 
-    async fetchNewItems(): Promise<[Checked<T>[], MessageOptions[]]> {
+    async fetchNewItems(): Promise<[Checked<T>[], MessageOptions[][]]> {
         const fetchedItems = await this.fetchRecentItems();
         const checkedItems = await this.#checkItems(fetchedItems);
-        return [checkedItems, this.generateMessages(checkedItems)];
+        return [checkedItems, await this.generateMessages(checkedItems)];
     }
 
     protected async getLatestItem<Subtype extends string>(

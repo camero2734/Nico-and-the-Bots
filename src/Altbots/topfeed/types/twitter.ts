@@ -78,7 +78,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
         });
     }
 
-    generateMessages(checkedItems: Checked<TweetType>[]): MessageOptions[] {
+    async generateMessages(checkedItems: Checked<TweetType>[]): Promise<MessageOptions[][]> {
         const TWITTER_IMG = "https://assets.stickpng.com/images/580b57fcd9996e24bc43c53e.png";
         return checkedItems.map((item) => {
             const { images, date, url, tweetType, tweetText, tweeterUsername, tweeterImage } = item._data;
@@ -95,19 +95,33 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            const msg = { embeds: [mainEmbed] };
+            const msgs: MessageOptions[] = [{ embeds: [mainEmbed] }];
 
             if (images.length > 0) {
-                mainEmbed.setImage(images[0]);
-                for (let i = 0; i < images.length; i++) {
-                    const image = images[i];
-                    const embed = new MessageEmbed().setTitle(`${i + 1}/${images.length}`).setImage(image);
+                const firstIsVideo = images[0].includes(".mp4");
+                if (!firstIsVideo) mainEmbed.setImage(images[0]);
+                // TODO: Maybe set first frame as image for videos so the main msg isn't devoid of an image?
 
-                    msg.embeds.push(embed);
+                const start = firstIsVideo ? 0 : 1;
+
+                for (let i = start; i < images.length; i++) {
+                    const image = images[i];
+
+                    const embed = new MessageEmbed().setTitle(`${i + 1}/${images.length}`);
+                    const att = new MessageAttachment(image);
+
+                    const isVideo = image.includes(".mp4");
+                    if (isVideo) {
+                        msgs.push({ embeds: [embed] });
+                        msgs.push({ files: isVideo ? [att] : undefined });
+                    } else {
+                        embed.setImage(image);
+                        msgs.push({ embeds: [embed] });
+                    }
                 }
             }
 
-            return msg;
+            return msgs;
         });
     }
 

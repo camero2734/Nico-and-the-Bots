@@ -8,7 +8,7 @@ ig.state.generateDevice(secrets.apis.instagram.username);
 
 export const setupInstagram = async (): Promise<void> => {
     // Execute all requests prior to authorization in the real Android application
-    // await ig.simulate.preLoginFlow();
+    await ig.qe.syncLoginExperiments();
     await ig.account.login(secrets.apis.instagram.username, secrets.apis.instagram.password);
     process.nextTick(async () => await ig.simulate.postLoginFlow());
 };
@@ -56,9 +56,11 @@ export class InstaWatcher extends Watcher<InstaType> {
         });
     }
 
-    generateMessages(checkedItems: Checked<InstaType>[]): MessageOptions[] {
+    async generateMessages(checkedItems: Checked<InstaType>[]): Promise<MessageOptions[][]> {
         return checkedItems.map((item) => {
             const { url, caption, images, date } = item._data;
+
+            const msgs: MessageOptions[] = [];
 
             const mainEmbed = new MessageEmbed()
                 .setAuthor(`@${this.handle} posted on Instagram`, "https://i.imgur.com/a5YxpVK.png", url)
@@ -70,7 +72,7 @@ export class InstaWatcher extends Watcher<InstaType> {
             const additionalEmbeds = images.slice(1).map((image, idx) => {
                 return new MessageEmbed().setTitle(`${idx + 2}/${images.length}`).setImage(image);
             });
-            return { embeds: [mainEmbed, ...additionalEmbeds] };
+            return [{ embeds: [mainEmbed, ...additionalEmbeds] }];
         });
     }
 }

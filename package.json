@@ -75,7 +75,8 @@
         "typescript": "^4.4.0-beta",
         "video-url-link": "^0.1.5",
         "wikijs": "^6.2.1",
-        "youtube-dl": "3.4.0"
+        "youtube-dl": "3.4.0",
+        "youtube.ts": "^0.2.2"
     },
     "devDependencies": {
         "husky": "^7.0.1",

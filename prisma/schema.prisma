@@ -279,6 +279,7 @@ model ViolationNotice {
 enum TopfeedType {
   Twitter
   Instagram
+  Youtube
   Website
 }
 

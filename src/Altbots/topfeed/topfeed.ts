@@ -6,6 +6,7 @@ import { Watcher } from "./types/base";
 import { InstaWatcher, setupInstagram } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";
 import { SiteWatcher } from "./types/websites";
+import { YoutubeWatcher } from "./types/youtube";
 export class TopfeedBot {
     client: Client;
     guild: Guild;
@@ -13,7 +14,8 @@ export class TopfeedBot {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     websites: SiteWatcher<any>[] = [];
     instagrams: InstaWatcher[] = [];
-    twitters: TwitterWatcher[];
+    twitters: TwitterWatcher[] = [];
+    youtubes: YoutubeWatcher[] = [];
     constructor() {
         this.client = new Client({
             intents: [
@@ -68,6 +70,8 @@ export class TopfeedBot {
             new TwitterWatcher("twentyonepilots", "859592952108285992")
             //
         ];
+
+        this.youtubes = [new YoutubeWatcher("twentyonepilots", "859592952108285992")];
     }
 
     async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
@@ -98,6 +102,15 @@ export class TopfeedBot {
                     continue;
                 }
 
+                const shouldAvoidThread = watcher.type === "Youtube";
+                if (shouldAvoidThread) {
+                    for (const msg of threadedMsgs) {
+                        await chan.send(msg);
+                    }
+                    watcher.afterCheck(threadStarter);
+                    continue;
+                }
+
                 const thread = await threadStarter.startThread({
                     name: threadTitle,
                     autoArchiveDuration: 60
@@ -121,6 +134,7 @@ export class TopfeedBot {
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
+        await this.#checkGroup(this.youtubes);
         // await this.#checkGroup(this.websites);
         // await this.#checkGroup(this.twitters);
         // await this.#checkGroup(this.instagrams);

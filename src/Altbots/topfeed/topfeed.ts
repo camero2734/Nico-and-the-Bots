@@ -121,7 +121,7 @@ export class TopfeedBot {
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
-        await this.#checkGroup(this.websites);
+        // await this.#checkGroup(this.websites);
         // await this.#checkGroup(this.twitters);
         // await this.#checkGroup(this.instagrams);
     }

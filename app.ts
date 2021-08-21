@@ -45,7 +45,7 @@ const client = new Discord.Client({
     partials: ["REACTION", "USER", "MESSAGE"]
 });
 const keonsBot = new KeonsBot();
-let topfeedBot: TopfeedBot;
+const topfeedBot = new TopfeedBot();
 let sacarverBot: SacarverBot;
 
 extendPrototypes();
@@ -165,6 +165,7 @@ function setup() {
     registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
 
     Scheduler(client);
+    topfeedBot.checkAll();
 }
 
 function addManualInteractionHandlers() {
@@ -227,3 +228,5 @@ process.on("unhandledRejection", (err) => {
 process.on("uncaughtException", (err) => {
     console.log("uncaughtException: ", err);
 });
+
+export const NicoClient = client;

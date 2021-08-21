@@ -46,10 +46,10 @@ export const updateUserScore = async (msg: Message): Promise<void> => {
     if (earnedPoint) {
         const userUpdateData = await onEarnPoint(msg, dbUser);
         // Ensure the messageHistory perfectly tracks the score
-        await prisma.$transaction([
-            prisma.messageHistory.upsert(upsertData), //
-            prisma.user.update(userUpdateData)
-        ]);
+        await prisma.$transaction(async tx => {
+            await tx.messageHistory.upsert(upsertData);
+            await tx.user.update(userUpdateData);
+        }, {maxWait: 15000, timeout: 15000}); // prettier-ignore
     } else await prisma.messageHistory.upsert(upsertData);
 };
 

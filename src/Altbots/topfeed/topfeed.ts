@@ -1,4 +1,4 @@
-import { Client, Guild, TextChannel } from "discord.js";
+import { Client, Guild, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import { Watcher } from "./types/base";
@@ -39,7 +39,7 @@ export class TopfeedBot {
                 const guild = await this.client.guilds.fetch(guildID);
                 this.guild = guild;
 
-                // await this.#createWatchers();
+                await this.#createWatchers();
 
                 // Setup Instagram
                 await setupInstagram();
@@ -49,40 +49,66 @@ export class TopfeedBot {
         });
     }
 
-    // async #createWatchers(): Promise<void> {
-    //     // prettier-ignore
-    //     this.websites = [
-    //         // new SiteWatcher("https://dmaorg.info", "DMAORG 404 Page", ["VISUAL", "HTML"], this.ctx),
-    //         // new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["VISUAL", "HTML"], this.ctx),
-    //         new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
-    //             .setDisplayedURL("https://live.twentyonepilots.com"),
-    //     ];
+    async #createWatchers(): Promise<void> {
+        // prettier-ignore
+        this.websites = [
+            // new SiteWatcher("https://dmaorg.info", "DMAORG 404 Page", ["VISUAL", "HTML"], this.ctx),
+            // new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["VISUAL", "HTML"], this.ctx),
+            new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
+                .setDisplayedURL("https://live.twentyonepilots.com"),
+        ];
 
-    //     this.instagrams = [
-    //         new InstaWatcher("twentyonepilots", channelIDs.tyler, this.ctx.connection)
-    //         // new InstaWatcher("joshuadun", "Josh", channelIDs.josh)
-    //     ];
+        this.instagrams = [
+            new InstaWatcher("twentyonepilots", "859592952108285992")
+            // new InstaWatcher("joshuadun", "Josh", channelIDs.josh)
+        ];
 
-    //     this.twitters = [
-    //         new TwitterWatcher("twentyonepilots", channelIDs.tyler, this.ctx.connection)
-    //         //
-    //     ];
-    // }
+        this.twitters = [
+            new TwitterWatcher("twentyonepilots", "859592952108285992")
+            //
+        ];
+    }
 
-    async checkGroup(watchers: Watcher<unknown>[]): Promise<void> {
+    async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
+        if (watchers.length === 0) return;
         const chan = this.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
 
+        console.log(`Checking watchers ${watchers[0].type}`);
+
+        const watchersType = watchers[0].type;
+
         for (const watcher of watchers) {
-            const items = await watcher.fetchNewItems();
-            for (const item of items.slice(0, 1)) {
-                await chan.send(item.msg);
+            if (watcher.type !== watchersType) {
+                throw new Error("checkGroup must be called with an array of the same types of watchers");
+            }
+
+            const [_items, msgs] = await watcher.fetchNewItems();
+            console.log(msgs.length, /MSGS/);
+            for (const msg of msgs) {
+                const partialTitle = msg.embeds?.[0]?.description?.substring(0, 30) || `${watchersType} post`;
+                const THREAD_TITLE = `${partialTitle} - Discussion`.replaceAll("\n", " ").trim();
+
+                if (!msg.embeds || msg.embeds.length === 1) {
+                    const chanMsg = await chan.send(msg);
+                    await chanMsg.startThread({ name: THREAD_TITLE, autoArchiveDuration: 60 });
+                    continue;
+                }
+                // Unroll messages with multiple embeds into a thread
+                const [firstEmbed, ...otherEmbeds] = msg.embeds;
+                msg.embeds = [firstEmbed];
+                const chanMsg = await chan.send(msg);
+                const thread = await chanMsg.startThread({
+                    name: `${THREAD_TITLE} & Additional Content`,
+                    autoArchiveDuration: 60
+                });
+                await thread.send({ embeds: otherEmbeds });
             }
         }
     }
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
-        await this.checkGroup(this.twitters);
-        // await this.checkGroup(this.instagrams);
+        // await this.#checkGroup(this.twitters);
+        await this.#checkGroup([...this.instagrams]);
     }
 }

@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed, MessageOptions } from "discord.js";
 import F from "../../../Helpers/funcs";
 import fetch from "node-fetch";
 import secrets from "../../../Configuration/secrets";
@@ -83,10 +83,20 @@ async function makeRequest<T, U = undefined>(endpoint: string): Promise<{ data: 
 const _getID = (handle: string) => makeRequest<IDResponse>(`users/by/username/${handle}`);
 const _getTweets = (id: string) => makeRequest<TweetData[], Includes>(`users/${id}/tweets?expansions=referenced_tweets.id,referenced_tweets.id.author_id,attachments.media_keys&tweet.fields=created_at,geo,public_metrics,in_reply_to_user_id,referenced_tweets,source&media.fields=preview_image_url,type,url&user.fields=profile_image_url,username&max_results=5`); // prettier-ignore
 
-export class TwitterWatcher extends Watcher<TweetData> {
+type TweetType = {
+    images: string[];
+    date: Date;
+    url: string;
+    tweetType: string;
+    tweeterUsername: string;
+    tweeterImage?: string;
+    tweetText: string;
+};
+
+export class TwitterWatcher extends Watcher<TweetType> {
     type = "Twitter" as const;
     userid: string;
-    override async fetchRecentItems(): Promise<Checked<TweetData>[]> {
+    async fetchRecentItems(): Promise<Checked<TweetType>[]> {
         if (!this.userid) await this.fetchUserID();
 
         const { data, includes } = await _getTweets(this.userid);
@@ -97,33 +107,46 @@ export class TwitterWatcher extends Watcher<TweetData> {
                 .map((m) => m?.url || m?.preview_image_url || "")
                 .filter((m) => m);
 
-            console.log(this.userid, includes.users, /USERS/);
-
             const date = new Date(tweet.created_at);
 
             const referencedTweet = tweet.referenced_tweets?.[0] || { type: undefined, id: undefined };
             const tweetType = referencedTweet.type ? F.titleCase(referencedTweet.type) : "Tweeted";
 
-            let title = `New Tweet from @${this.handle}`;
             const nameRes = includes.users.find((u) => u.id === referencedTweet.id);
-            if (tweetType !== "Tweeted" && nameRes) {
-                title = `@${this.handle} ${tweetType} @${nameRes.username}`;
+            const tweeterUsername = tweetType === "Retweeted" && nameRes ? nameRes.username : this.handle;
+            const tweeterImage = includes.users.find((u) => u.id === (nameRes?.id || this.userid))?.profile_image_url;
+
+            return {
+                uniqueIdentifier: tweet.id,
+                ping: true,
+                _data: {
+                    images,
+                    date,
+                    url: `https://twitter.com/${tweeterUsername}/status/${tweet.id}`,
+                    tweeterUsername,
+                    tweetType,
+                    tweeterImage,
+                    tweetText: tweet.text
+                }
+            };
+        });
+    }
+
+    generateMessages(checkedItems: Checked<TweetType>[]): MessageOptions[] {
+        const TWITTER_IMG = "https://assets.stickpng.com/images/580b57fcd9996e24bc43c53e.png";
+        return checkedItems.map((item) => {
+            const { images, date, url, tweetType, tweetText, tweeterUsername, tweeterImage } = item._data;
+            let title = `New Tweet from @${this.handle}`;
+
+            if (tweetType !== "Tweeted" && tweeterUsername !== this.handle) {
+                title = `@${this.handle} ${tweetType} @${tweeterUsername}`;
             }
 
-            const tweeterUsername = tweetType === "Retweeted" && nameRes ? nameRes : this.handle;
-
-            const tweeterImage =
-                includes.users.find((u) => u.id === (nameRes?.id || this.userid))?.profile_image_url || "";
-
             const mainEmbed = new MessageEmbed()
-                .setAuthor(
-                    title,
-                    "https://assets.stickpng.com/images/580b57fcd9996e24bc43c53e.png",
-                    `https://twitter.com/${tweeterUsername}/status/${tweet.id}`
-                ) // prettier-ignore
-                .setThumbnail(tweeterImage)
+                .setAuthor(title, TWITTER_IMG, url) // prettier-ignore
+                .setThumbnail(tweeterImage || TWITTER_IMG)
                 .setColor("#55ADEE")
-                .setDescription(tweet.text)
+                .setDescription(tweetText)
                 .setTimestamp(date);
 
             let additionalEmbeds: MessageEmbed[] = [];
@@ -134,11 +157,7 @@ export class TwitterWatcher extends Watcher<TweetData> {
                 });
             }
 
-            return {
-                uniqueIdentifier: tweet.id,
-                msg: { embeds: [mainEmbed, ...additionalEmbeds] },
-                _data: tweet
-            };
+            return { embeds: [mainEmbed, ...additionalEmbeds] };
         });
     }
 
@@ -147,3 +166,9 @@ export class TwitterWatcher extends Watcher<TweetData> {
         this.userid = res.data.id;
     }
 }
+/**
+ * 
+ * 
+
+            
+ */

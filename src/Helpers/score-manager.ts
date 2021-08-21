@@ -10,10 +10,9 @@ import IORedis from "ioredis";
 const QUEUE_NAME = "ScoreUpdate";
 
 const onHeorku = process.env.ON_HEROKU === "1";
+const redisOpts = onHeorku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined;
 
-console.log({ onHeorku });
-
-const scoreQueue = new Queue(QUEUE_NAME, onHeorku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined);
+const scoreQueue = new Queue(QUEUE_NAME, redisOpts);
 
 export const updateUserScore = (msg: Message): void => {
     if (!msg.guild || !msg.channel) return;
@@ -26,25 +25,29 @@ export const updateUserScore = (msg: Message): void => {
 };
 
 // TODO: Create separate worker process(es)?
-new Worker(QUEUE_NAME, async (job) => {
-    if (job.name !== "score") return;
-    try {
-        const count = await scoreQueue.count();
-        console.log(`Items in queue: ${count}`);
+new Worker(
+    QUEUE_NAME,
+    async (job) => {
+        if (job.name !== "score") return;
+        try {
+            const count = await scoreQueue.count();
+            console.log(`Items in queue: ${count}`);
 
-        const msgRef = job.data as MessageReference;
-        if (!msgRef?.messageId) throw Error("no msg id");
+            const msgRef = job.data as MessageReference;
+            if (!msgRef?.messageId) throw Error("no msg id");
 
-        // These should be cached via discord.js so lookup time is no issue
-        const guild = await NicoClient.guilds.fetch(msgRef.guildId);
-        const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
-        const msg = await channel.messages.fetch(msgRef.messageId);
+            // These should be cached via discord.js so lookup time is no issue
+            const guild = await NicoClient.guilds.fetch(msgRef.guildId);
+            const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
+            const msg = await channel.messages.fetch(msgRef.messageId);
 
-        await updateUserScoreWorker(msg);
-    } catch (e) {
-        console.log(e, /WORKER_ERR/);
-    }
-});
+            await updateUserScoreWorker(msg);
+        } catch (e) {
+            console.log(e, /WORKER_ERR/);
+        }
+    },
+    redisOpts
+);
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
 const updateUserScoreWorker = async (msg: Message): Promise<void> => {

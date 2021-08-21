@@ -5,10 +5,13 @@ import { User } from "@prisma/client";
 
 import { Queue, Worker } from "bullmq";
 import { NicoClient } from "../../app";
+import IORedis from "ioredis";
 
 const QUEUE_NAME = "ScoreUpdate";
 
-const scoreQueue = new Queue(QUEUE_NAME);
+const onHeorku = process.env.ON_HEROKU === "1";
+
+const scoreQueue = new Queue(QUEUE_NAME, onHeorku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined);
 
 export const updateUserScore = (msg: Message): void => {
     if (!msg.guild || !msg.channel) return;

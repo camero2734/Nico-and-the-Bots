@@ -53,6 +53,7 @@
         "fuse.js": "^6.4.6",
         "glob": "^7.1.7",
         "instagram-private-api": "^1.45.1",
+        "ioredis": "^4.27.8",
         "mime-types": "^2.1.31",
         "node-fetch": "^2.6.1",
         "normalize-url": "^4.5.0",

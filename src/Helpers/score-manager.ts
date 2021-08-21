@@ -11,6 +11,8 @@ const QUEUE_NAME = "ScoreUpdate";
 
 const onHeorku = process.env.ON_HEROKU === "1";
 
+console.log({ onHeorku });
+
 const scoreQueue = new Queue(QUEUE_NAME, onHeorku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined);
 
 export const updateUserScore = (msg: Message): void => {

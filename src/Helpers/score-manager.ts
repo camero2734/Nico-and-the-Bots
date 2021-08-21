@@ -1,11 +1,48 @@
 import { startOfDay } from "date-fns";
-import { Message, MessageEmbed } from "discord.js";
+import { Message, MessageEmbed, MessageReference, TextChannel } from "discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 
-export const updateUserScore = async (msg: Message): Promise<void> => {
-    const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
+import { Queue, Worker } from "bullmq";
+import { NicoClient } from "../../app";
 
+const QUEUE_NAME = "ScoreUpdate";
+
+const scoreQueue = new Queue(QUEUE_NAME);
+
+export const updateUserScore = (msg: Message): void => {
+    if (!msg.guild || !msg.channel) return;
+    const reference: MessageReference = {
+        guildId: msg.guild.id,
+        channelId: msg.channel.id,
+        messageId: msg.id
+    };
+    scoreQueue.add("score", reference);
+};
+
+// TODO: Create separate worker process(es)?
+new Worker(QUEUE_NAME, async (job) => {
+    if (job.name !== "score") return;
+    try {
+        const count = await scoreQueue.count();
+        console.log(`Items in queue: ${count}`);
+
+        const msgRef = job.data as MessageReference;
+        if (!msgRef?.messageId) throw Error("no msg id");
+
+        // These should be cached via discord.js so lookup time is no issue
+        const guild = await NicoClient.guilds.fetch(msgRef.guildId);
+        const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
+        const msg = await channel.messages.fetch(msgRef.messageId);
+
+        await updateUserScoreWorker(msg);
+    } catch (e) {
+        console.log(e, /WORKER_ERR/);
+    }
+});
+
+const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
+const updateUserScoreWorker = async (msg: Message): Promise<void> => {
     const dbUser =
         (await prisma.user.findUnique({ where: { id: msg.author.id } })) ||
         (await prisma.user.create({

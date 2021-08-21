@@ -40,6 +40,7 @@
         "@typescript-eslint/parser": "^4.8.1",
         "async": "^3.2.1",
         "bigint-conversion": "^2.1.12",
+        "bullmq": "^1.42.0",
         "canvas": "^2.8.0",
         "chalk": "^4.1.1",
         "consola": "^2.15.3",

@@ -31,7 +31,9 @@ new Worker(
         if (job.name !== "score") return;
         try {
             const count = await scoreQueue.count();
-            console.log(`Items in queue: ${count}`);
+            if (count > 50) {
+                console.log(`[Score Queue]: Items in queue: ${count}`);
+            }
 
             const msgRef = job.data as MessageReference;
             if (!msgRef?.messageId) throw Error("no msg id");

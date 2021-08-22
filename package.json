@@ -13,7 +13,8 @@
         "dyno:restart": "heroku scale worker=1 && heroku ps:restart worker.1 --app nico-discord-clique",
         "dyno:stop": "heroku scale worker=0",
         "prepare": "husky install",
-        "prisma:update": "prisma migrate dev"
+        "prisma:update": "prisma migrate dev",
+        "postinstall": "patch-package"
     },
     "engines": {
         "node": ">= 16.6.0"
@@ -62,6 +63,8 @@
         "ordinal": "^1.0.3",
         "pageres": "^6.2.3",
         "parse-duration": "^0.4.4",
+        "patch-package": "^6.4.7",
+        "postinstall-postinstall": "^2.1.0",
         "prettier": "^2.3.2",
         "prisma": "^2.29.1",
         "radix-64": "^1.0.4",

@@ -144,7 +144,6 @@ export class TwitterWatcher extends Watcher<TweetType> {
             const url = await new Promise<string | undefined>((resolve) => {
                 VideoUrl.twitter.getInfo(tweetURL, {}, (error, info: { variants: MediaVideoInfoV1["variants"] }) => {
                     if (error) {
-                        console.error(error);
                         resolve(undefined);
                     } else {
                         const variants = info?.variants?.sort((v1, v2) => v2.bitrate - v1.bitrate);

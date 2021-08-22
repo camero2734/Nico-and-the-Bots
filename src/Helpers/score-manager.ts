@@ -11,9 +11,15 @@ import { rollbar } from "./rollbar";
 const QUEUE_NAME = "ScoreUpdate";
 
 const onHeroku = process.env.ON_HEROKU === "1";
-const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined;
+const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};
 
-const scoreQueue = new Queue(QUEUE_NAME, redisOpts);
+const scoreQueue = new Queue(QUEUE_NAME, {
+    ...redisOpts,
+    defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: 1000
+    }
+});
 
 export const updateUserScore = (msg: Message): void => {
     if (!msg.guild || !msg.channel) return;

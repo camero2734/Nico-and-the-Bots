@@ -1,0 +1,22 @@
+diff --git a/node_modules/video-url-link/lib/twitter/index.js b/node_modules/video-url-link/lib/twitter/index.js
+index 6e428eb..85b9fef 100644
+--- a/node_modules/video-url-link/lib/twitter/index.js
++++ b/node_modules/video-url-link/lib/twitter/index.js
+@@ -39,7 +39,7 @@ exports.getInfo = (url, options, callback) => {
+                 let guest_token;
+                 try {
+                     guest_token = JSON.parse(body).guest_token;
+-                } catch (err) {
++                } catch (errInfo) {
+                     return callback(new Error(errInfo));
+                 }
+                 req({
+@@ -58,7 +58,7 @@ exports.getInfo = (url, options, callback) => {
+                                 full_text: info['globalObjects']['tweets'][id]['full_text'],
+                                 variants: info['globalObjects']['tweets'][id]['extended_entities']['media'][0]['video_info']['variants']
+                             });
+-                        } catch (err) {
++                        } catch (errInfo) {
+                             return callback(new Error(errInfo));
+                         }
+                     }

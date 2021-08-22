@@ -55,7 +55,6 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
 
         await this.handler(ctx);
-        // LogCommand(ctx);
     }
 
     _register(path: string[]): string {

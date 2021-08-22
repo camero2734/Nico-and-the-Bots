@@ -28,9 +28,6 @@ command.setHandler(async (ctx) => {
     const hash1 = await getHash("https://i.imgur.com/GVHnqPe.png");
     const hash2 = await getHash("https://i.imgur.com/M7rh5JO.png");
 
-    consola.warn(hash1);
-    consola.warn(hash2);
-
     const h1 = Buffer.from(hash1, "hex");
     const h2 = Buffer.from(hash2, "hex");
 

@@ -193,10 +193,6 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             });
         });
 
-        const base64 = screenshot.toString("base64");
-        const altHash = SiteWatcher.hash(base64);
-        if (this.url.includes("twentyonepilots.com")) consola.warn(hash, altHash);
-
         const old = await this.getLatestItem(subtype);
 
         const oldBuffer = Buffer.from(old?.data?.hash || "", "hex");

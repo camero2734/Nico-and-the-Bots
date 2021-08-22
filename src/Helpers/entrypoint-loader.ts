@@ -4,6 +4,7 @@ import path from "path";
 import { promisify } from "util";
 import { InteractionEntrypoint } from "../Structures/EntrypointBase";
 import { ContextMenu } from "../Structures/EntrypointContextMenu";
+import { MessageInteraction } from "../Structures/EntrypointMessageInteraction";
 import { SlashCommand } from "../Structures/EntrypointSlashCommand";
 
 const glob = promisify(g);
@@ -65,11 +66,36 @@ async function getAllContextMenus(): Promise<[Path, ContextMenu<any>][]> {
     return contextMenus;
 }
 
+async function getAllMessageInteractions(): Promise<[Path, MessageInteraction][]> {
+    const paths = await getAllFilesRecursive("dist/src/InteractionEntrypoints/messageinteractions");
+
+    const msgInteractions = (
+        await Promise.all(
+            paths.map(async (path) => {
+                try {
+                    const msgInteraction = (await import(`file:///${path.full}`)).default.default;
+                    if (!(msgInteraction instanceof MessageInteraction)) return null;
+                    return [path, msgInteraction];
+                } catch {
+                    return null;
+                }
+            })
+        )
+    ).filter((cmd): cmd is [Path, MessageInteraction] => cmd !== null);
+
+    return msgInteractions;
+}
+
 export async function registerAllEntrypoints() {
     const slashCommands = await getAllSlashCommands();
     const contextMenus = await getAllContextMenus();
+    const msgInteractions = await getAllMessageInteractions();
 
-    const entrypoints: [Path, InteractionEntrypoint<any, any>][] = [...slashCommands, ...contextMenus];
+    const entrypoints: [Path, InteractionEntrypoint<any, any>][] = [
+        ...slashCommands,
+        ...contextMenus,
+        ...msgInteractions
+    ];
 
     for (const [path, entrypoint] of entrypoints) {
         entrypoint.register(path.parts);

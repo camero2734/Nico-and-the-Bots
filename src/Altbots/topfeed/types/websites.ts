@@ -1,12 +1,24 @@
 import crypto from "crypto";
 import Diff from "diff";
-import { Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
+import {
+    Message,
+    MessageActionRow,
+    MessageAttachment,
+    MessageButton,
+    MessageEmbed,
+    MessageOptions,
+    Snowflake
+} from "discord.js";
 import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import PageRes from "pageres";
 import R from "ramda";
+import { channelIDs } from "../../../Configuration/config";
+import { rollbar } from "../../../Helpers/rollbar";
 import { Checked, Watcher } from "./base";
+import { imageHash } from "image-hash";
+import consola from "consola";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
@@ -33,8 +45,13 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     displayedURL: string;
     type = "Website" as const;
 
-    constructor(public url: string, public displayName: string, public watchMethods: T) {
-        super(url, "859592952108285992");
+    constructor(
+        public url: string,
+        public displayName: string,
+        public watchMethods: T,
+        channelId: Snowflake = channelIDs.topfeed.dmaorg
+    ) {
+        super(url, channelId);
         this.displayedURL = url;
     }
 
@@ -65,7 +82,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         if (validResponses.length === 0) return [];
 
         return validResponses.map((res) => ({
-            uniqueIdentifier: res.hash,
+            uniqueIdentifier: `${res.hash}_${Date.now()}`,
             ping: true,
             _data: res
         }));
@@ -86,6 +103,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .join("\n");
 
         const hashes = Object.values(obj)
+            .filter((r) => r._data.isNew)
             .map((r) => r._data.hash)
             .join(", ");
         const file = obj.VISUAL?._data.image || undefined;
@@ -167,10 +185,20 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const subtype = <const>"VISUAL";
         const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
 
+        const hash = await new Promise<string>((resolve, reject) => {
+            imageHash({ data: screenshot }, 16, true, (error: Error, data: string) => {
+                if (error) reject(error);
+                else resolve(data);
+            });
+        });
+
         const base64 = screenshot.toString("base64");
-        const hash = SiteWatcher.hash(base64);
+        const altHash = SiteWatcher.hash(base64);
+        // if (this.url.includes("twentyonepilots.com")) consola.warn(hash, altHash);
 
         const old = await this.getLatestItem(subtype);
+
+        console.log(hash, old?.data.hash);
 
         const isNew = !old || old.data.hash !== hash;
 
@@ -189,7 +217,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
             return url ? `https://${url}` : null;
         } catch (e) {
-            console.log(`[Web Archive Error]`, e);
+            if (e instanceof Error) rollbar.error(e);
+            else rollbar.error(new Error(`${e}`));
             return null;
         }
     }

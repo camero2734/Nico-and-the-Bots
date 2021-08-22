@@ -24,7 +24,6 @@ export const channelIDs = <const>{
     lyrics: "470425013770649600",
     staffventing: "470452236531531786",
     appeals: "470428222237179905",
-    topfeed: "470428804695851008",
     theorylist: "470335416709677056",
     announcements: "470323036688613396",
     verifiedtheories: "470335358970757145",
@@ -81,8 +80,15 @@ export const channelIDs = <const>{
         deleteEdit: "470417935865741312",
         slur: "470418391182868481",
         gold: "623555322367311902"
+    },
+    topfeed: {
+        tyler: "470428804695851008",
+        josh: "534882732820529174",
+        band: "534882758770688031",
+        dmaorg: "534882770619465731"
     }
 };
+
 export const categoryIDs = <const>{
     chilltown: "625524136785215498",
     concerts: "857342116005937212"

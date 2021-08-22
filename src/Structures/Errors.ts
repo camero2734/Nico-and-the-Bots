@@ -1,5 +1,6 @@
 import { CommandInteraction, DMChannel, Interaction, MessageEmbed, TextChannel } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
+import { rollbar } from "../Helpers/rollbar";
 
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };
@@ -8,6 +9,9 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
     ) as typeof ectx["send"];
 
     if (!ectx.send) return;
+
+    if (e instanceof Error) rollbar.error(e);
+    else rollbar.error(`${e}`);
 
     if (e instanceof CommandError) {
         const embed = new MessageEmbed()

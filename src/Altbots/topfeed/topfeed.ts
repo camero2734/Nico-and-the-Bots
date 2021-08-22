@@ -1,12 +1,15 @@
 import async from "async";
+import consola from "consola";
 import { Client, Guild, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
+import { rollbar } from "../../Helpers/rollbar";
 import { Watcher } from "./types/base";
 import { InstaWatcher, setupInstagram } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";
 import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
+
 export class TopfeedBot {
     client: Client;
     guild: Guild;
@@ -59,33 +62,41 @@ export class TopfeedBot {
             new SiteWatcher("https://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["VISUAL", "HTML"]),
             new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
                 .setDisplayedURL("https://live.twentyonepilots.com"),
+            new SiteWatcher("https://twentyonepilots.com", "Band Homepage", ["VISUAL"], channelIDs.topfeed.band)
         ];
 
         this.instagrams = [
-            new InstaWatcher("twentyonepilots", "859592952108285992")
-            // new InstaWatcher("joshuadun", "Josh", channelIDs.josh)
+            new InstaWatcher("twentyonepilots", channelIDs.topfeed.band),
+            new InstaWatcher("joshuadun", channelIDs.topfeed.josh),
+            new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler)
         ];
 
         this.twitters = [
-            new TwitterWatcher("twentyonepilots", "859592952108285992")
+            new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band),
+            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler),
+            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh)
             //
         ];
 
-        this.youtubes = [new YoutubeWatcher("twentyonepilots", "859592952108285992")];
+        this.youtubes = [
+            new YoutubeWatcher("twentyonepilots", channelIDs.topfeed.band),
+            new YoutubeWatcher("slushieguys", channelIDs.topfeed.tyler)
+        ];
     }
 
     async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
         if (watchers.length === 0) return;
         const chan = this.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
 
-        console.log(`Checking watchers ${watchers[0].type}`);
-
         const watchersType = watchers[0].type;
+        consola.info(`Checking watchers ${watchersType}`);
 
         for (const watcher of watchers) {
             if (watcher.type !== watchersType) {
                 throw new Error("checkGroup must be called with an array of the same types of watchers");
             }
+
+            consola.info(`  Checking ${watchersType} ${watcher.handle}`);
 
             const [_items, allMsgs] = await watcher.fetchNewItems();
             for (const post of allMsgs) {
@@ -134,7 +145,7 @@ export class TopfeedBot {
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
-        // await this.#checkGroup(this.youtubes);
+        await this.#checkGroup(this.youtubes);
         await this.#checkGroup(this.websites);
         // await this.#checkGroup(this.twitters);
         // await this.#checkGroup(this.instagrams);

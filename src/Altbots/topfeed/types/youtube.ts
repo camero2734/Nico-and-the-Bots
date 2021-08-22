@@ -23,7 +23,7 @@ export class YoutubeWatcher extends Watcher<YoutubeType> {
             channelId: channel.id,
             part: "snippet,id",
             order: "date",
-            maxResults: 1
+            maxResults: 5
         });
 
         return videos.map((v) => ({

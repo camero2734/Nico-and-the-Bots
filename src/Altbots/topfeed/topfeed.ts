@@ -86,7 +86,6 @@ export class TopfeedBot {
 
     async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
         if (watchers.length === 0) return;
-        const chan = this.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
 
         const watchersType = watchers[0].type;
         consola.info(`Checking watchers ${watchersType}`);
@@ -95,6 +94,8 @@ export class TopfeedBot {
             if (watcher.type !== watchersType) {
                 throw new Error("checkGroup must be called with an array of the same types of watchers");
             }
+
+            const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
 
             consola.info(`  Checking ${watchersType} ${watcher.handle}`);
 
@@ -145,9 +146,9 @@ export class TopfeedBot {
 
     async checkAll(): Promise<void> {
         await this.ready; // Wait  until the bot is logged in
-        // await this.#checkGroup(this.youtubes);
+        await this.#checkGroup(this.youtubes);
         await this.#checkGroup(this.websites);
-        // await this.#checkGroup(this.twitters);
-        // await this.#checkGroup(this.instagrams);
+        await this.#checkGroup(this.twitters);
+        await this.#checkGroup(this.instagrams);
     }
 }

@@ -98,7 +98,7 @@ command.setHandler(async (ctx) => {
     for (let i = 0; i < parsedOptions.length; i++) {
         const option = parsedOptions[i];
         const emoji = option.emoji;
-        selectMenu.addOptions({ label: option.text.substring(0, 25), emoji, value: `${i}` });
+        selectMenu.addOptions({ label: option.text.substring(0, 100), emoji, value: `${i}` });
     }
 
     const actionRow = new MessageActionRow().addComponents(selectMenu);

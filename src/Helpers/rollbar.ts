@@ -7,5 +7,5 @@ export const rollbar = new Rollbar({
     captureUncaught: true,
     captureUnhandledRejections: true,
     environment: onHeroku ? "production" : "development",
-    verbose: true
+    verbose: !onHeroku
 });

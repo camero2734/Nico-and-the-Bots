@@ -222,11 +222,4 @@ function addManualInteractionHandlers() {
 //     // console.log(command.options);
 // }
 
-process.on("unhandledRejection", (err) => {
-    console.log("unhandledRejection: ", err);
-});
-process.on("uncaughtException", (err) => {
-    console.log("uncaughtException: ", err);
-});
-
 export const NicoClient = client;

@@ -1,16 +1,17 @@
 import { startOfDay } from "date-fns";
-import { Message, MessageEmbed, MessageReference, TextChannel } from "discord.js";
+import { DiscordAPIError, Message, MessageEmbed, MessageReference, TextChannel } from "discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 
 import { Queue, Worker } from "bullmq";
 import { NicoClient } from "../../app";
 import IORedis from "ioredis";
+import { rollbar } from "./rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
 
-const onHeorku = process.env.ON_HEROKU === "1";
-const redisOpts = onHeorku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined;
+const onHeroku = process.env.ON_HEROKU === "1";
+const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : undefined;
 
 const scoreQueue = new Queue(QUEUE_NAME, redisOpts);
 
@@ -45,7 +46,8 @@ new Worker(
 
             await updateUserScoreWorker(msg);
         } catch (e) {
-            console.log(e, /WORKER_ERR/);
+            if (e instanceof DiscordAPIError) return;
+            else if (e instanceof Error) rollbar.error(e);
         }
     },
     redisOpts

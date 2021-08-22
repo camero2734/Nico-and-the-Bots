@@ -15,6 +15,7 @@ import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
 import F from "../Helpers/funcs";
 import { prisma } from "../Helpers/prisma-init";
+import { sendStaffUsedCommandEmbed } from "../InteractionEntrypoints/messageinteractions/command-logs";
 import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
@@ -55,6 +56,11 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
 
         await this.handler(ctx);
+
+        if (ctx.commandName === "staff") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sendStaffUsedCommandEmbed(this, ctx.member, ctx.opts as Record<string, any>);
+        }
     }
 
     _register(path: string[]): string {

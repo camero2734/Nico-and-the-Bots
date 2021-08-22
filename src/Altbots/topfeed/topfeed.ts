@@ -149,6 +149,6 @@ export class TopfeedBot {
         await this.#checkGroup(this.youtubes);
         await this.#checkGroup(this.websites);
         await this.#checkGroup(this.twitters);
-        await this.#checkGroup(this.instagrams);
+        // await this.#checkGroup(this.instagrams);
     }
 }

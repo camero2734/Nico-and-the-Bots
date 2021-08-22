@@ -130,19 +130,23 @@ export class TwitterWatcher extends Watcher<TweetType> {
      * @param tweet The V2 tweet object
      */
     async getVideoInTweet(tweetURL: string): Promise<string | undefined> {
-        const url = await new Promise<string | undefined>((resolve) => {
-            VideoUrl.twitter.getInfo(tweetURL, {}, (error, info: { variants: MediaVideoInfoV1["variants"] }) => {
-                if (error) {
-                    console.error(error);
-                    resolve(undefined);
-                } else {
-                    const variants = info?.variants?.sort((v1, v2) => v2.bitrate - v1.bitrate);
-                    resolve(variants[0]?.url);
-                }
+        try {
+            const url = await new Promise<string | undefined>((resolve) => {
+                VideoUrl.twitter.getInfo(tweetURL, {}, (error, info: { variants: MediaVideoInfoV1["variants"] }) => {
+                    if (error) {
+                        console.error(error);
+                        resolve(undefined);
+                    } else {
+                        const variants = info?.variants?.sort((v1, v2) => v2.bitrate - v1.bitrate);
+                        resolve(variants[0]?.url);
+                    }
+                });
             });
-        });
 
-        return url;
+            return url;
+        } catch (e) {
+            return undefined;
+        }
     }
 
     async fetchUserID(): Promise<void> {

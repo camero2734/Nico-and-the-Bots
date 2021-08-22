@@ -19,6 +19,7 @@ import { rollbar } from "../../../Helpers/rollbar";
 import { Checked, Watcher } from "./base";
 import { imageHash } from "image-hash";
 import consola from "consola";
+import F from "../../../Helpers/funcs";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
@@ -186,7 +187,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
 
         const hash = await new Promise<string>((resolve, reject) => {
-            imageHash({ data: screenshot }, 16, true, (error: Error, data: string) => {
+            imageHash({ data: screenshot }, 64, true, (error: Error, data: string) => {
                 if (error) reject(error);
                 else resolve(data);
             });
@@ -194,13 +195,16 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const base64 = screenshot.toString("base64");
         const altHash = SiteWatcher.hash(base64);
-        // if (this.url.includes("twentyonepilots.com")) consola.warn(hash, altHash);
+        if (this.url.includes("twentyonepilots.com")) consola.warn(hash, altHash);
 
         const old = await this.getLatestItem(subtype);
 
-        console.log(hash, old?.data.hash);
+        const oldBuffer = Buffer.from(old?.data?.hash || "", "hex");
+        const newBuffer = Buffer.from(hash, "hex");
 
-        const isNew = !old || old.data.hash !== hash;
+        const distance = F.hammingDist(oldBuffer, newBuffer);
+
+        const isNew = !old || distance > 10;
 
         return { image: screenshot, hash, isNew, subtype };
     }

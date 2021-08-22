@@ -287,6 +287,7 @@ model TopfeedPost {
   id   String      @id
   type TopfeedType
   subtype String?
+  handle String
 
   data Json
 

@@ -40,6 +40,7 @@ export abstract class Watcher<T> {
             data: newItems.map((item) => ({
                 id: item.uniqueIdentifier,
                 type: this.type,
+                handle: this.handle,
                 subtype: (<any>item._data).subtype,
                 data: item._data
             }))
@@ -58,7 +59,7 @@ export abstract class Watcher<T> {
         subtype?: Subtype
     ): Promise<(TopfeedPost & { data: T & { subtype: Subtype } }) | null> {
         return prisma.topfeedPost.findFirst({
-            where: { type: this.type, subtype },
+            where: { type: this.type, handle: this.handle, subtype },
             orderBy: { createdAt: "desc" }
         }) as unknown as TopfeedPost & { data: T & { subtype: Subtype } };
     }

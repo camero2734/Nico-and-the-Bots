@@ -121,6 +121,19 @@ const F = {
         } catch (err) {
             return false;
         }
+    },
+    hammingDist(a: Buffer, b: Buffer): number {
+        const b1 = a.toString("binary");
+        const b2 = b.toString("binary");
+
+        const minLength = Math.min(b1.length, b2.length);
+        const maxLength = Math.max(b1.length, b2.length);
+
+        let count = 0;
+        for (let i = 0; i < minLength; i++) {
+            if (b1[i] !== b2[i]) count++;
+        }
+        return count + (maxLength - minLength);
     }
 };
 

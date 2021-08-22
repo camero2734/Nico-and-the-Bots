@@ -11,6 +11,7 @@ import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { BotLogInteractionListener } from "./src/Helpers/interaction-listeners/bot-logs";
+import { prisma } from "./src/Helpers/prisma-init";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";

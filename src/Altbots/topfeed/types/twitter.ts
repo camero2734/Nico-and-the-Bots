@@ -1,4 +1,4 @@
-import { MessageAttachment, MessageEmbed, MessageOptions } from "discord.js";
+import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
 import TwitterApi, { MediaVideoInfoV1, TweetV1, TweetV2 } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
@@ -26,6 +26,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
     async fetchRecentItems(): Promise<Checked<TweetType>[]> {
         if (!this.userid) await this.fetchUserID();
 
+        // Tweets, retweets
         const { tweets, includes } = await twitter.v2.userTimeline(this.userid, {
             expansions: ["referenced_tweets.id", "referenced_tweets.id.author_id", "attachments.media_keys"],
             "tweet.fields": [
@@ -41,7 +42,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
             max_results: 5
         });
 
-        return async.mapSeries(tweets.slice(0, 1), async (tweet) => {
+        const checkedTweets: Checked<TweetType>[] = await async.mapSeries(tweets.slice(0, 1), async (tweet) => {
             const referencedTweet = tweet.referenced_tweets?.[0];
             const tweetType = referencedTweet?.type ? F.titleCase(referencedTweet.type) : "Tweeted";
 
@@ -76,6 +77,11 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 }
             };
         });
+
+        // Likes
+        // TODO:
+
+        return [...checkedTweets];
     }
 
     async generateMessages(checkedItems: Checked<TweetType>[]): Promise<MessageOptions[][]> {
@@ -95,7 +101,11 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            const msgs: MessageOptions[] = [{ embeds: [mainEmbed] }];
+            const actionRow = new MessageActionRow().addComponents([
+                new MessageButton({ label: "View Tweet", style: "LINK", url })
+            ]);
+
+            const msgs: MessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];
 
             if (images.length > 0) {
                 const firstIsVideo = images[0].includes(".mp4");

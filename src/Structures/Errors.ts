@@ -10,10 +10,8 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
 
     if (!ectx.send) return;
 
-    if (e instanceof Error) rollbar.error(e);
-    else rollbar.error(`${e}`);
-
     if (e instanceof CommandError) {
+        rollbar.warn(e);
         const embed = new MessageEmbed()
             .setDescription(e.message)
             .setTitle("An error occurred!")
@@ -25,7 +23,8 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
             allowedMentions: { users: [], roles: [] }
         });
     } else {
-        console.log(e);
+        if (e instanceof Error) rollbar.error(e);
+        else rollbar.error(`${e}`);
         const embed = new MessageEmbed()
             .setTitle("An unknown error occurred!")
             .setFooter("DEMA internet machine really broke");

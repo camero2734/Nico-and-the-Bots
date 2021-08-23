@@ -15,7 +15,7 @@
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
         "postinstall": "patch-package",
-        "heroku-postbuild": "patch-package"
+        "heroku-cleanup": "patch-package"
     },
     "engines": {
         "node": ">= 16.6.0"

@@ -17,20 +17,22 @@ const youtube = new Youtube(secrets.apis.google.youtube);
 export class YoutubeWatcher extends Watcher<YoutubeType> {
     type = "Youtube" as const;
     async fetchRecentItems(): Promise<Checked<YoutubeType>[]> {
-        const channel = await youtube.channels.get(`https://www.youtube.com/user/${this.handle}`);
+        const channel = await youtube.channels.get(`https://www.youtube.com/user/${this.handle}`, {
+            part: "contentDetails"
+        });
 
-        const { items: videos } = await youtube.videos.search({
-            channelId: channel.id,
-            part: "snippet,id",
-            order: "date",
-            maxResults: 5
+        const uploadPlaylist = channel.contentDetails.relatedPlaylists.uploads;
+
+        const { items: videos } = await youtube.playlists.items(uploadPlaylist, {
+            maxResults: "5",
+            part: "snippet,id"
         });
 
         return videos.map((v) => ({
-            uniqueIdentifier: v.id.videoId,
+            uniqueIdentifier: v.id,
             ping: true,
             _data: {
-                url: `https://www.youtube.com/watch?v=${v.id.videoId}`,
+                url: `https://www.youtube.com/watch?v=${v.snippet.resourceId.videoId}`,
                 date: parseISO(v.snippet.publishedAt),
                 thumbnail: v.snippet.thumbnails.high.url,
                 description: v.snippet.description

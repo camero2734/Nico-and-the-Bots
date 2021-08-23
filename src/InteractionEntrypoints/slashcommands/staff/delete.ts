@@ -27,7 +27,7 @@ command.setHandler(async (ctx) => {
 
     // Need to manually fetch and delete remaining messages
     const remaining = amount - numDeleted;
-    console.log(`${remaining} remaining`);
+
     if (remaining > 0) {
         const fetched = await channel.messages.fetch({ limit: Math.min(remaining, 100) });
 

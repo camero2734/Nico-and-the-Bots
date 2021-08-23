@@ -92,7 +92,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 const foundSubcommandGroup = command.options?.find((o) => o.name === value);
                 subcommandGroup = foundSubcommandGroup || {
                     name: value,
-                    description: "",
+                    description: value,
                     options: [],
                     type: "SUB_COMMAND_GROUP"
                 };

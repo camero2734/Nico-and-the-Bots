@@ -293,3 +293,10 @@ model TopfeedPost {
 
   createdAt DateTime @default(now())
 }
+
+model ChannelPermissionsBackup {
+  channelId String @id
+  permissions Json
+
+  createdAt DateTime @default(now())
+}

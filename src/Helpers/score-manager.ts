@@ -17,7 +17,7 @@ const scoreQueue = new Queue(QUEUE_NAME, {
     ...redisOpts,
     defaultJobOptions: {
         removeOnComplete: true,
-        removeOnFail: 1000
+        removeOnFail: true
     }
 });
 

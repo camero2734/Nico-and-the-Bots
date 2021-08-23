@@ -2,7 +2,7 @@ import { registerFont } from "canvas";
 import * as Discord from "discord.js";
 import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
-import { TopfeedBot } from "./src/Altbots/topfeed/topfeed";
+import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID } from "./src/Configuration/definitions";
@@ -46,7 +46,6 @@ const client = new Discord.Client({
     partials: ["REACTION", "USER", "MESSAGE"]
 });
 const keonsBot = new KeonsBot();
-const topfeedBot = new TopfeedBot();
 let sacarverBot: SacarverBot;
 
 extendPrototypes();
@@ -166,7 +165,7 @@ function setup() {
     registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
 
     Scheduler(client);
-    topfeedBot.checkAll();
+    topfeedBot.registerChecks();
 }
 
 function addManualInteractionHandlers() {

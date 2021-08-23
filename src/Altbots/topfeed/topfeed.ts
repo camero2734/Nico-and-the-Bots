@@ -1,16 +1,20 @@
-import async from "async";
+import { Queue } from "bullmq";
 import consola from "consola";
-import { Client, Guild, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { minutesToMilliseconds } from "date-fns";
+import { Client, Guild, TextChannel } from "discord.js";
+import IORedis from "ioredis";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
+import F from "../../Helpers/funcs";
 import { rollbar } from "../../Helpers/rollbar";
 import { Watcher } from "./types/base";
 import { InstaWatcher, setupInstagram } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";
 import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
+import { JobType, queue } from "./worker";
 
-export class TopfeedBot {
+class TopfeedBot {
     client: Client;
     guild: Guild;
     ready: Promise<void>;
@@ -48,7 +52,7 @@ export class TopfeedBot {
                 await this.#createWatchers();
 
                 // Setup Instagram
-                // await setupInstagram();
+                await setupInstagram();
 
                 resolve();
             });
@@ -85,75 +89,92 @@ export class TopfeedBot {
     }
 
     async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
-        try {
-            if (watchers.length === 0) return;
+        if (watchers.length === 0) return;
 
-            const watchersType = watchers[0].type;
-            consola.info(`Checking watchers ${watchersType}`);
+        const watchersType = watchers[0].type;
+        consola.info(`Checking watchers ${watchersType}`);
 
-            for (const watcher of watchers) {
-                if (watcher.type !== watchersType) {
-                    throw new Error("checkGroup must be called with an array of the same types of watchers");
-                }
-
-                const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
-
-                consola.info(`  Checking ${watchersType} ${watcher.handle}`);
-
-                const [_items, allMsgs] = await watcher.fetchNewItems();
-                for (const post of allMsgs) {
-                    // First msg is sent to channel, rest are threaded
-                    const [mainMsg, ...threadedMsgs] = post;
-
-                    const partialTitle =
-                        `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
-                    const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
-
-                    const threadStarter = await chan.send(mainMsg);
-                    if (threadedMsgs.length < 1) {
-                        watcher.afterCheck(threadStarter);
-                        continue;
-                    }
-
-                    const shouldAvoidThread = watcher.type === "Youtube";
-                    if (shouldAvoidThread) {
-                        for (const msg of threadedMsgs) {
-                            await chan.send(msg);
-                        }
-                        watcher.afterCheck(threadStarter);
-                        continue;
-                    }
-
-                    const thread = await threadStarter.startThread({
-                        name: threadTitle,
-                        autoArchiveDuration: 60
-                    });
-
-                    try {
-                        for (const msg of threadedMsgs) {
-                            await thread.send(msg);
-                        }
-                    } catch (e) {
-                        console.log(e);
-                    }
-
-                    // Automatically archive the channel
-                    await thread.setArchived(true);
-
-                    watcher.afterCheck(threadStarter);
-                }
+        for (const watcher of watchers) {
+            if (watcher.type !== watchersType) {
+                throw new Error("checkGroup must be called with an array of the same types of watchers");
             }
-        } catch (e) {
-            if (e instanceof Error) rollbar.error(e);
-            else rollbar.error(`${e}`);
+
+            const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
+
+            consola.info(`  Checking ${watchersType} ${watcher.handle}`);
+
+            const [_items, allMsgs] = await watcher.fetchNewItems();
+            for (const post of allMsgs) {
+                // First msg is sent to channel, rest are threaded
+                const [mainMsg, ...threadedMsgs] = post;
+
+                const partialTitle =
+                    `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
+                const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
+
+                const threadStarter = await chan.send(mainMsg);
+                if (threadedMsgs.length < 1) {
+                    watcher.afterCheck(threadStarter);
+                    continue;
+                }
+
+                const shouldAvoidThread = watcher.type === "Youtube";
+                if (shouldAvoidThread) {
+                    for (const msg of threadedMsgs) {
+                        await chan.send(msg);
+                    }
+                    watcher.afterCheck(threadStarter);
+                    continue;
+                }
+
+                const thread = await threadStarter.startThread({
+                    name: threadTitle,
+                    autoArchiveDuration: 60
+                });
+
+                try {
+                    for (const msg of threadedMsgs) {
+                        await thread.send(msg);
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+
+                // Automatically archive the channel
+                await thread.setArchived(true);
+
+                watcher.afterCheck(threadStarter);
+            }
         }
     }
 
-    async checkAll(): Promise<void> {
-        await this.ready; // Wait  until the bot is logged in
-        await this.#checkGroup(this.youtubes);
-        await this.#checkGroup(this.websites);
-        await this.#checkGroup(this.twitters);
-        // await this.#checkGroup(this.instagrams);
+    async checkGroup(jobType: JobType): Promise<void> {
+        const methods: Record<JobType, () => void> = {
+            YOUTUBE: () => this.#checkGroup(this.youtubes),
+            INSTAGRAM: () => this.#checkGroup(this.instagrams),
+            TWITTER: () => this.#checkGroup(this.twitters),
+            WEBSITES: () => this.#checkGroup(this.websites)
+        };
+        if (methods[jobType]) methods[jobType]();
+        else rollbar.error(new Error("Invalid JobType"));
+    }
+
+    async registerChecks(): Promise<void> {
+        const numMinutes: Record<JobType, number> = {
+            YOUTUBE: 5,
+            INSTAGRAM: 15,
+            TWITTER: 2,
+            WEBSITES: 1
+        };
+
+        console.log(await queue.getDelayedCount());
+
+        for (const [jobType, mins] of F.entries(numMinutes)) {
+            await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins), limit: 1 } });
+        }
     }
 }
+
+// Singleton 😤
+const topfeedBot = new TopfeedBot();
+export default topfeedBot;

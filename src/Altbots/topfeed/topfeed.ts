@@ -85,62 +85,67 @@ export class TopfeedBot {
     }
 
     async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
-        if (watchers.length === 0) return;
+        try {
+            if (watchers.length === 0) return;
 
-        const watchersType = watchers[0].type;
-        consola.info(`Checking watchers ${watchersType}`);
+            const watchersType = watchers[0].type;
+            consola.info(`Checking watchers ${watchersType}`);
 
-        for (const watcher of watchers) {
-            if (watcher.type !== watchersType) {
-                throw new Error("checkGroup must be called with an array of the same types of watchers");
-            }
-
-            const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
-
-            consola.info(`  Checking ${watchersType} ${watcher.handle}`);
-
-            const [_items, allMsgs] = await watcher.fetchNewItems();
-            for (const post of allMsgs) {
-                // First msg is sent to channel, rest are threaded
-                const [mainMsg, ...threadedMsgs] = post;
-
-                const partialTitle =
-                    `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
-                const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
-
-                const threadStarter = await chan.send(mainMsg);
-                if (threadedMsgs.length < 1) {
-                    watcher.afterCheck(threadStarter);
-                    continue;
+            for (const watcher of watchers) {
+                if (watcher.type !== watchersType) {
+                    throw new Error("checkGroup must be called with an array of the same types of watchers");
                 }
 
-                const shouldAvoidThread = watcher.type === "Youtube";
-                if (shouldAvoidThread) {
-                    for (const msg of threadedMsgs) {
-                        await chan.send(msg);
+                const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
+
+                consola.info(`  Checking ${watchersType} ${watcher.handle}`);
+
+                const [_items, allMsgs] = await watcher.fetchNewItems();
+                for (const post of allMsgs) {
+                    // First msg is sent to channel, rest are threaded
+                    const [mainMsg, ...threadedMsgs] = post;
+
+                    const partialTitle =
+                        `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
+                    const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
+
+                    const threadStarter = await chan.send(mainMsg);
+                    if (threadedMsgs.length < 1) {
+                        watcher.afterCheck(threadStarter);
+                        continue;
                     }
-                    watcher.afterCheck(threadStarter);
-                    continue;
-                }
 
-                const thread = await threadStarter.startThread({
-                    name: threadTitle,
-                    autoArchiveDuration: 60
-                });
-
-                try {
-                    for (const msg of threadedMsgs) {
-                        await thread.send(msg);
+                    const shouldAvoidThread = watcher.type === "Youtube";
+                    if (shouldAvoidThread) {
+                        for (const msg of threadedMsgs) {
+                            await chan.send(msg);
+                        }
+                        watcher.afterCheck(threadStarter);
+                        continue;
                     }
-                } catch (e) {
-                    console.log(e);
+
+                    const thread = await threadStarter.startThread({
+                        name: threadTitle,
+                        autoArchiveDuration: 60
+                    });
+
+                    try {
+                        for (const msg of threadedMsgs) {
+                            await thread.send(msg);
+                        }
+                    } catch (e) {
+                        console.log(e);
+                    }
+
+                    // Automatically archive the channel
+                    await thread.setArchived(true);
+
+                    watcher.afterCheck(threadStarter);
                 }
-
-                // Automatically archive the channel
-                await thread.setArchived(true);
-
-                watcher.afterCheck(threadStarter);
             }
+        } catch (e) {
+            if (e instanceof Error) rollbar.error(e);
+            else rollbar.error(`${e}`);
         }
     }
 

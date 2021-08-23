@@ -14,7 +14,8 @@
         "dyno:stop": "heroku scale worker=0",
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
-        "postinstall": "patch-package"
+        "postinstall": "patch-package",
+        "heroku-postbuild": "patch-package"
     },
     "engines": {
         "node": ">= 16.6.0"

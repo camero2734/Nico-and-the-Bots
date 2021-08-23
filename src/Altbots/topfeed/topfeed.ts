@@ -170,7 +170,7 @@ class TopfeedBot {
         console.log(await queue.getDelayedCount());
 
         for (const [jobType, mins] of F.entries(numMinutes)) {
-            await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins), limit: 1 } });
+            await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins) } });
         }
     }
 }

@@ -29,7 +29,7 @@ export class YoutubeWatcher extends Watcher<YoutubeType> {
         });
 
         return videos.map((v) => ({
-            uniqueIdentifier: v.id,
+            uniqueIdentifier: v.snippet.resourceId.videoId,
             ping: true,
             _data: {
                 url: `https://www.youtube.com/watch?v=${v.snippet.resourceId.videoId}`,

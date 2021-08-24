@@ -37,6 +37,8 @@ command.setHandler(async (ctx) => {
         }
     }
 
+    previousPings[0].time
+
     const average = Math.floor(pingSum / pingCount);
 
     const embed = new MessageEmbed()

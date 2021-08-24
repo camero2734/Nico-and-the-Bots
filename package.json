@@ -48,6 +48,7 @@
         "consola": "^2.15.3",
         "date-fns": "^2.22.1",
         "discord.js": "^13.2.0-dev.1628899443.615afab",
+        "emittery": "^0.9.2",
         "emoji-regex": "^9.2.2",
         "esbuild-node-tsc": "^1.6.0",
         "eslint": "^7.26.0",

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ApplicationCommandOptionData,
     ChatInputApplicationCommandData,
@@ -19,6 +20,12 @@ import { sendStaffUsedCommandEmbed } from "../InteractionEntrypoints/messageinte
 import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
+import Emittery from "emittery";
+
+export const SlashCommandEvents = new Emittery<{
+    commandStarted: { command: SlashCommand<any>; ctx: typeof SlashCommand.GenericContextType };
+    commandCompleted: { command: SlashCommand<any>; ctx: typeof SlashCommand.GenericContextType };
+}>();
 
 type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
     opts: OptsType<SlashCommandData<T>>;
@@ -56,6 +63,8 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
 
         await this.handler(ctx);
+
+        SlashCommandEvents.emit("commandCompleted", { command: this, ctx });
 
         if (ctx.commandName === "staff") {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

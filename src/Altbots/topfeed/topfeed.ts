@@ -14,6 +14,7 @@ import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
 import { JobType, queue } from "./worker";
 
+const onHeroku = process.env.ON_HEROKU === "1";
 class TopfeedBot {
     client: Client;
     guild: Guild;
@@ -52,7 +53,8 @@ class TopfeedBot {
                 await this.#createWatchers();
 
                 // Setup Instagram
-                await setupInstagram();
+                // Instagram doesn't run in dev since logging in so often gets the account flagged
+                if (onHeroku) await setupInstagram();
 
                 resolve();
             });
@@ -92,6 +94,10 @@ class TopfeedBot {
         if (watchers.length === 0) return;
 
         const watchersType = watchers[0].type;
+
+        // Instagram doesn't run in dev since logging in so often gets the account flagged
+        if (watchersType === "Instagram" && !onHeroku) return;
+
         consola.info(`Checking watchers ${watchersType}`);
 
         for (const watcher of watchers) {

@@ -63,7 +63,7 @@ client.on("ready", async () => {
     setup();
 
     // Send started message
-    const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
+    const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
     await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
     await guild.members.fetch();
 

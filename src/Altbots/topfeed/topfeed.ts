@@ -6,7 +6,7 @@ import IORedis from "ioredis";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
-import { rollbar } from "../../Helpers/rollbar";
+import { rollbar } from "../../Helpers/logging/rollbar";
 import { Watcher } from "./types/base";
 import { InstaWatcher, setupInstagram } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";

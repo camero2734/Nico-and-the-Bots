@@ -1,7 +1,7 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { minutesToMilliseconds } from "date-fns";
 import IORedis from "ioredis";
-import { rollbar } from "../../Helpers/rollbar";
+import { rollbar } from "../../Helpers/logging/rollbar";
 import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";

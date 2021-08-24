@@ -15,7 +15,7 @@ import normalizeURL from "normalize-url";
 import PageRes from "pageres";
 import R from "ramda";
 import { channelIDs } from "../../../Configuration/config";
-import { rollbar } from "../../../Helpers/rollbar";
+import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
 import { imageHash } from "image-hash";
 import consola from "consola";

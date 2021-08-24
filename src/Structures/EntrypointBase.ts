@@ -78,7 +78,7 @@ export abstract class InteractionEntrypoint<
 
             EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx });
             await this._run(ctx, ...HandlerArgs);
-            EntrypointEvents.emit("entrypointCompleted", { entrypoint: this, ctx });
+            EntrypointEvents.emit("entrypointFinished", { entrypoint: this, ctx });
         } catch (e) {
             EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx });
             ErrorHandler(ctx, e);

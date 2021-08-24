@@ -6,7 +6,7 @@ import { SlashCommand } from "./EntrypointSlashCommand";
 
 export const EntrypointEvents = new Emittery<{
     entrypointStarted: { entrypoint: InteractionEntrypoint<any, any>; ctx: Interaction };
-    entrypointCompleted: { entrypoint: InteractionEntrypoint<any, any>; ctx: Interaction };
+    entrypointFinished: { entrypoint: InteractionEntrypoint<any, any>; ctx: Interaction };
     entrypointErrored: { entrypoint: InteractionEntrypoint<any, any>; ctx: Interaction };
-    slashCommandCompleted: { entrypoint: SlashCommand<any>; ctx: typeof SlashCommand.GenericContextType };
+    slashCommandFinished: { entrypoint: SlashCommand<any>; ctx: typeof SlashCommand.GenericContextType };
 }>();

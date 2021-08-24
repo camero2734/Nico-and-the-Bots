@@ -11,6 +11,7 @@ import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
 import { getConcertChannelManager } from "./src/Helpers/concert-channels";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
+import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";
@@ -148,6 +149,7 @@ async function setup() {
 
     Scheduler(client);
     topfeedBot.registerChecks();
+    logEntrypointEvents();
 
     // Concert channels
     const concertManager = getConcertChannelManager(guild);

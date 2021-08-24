@@ -57,7 +57,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
 
         await this.handler(ctx);
-        EntrypointEvents.emit("slashCommandCompleted", { entrypoint: this, ctx });
+        EntrypointEvents.emit("slashCommandFinished", { entrypoint: this, ctx });
     }
 
     _register(path: string[]): string {

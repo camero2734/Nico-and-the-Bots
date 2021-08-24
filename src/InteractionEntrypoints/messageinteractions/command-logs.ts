@@ -29,7 +29,7 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
 });
 
 // Creates embed w/ button that this Interaction acts on when pressed
-EntrypointEvents.on("slashCommandCompleted", async ({ entrypoint, ctx }) => {
+EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
     if (ctx.commandName !== "staff") return; // Only staff commands
 
     const member = ctx.member;

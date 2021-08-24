@@ -1,6 +1,6 @@
 import { CommandInteraction, DMChannel, Interaction, MessageEmbed, TextChannel } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
-import { rollbar } from "../Helpers/rollbar";
+import { rollbar } from "../Helpers/logging/rollbar";
 
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };

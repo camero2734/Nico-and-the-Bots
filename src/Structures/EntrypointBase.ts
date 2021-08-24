@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
+import { EntrypointEvents } from "./Events";
 import { createInteractionListener, InteractionListener, ListenerCustomIdGenerator } from "./ListenerInteraction";
 import { ReactionListener } from "./ListenerReaction";
 
@@ -76,8 +76,11 @@ export abstract class InteractionEntrypoint<
             }
             if (!canUse) throw new CommandError("You don't have permission to use this command!");
 
+            EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx });
             await this._run(ctx, ...HandlerArgs);
+            EntrypointEvents.emit("entrypointCompleted", { entrypoint: this, ctx });
         } catch (e) {
+            EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx });
             ErrorHandler(ctx, e);
         }
     }

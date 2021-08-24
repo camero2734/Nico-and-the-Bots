@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
-import { InteractionEntrypoint } from "../../Structures/EntrypointBase";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
-import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
-import { OptsType, SlashCommandData } from "../../Structures/SlashCommandOptions";
+import { EntrypointEvents } from "../../Structures/Events";
 
 const msgInt = new MessageInteraction();
+
 const args = <const>["title"];
 const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", args, async (ctx, args) => {
     await ctx.update({ components: [] });
@@ -29,17 +28,20 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
     await thread.send({ embeds: [threadEmbed] });
 });
 
-export async function sendStaffUsedCommandEmbed(
-    command: InteractionEntrypoint<any, any>,
-    member: GuildMember,
-    opts?: Record<string, any>
-): Promise<void> {
-    const commandName = command.identifier;
+// Creates embed w/ button that this Interaction acts on when pressed
+EntrypointEvents.on("slashCommandCompleted", async ({ entrypoint, ctx }) => {
+    if (ctx.commandName !== "staff") return; // Only staff commands
+
+    const member = ctx.member;
+    const opts = ctx.opts as Record<string, string>;
+
+    const commandName = entrypoint.identifier;
     const args = opts
         ? Object.entries(opts)
               .map(([key, val]) => `\`${key}\`: ${val}`)
               .join(", ")
         : "*None*";
+
     const embed = new MessageEmbed()
         .setAuthor(member.displayName, member.user.displayAvatarURL())
         .setTitle(`${commandName} used`)
@@ -57,6 +59,6 @@ export async function sendStaffUsedCommandEmbed(
     ]);
 
     await staffCommandLogChan.send({ embeds: [embed], components: [actionRow] });
-}
+});
 
 export default msgInt;

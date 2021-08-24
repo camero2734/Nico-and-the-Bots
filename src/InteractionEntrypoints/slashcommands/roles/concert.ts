@@ -59,7 +59,7 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
             concerts.map((c) => ({
                 label: c.name,
                 value: c.concert.id,
-                description: c.concert.description || c.name
+                description: c.concert.venue.location
             }))
         )
         .setPlaceholder("Select some concert(s)")

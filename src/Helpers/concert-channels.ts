@@ -54,8 +54,28 @@ class ConcertChannel {
         return true;
     }
 
-    get channelID() {
-        return this.guild.channels.cache.find((c) => c.name === this.channelName)?.id;
+    get name() {
+        return this.concert.title || this.concert.venue.name;
+    }
+
+    get country() {
+        return (
+            this.concert?.venue?.country
+                .toLowerCase()
+                .replace(/ +/g, "-")
+                .replace(/[^\w-]/g, "")
+                .substring(0, 32) || "other"
+        );
+    }
+
+    get channel() {
+        return this.guild.channels.cache.find((c) => c.name === this.channelName) as TextChannel | undefined;
+    }
+
+    async getAssociatedRole() {
+        const roles = await this.guild.roles.fetch();
+        const role = roles.find((r) => r.name === this.channel?.name);
+        return role;
     }
 }
 
@@ -193,4 +213,10 @@ class ConcertChannelManager {
     }
 }
 
-export default ConcertChannelManager;
+let concertChannelManager: ConcertChannelManager;
+
+export const getConcertChannelManager = function (guild: Guild) {
+    if (!concertChannelManager) concertChannelManager = new ConcertChannelManager(guild);
+
+    return concertChannelManager;
+};

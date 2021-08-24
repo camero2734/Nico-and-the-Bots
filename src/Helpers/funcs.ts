@@ -24,7 +24,7 @@ const timestampTypes = <const>{
 };
 
 const F = {
-    titleCase: R.pipe(R.split(""), R.adjust(0, R.toUpper), R.join("")),
+    titleCase: (str: string) => str.split(" ").map(a => `${a[0].toUpperCase()}${a.slice(1).toLowerCase()}`).join(" "), // prettier-ignore
     lerp: (n: number, low: number, high: number): number => n * (high - low) + low,
     unlerp: (n: number, low: number, high: number): number => (n - low) / (high - low),
     // the default Object.entries function does not retain type information

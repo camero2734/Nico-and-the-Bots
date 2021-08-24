@@ -9,19 +9,12 @@ import { NULL_CUSTOM_ID } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
+import { getConcertChannelManager } from "./src/Helpers/concert-channels";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
-import { BotLogInteractionListener } from "./src/Helpers/interaction-listeners/bot-logs";
-import { prisma } from "./src/Helpers/prisma-init";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";
-import {
-    ApplicationData,
-    ContextMenus,
-    InteractionHandlers,
-    ReactionHandlers,
-    SlashCommands
-} from "./src/Structures/data";
+import { ContextMenus, InteractionHandlers, ReactionHandlers, SlashCommands } from "./src/Structures/data";
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
@@ -46,7 +39,7 @@ const client = new Discord.Client({
     partials: ["REACTION", "USER", "MESSAGE"]
 });
 const keonsBot = new KeonsBot();
-let sacarverBot: SacarverBot;
+const sacarverBot = new SacarverBot();
 
 extendPrototypes();
 
@@ -64,29 +57,17 @@ client.on("ready", async () => {
     await entrypointsReady;
     InteractionEntrypoint.registerAllCommands(guild);
 
-    addManualInteractionHandlers();
-
-    // await dynamicCommandSetup(commands);
-
-    // topfeedBot = new TopfeedBot(connection);
-
-    // await topfeedBot
-    //     .checkAll()
-    //     .catch(console.log)
-    //     .finally(() => process.exit(0));
-
-    sacarverBot = new SacarverBot();
-
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
 
+    // Send started message
     const botChan = guild.channels.cache.get(channelIDs.bottest) as Discord.TextChannel;
     await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
-    guild.members.fetch().then(() => {
-        botChan.send({
-            embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
-        });
+    await guild.members.fetch();
+
+    await botChan.send({
+        embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
     });
 });
 
@@ -152,13 +133,14 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 
-function setup() {
-    //LOAD FONTS
+async function setup() {
+    const guild = await client.guilds.fetch(guildID);
+
+    // Load fonts into node-canvas
     const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
     for (const font of fonts) registerFont(`./src/Assets/fonts/${font}.ttf`, { family: "futura" });
 
     registerFont(`./src/Assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
-
     registerFont(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
     registerFont(`./src/Assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
     registerFont(`./src/Assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
@@ -166,60 +148,11 @@ function setup() {
 
     Scheduler(client);
     topfeedBot.registerChecks();
+
+    // Concert channels
+    const concertManager = getConcertChannelManager(guild);
+    await concertManager.fetchConcerts();
+    await concertManager.checkChannels();
 }
-
-function addManualInteractionHandlers() {
-    // Listens for "More Info" on items in log channels
-    InteractionHandlers.set(BotLogInteractionListener.name, BotLogInteractionListener.interaction);
-}
-
-// async function dynamicCommandSetup(commands: Command[]): Promise<void> {
-//     const guild = await client.guilds.fetch(guildID);
-
-//     // Concert channels
-//     const concertManager = new ConcertChannelManager(guild);
-//     await concertManager.fetchConcerts();
-//     await concertManager.checkChannels();
-
-//     const concertsByCountry: Record<string, typeof concertManager["concertChannels"]> = {};
-
-//     for (const concert of concertManager.concertChannels) {
-//         const country =
-//             concert.concert?.venue?.country
-//                 .toLowerCase()
-//                 .replace(/ +/g, "-")
-//                 .replace(/[^\w-]/g, "")
-//                 .substring(0, 32) || "other";
-//         if (!concertsByCountry[country]) concertsByCountry[country] = [];
-//         concertsByCountry[country].push(concert);
-//     }
-
-//     const rolesCommands = commands.find((c) => c.commandName === "roles");
-//     const command = rolesCommands?.options?.find((o) => o.name === "concert") as ApplicationCommandOptionSubCommand;
-//     if (!command) {
-//         console.error("Couldn't find command");
-//         return;
-//     } else console.log(`Got command: ${command.description}`);
-
-//     command.options = [];
-//     for (const [countryName, allConcerts] of Object.entries(concertsByCountry)) {
-//         const subdivisions = R.splitEvery(25, allConcerts);
-//         for (let i = 0; i < subdivisions.length; i++) {
-//             const concerts = subdivisions[i];
-//             command.options.push({
-//                 name: `${countryName}${i === 0 ? "" : i}`,
-//                 description: `Select a concert in ${countryName}`,
-//                 required: false,
-//                 type: CommandOptionType.STRING,
-//                 choices: concerts.map((c) => ({
-//                     name: c.concert.title || c.concert.venue.name,
-//                     value: c.channelID || ""
-//                 }))
-//             });
-//         }
-//     }
-
-//     // console.log(command.options);
-// }
 
 export const NicoClient = client;

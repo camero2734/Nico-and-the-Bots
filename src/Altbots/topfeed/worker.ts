@@ -1,7 +1,6 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { minutesToMilliseconds } from "date-fns";
 import IORedis from "ioredis";
-import { rollbar } from "../../Helpers/logging/rollbar";
 import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";
@@ -18,7 +17,8 @@ export const queue = new Queue<any, any, JobType>(QUEUE_NAME, {
         backoff: {
             type: "exponential",
             delay: minutesToMilliseconds(5) // 5m, 10m, 20m, 40m, 1.5h, 3h, etc.
-        }
+        },
+        removeOnComplete: true
     }
 });
 

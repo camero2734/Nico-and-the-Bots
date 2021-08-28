@@ -268,7 +268,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
         return memRoles?.cache.has(roles.staff);
     };
 
-    timedListener.wait(120 * 1000, filter).then((buttonPressed) => {
+    timedListener.wait(120 * 1000, filter).then(([buttonPressed]) => {
         if (buttonPressed === cancelId) {
             cancelled = true;
             m.delete();

@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
         components: [dmActionRow]
     });
 
-    const buttonPressed = await timedListener.wait();
+    const [buttonPressed] = await timedListener.wait();
 
     if (buttonPressed !== beginId) {
         await dmMessage.edit({

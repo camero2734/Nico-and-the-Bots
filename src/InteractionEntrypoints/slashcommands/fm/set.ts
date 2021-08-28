@@ -74,7 +74,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });
 
-    const buttonPressed = await timedListener.wait();
+    const [buttonPressed] = await timedListener.wait();
 
     if (buttonPressed !== yesId) {
         const failEmbed = new MessageEmbed({ description: "Setting FM username cancelled." });

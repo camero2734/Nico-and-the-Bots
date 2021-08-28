@@ -90,7 +90,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({ embeds: [embed.toJSON()], components: [actionRow] });
 
-    const buttonPressed = await timedListener.wait();
+    const [buttonPressed] = await timedListener.wait();
     if (buttonPressed !== yesId) {
         await ctx.editReply({
             embeds: [new MessageEmbed({ description: "Submission cancelled." })],

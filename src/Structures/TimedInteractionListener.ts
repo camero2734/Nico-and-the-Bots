@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-    CollectorFilter,
-    ContextMenuInteraction,
-    GuildMember,
-    Message,
-    MessageComponentInteraction,
-    TextChannel
-} from "discord.js";
+import { CollectorFilter, Message, MessageComponentInteraction } from "discord.js";
 import F from "../Helpers/funcs";
 import { ContextMenu } from "./EntrypointContextMenu";
 import { SlashCommand } from "./EntrypointSlashCommand";
@@ -29,23 +22,23 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
     async wait(
         timeOutMs = 30000,
         inFilter: CollectorFilter<[MessageComponentInteraction]> = async () => true
-    ): Promise<IDsMapped<IDs>[number] | null> {
+    ): Promise<[IDsMapped<IDs>[number], MessageComponentInteraction] | []> {
         const promises = this.customIDs.map((customID) => {
-            return new Promise<string | null>((resolve) => {
-                const timeout = setTimeout(() => resolve(null), timeOutMs);
+            return new Promise<[string, MessageComponentInteraction] | []>((resolve) => {
+                const timeout = setTimeout(() => resolve([]), timeOutMs);
 
                 const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID && inFilter(interaction); // prettier-ignore
                 const collector = this.ctx.channel.createMessageComponentCollector({ filter });
 
-                collector.on("collect", () => {
+                collector.on("collect", async (ctx) => {
                     clearTimeout(timeout);
-                    resolve(customID);
+                    resolve([customID, ctx]);
                 });
                 collector.on("end", () => console.log(`${customID} collector ended`));
             });
         });
 
         const result = await Promise.race(promises); // We only care about the first button pressed
-        return result as IDsMapped<IDs>[number] | null;
+        return result as [IDsMapped<IDs>[number], MessageComponentInteraction];
     }
 }

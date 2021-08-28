@@ -68,7 +68,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({ embeds: [confirmationEmbed.toJSON()], components: [actionRow] });
 
-    const buttonPressed = await ephemeralListener.wait();
+    const [buttonPressed] = await ephemeralListener.wait();
     if (buttonPressed !== submitId) {
         await ctx.editReply({ embeds: [new MessageEmbed({ description: "Warning not submitted" })] });
         return;

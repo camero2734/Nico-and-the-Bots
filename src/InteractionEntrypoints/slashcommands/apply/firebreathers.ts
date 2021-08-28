@@ -18,22 +18,30 @@ command.setHandler(async (ctx) => {
         throw new CommandError("This command is not available yet.");
     }
 
-    let dmMessage: Message;
-    try {
-        const dm = await ctx.member.createDM();
-        dmMessage = await dm.send({ embeds: [new MessageEmbed({ description: "Setting up the application..." })] });
-    } catch {
-        await ctx.send({
-            embeds: [new MessageEmbed({ description: "Your DMs must be enabled for this command to work." })]
-        });
-        return;
-    }
-
-    const application = await createFBApplication(dmMessage, ctx.member);
-
-    await ctx.send({ embeds: [new MessageEmbed({ description: "The application was DM'd to you!" })] });
+    const thread = await ctx.channel.threads.create({
+        type: "GUILD_PRIVATE_THREAD",
+        autoArchiveDuration: 60,
+        name: `${ctx.member.displayName} Firebreather Application`
+        // invitable: false // Not supported yet but will be by release
+    });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { warnings: true });
+
+    const msg = await thread.send({
+        content: `${ctx.member}`, // Mention the user to invite them to the thread
+        embeds: [new MessageEmbed({ description: "Setting up the application..." })]
+    });
+
+    const application = await createFBApplication(msg, ctx.member);
+
+    const replyActionRow = new MessageActionRow().addComponents([
+        new MessageButton({ label: "View thread", style: "LINK", url: msg.url })
+    ]);
+
+    await ctx.send({
+        embeds: [new MessageEmbed({ description: "The application is available in the thread you were mentioned in" })],
+        components: [replyActionRow]
+    });
 
     const activityDescription = [
         `**Level:** ${dbUser.level}`,
@@ -103,7 +111,7 @@ command.setHandler(async (ctx) => {
         components: [actionRow]
     });
 
-    const buttonPressed = await timedListener.wait();
+    const [buttonPressed] = await timedListener.wait();
 
     if (buttonPressed !== submitId) {
         ctx.editReply({ embeds: [new MessageEmbed({ description: "Your application was not submitted." })] });

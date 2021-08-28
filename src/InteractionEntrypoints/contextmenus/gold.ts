@@ -104,7 +104,7 @@ async function handleGold(ctx: typeof ContextMenu.GenericContextType, msg: Messa
         // ephemeral: true
     });
 
-    const buttonPressed = await timedListener.wait();
+    const [buttonPressed] = await timedListener.wait();
 
     if (buttonPressed !== yesId) {
         throw new CommandError(

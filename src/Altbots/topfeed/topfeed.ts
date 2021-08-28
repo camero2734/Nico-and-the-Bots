@@ -1,8 +1,6 @@
-import { Queue } from "bullmq";
 import consola from "consola";
 import { minutesToMilliseconds } from "date-fns";
 import { Client, Guild, TextChannel } from "discord.js";
-import IORedis from "ioredis";
 import { channelIDs, guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";

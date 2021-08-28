@@ -1,5 +1,6 @@
 import { Guild, MessageActionRow, MessageEmbed, MessageSelectMenu, Role } from "discord.js";
 import R from "ramda";
+import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -121,5 +122,7 @@ function getConcertsByCountry(guild: Guild) {
 
     return concertsByCountry;
 }
+
+command.addPermission(roles.banditos, true);
 
 export default command;

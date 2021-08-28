@@ -101,6 +101,7 @@ export abstract class InteractionEntrypoint<
             //
         }
 
+        // TODO: When Discord makes their permission system more granular
         // guild.commands.permissions.set()
     }
 }

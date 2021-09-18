@@ -115,8 +115,7 @@ command.setHandler(async (ctx) => {
         await thread.send({
             embeds: [
                 new MessageEmbed({
-                    description:
-                        "Welcome to the discussion for the poll! Unfortunately, Discord's thread notifications is currently a little weird, so here are some tips:\n\n`1.` When you send a message here, Discord signs you up for all notifications. You can change this by hitting the bell icon and changing to `Only mentions` or `Nothing`.\n\n`2.` If you want to remove the thread from your channel list, right click the thread channel and hit `Leave thread`.\n\nWe expect Discord to fix these issues soon, so if any other issues arise please let the staff know!"
+                    description: "Welcome to the discussion for the poll!"
                 })
             ]
         });
@@ -163,7 +162,7 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
     const embed = ctx.message.embeds[0];
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
-    await msg.edit({ embeds: [embed] });
+    await ctx.update({ embeds: [embed] });
 });
 
 type PollWithVotes = Poll & { votes: Vote[] };

@@ -1,5 +1,5 @@
 import { startOfDay } from "date-fns";
-import { DiscordAPIError, Message, MessageEmbed, MessageReference, TextChannel } from "discord.js";
+import { DiscordAPIError, Message, MessageEmbed, MessageReference, Snowflake, TextChannel } from "discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 
@@ -46,7 +46,7 @@ new Worker(
             if (!msgRef?.messageId) throw Error("no msg id");
 
             // These should be cached via discord.js so lookup time is no issue
-            const guild = await NicoClient.guilds.fetch(msgRef.guildId);
+            const guild = await NicoClient.guilds.fetch(msgRef.guildId as Snowflake);
             const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
             const msg = await channel.messages.fetch(msgRef.messageId);
 

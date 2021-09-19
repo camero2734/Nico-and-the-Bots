@@ -34,8 +34,10 @@ command.setHandler(async (ctx) => {
 
 // Main Menu
 const genMainMenuId = command.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
+    // await ctx.deferReply({ ephemeral: true });
+
     const initialMsg = await generateMainMenuEmbed(ctx.member);
-    await ctx.editReply(initialMsg);
+    await ctx.update(initialMsg);
 });
 
 // Category submenu
@@ -43,6 +45,8 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
     const categories = getColorRoleCategories(ctx.guild.roles);
     const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
+
+    await ctx.deferUpdate();
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
 
@@ -68,7 +72,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
                 disabled: cantAfford,
                 style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
                 label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
-                customId: !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID,
+                customId: !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID(),
                 emoji: contraband ? <EmojiIdentifierResolvable>{ name: "🩸" } : undefined
             });
         })
@@ -83,6 +87,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
     );
 
     const components = MessageTools.allocateButtonsIntoRows(actionRow.components);
+    console.log(components[0].components[0]);
 
     ctx.editReply({ embeds: [embed], components });
 });
@@ -143,7 +148,7 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
             })
         ]);
 
-        await ctx.editReply({ embeds: [embed], components: roleComponents });
+        await ctx.update({ embeds: [embed], components: roleComponents });
     } else if (actionType === ActionTypes.Purchase) {
         // Purchase
         if (!category.data.purchasable(role.id, ctx.member, dbUser))
@@ -181,7 +186,7 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
         } finally {
             embed.fields = [];
             embed.description += ` This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}` // prettier-ignore
-            ctx.editReply({ embeds: [embed], components: [] });
+            ctx.update({ embeds: [embed], components: [] });
         }
 
         if (contraband) {
@@ -218,7 +223,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
                 label: unlocked
                     ? `${idx + 1}. ${label}`
                     : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
-                customId: unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID,
+                customId: unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID(),
                 emoji: unlocked ? undefined : ({ name: "🔒" } as EmojiIdentifierResolvable)
             });
         })

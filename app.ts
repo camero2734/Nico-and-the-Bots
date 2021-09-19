@@ -5,7 +5,7 @@ import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID } from "./src/Configuration/config";
-import { NULL_CUSTOM_ID } from "./src/Configuration/definitions";
+import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
@@ -108,7 +108,7 @@ client.on("interactionCreate", async (interaction) => {
 
         command.run(interaction, undefined);
     } else if (interaction.isMessageComponent()) {
-        if (interaction.customId === NULL_CUSTOM_ID) return;
+        if (interaction.customId.startsWith(NULL_CUSTOM_ID_PREFIX)) return;
 
         console.log(`Got interaction: ${interaction.customId}`);
         const [interactionID] = interaction.customId.split(":");

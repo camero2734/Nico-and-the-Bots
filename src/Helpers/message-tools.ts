@@ -1,4 +1,12 @@
-import { Collection, Message, MessageActionRow, MessageEmbed, Snowflake, TextChannel } from "discord.js";
+import {
+    Collection,
+    Message,
+    MessageActionRow,
+    MessageActionRowComponent,
+    MessageEmbed,
+    Snowflake,
+    TextChannel
+} from "discord.js";
 import { constants } from "../Configuration/config";
 
 export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): MessageEmbed {
@@ -21,18 +29,16 @@ export const MessageTools = {
     },
 
     /** Takes an array of buttons and places them into an array of Action Row components */
-    allocateButtonsIntoRows<T extends MessageActionRow>(buttons: T["components"][number][]): T[] {
-        const components: T[] = [];
+    allocateButtonsIntoRows(buttons: MessageActionRowComponent[]): MessageActionRow[] {
+        const components = [] as MessageActionRow[];
 
         if (buttons.length > constants.ACTION_ROW_MAX_ITEMS * constants.MAX_ACTION_ROWS)
             throw new Error("Too many buttons");
 
         for (let i = 0; i < buttons.length; i += constants.ACTION_ROW_MAX_ITEMS) {
             const slicedButtons = buttons.slice(i, i + constants.ACTION_ROW_MAX_ITEMS);
-            components.push(<T>{
-                type: "ACTION_ROW",
-                components: slicedButtons
-            });
+            const actionRow = new MessageActionRow().addComponents(slicedButtons);
+            components.push(actionRow);
         }
 
         return components;

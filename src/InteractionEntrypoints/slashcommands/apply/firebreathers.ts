@@ -21,8 +21,8 @@ command.setHandler(async (ctx) => {
     const thread = await ctx.channel.threads.create({
         type: "GUILD_PRIVATE_THREAD",
         autoArchiveDuration: 60,
-        name: `${ctx.member.displayName} Firebreather Application`
-        // invitable: false // Not supported yet but will be by release
+        name: `${ctx.member.displayName} Firebreather Application`,
+        invitable: false
     });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { warnings: true });
@@ -99,22 +99,28 @@ command.setHandler(async (ctx) => {
         confirmationEmbed.addField(question, answer);
     }
 
-    const timedListener = new TimedInteractionListener(ctx, <const>["submitId"]);
+    const timedListener = new TimedInteractionListener(msg, <const>["submitId"]);
     const [submitId] = timedListener.customIDs;
 
     const actionRow = new MessageActionRow().addComponents([
         new MessageButton({ label: "Submit", customId: submitId, style: "SUCCESS" })
     ]);
 
-    await ctx.editReply({
+    await msg.edit({
         embeds: [confirmationEmbed],
         components: [actionRow]
     });
 
     const [buttonPressed] = await timedListener.wait();
 
+    if (msg.channel.type === "GUILD_PRIVATE_THREAD") await msg.channel.delete();
     if (buttonPressed !== submitId) {
-        ctx.editReply({ embeds: [new MessageEmbed({ description: "Your application was not submitted." })] });
+        await ctx.followUp({
+            content: `${ctx.member}`,
+            embeds: [new MessageEmbed({ description: "Your application was not submitted." })],
+            ephemeral: true
+        });
+        return;
     }
 
     const staffChan = ctx.member.guild.channels.cache.get(channelIDs.deapplications) as TextChannel;
@@ -130,7 +136,7 @@ command.setHandler(async (ctx) => {
     const sentEmbed = new MessageEmbed().setDescription(
         "Submitted to the staff team!\n\nWe will get back to you as soon as possible."
     );
-    ctx.editReply({ embeds: [sentEmbed], components: [] });
+    ctx.followUp({ content: `${ctx.member}`, embeds: [sentEmbed], components: [], ephemeral: true });
 });
 
 export default command;

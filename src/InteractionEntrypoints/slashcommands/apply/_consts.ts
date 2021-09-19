@@ -103,8 +103,6 @@ export const createFBApplication = async (msg: Message, member: GuildMember) => 
 
     let ctx: MessageComponentInteraction;
 
-    const update = (opts: MessageOptions) => (ctx ? ctx.update(opts) : msg.edit(opts));
-
     return {
         async askQuestion(
             question: string,
@@ -132,7 +130,7 @@ export const createFBApplication = async (msg: Message, member: GuildMember) => 
             const actionRow = new MessageActionRow();
             actionRow.addComponents([new MessageButton({ label: "Continue", customId: continueId, style: "PRIMARY" })]);
 
-            await update({
+            await msg.edit({
                 embeds: [embed],
                 components: [actionRow]
             });
@@ -148,7 +146,7 @@ export const createFBApplication = async (msg: Message, member: GuildMember) => 
                 answer = m.content;
                 field.value = "```\n" + m.content + "```";
 
-                await update({
+                await msg.edit({
                     embeds: [embed.toJSON()],
                     components: [actionRow]
                 });
@@ -162,7 +160,9 @@ export const createFBApplication = async (msg: Message, member: GuildMember) => 
             if (buttonPressed !== continueId || !newCtx) {
                 throw new CommandError("Your application was cancelled. You may restart if you wish.");
             }
+
             ctx = newCtx; // Update context
+            ctx.deferUpdate();
 
             // Just reask the question since they didn't answer a required question
             if (requiresAnswer && field.value === NO_RESPONSE) {
@@ -179,6 +179,9 @@ export const createFBApplication = async (msg: Message, member: GuildMember) => 
         },
         getAnswers(): Record<string, string> {
             return answers;
+        },
+        getCtx() {
+            return ctx;
         }
     };
 };

@@ -71,3 +71,5 @@ command.setHandler(async (ctx) => {
     const embed = new MessageEmbed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
     return ctx.send({ embeds: [embed] });
 });
+
+export default command;

@@ -7,6 +7,7 @@ import {
     MessageButton,
     MessageComponentInteraction,
     MessageEmbed,
+    PartialGuildMember,
     Snowflake,
     TextChannel
 } from "discord.js";
@@ -59,6 +60,8 @@ export class SacarverBot {
             if (!interaction.isMessageComponent()) return;
             if (interaction.customId === ANNOUNCEMENTS_ID) return this.giveAnnouncementsRole(interaction);
         });
+
+        this.client.on("guildMemberUpdate", (...data) => this.handleMembershipScreening(...data));
     }
 
     async getMemberNumber(member: GuildMember): Promise<number> {
@@ -69,8 +72,6 @@ export class SacarverBot {
 
     async welcomeMember(member: GuildMember): Promise<void> {
         const welcomeChan = member.guild.channels.cache.get(channelIDs.welcometest) as TextChannel;
-
-        // await member.roles.add(roles.banditos);
 
         const memberNum = await this.getMemberNumber(member);
         console.log(`Member #${memberNum} joined`);
@@ -198,5 +199,11 @@ export class SacarverBot {
 
         const attachment = new MessageAttachment(canvas.toBuffer(), "welcome.png");
         return attachment;
+    }
+
+    async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {
+        if (oldMember.pending && !newMember.pending) {
+            await newMember.roles.add(roles.banditos);
+        }
     }
 }

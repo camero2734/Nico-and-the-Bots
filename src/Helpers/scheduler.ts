@@ -16,6 +16,7 @@ export default async function (client: Client): Promise<void> {
     async function runChecks() {
         await checkMutes(guild);
         await checkReminders(guild);
+        await checkMemberRoles(guild);
         await F.wait(CHECK_INTERVAL);
         runChecks();
     }
@@ -82,4 +83,19 @@ async function checkReminders(guild: Guild): Promise<void> {
     // Remove them all, regardless of whether they were sent
     const fetchedIds = finishedReminders.map((r) => r.id);
     await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
+}
+
+async function checkMemberRoles(guild: Guild): Promise<void> {
+    const allMembers = await guild.members.fetch();
+    const membersNoBanditos = allMembers.filter(
+        (mem) =>
+            !mem.roles.cache.has(roles.banditos) &&
+            !mem.roles.cache.has(roles.muted) &&
+            !mem.roles.cache.has(roles.hideallchannels) &&
+            !mem.pending
+    );
+
+    for (const mem of membersNoBanditos.values()) {
+        await mem.roles.add(roles.banditos);
+    }
 }

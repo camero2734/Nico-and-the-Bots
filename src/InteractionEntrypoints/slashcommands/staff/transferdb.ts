@@ -6,6 +6,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import R from "ramda";
 import { Snowflake } from "discord.js";
+import F from "../../../Helpers/funcs";
 
 const command = new SlashCommand(<const>{
     description: "Migrates DB",
@@ -37,6 +38,8 @@ command.setHandler(async (ctx) => {
     // await transferColorRoles({ db, ctx, existingUsers });
     // TODO: Transfer song roles?
     // await transferFMs({ db, ctx, existingUsers });
+
+    await transferGolds({ db, ctx, existingUsers });
 });
 
 async function transferEconomies({ db, ctx }: TransferParams) {
@@ -123,6 +126,32 @@ async function transferFMs({ db, ctx, existingUsers }: TransferParams) {
     });
 
     await ctx.editReply(`Transferred ${fmCount.count} FM usernames.`);
+}
+
+async function transferGolds({ db, ctx, existingUsers }: TransferParams) {
+    const goldCounts = await db.all(`SELECT * FROM counter WHERE title="GoldCount"`);
+    await prisma.$executeRaw`DELETE FROM "UserLastFM"`;
+
+    await ctx.editReply(`Starting to transfer ${goldCounts.length} user golds...`);
+
+    const goldsCount = await prisma.gold.createMany({
+        data: goldCounts
+            .map((gc) => {
+                return F.indexArray(gc.count).map(() => ({
+                    goldMessageUrl: "Unavailable",
+                    messageId: "Unavailable",
+                    channelId: "Unavailable",
+
+                    fromUserId: userIDs.bots.nico,
+                    toUserId: gc.id
+                }));
+            })
+            .flat()
+            .filter((gold) => existingUsers.has(gold.toUserId)),
+        skipDuplicates: true
+    });
+
+    await ctx.editReply(`Transferred ${goldsCount.count} user golds.`);
 }
 
 export default command;

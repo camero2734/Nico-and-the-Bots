@@ -5,11 +5,18 @@ import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import R from "ramda";
+import { Snowflake } from "discord.js";
 
 const command = new SlashCommand(<const>{
     description: "Migrates DB",
     options: []
 });
+
+interface TransferParams {
+    db: Database<sqlite3.Database, sqlite3.Statement>;
+    ctx: typeof SlashCommand.GenericContextType;
+    existingUsers: Set<Snowflake>;
+}
 
 command.setHandler(async (ctx) => {
     if (ctx.member.id !== userIDs.me) throw new CommandError("No");
@@ -21,15 +28,18 @@ command.setHandler(async (ctx) => {
         driver: sqlite3.Database
     });
 
-    // await transferEconomies(db, ctx);
+    // await transferEconomies({ db, ctx, existingUsers: new Set() });
 
-    await transferColorRoles(db, ctx);
+    const existingUsers = new Set<Snowflake>();
+    const users = await prisma.user.findMany({ select: { id: true } });
+    for (const user of users) existingUsers.add(user.id);
+
+    // await transferColorRoles({ db, ctx, existingUsers });
+    // TODO: Transfer song roles?
+    // await transferFMs({ db, ctx, existingUsers });
 });
 
-async function transferEconomies(
-    db: Database<sqlite3.Database, sqlite3.Statement>,
-    ctx: typeof SlashCommand.GenericContextType
-) {
+async function transferEconomies({ db, ctx }: TransferParams) {
     const userEconomies = await db.all("SELECT * FROM economy");
 
     await ctx.editReply(`Starting to transfer ${userEconomies.length} economies...`);
@@ -74,10 +84,7 @@ async function transferEconomies(
     await ctx.editReply(`Transferred ${userEconomies.length} economies. Finished.`);
 }
 
-async function transferColorRoles(
-    db: Database<sqlite3.Database, sqlite3.Statement>,
-    ctx: typeof SlashCommand.GenericContextType
-) {
+async function transferColorRoles({ db, ctx }: TransferParams) {
     const colorRoles = await db.all(`SELECT * FROM item WHERE type="ColorRole"`);
     await prisma.$executeRaw`DELETE FROM "ColorRole"`;
 
@@ -96,6 +103,26 @@ async function transferColorRoles(
     });
 
     await ctx.editReply(`Transferred ${colorRoleCount.count} color roles.`);
+}
+
+async function transferFMs({ db, ctx, existingUsers }: TransferParams) {
+    const fms = await db.all(`SELECT * FROM item WHERE type="FM"`);
+    await prisma.$executeRaw`DELETE FROM "UserLastFM"`;
+
+    await ctx.editReply(`Starting to transfer ${fms.length} FM usernames...`);
+
+    const fmCount = await prisma.userLastFM.createMany({
+        data: fms
+            .map((fm) => ({
+                username: fm.title,
+                userId: fm.id,
+                createdAt: new Date(fm.time)
+            }))
+            .filter((fm) => existingUsers.has(fm.userId)),
+        skipDuplicates: true
+    });
+
+    await ctx.editReply(`Transferred ${fmCount.count} FM usernames.`);
 }
 
 export default command;

@@ -31,7 +31,6 @@ export const updateUserScore = (msg: Message): void => {
     scoreQueue.add("score", reference);
 };
 
-// TODO: Create separate worker process(es)?
 new Worker(
     QUEUE_NAME,
     async (job) => {
@@ -61,16 +60,14 @@ new Worker(
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
 const updateUserScoreWorker = async (msg: Message): Promise<void> => {
-    const dbUser =
-        (await prisma.user.findUnique({ where: { id: msg.author.id } })) ||
-        (await prisma.user.create({
-            data: { id: msg.author.id, dailyBox: { create: {} } }
-        }));
+    const dbUser = await prisma.user.upsert({
+        where: { id: msg.author.id },
+        update: { lastMessageSent: new Date() },
+        create: { id: msg.author.id, dailyBox: { create: {} } }
+    });
 
     const now = Date.now();
     const timeSince = now - dbUser.lastMessageSent.getTime();
-
-    await prisma.user.update({ where: { id: dbUser.id }, data: { lastMessageSent: new Date() } });
 
     // Determine whether to award a point or not (i.e. spamming messages should award no points)
     let earnedPoint = true;
@@ -80,9 +77,15 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
         earnedPoint = Math.random() < P;
     }
 
+    // Ensure the user isn't underleveled already
+    if (!earnedPoint) {
+        const shouldBeLevel = LevelCalculator.calculateLevel(dbUser.score);
+        if (shouldBeLevel > dbUser.level) earnedPoint = true;
+    }
+
     // Add to message history
     const startOfDate = startOfDay(new Date());
-    const historyIdentifier = { date_userId: { date: startOfDate, userId: dbUser.id } };
+    const historyIdentifier = { date_userId: { date: startOfDate, userId: msg.author.id } };
 
     const upsertData: Parameters<typeof prisma["messageHistory"]["upsert"]>[0] = {
         where: historyIdentifier,
@@ -92,7 +95,7 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
         },
         create: {
             date: startOfDate,
-            userId: dbUser.id,
+            userId: msg.author.id,
             messageCount: 1,
             pointsEarned: earnedPoint ? 1 : 0
         }

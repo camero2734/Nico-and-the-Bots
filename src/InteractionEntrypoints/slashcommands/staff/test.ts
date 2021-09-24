@@ -1,4 +1,3 @@
-import consola from "consola";
 import { imageHash } from "image-hash";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

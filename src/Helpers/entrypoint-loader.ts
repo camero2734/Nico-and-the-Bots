@@ -36,8 +36,10 @@ async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
                 try {
                     const slashCommand = (await import(`file:///${path.full}`)).default.default;
                     if (!(slashCommand instanceof SlashCommand)) return null;
+
                     return [path, slashCommand];
-                } catch {
+                } catch (e) {
+                    console.log(e, /ENTRYPOINT_LOAD_ERR/);
                     return null;
                 }
             })

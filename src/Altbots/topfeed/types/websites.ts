@@ -186,12 +186,13 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const subtype = <const>"VISUAL";
         const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
 
-        const hash = await new Promise<string>((resolve, reject) => {
-            imageHash({ data: screenshot }, 64, true, (error: Error, data: string) => {
-                if (error) reject(error);
-                else resolve(data);
-            });
-        });
+        const hash = "TEMP";
+        //  await new Promise<string>((resolve, reject) => {
+        //     imageHash({ data: screenshot }, 64, true, (error: Error, data: string) => {
+        //         if (error) reject(error);
+        //         else resolve(data);
+        //     });
+        // });
 
         const old = await this.getLatestItem(subtype);
 

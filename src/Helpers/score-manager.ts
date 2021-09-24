@@ -187,8 +187,6 @@ export class LevelCalculator {
         const nextLevel = this.calculateLevel(score) + 1;
         const scoreRequired = this.calculateScore(nextLevel);
 
-        console.log({ score, nextLevel, scoreRequired });
-
         return scoreRequired - score;
     }
 }

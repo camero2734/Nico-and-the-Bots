@@ -21,8 +21,9 @@ command.setHandler(async (ctx) => {
         driver: sqlite3.Database
     });
 
-    // Economy
-    await transferEconomies(db, ctx);
+    // await transferEconomies(db, ctx);
+
+    await transferColorRoles(db, ctx);
 });
 
 async function transferEconomies(
@@ -71,6 +72,30 @@ async function transferEconomies(
     }
 
     await ctx.editReply(`Transferred ${userEconomies.length} economies. Finished.`);
+}
+
+async function transferColorRoles(
+    db: Database<sqlite3.Database, sqlite3.Statement>,
+    ctx: typeof SlashCommand.GenericContextType
+) {
+    const colorRoles = await db.all(`SELECT * FROM item WHERE type="ColorRole"`);
+    await prisma.$executeRaw`DELETE FROM "ColorRole"`;
+
+    const allRoles = await ctx.guild.roles.fetch();
+
+    await ctx.editReply(`Starting to transfer ${colorRoles.length} color roles...`);
+
+    const colorRoleCount = await prisma.colorRole.createMany({
+        data: colorRoles
+            .map(({ id, title }) => ({
+                roleId: title,
+                userId: id,
+                amountPaid: 0
+            }))
+            .filter((cr) => allRoles.has(cr.roleId))
+    });
+
+    await ctx.editReply(`Transferred ${colorRoleCount.count} color roles.`);
 }
 
 export default command;

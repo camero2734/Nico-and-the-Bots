@@ -7,6 +7,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import R from "ramda";
 import { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
+import { PerkType } from ".prisma/client";
 
 const command = new SlashCommand(<const>{
     description: "Migrates DB",
@@ -38,8 +39,9 @@ command.setHandler(async (ctx) => {
     // await transferColorRoles({ db, ctx, existingUsers });
     // TODO: Transfer song roles?
     // await transferFMs({ db, ctx, existingUsers });
+    // await transferGolds({ db, ctx, existingUsers });
 
-    await transferGolds({ db, ctx, existingUsers });
+    await transferPerks({ db, ctx, existingUsers });
 });
 
 async function transferEconomies({ db, ctx }: TransferParams) {
@@ -130,7 +132,7 @@ async function transferFMs({ db, ctx, existingUsers }: TransferParams) {
 
 async function transferGolds({ db, ctx, existingUsers }: TransferParams) {
     const goldCounts = await db.all(`SELECT * FROM counter WHERE title="GoldCount"`);
-    await prisma.$executeRaw`DELETE FROM "UserLastFM"`;
+    await prisma.$executeRaw`DELETE FROM "Gold"`;
 
     await ctx.editReply(`Starting to transfer ${goldCounts.length} user golds...`);
 
@@ -152,6 +154,38 @@ async function transferGolds({ db, ctx, existingUsers }: TransferParams) {
     });
 
     await ctx.editReply(`Transferred ${goldsCount.count} user golds.`);
+}
+
+async function transferPerks({ db, ctx, existingUsers }: TransferParams) {
+    const perks = await db.all(`SELECT * FROM item WHERE type="Perk"`);
+    await prisma.$executeRaw`DELETE FROM "Perk"`;
+
+    await ctx.editReply(`Starting to transfer ${perks.length} perks...`);
+
+    const perkType = (oldPerkName: string): PerkType => {
+        switch (oldPerkName) {
+            case "doubledaily":
+                return "DoubleDailyCredits";
+            case "lvlcred":
+                return "LevelCredits";
+            case "blurryboxinc":
+                return "DoubleDailyTokens";
+            default:
+                throw new Error("Invalid perk type");
+        }
+    };
+
+    const perkCount = await prisma.perk.createMany({
+        data: perks
+            .map((p) => ({
+                type: perkType(p.title),
+                userId: p.id
+            }))
+            .filter((perk) => existingUsers.has(perk.userId)),
+        skipDuplicates: true
+    });
+
+    await ctx.editReply(`Transferred ${perkCount.count} perks.`);
 }
 
 export default command;

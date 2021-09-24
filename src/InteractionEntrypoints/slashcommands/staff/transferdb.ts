@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { open } from "sqlite";
+import { Database, open } from "sqlite";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -22,6 +22,13 @@ command.setHandler(async (ctx) => {
     });
 
     // Economy
+    await transferEconomies(db, ctx);
+});
+
+async function transferEconomies(
+    db: Database<sqlite3.Database, sqlite3.Statement>,
+    ctx: typeof SlashCommand.GenericContextType
+) {
     const userEconomies = await db.all("SELECT * FROM economy");
 
     await ctx.editReply(`Starting to transfer ${userEconomies.length} economies...`);
@@ -64,6 +71,6 @@ command.setHandler(async (ctx) => {
     }
 
     await ctx.editReply(`Transferred ${userEconomies.length} economies. Finished.`);
-});
+}
 
 export default command;

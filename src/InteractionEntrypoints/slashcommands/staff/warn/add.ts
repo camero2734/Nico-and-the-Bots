@@ -1,12 +1,12 @@
 import { WarningType } from "@prisma/client";
-import { CommandError } from "../../../Configuration/definitions";
+import { CommandError } from "../../../../Configuration/definitions";
 import { subYears } from "date-fns";
 import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { roles } from "../../../Configuration/config";
-import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
-import { prisma, queries } from "../../../Helpers/prisma-init";
-import JailCommand from "./jail";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { roles } from "../../../../Configuration/config";
+import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
+import { prisma, queries } from "../../../../Helpers/prisma-init";
+import JailCommand from "./../jail";
+import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const rules = Object.values(WarningType);
 
@@ -70,7 +70,7 @@ command.setHandler(async (ctx) => {
 
     const [buttonPressed] = await ephemeralListener.wait();
     if (buttonPressed !== submitId) {
-        await ctx.editReply({ embeds: [new MessageEmbed({ description: "Warning not submitted" })] });
+        await ctx.editReply({ embeds: [new MessageEmbed({ description: "Warning not submitted" })], components: [] });
         return;
     }
 

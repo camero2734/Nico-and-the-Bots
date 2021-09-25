@@ -19,8 +19,16 @@ command.setHandler(async (ctx) => {
     const member = await ctx.guild.members.fetch(ctx.user);
     if (!member) throw new CommandError("Unable to find that user");
 
+    const page = ctx.opts.page ?? 1;
     const take = 10;
-    const skip = (ctx.opts.page || 1) * take - take;
+    const skip = (page - 1) * take;
+
+    if (typeof page !== "number" || page < 1) throw new CommandError("Invalid page number.");
+
+    const warnCount = await prisma.warning.count({ where: { warnedUserId: ctx.opts.user } });
+    const numPages = Math.ceil(warnCount / take);
+
+    if (warnCount === 0) throw new CommandError("This user does not have any warnings.");
 
     const warns = await prisma.warning.findMany({
         where: { warnedUserId: ctx.opts.user },
@@ -28,6 +36,8 @@ command.setHandler(async (ctx) => {
         skip,
         take
     });
+
+    if (warns.length === 0) throw new CommandError(`This page does not exist. There are ${numPages} pages available.`);
 
     const severityEmoji = (s: number) => {
         return ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"][s - 1] || "❓";
@@ -37,11 +47,12 @@ command.setHandler(async (ctx) => {
 
     const embed = new MessageEmbed()
         .setAuthor(`${member.displayName}'s warnings`, member.user.displayAvatarURL())
-        .setColor([(255 * averageSeverity) / 10, 0, 0]);
+        .setColor([(255 * averageSeverity) / 10, 0, 0])
+        .setFooter(`Page ${page}/${numPages}`);
     for (const warn of warns) {
         const emoji = severityEmoji(warn.severity);
         const timestamp = F.discordTimestamp(warn.createdAt, "relative");
-        embed.addField(`${emoji} ${warn.type}`, `${warn.reason}\n${timestamp}`);
+        embed.addField(`${warn.reason}`, `${emoji} ${warn.type}\n${timestamp}`);
     }
 
     await ctx.editReply({ embeds: [embed] });

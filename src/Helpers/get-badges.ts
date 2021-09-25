@@ -1,5 +1,6 @@
 import { Image, loadImage } from "canvas";
 import { GuildMember } from "discord.js";
+import { prisma } from "./prisma-init";
 
 function wrap(text: string, noPNG = false) {
     return `./src/Assets/badges/${text}${noPNG ? "" : ".png"}`;
@@ -93,54 +94,50 @@ export const badgeLoader = async (member: GuildMember, numGolds: number, placeNu
         });
     });
 
-    // await createBadge("ScavJumpsuit.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "ScavJumpsuit" });
-    //     return hasRole;
-    // });
+    await createBadge("ScavJumpsuit.png", async function () {
+        const badge = await prisma.badge.findUnique({
+            where: { userId_type: { userId: member.id, type: "ScavJumpsuit" } }
+        });
+        return !!badge;
+    });
 
-    // await createBadge("ScavToplogo.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "ScavToplogo" });
-    //     return hasRole;
-    // });
+    await createBadge("ScavToplogo.png", async function () {
+        const badge = await prisma.badge.findUnique({
+            where: { userId_type: { userId: member.id, type: "ScavToplogo" } }
+        });
+        return !!badge;
+    });
 
-    // await createBadge("ScavVulture.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "ScavVulture" });
-    //     return hasRole;
-    // });
+    await createBadge("ScavVulture.png", async function () {
+        const badge = await prisma.badge.findUnique({
+            where: { userId_type: { userId: member.id, type: "ScavVulture" } }
+        });
+        return !!badge;
+    });
 
-    // await createBadge("ScavHunt2019.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "ScavHunt2019" });
-    //     return hasRole;
-    // });
+    await createBadge("ScavHunt2019.png", async function () {
+        const badge = await prisma.badge.findUnique({
+            where: { userId_type: { userId: member.id, type: "ScavHunt2019" } }
+        });
+        return !!badge;
+    });
 
-    // await createBadge("AndreBlackWhite.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "ANDRE" });
-    //     return hasRole;
-    // });
+    await createBadge("AndreBlackWhite.png", async function () {
+        const badge = await prisma.badge.findUnique({ where: { userId_type: { userId: member.id, type: "ANDRE" } } });
+        return !!badge;
+    });
 
-    // await createBadge("escapedDEMA.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "ESCAPED_DEMA" });
-    //     return hasRole;
-    // });
+    await createBadge("escapedDEMA.png", async function () {
+        const badge = await prisma.badge.findUnique({
+            where: { userId_type: { userId: member.id, type: "ESCAPED_DEMA" } }
+        });
+        return !!badge;
+    });
 
-    // await createBadge("lgbt.png", async function () {
-    //     const hasRole = await connection
-    //         ?.getRepository(Item)
-    //         .findOne({ identifier: member.id, type: "Badge", title: "PHTG" });
-    //     return hasRole;
-    // });
+    await createBadge("lgbt.png", async function () {
+        const badge = await prisma.badge.findUnique({ where: { userId_type: { userId: member.id, type: "LGBT" } } });
+        return !!badge;
+    });
 
     await createBadge("teamwinner.png", async function () {
         return new Promise((resolve) => {

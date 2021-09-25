@@ -1,13 +1,13 @@
-import sqlite3 from "sqlite3";
+import { BadgeType, PerkType, WarningType } from ".prisma/client";
+import { Snowflake } from "discord.js";
+import R from "ramda";
 import { Database, open } from "sqlite";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import sqlite3 from "sqlite3";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { prisma } from "../../../Helpers/prisma-init";
-import R from "ramda";
-import { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
-import { Badge, BadgeType, PerkType, WarningType } from ".prisma/client";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Migrates DB",
@@ -30,38 +30,59 @@ command.setHandler(async (ctx) => {
         driver: sqlite3.Database
     });
 
-    // await transferEconomies({ db, ctx, existingUsers: new Set() });
+    await transferEconomies({ db, ctx, existingUsers: new Set() });
+    await F.wait(500);
 
     const existingUsers = new Set<Snowflake>();
     const users = await prisma.user.findMany({ select: { id: true } });
     for (const user of users) existingUsers.add(user.id);
 
-    // await transferColorRoles({ db, ctx, existingUsers });
+    await transferColorRoles({ db, ctx, existingUsers });
+    await F.wait(750);
+
     await transferSongRoles({ db, ctx, existingUsers });
-    // await transferFMs({ db, ctx, existingUsers });
-    // await transferGolds({ db, ctx, existingUsers });
-    // await transferPerks({ db, ctx, existingUsers });
-    // await transferWarnings({ db, ctx, existingUsers });
-    // await transferBadges({ db, ctx, existingUsers });
+    await F.wait(750);
+
+    await transferFMs({ db, ctx, existingUsers });
+    await F.wait(750);
+
+    await transferGolds({ db, ctx, existingUsers });
+    await F.wait(750);
+
+    await transferPerks({ db, ctx, existingUsers });
+    await F.wait(750);
+
+    await transferWarnings({ db, ctx, existingUsers });
+    await F.wait(750);
+
+    await transferBadges({ db, ctx, existingUsers });
+    await F.wait(750);
+
+    await ctx.editReply(`Finished transferring database.`);
 });
 
 async function transferEconomies({ db, ctx }: TransferParams) {
     const userEconomies = await db.all("SELECT * FROM economy");
 
-    await ctx.editReply(`Starting to transfer ${userEconomies.length} economies...`);
+    await ctx.editReply(`Deleting current database...`);
 
     const BATCH_SIZE = 1_000;
     const batches = R.splitEvery(BATCH_SIZE, userEconomies);
 
-    console.log(`${await prisma.user.count()} records`);
+    let count = 0;
+    for (let i = 1; i < 10; i++) {
+        const res = await prisma.user.deleteMany({ where: { id: { startsWith: `${i}` } } });
+        count += res.count;
+        await ctx.editReply(`Deleted ${count} records...`);
+    }
 
-    await prisma.$executeRaw`DELETE FROM "User"`;
+    await ctx.editReply(`Transferring ${userEconomies.length} economies...`);
 
     for (let i = 0; i < batches.length; i++) {
         console.log(`here ${i}`);
         const batch = batches[i];
 
-        const userCount = await prisma.user.createMany({
+        await prisma.user.createMany({
             data: batch.map((econ) => ({
                 id: econ.id,
                 credits: Math.min(econ.credits, 1e12),
@@ -69,9 +90,8 @@ async function transferEconomies({ db, ctx }: TransferParams) {
             })),
             skipDuplicates: true
         });
-        console.log(`here2`, userCount.count);
 
-        const dailyBoxCount = await prisma.dailyBox.createMany({
+        await prisma.dailyBox.createMany({
             data: batch.map((econ) => ({
                 userId: econ.id,
                 tokens: econ.blurrytokens,
@@ -81,8 +101,6 @@ async function transferEconomies({ db, ctx }: TransferParams) {
             })),
             skipDuplicates: true
         });
-
-        console.log(`here3`, dailyBoxCount.count);
 
         await ctx.editReply(`Transferred ${BATCH_SIZE * (i + 1)} economies.`);
     }
@@ -111,7 +129,7 @@ async function transferColorRoles({ db, ctx }: TransferParams) {
     await ctx.editReply(`Transferred ${colorRoleCount.count} color roles.`);
 }
 
-async function transferSongRoles({ db, ctx, existingUsers }: TransferParams) {
+async function transferSongRoles({ db, ctx }: TransferParams) {
     const songRoles = await db.all(`SELECT * FROM item WHERE type="SongRole"`);
     await prisma.$executeRaw`DELETE FROM "SongRole"`;
 

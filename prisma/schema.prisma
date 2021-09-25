@@ -8,7 +8,7 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["interactiveTransactions"]
+  previewFeatures = ["interactiveTransactions", "referentialActions"]
 }
 
 model DailyBox {
@@ -18,7 +18,7 @@ model DailyBox {
   lastDaily             DateTime?
   dailyCount            Int       @default(0)
   consecutiveDailyCount Int       @default(0)
-  user                  User?     @relation(fields: [userId], references: [id])
+  user                  User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                String    @id
 }
 
@@ -67,7 +67,7 @@ model Tag {
   createdAt DateTime @default(now())
   uses      Int      @default(0)
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 }
 
@@ -76,7 +76,7 @@ model MessageHistory {
   messageCount Int      @default(0)
   pointsEarned Int      @default(0)
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@id([date, userId])
@@ -92,7 +92,7 @@ model Perk {
   id   Int      @id @default(autoincrement())
   type PerkType
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@unique([userId, type])
@@ -100,8 +100,8 @@ model Perk {
 
 model Gold {
   id   Int   @id @default(autoincrement())
-  from User? @relation("Gold_fromUser", fields: [fromUserId], references: [id])
-  to   User? @relation("Gold_toUser", fields: [toUserId], references: [id])
+  from User? @relation("Gold_fromUser", fields: [fromUserId], references: [id], onDelete: SetNull)
+  to   User? @relation("Gold_toUser", fields: [toUserId], references: [id], onDelete: Cascade)
 
   goldMessageUrl String
 
@@ -112,7 +112,7 @@ model Gold {
 
   createdAt DateTime @default(now())
 
-  fromUserId String
+  fromUserId String?
   toUserId   String
 }
 
@@ -121,8 +121,8 @@ model Poll {
   name    String
   options String[]
 
-  user   User?  @relation(fields: [userId], references: [id])
-  userId String
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
   votes  Vote[]
 }
 
@@ -130,10 +130,10 @@ model Vote {
   id Int @id @default(autoincrement())
 
   choices Int[]
-  poll    Poll? @relation(fields: [pollId], references: [id])
+  poll    Poll? @relation(fields: [pollId], references: [id], onDelete: Cascade)
   pollId  Int
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@unique([pollId, userId])
@@ -141,7 +141,7 @@ model Vote {
 
 model ColorRole {
   roleId String
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   amountPaid Int
@@ -152,7 +152,7 @@ model ColorRole {
 model SongRole {
   roleId String
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@id([roleId, userId])
@@ -174,11 +174,11 @@ model Warning {
   severity  Int
   channelId String
 
-  warnedUser   User?  @relation("Warning_warnedUser", fields: [warnedUserId], references: [id])
+  warnedUser   User?  @relation("Warning_warnedUser", fields: [warnedUserId], references: [id], onDelete: Cascade)
   warnedUserId String
 
-  issuedByUser   User?  @relation("Warning_issuedByUser", fields: [issuedByUserId], references: [id])
-  issuedByUserId String
+  issuedByUser   User?  @relation("Warning_issuedByUser", fields: [issuedByUserId], references: [id], onDelete: SetNull)
+  issuedByUserId String?
 
   createdAt DateTime @default(now())
   editedAt  DateTime @updatedAt
@@ -189,8 +189,8 @@ model SubmittedInterview {
   url      String  @unique
   approved Boolean @default(false)
 
-  submittedByUser   User?  @relation(fields: [submittedByUserId], references: [id])
-  submittedByUserId String
+  submittedByUser   User?  @relation(fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  submittedByUserId String?
 }
 
 model TemporaryText {
@@ -201,7 +201,7 @@ model TemporaryText {
 model UserLastFM {
   username String @id
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 
   createdAt   DateTime @default(now())
@@ -213,7 +213,7 @@ model Reminder {
 
   text String
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 
   sendAt      DateTime
@@ -222,7 +222,7 @@ model Reminder {
 }
 
 model VerifiedQuiz {
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @id
 
   answersGiven Int[]
@@ -234,7 +234,7 @@ model VerifiedQuizAnswer {
   id         Int @id @default(autoincrement())
   questionId Int
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   answer    Int
@@ -249,10 +249,10 @@ model Mute {
   endsAt    DateTime
   finished  Boolean  @default(false)
 
-  mutedUser   User?  @relation("Mute_mutedUser", fields: [mutedUserId], references: [id])
+  mutedUser   User?  @relation("Mute_mutedUser", fields: [mutedUserId], references: [id], onDelete: Cascade)
   mutedUserId String
 
-  issuedByUser   User?  @relation("Mute_issuedByUser", fields: [issuedByUserId], references: [id])
+  issuedByUser   User?  @relation("Mute_issuedByUser", fields: [issuedByUserId], references: [id], onDelete: Cascade)
   issuedByUserId String
 
   createdAt DateTime @default(now())
@@ -279,7 +279,7 @@ enum BishopType {
 model ViolationNotice {
   infractionNumber Int @id @default(autoincrement())
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   violation ViolationType
@@ -321,7 +321,7 @@ enum CommandState {
 
 model CommandUsed {
   id        String  @id
-  user      User?   @relation(fields: [userId], references: [id])
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   channelId String?
 
@@ -344,7 +344,7 @@ enum BadgeType {
 
 model Badge {
   id     Int    @id @default(autoincrement())
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   type BadgeType

@@ -28,7 +28,7 @@ export const updateUserScore = (msg: Message): void => {
         channelId: msg.channel.id,
         messageId: msg.id
     };
-    scoreQueue.add("score", reference);
+    // scoreQueue.add("score", reference);
 };
 
 new Worker(

@@ -73,7 +73,7 @@ async function transferEconomies({ db, ctx }: TransferParams) {
     for (let i = 1; i < 10; i++) {
         const res = await prisma.user.deleteMany({ where: { id: { startsWith: `${i}` } } });
         count += res.count;
-        await ctx.editReply(`Deleted ${count} records...`);
+        await ctx.editReply(`Deleted ${count} records (${i})...`);
     }
 
     await ctx.editReply(`Transferring ${userEconomies.length} economies...`);
@@ -258,7 +258,8 @@ async function transferWarnings({ db, ctx, existingUsers }: TransferParams) {
                     severity: isNaN(+severity) ? 5 : +severity,
                     channelId: channel || channelIDs.staff,
                     warnedUserId: w.id,
-                    issuedByUserId: given && existingUsers.has(given) ? given : userIDs.bots.nico
+                    issuedByUserId: given && existingUsers.has(given) ? given : userIDs.bots.nico,
+                    createdAt: new Date(w.time)
                 };
             })
             .filter((perk) => existingUsers.has(perk.warnedUserId)),

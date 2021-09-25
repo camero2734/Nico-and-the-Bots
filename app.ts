@@ -30,11 +30,11 @@ const client = new Discord.Client({
         "GUILD_EMOJIS_AND_STICKERS",
         "GUILD_MEMBERS",
         "GUILD_MESSAGES",
-        "GUILD_MESSAGE_REACTIONS"
+        "GUILD_MESSAGE_REACTIONS",
         // "GUILD_INTEGRATIONS",
         // "GUILD_INVITES",
         // "GUILD_PRESENCES",
-        // "GUILD_VOICE_STATES",
+        "GUILD_VOICE_STATES"
         // "GUILD_WEBHOOKS"
     ],
     partials: ["REACTION", "USER", "MESSAGE"]

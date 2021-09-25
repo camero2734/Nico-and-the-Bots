@@ -3,9 +3,19 @@
  */
 
 import { secondsToMilliseconds } from "date-fns";
-import { Client, Guild, GuildMember, MessageEmbed, MessageOptions, Snowflake } from "discord.js";
-import { guildID, roles } from "../Configuration/config";
+import {
+    Client,
+    Collection,
+    Guild,
+    GuildMember,
+    MessageEmbed,
+    MessageOptions,
+    Snowflake,
+    VoiceChannel
+} from "discord.js";
+import { channelIDs, guildID, roles } from "../Configuration/config";
 import F from "./funcs";
+import { rollbar } from "./logging/rollbar";
 import { prisma } from "./prisma-init";
 
 const CHECK_INTERVAL = secondsToMilliseconds(10);
@@ -17,6 +27,7 @@ export default async function (client: Client): Promise<void> {
         await checkMutes(guild);
         await checkReminders(guild);
         await checkMemberRoles(guild);
+        await checkVCRoles(guild);
         await F.wait(CHECK_INTERVAL);
         runChecks();
     }
@@ -97,5 +108,39 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
 
     for (const mem of membersNoBanditos.values()) {
         await mem.roles.add(roles.banditos);
+    }
+}
+
+async function checkVCRoles(guild: Guild): Promise<void> {
+    try {
+        const allChannels = await guild.channels.fetch();
+        const allMembers = await guild.members.fetch();
+
+        const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === "GUILD_VOICE");
+
+        const membersInVc = new Collection<Snowflake, GuildMember>();
+
+        for (const vc of voiceChannels.values()) {
+            for (const member of vc.members.values()) {
+                membersInVc.set(member.id, member);
+            }
+        }
+
+        const membersWithVcRoleArr = allMembers.filter((m) => m.roles.cache.has(roles.vc));
+        const membersWithVcRole = new Collection(membersWithVcRoleArr.map((m) => [m.id, m]));
+
+        const toAdd = membersInVc.filter((m) => !membersWithVcRole.has(m.id));
+        const toRemove = membersWithVcRole.filter((m) => !membersInVc.has(m.id));
+
+        for (const mem of toAdd.values()) {
+            await mem.roles.add(roles.vc);
+        }
+
+        for (const mem of toRemove.values()) {
+            await mem.roles.remove(roles.vc);
+        }
+    } catch (e) {
+        if (e instanceof Error) rollbar.error(e);
+        else rollbar.error(`Error in updating VC roles`);
     }
 }

@@ -7,7 +7,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import R from "ramda";
 import { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
-import { PerkType, WarningType } from ".prisma/client";
+import { Badge, BadgeType, PerkType, WarningType } from ".prisma/client";
 
 const command = new SlashCommand(<const>{
     description: "Migrates DB",
@@ -41,8 +41,9 @@ command.setHandler(async (ctx) => {
     // await transferFMs({ db, ctx, existingUsers });
     // await transferGolds({ db, ctx, existingUsers });
     // await transferPerks({ db, ctx, existingUsers });
+    // await transferWarnings({ db, ctx, existingUsers });
 
-    await transferWarnings({ db, ctx, existingUsers });
+    await transferBadges({ db, ctx, existingUsers });
 });
 
 async function transferEconomies({ db, ctx }: TransferParams) {
@@ -228,6 +229,31 @@ async function transferWarnings({ db, ctx, existingUsers }: TransferParams) {
     });
 
     await ctx.editReply(`Transferred ${warningsCount.count} warnings.`);
+}
+
+async function transferBadges({ db, ctx, existingUsers }: TransferParams) {
+    const badges = await db.all(`SELECT * FROM item WHERE type="Badge"`);
+    await prisma.$executeRaw`DELETE FROM "Badge"`;
+
+    await ctx.editReply(`Starting to transfer ${badges.length} badges...`);
+
+    const badgeType = (oldBadgeType: string): BadgeType => {
+        if (oldBadgeType.startsWith("PH")) return "LGBT";
+        else if (oldBadgeType in BadgeType) return oldBadgeType as BadgeType;
+        else throw new Error("Invalid badge type");
+    };
+
+    const badgesCount = await prisma.badge.createMany({
+        data: badges
+            .map((badge) => ({
+                userId: badge.id,
+                type: badgeType(badge.title)
+            }))
+            .filter((perk) => existingUsers.has(perk.userId)),
+        skipDuplicates: true
+    });
+
+    await ctx.editReply(`Transferred ${badgesCount.count} badges.`);
 }
 
 export default command;

@@ -1,13 +1,13 @@
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { userIDs } from "../../../Configuration/config";
+import { channelIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import R from "ramda";
 import { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
-import { PerkType } from ".prisma/client";
+import { PerkType, WarningType } from ".prisma/client";
 
 const command = new SlashCommand(<const>{
     description: "Migrates DB",
@@ -40,8 +40,9 @@ command.setHandler(async (ctx) => {
     // TODO: Transfer song roles?
     // await transferFMs({ db, ctx, existingUsers });
     // await transferGolds({ db, ctx, existingUsers });
+    // await transferPerks({ db, ctx, existingUsers });
 
-    await transferPerks({ db, ctx, existingUsers });
+    await transferWarnings({ db, ctx, existingUsers });
 });
 
 async function transferEconomies({ db, ctx }: TransferParams) {
@@ -186,6 +187,47 @@ async function transferPerks({ db, ctx, existingUsers }: TransferParams) {
     });
 
     await ctx.editReply(`Transferred ${perkCount.count} perks.`);
+}
+
+async function transferWarnings({ db, ctx, existingUsers }: TransferParams) {
+    const warnings = await db.all(`SELECT * FROM item WHERE type="Warning"`);
+    await prisma.$executeRaw`DELETE FROM "Warning"`;
+
+    await ctx.editReply(`Starting to transfer ${warnings.length} warnings...`);
+
+    const warningType = (oldWarnType: string): WarningType => {
+        switch (oldWarnType) {
+            case "Bothering Others":
+                return "BotheringOthers";
+            case "Drama":
+                return "Drama";
+            case "Spam":
+                return "Spam";
+            case "NSFW/Slurs":
+                return "NsfwOrSlurs";
+            default:
+                return "Other";
+        }
+    };
+
+    const warningsCount = await prisma.warning.createMany({
+        data: warnings
+            .map((w) => {
+                const { rule, severity, content, channel, given } = JSON.parse(w.title);
+                return {
+                    reason: content,
+                    type: warningType(rule),
+                    severity: isNaN(+severity) ? 5 : +severity,
+                    channelId: channel || channelIDs.staff,
+                    warnedUserId: w.id,
+                    issuedByUserId: given && existingUsers.has(given) ? given : userIDs.bots.nico
+                };
+            })
+            .filter((perk) => existingUsers.has(perk.warnedUserId)),
+        skipDuplicates: true
+    });
+
+    await ctx.editReply(`Transferred ${warningsCount.count} warnings.`);
 }
 
 export default command;

@@ -8,7 +8,7 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["orderByAggregateGroup", "interactiveTransactions"]
+  previewFeatures = ["interactiveTransactions"]
 }
 
 model DailyBox {
@@ -57,6 +57,7 @@ model User {
   verifiedQuizAnswers VerifiedQuizAnswer[]
   violationNotices    ViolationNotice[]
   commandsUsed        CommandUsed[]
+  badges              Badge[]
 }
 
 model Tag {
@@ -309,7 +310,7 @@ enum CommandState {
 }
 
 model CommandUsed {
-  id        String @id
+  id        String  @id
   user      User?   @relation(fields: [userId], references: [id])
   userId    String
   channelId String?
@@ -317,6 +318,26 @@ model CommandUsed {
   identifier String
   type       String
 
-  state CommandState @default(Started)
-  createdAt  DateTime @default(now())
+  state     CommandState @default(Started)
+  createdAt DateTime     @default(now())
+}
+
+enum BadgeType {
+  ScavHunt2019
+  ScavToplogo
+  ScavJumpsuit
+  ScavVulture
+  ESCAPED_DEMA
+  LGBT
+  ANDRE
+}
+
+model Badge {
+  id     Int    @id @default(autoincrement())
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String
+
+  type BadgeType
+
+  @@unique([userId, type])
 }

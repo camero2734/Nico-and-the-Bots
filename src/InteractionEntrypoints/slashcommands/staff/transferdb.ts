@@ -37,13 +37,12 @@ command.setHandler(async (ctx) => {
     for (const user of users) existingUsers.add(user.id);
 
     // await transferColorRoles({ db, ctx, existingUsers });
-    // TODO: Transfer song roles?
+    await transferSongRoles({ db, ctx, existingUsers });
     // await transferFMs({ db, ctx, existingUsers });
     // await transferGolds({ db, ctx, existingUsers });
     // await transferPerks({ db, ctx, existingUsers });
     // await transferWarnings({ db, ctx, existingUsers });
-
-    await transferBadges({ db, ctx, existingUsers });
+    // await transferBadges({ db, ctx, existingUsers });
 });
 
 async function transferEconomies({ db, ctx }: TransferParams) {
@@ -110,6 +109,26 @@ async function transferColorRoles({ db, ctx }: TransferParams) {
     });
 
     await ctx.editReply(`Transferred ${colorRoleCount.count} color roles.`);
+}
+
+async function transferSongRoles({ db, ctx, existingUsers }: TransferParams) {
+    const songRoles = await db.all(`SELECT * FROM item WHERE type="SongRole"`);
+    await prisma.$executeRaw`DELETE FROM "SongRole"`;
+
+    const allRoles = await ctx.guild.roles.fetch();
+
+    await ctx.editReply(`Starting to transfer ${songRoles.length} song roles...`);
+
+    const songRoleCount = await prisma.songRole.createMany({
+        data: songRoles
+            .map(({ id, title }) => ({
+                roleId: title,
+                userId: id
+            }))
+            .filter((sr) => allRoles.has(sr.roleId))
+    });
+
+    await ctx.editReply(`Transferred ${songRoleCount.count} song roles.`);
 }
 
 async function transferFMs({ db, ctx, existingUsers }: TransferParams) {

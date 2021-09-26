@@ -113,7 +113,9 @@ async function handleGold(
         // ephemeral: true
     });
 
-    const [buttonPressed] = await timedListener.wait();
+    const [buttonPressed, btx] = await timedListener.wait();
+
+    if (btx) btx.deferUpdate();
 
     if (buttonPressed !== yesId) {
         throw new CommandError(

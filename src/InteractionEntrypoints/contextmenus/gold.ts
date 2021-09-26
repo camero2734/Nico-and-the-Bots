@@ -1,15 +1,7 @@
 import { addDays } from "date-fns";
-import {
-    ContextMenuInteraction,
-    Message,
-    MessageActionRow,
-    MessageButton,
-    MessageComponentInteraction,
-    MessageEmbed,
-    TextChannel
-} from "discord.js";
+import { Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
-import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
+import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ContextMenu, MessageContextMenu } from "../../Structures/EntrypointContextMenu";
@@ -17,7 +9,8 @@ import { TimedInteractionListener } from "../../Structures/TimedInteractionListe
 
 const GOLD_COST = 5000;
 const ADDITIONAL_GOLD_COST = 1000;
-const NUM_GOLDS_FOR_CERTIFICATION = 5;
+export const NUM_GOLDS_FOR_CERTIFICATION = 5;
+export const NUM_DAYS_FOR_CERTIFICATION = 1;
 const NOT_CERTIFIED_FIELD = "⚠️ Not certified!";
 
 const ctxMenu = new MessageContextMenu("🪙 Gold Message");
@@ -30,6 +23,12 @@ ctxMenu.setHandler(async (ctx, msg) => {
     // Ensure the message hasn't already been golded
     const givenGold = await prisma.gold.findFirst({ where: { messageId: msg.id } });
     if (givenGold) {
+        if (!givenGold.goldMessageUrl) {
+            throw new CommandError(
+                `This message has already been given gold. It did not receive the required ${NUM_GOLDS_FOR_CERTIFICATION} golds, so it was deleted. It is not eligible to be golded again.`
+            );
+        }
+
         const embed = new MessageEmbed().setDescription(
             `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgoldtest}>.`
         );
@@ -40,19 +39,29 @@ ctxMenu.setHandler(async (ctx, msg) => {
         return ctx.editReply({ embeds: [embed], components: [actionRow] });
     }
 
-    await handleGold(ctx, msg);
+    await handleGold(ctx, msg, msg.id);
 });
 
 const genAdditionalGoldId = ctxMenu.addInteractionListener(
     "additionalGold",
-    <const>["originalUserId"],
+    <const>["originalUserId", "originalMessageId"],
     async (ctx, args) => {
         await ctx.deferReply({ ephemeral: true });
-        await handleGold((<unknown>ctx) as typeof ContextMenu.GenericContextType, ctx.message, args.originalUserId);
+        await handleGold(
+            (<unknown>ctx) as typeof ContextMenu.GenericContextType,
+            ctx.message,
+            args.originalMessageId,
+            args.originalUserId
+        );
     }
 );
 
-async function handleGold(ctx: typeof ContextMenu.GenericContextType, msg: Message, originalUserId?: string) {
+async function handleGold(
+    ctx: typeof ContextMenu.GenericContextType,
+    msg: Message,
+    originalMessageId: Snowflake,
+    originalUserId?: string
+) {
     console.log("here");
     if (!msg.member) return;
 
@@ -125,7 +134,7 @@ async function handleGold(ctx: typeof ContextMenu.GenericContextType, msg: Messa
             label: `${numGolds} Gold${F.plural(numGolds)}`,
             emoji: emojiIDs.gold,
             style: "PRIMARY",
-            customId: genAdditionalGoldId({ originalUserId: originalUserId ?? msg.author.id })
+            customId: genAdditionalGoldId({ originalUserId: originalUserId ?? msg.author.id, originalMessageId })
         }),
         new MessageButton({ label: "View message", style: "LINK", url: goldGivenUrl || msg.url })
     ]);
@@ -141,7 +150,7 @@ async function handleGold(ctx: typeof ContextMenu.GenericContextType, msg: Messa
         goldEmbed.addField(
             "⚠️ Not certified!",
             `This post needs ${remain} more gold${F.plural(remain)}, or it will be deleted ${F.discordTimestamp(
-                addDays(date, 1),
+                addDays(date, NUM_DAYS_FOR_CERTIFICATION),
                 "relative"
             )}`
         );
@@ -156,8 +165,8 @@ async function handleGold(ctx: typeof ContextMenu.GenericContextType, msg: Messa
 
         await tx.gold.create({
             data: {
-                messageId: msg.id,
-                channelId: msg.channel.id,
+                messageId: originalMessageId,
+                channelId: m.channel.id,
                 fromUserId: ctx.user.id,
                 toUserId: originalMember.id,
                 goldMessageUrl: m.url

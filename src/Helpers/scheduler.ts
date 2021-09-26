@@ -2,7 +2,7 @@
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */
 
-import { secondsToMilliseconds } from "date-fns";
+import { secondsToMilliseconds, subDays } from "date-fns";
 import {
     Client,
     Collection,
@@ -11,14 +11,16 @@ import {
     MessageEmbed,
     MessageOptions,
     Snowflake,
+    TextChannel,
     VoiceChannel
 } from "discord.js";
-import { channelIDs, guildID, roles } from "../Configuration/config";
+import { guildID, roles } from "../Configuration/config";
+import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
 import { rollbar } from "./logging/rollbar";
 import { prisma } from "./prisma-init";
 
-const CHECK_INTERVAL = secondsToMilliseconds(10);
+const CHECK_INTERVAL = secondsToMilliseconds(5);
 
 export default async function (client: Client): Promise<void> {
     const guild = await client.guilds.fetch(guildID);
@@ -28,6 +30,7 @@ export default async function (client: Client): Promise<void> {
         await checkReminders(guild);
         await checkMemberRoles(guild);
         await checkVCRoles(guild);
+        await checkHouseOfGold(guild);
         await F.wait(CHECK_INTERVAL);
         runChecks();
     }
@@ -142,5 +145,46 @@ async function checkVCRoles(guild: Guild): Promise<void> {
     } catch (e) {
         if (e instanceof Error) rollbar.error(e);
         else rollbar.error(`Error in updating VC roles`);
+    }
+}
+
+async function checkHouseOfGold(guild: Guild): Promise<void> {
+    const msgsToDelete = await prisma.gold.groupBy({
+        by: ["goldMessageUrl"],
+        _count: true,
+        _min: {
+            createdAt: true
+        },
+        having: {
+            goldMessageUrl: {
+                _count: { lt: NUM_GOLDS_FOR_CERTIFICATION }
+            },
+            createdAt: {
+                _min: { lt: subDays(new Date(), NUM_DAYS_FOR_CERTIFICATION) }
+            }
+        },
+        where: {
+            goldMessageUrl: { not: null }
+        }
+    });
+
+    for (const toDelete of msgsToDelete) {
+        console.log(`DELETING ${toDelete.goldMessageUrl}`);
+        const originalGold = await prisma.gold.findFirst({
+            where: { goldMessageUrl: toDelete.goldMessageUrl },
+            orderBy: { createdAt: "asc" }
+        });
+
+        if (!originalGold) continue;
+
+        const channel = (await guild.channels.fetch(originalGold.channelId)) as TextChannel;
+        const message = await channel.messages.fetch(originalGold.messageId);
+
+        await message.delete();
+
+        await prisma.gold.updateMany({
+            where: { goldMessageUrl: toDelete.goldMessageUrl },
+            data: { goldMessageUrl: null }
+        });
     }
 }

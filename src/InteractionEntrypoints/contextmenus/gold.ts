@@ -83,8 +83,13 @@ async function handleGold(
               .setColor("#FCE300")
               .addField("Channel", `${msg.channel}`, true)
               .addField("Posted", F.discordTimestamp(new Date(), "shortDateTime"), true)
-              .addField("Message", msg.content)
+              .addField("Message", msg.content || "*No content*")
               .setFooter(`Given by ${ctx.member.displayName}.`, ctx.user.displayAvatarURL());
+
+    if (!isAdditionalGold && msg.attachments.size > 0) {
+        const url = msg.attachments.first()?.url;
+        if (url) goldBaseEmbed.setImage(url);
+    }
 
     let askEmbed = new MessageEmbed(goldBaseEmbed).addField("\u200b", "**Would you like to give gold to this message?**"); // prettier-ignore
     if (isAdditionalGold) {

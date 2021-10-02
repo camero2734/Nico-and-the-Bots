@@ -30,7 +30,6 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is disabled");
     const roleID = ctx.opts.album;
 
     const idList = Object.values(albumRoles);

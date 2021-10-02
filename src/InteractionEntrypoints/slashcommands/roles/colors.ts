@@ -19,8 +19,6 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const role = ctx.opts.role;
 
-    if (ctx.user.id !== userIDs.me) return ctx.send({ content: "This command is disabled." });
-
     const userRoles = await prisma.colorRole.findMany({
         where: { userId: ctx.user.id }
     });

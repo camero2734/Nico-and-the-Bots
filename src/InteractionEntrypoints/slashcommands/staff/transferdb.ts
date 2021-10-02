@@ -23,6 +23,8 @@ interface TransferParams {
 command.setHandler(async (ctx) => {
     if (ctx.member.id !== userIDs.me) throw new CommandError("No");
 
+    throw new CommandError("Not necessary at the time");
+
     await ctx.deferReply();
 
     const db = await open({
@@ -85,7 +87,7 @@ async function transferEconomies({ db, ctx }: TransferParams) {
         await prisma.user.createMany({
             data: batch.map((econ) => ({
                 id: econ.id,
-                credits: Math.min(econ.credits, 1e12),
+                credits: Math.min(Math.max(econ.credits, 0), 1e12),
                 score: econ.alltimeScore
             })),
             skipDuplicates: true
@@ -94,9 +96,9 @@ async function transferEconomies({ db, ctx }: TransferParams) {
         await prisma.dailyBox.createMany({
             data: batch.map((econ) => ({
                 userId: econ.id,
-                tokens: econ.blurrytokens,
-                steals: econ.steals,
-                blocks: econ.blocks,
+                tokens: Math.min(Math.max(econ.blurrytokens, 0), 5),
+                steals: Math.ceil(econ.steals / 2),
+                blocks: Math.ceil(econ.blocks),
                 dailyCount: econ.dailyCount
             })),
             skipDuplicates: true

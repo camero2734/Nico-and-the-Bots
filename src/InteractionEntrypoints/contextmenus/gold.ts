@@ -30,7 +30,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
         }
 
         const embed = new MessageEmbed().setDescription(
-            `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgoldtest}>.`
+            `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgold}>.`
         );
         const actionRow = new MessageActionRow().addComponents([
             new MessageButton({ label: "View post", style: "LINK", url: givenGold.goldMessageUrl })

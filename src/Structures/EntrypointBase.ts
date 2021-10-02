@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
-import { roles } from "../Configuration/config";
+import { channelIDs, roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
@@ -61,20 +61,28 @@ export abstract class InteractionEntrypoint<
             const member = ctx.member as GuildMember;
             if (!member) throw new Error(`No member`);
 
-            // Check permissions
-            const permissions = this.getPermissions();
-            let canUse = false;
-            let canUseBy: "USER" | "ROLE" | undefined = undefined;
-            for (const [id, value] of permissions.entries()) {
-                if (member.id === id) {
-                    canUseBy = "USER";
-                    canUse = value;
-                } else if (member.roles.cache.has(id) && canUseBy !== "USER") {
-                    canUseBy = "ROLE";
-                    canUse = value;
+            if (ctx.isCommand()) {
+                if (!member.roles.cache.has(roles.staff)) {
+                    if (ctx.commandName === "staff" || ctx.channelId !== channelIDs.commands) {
+                        throw new CommandError("You don't have permission to use this command!");
+                    }
                 }
+            } else {
+                // Check permissions
+                const permissions = this.getPermissions();
+                let canUse = false;
+                let canUseBy: "USER" | "ROLE" | undefined = undefined;
+                for (const [id, value] of permissions.entries()) {
+                    if (member.id === id) {
+                        canUseBy = "USER";
+                        canUse = value;
+                    } else if (member.roles.cache.has(id) && canUseBy !== "USER") {
+                        canUseBy = "ROLE";
+                        canUse = value;
+                    }
+                }
+                if (!canUse) throw new CommandError("You don't have permission to use this command!");
             }
-            if (!canUse) throw new CommandError("You don't have permission to use this command!");
 
             EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx });
             await this._run(ctx, ...HandlerArgs);

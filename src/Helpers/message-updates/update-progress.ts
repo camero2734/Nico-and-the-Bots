@@ -21,7 +21,13 @@ const generateProgressBar = (): [string, boolean] => {
 
     console.log(elapsedTime, totalTime);
 
-    const [progress] = progressBar.filledBar(totalTime, elapsedTime, 8, emptyEmoji, filledEmoji);
+    const [progress] = progressBar.filledBar(
+        totalTime,
+        Math.min(elapsedTime, totalTime - 1),
+        8,
+        emptyEmoji,
+        filledEmoji
+    );
     return [`${startEmoji}${progress}${endEmoji}\u200b`, elapsedTime > totalTime];
 };
 
@@ -31,7 +37,7 @@ const standardizeEmbed = (embed: MessageEmbed): void => {
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setColor("#7289DA")
         .addField("Upgrade almost finished...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
-        .setImage("https://i.imgur.com/GyU67Bg.png")
+        .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")
         .setFooter(
             "DEMAtronix: Propaganda delivered promptly™",
             "https://cdn.discordapp.com/emojis/860015969253326858.png"
@@ -60,9 +66,10 @@ const update = async (msg: Message) => {
         await msg.edit({ embeds: [embed] });
     } else {
         const embed = msg.embeds[0];
-        embed.setDescription("UPGRADE FINISHED. PROCESS TERMINATED.");
+        embed.setDescription(progress);
         standardizeEmbed(embed);
         embed.fields = [];
+        embed.addField("Upgrade almost finished...", `Expected to finish \`soon\``);
         embed.setColor("RED");
 
         await msg.edit({ embeds: [embed] });

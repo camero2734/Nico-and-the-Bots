@@ -9,7 +9,7 @@ import IORedis from "ioredis";
 import { rollbar } from "./logging/rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
-const NUM_WORKERS = 2;
+const NUM_WORKERS = 4;
 
 const onHeroku = process.env.ON_HEROKU === "1";
 const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};

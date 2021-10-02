@@ -125,7 +125,7 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
 
 async function checkVCRoles(guild: Guild): Promise<void> {
     const allChannels = await guild.channels.fetch();
-    const allMembers = await guild.members.fetch();
+    const allMembers = guild.members.cache;
 
     const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === "GUILD_VOICE");
 

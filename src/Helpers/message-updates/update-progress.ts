@@ -6,7 +6,7 @@ import F from "../funcs";
 import { MessageUpdate } from "./_queue";
 
 const startDate = parse("02 October 2021 12:00", "dd MMMM yyyy HH:mm", new Date());
-const endDate = parse("02 October 2021 17:00", "dd MMMM yyyy HH:mm", new Date());
+const endDate = parse("02 October 2021 17:30", "dd MMMM yyyy HH:mm", new Date());
 
 const toEmoji = (id: string) => `<:name:${id}>`;
 const startEmoji = toEmoji(emojiIDs.poll.start);
@@ -31,6 +31,7 @@ const standardizeEmbed = (embed: MessageEmbed): void => {
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setColor("#7289DA")
         .addField("Performing system upgrade...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
+        .setImage("https://i.imgur.com/GyU67Bg.png")
         .setFooter("Last updated")
         .setTimestamp(new Date());
 };

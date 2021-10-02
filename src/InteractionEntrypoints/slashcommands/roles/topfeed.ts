@@ -36,8 +36,6 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is under construction");
-
     await ctx.deferReply({ ephemeral: true });
 
     if (ctx.opts.removeall) {

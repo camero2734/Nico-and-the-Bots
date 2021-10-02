@@ -40,7 +40,7 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     const { page } = ctx.opts;
-    const pageNum = page && page > 0 ? page - 1 : 0; // Computers tend to like to start at zero. Also negative pages don't make sense
+    const pageNum = Math.floor(page && page >= 1 ? page - 1 : 0); // Computers tend to like to start at zero. Also negative pages don't make sense
     const timeperiod = ctx.opts.timeperiod || 0;
 
     await ctx.deferReply();

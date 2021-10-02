@@ -144,7 +144,9 @@ command.setHandler(async (ctx) => {
 });
 
 const genStarId = command.addInteractionListener("fmStarInt", <const>["fmStarId"], async (ctx, args) => {
-    //
+    await ctx.deferReply({ ephemeral: true });
+
+    await ctx.editReply({ content: "This feature is coming in a future update" });
 });
 
 export default command;

@@ -9,6 +9,7 @@ import IORedis from "ioredis";
 import { rollbar } from "./logging/rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
+const NUM_WORKERS = 2;
 
 const onHeroku = process.env.ON_HEROKU === "1";
 const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};
@@ -28,35 +29,37 @@ export const updateUserScore = (msg: Message): void => {
         channelId: msg.channel.id,
         messageId: msg.id
     };
-    // scoreQueue.add("score", reference);
+    scoreQueue.add("score", reference);
 };
 
-new Worker(
-    QUEUE_NAME,
-    async (job) => {
-        if (job.name !== "score") return;
-        try {
-            const count = await scoreQueue.count();
-            if (count > 50) {
-                console.log(`[Score Queue]: Items in queue: ${count}`);
+for (let i = 0; i < NUM_WORKERS; i++) {
+    new Worker(
+        QUEUE_NAME,
+        async (job) => {
+            if (job.name !== "score") return;
+            try {
+                const count = await scoreQueue.count();
+                if (count > 50) {
+                    console.log(`[Score Queue]: Items in queue: ${count}`);
+                }
+
+                const msgRef = job.data as MessageReference;
+                if (!msgRef?.messageId) throw Error("no msg id");
+
+                // These should be cached via discord.js so lookup time is no issue
+                const guild = await NicoClient.guilds.fetch(msgRef.guildId as Snowflake);
+                const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
+                const msg = await channel.messages.fetch(msgRef.messageId);
+
+                await updateUserScoreWorker(msg);
+            } catch (e) {
+                if (e instanceof DiscordAPIError) return;
+                else if (e instanceof Error) rollbar.error(e);
             }
-
-            const msgRef = job.data as MessageReference;
-            if (!msgRef?.messageId) throw Error("no msg id");
-
-            // These should be cached via discord.js so lookup time is no issue
-            const guild = await NicoClient.guilds.fetch(msgRef.guildId as Snowflake);
-            const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
-            const msg = await channel.messages.fetch(msgRef.messageId);
-
-            await updateUserScoreWorker(msg);
-        } catch (e) {
-            if (e instanceof DiscordAPIError) return;
-            else if (e instanceof Error) rollbar.error(e);
-        }
-    },
-    redisOpts
-);
+        },
+        redisOpts
+    );
+}
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
 const updateUserScoreWorker = async (msg: Message): Promise<void> => {

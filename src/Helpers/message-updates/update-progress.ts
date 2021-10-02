@@ -30,10 +30,12 @@ const standardizeEmbed = (embed: MessageEmbed): void => {
     embed
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setColor("#7289DA")
-        .addField("Performing system upgrade...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
+        .addField("Upgrade almost finished...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
         .setImage("https://i.imgur.com/GyU67Bg.png")
-        .setFooter("Last updated")
-        .setTimestamp(new Date());
+        .setFooter(
+            "DEMAtronix: Propaganda delivered promptly™",
+            "https://cdn.discordapp.com/emojis/860015969253326858.png"
+        );
 };
 
 const initialMessage = async (): Promise<MessageOptions> => {
@@ -57,7 +59,13 @@ const update = async (msg: Message) => {
 
         await msg.edit({ embeds: [embed] });
     } else {
-        // TODO
+        const embed = msg.embeds[0];
+        embed.setDescription("UPGRADE FINISHED. PROCESS TERMINATED.");
+        standardizeEmbed(embed);
+        embed.fields = [];
+        embed.setColor("RED");
+
+        await msg.edit({ embeds: [embed] });
     }
 };
 

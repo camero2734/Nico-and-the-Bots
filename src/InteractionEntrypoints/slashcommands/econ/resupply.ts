@@ -222,7 +222,7 @@ async function memberWon(
                     create: { amountPaid: 0, roleId: prize.id, userId: member.id }
                 });
 
-                prizeDescription = `You may equip this role using the \`/roles color\` command.`;
+                prizeDescription = `You may equip this role using the \`/roles colors\` command.`;
             } else await member.roles.add(prize.id);
             break;
         }

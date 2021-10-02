@@ -37,7 +37,7 @@ command.setHandler(async (ctx) => {
             .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
             .addField(
                 "How do I choose one?",
-                `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles color <@&${roleIDs[0]}>`
+                `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles colors <@&${roleIDs[0]}>`
             );
 
         return ctx.send({ embeds: [embed] });

@@ -174,7 +174,7 @@ const genItemId = command.addInteractionListener("shopColorItem", <const>["itemI
             ) // prettier-ignore
             .addField(
                 `How do I "equip" this role?`,
-                "To actually apply this role, simply use the `/roles color` command. You may only have one color role applied at a time (but you can own as many as you want)."
+                "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want)."
             );
         let sent = false;
         try {

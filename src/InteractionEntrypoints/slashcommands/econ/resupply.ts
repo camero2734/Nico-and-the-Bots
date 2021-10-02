@@ -27,7 +27,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.deferReply();
+    await ctx.deferReply({ ephemeral: true });
 
     const buffer = await fs.promises.readFile("./src/Assets/images/banditos.gif");
 
@@ -82,7 +82,7 @@ command.setHandler(async (ctx) => {
         })
     );
 
-    await ctx.send({
+    await ctx.editReply({
         embeds: [embed.toJSON()],
         files: [{ name: "file.gif", attachment: buffer }],
         components: [actionRow, buttonActionRow]
@@ -91,7 +91,8 @@ command.setHandler(async (ctx) => {
 
 const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], async (ctx) => {
     if (!ctx.isSelectMenu() || !ctx.member) return;
-    ctx.deferred = true;
+
+    await ctx.deferUpdate();
 
     const [_districtNum] = ctx.values || [];
     if (!_districtNum) return;
@@ -121,8 +122,7 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
 });
 
 const genButtonId = command.addInteractionListener("banditosBishopsButton", [], async (ctx) => {
-    ctx.deferred = true;
-
+    await ctx.deferUpdate();
     await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
 
@@ -171,7 +171,7 @@ async function memberCaught(
     district: typeof districts[number],
     dailyBox: DailyBox
 ): Promise<void> {
-    await (<Message>ctx.message).removeAttachments();
+    // await (<Message>ctx.message).removeAttachments();
 
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
@@ -183,7 +183,7 @@ async function memberCaught(
         .setDescription(
             `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
         )
-        .setFooter(`You win nothing. ${tokensRemaining}`);
+        .setFooter(`You win nothing. ${tokensRemaining}`, "attachment://file.gif");
 
     sendViolationNotice(ctx.member as GuildMember, {
         violation: "ConspiracyAndTreason",
@@ -192,7 +192,8 @@ async function memberCaught(
 
     await ctx.editReply({
         embeds: [embed],
-        components: []
+        components: [],
+        files: []
     });
 }
 

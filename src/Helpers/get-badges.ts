@@ -139,7 +139,7 @@ export const badgeLoader = async (member: GuildMember, numGolds: number, placeNu
         return !!badge;
     });
 
-    await createBadge("teamwinner.png", async function () {
+    await createBadge("teamWinner.png", async function () {
         return new Promise((resolve) => {
             resolve(member.roles.cache.has("503645677574684683"));
         });

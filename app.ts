@@ -19,6 +19,7 @@ import { ContextMenus, InteractionHandlers, ReactionHandlers, SlashCommands } fr
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
+import "./src/Helpers/message-updates/_queue";
 
 const client = new Discord.Client({
     intents: [

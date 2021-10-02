@@ -22,15 +22,24 @@ import { prisma } from "./prisma-init";
 
 const CHECK_INTERVAL = secondsToMilliseconds(5);
 
+const safeCheck = async (p: Promise<unknown>) => {
+    try {
+        await p;
+    } catch (e) {
+        if (e instanceof Error) rollbar.error(e);
+        else rollbar.error(`Error: ${e}`);
+    }
+};
+
 export default async function (client: Client): Promise<void> {
     const guild = await client.guilds.fetch(guildID);
 
     async function runChecks() {
-        await checkMutes(guild);
-        await checkReminders(guild);
-        await checkMemberRoles(guild);
-        await checkVCRoles(guild);
-        await checkHouseOfGold(guild);
+        await safeCheck(checkMutes(guild));
+        await safeCheck(checkReminders(guild));
+        await safeCheck(checkMemberRoles(guild));
+        await safeCheck(checkVCRoles(guild));
+        await safeCheck(checkHouseOfGold(guild));
         await F.wait(CHECK_INTERVAL);
         runChecks();
     }
@@ -115,36 +124,31 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
 }
 
 async function checkVCRoles(guild: Guild): Promise<void> {
-    try {
-        const allChannels = await guild.channels.fetch();
-        const allMembers = await guild.members.fetch();
+    const allChannels = await guild.channels.fetch();
+    const allMembers = await guild.members.fetch();
 
-        const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === "GUILD_VOICE");
+    const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === "GUILD_VOICE");
 
-        const membersInVc = new Collection<Snowflake, GuildMember>();
+    const membersInVc = new Collection<Snowflake, GuildMember>();
 
-        for (const vc of voiceChannels.values()) {
-            for (const member of vc.members.values()) {
-                membersInVc.set(member.id, member);
-            }
+    for (const vc of voiceChannels.values()) {
+        for (const member of vc.members.values()) {
+            membersInVc.set(member.id, member);
         }
+    }
 
-        const membersWithVcRoleArr = allMembers.filter((m) => m.roles.cache.has(roles.vc));
-        const membersWithVcRole = new Collection(membersWithVcRoleArr.map((m) => [m.id, m]));
+    const membersWithVcRoleArr = allMembers.filter((m) => m.roles.cache.has(roles.vc));
+    const membersWithVcRole = new Collection(membersWithVcRoleArr.map((m) => [m.id, m]));
 
-        const toAdd = membersInVc.filter((m) => !membersWithVcRole.has(m.id));
-        const toRemove = membersWithVcRole.filter((m) => !membersInVc.has(m.id));
+    const toAdd = membersInVc.filter((m) => !membersWithVcRole.has(m.id));
+    const toRemove = membersWithVcRole.filter((m) => !membersInVc.has(m.id));
 
-        for (const mem of toAdd.values()) {
-            await mem.roles.add(roles.vc);
-        }
+    for (const mem of toAdd.values()) {
+        await mem.roles.add(roles.vc);
+    }
 
-        for (const mem of toRemove.values()) {
-            await mem.roles.remove(roles.vc);
-        }
-    } catch (e) {
-        if (e instanceof Error) rollbar.error(e);
-        else rollbar.error(`Error in updating VC roles`);
+    for (const mem of toRemove.values()) {
+        await mem.roles.remove(roles.vc);
     }
 }
 

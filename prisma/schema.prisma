@@ -121,7 +121,7 @@ model Poll {
   name    String
   options String[]
 
-  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
   votes  Vote[]
 }
@@ -177,7 +177,7 @@ model Warning {
   warnedUser   User?  @relation("Warning_warnedUser", fields: [warnedUserId], references: [id], onDelete: Cascade)
   warnedUserId String
 
-  issuedByUser   User?  @relation("Warning_issuedByUser", fields: [issuedByUserId], references: [id], onDelete: SetNull)
+  issuedByUser   User?   @relation("Warning_issuedByUser", fields: [issuedByUserId], references: [id], onDelete: SetNull)
   issuedByUserId String?
 
   createdAt DateTime @default(now())
@@ -189,7 +189,7 @@ model SubmittedInterview {
   url      String  @unique
   approved Boolean @default(false)
 
-  submittedByUser   User?  @relation(fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  submittedByUser   User?   @relation(fields: [submittedByUserId], references: [id], onDelete: SetNull)
   submittedByUserId String?
 }
 
@@ -350,4 +350,10 @@ model Badge {
   type BadgeType
 
   @@unique([userId, type])
+}
+
+model MessageReference {
+  messageId String @id
+  channelId String
+  name      String @unique
 }

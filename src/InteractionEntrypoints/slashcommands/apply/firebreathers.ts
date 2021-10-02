@@ -14,6 +14,8 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
+    throw new CommandError("This command is disabled");
+
     if (!ctx.member.roles.cache.has(roles.staff)) {
         throw new CommandError("This command is not available yet.");
     }

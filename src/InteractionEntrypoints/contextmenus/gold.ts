@@ -1,6 +1,6 @@
 import { addDays } from "date-fns";
 import { Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
-import { channelIDs, emojiIDs } from "../../Configuration/config";
+import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -191,5 +191,7 @@ async function handleGold(
 
     ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });
 }
+
+ctxMenu.addPermission(roles.banditos, true);
 
 export default ctxMenu;

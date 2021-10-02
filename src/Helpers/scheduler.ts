@@ -173,22 +173,30 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
     });
 
     for (const toDelete of msgsToDelete) {
-        console.log(`DELETING ${toDelete.goldMessageUrl}`);
-        const originalGold = await prisma.gold.findFirst({
-            where: { goldMessageUrl: toDelete.goldMessageUrl },
-            orderBy: { createdAt: "asc" }
-        });
+        try {
+            console.log(`DELETING ${toDelete.goldMessageUrl}`);
+            const originalGold = await prisma.gold.findFirst({
+                where: { goldMessageUrl: toDelete.goldMessageUrl },
+                orderBy: { createdAt: "asc" }
+            });
 
-        if (!originalGold) continue;
+            if (!originalGold) continue;
 
-        const channel = (await guild.channels.fetch(originalGold.channelId)) as TextChannel;
-        const message = await channel.messages.fetch(originalGold.messageId);
+            try {
+                const channel = (await guild.channels.fetch(originalGold.channelId)) as TextChannel;
+                const message = await channel.messages.fetch(originalGold.messageId);
 
-        await message.delete();
+                await message.delete();
+            } catch {
+                /** Message already deleted probably  */
+            }
 
-        await prisma.gold.updateMany({
-            where: { goldMessageUrl: toDelete.goldMessageUrl },
-            data: { goldMessageUrl: null }
-        });
+            await prisma.gold.updateMany({
+                where: { goldMessageUrl: toDelete.goldMessageUrl },
+                data: { goldMessageUrl: null }
+            });
+        } catch (e) {
+            console.log(e, /UNABLE_TO_DELETE_HOG/);
+        }
     }
 }

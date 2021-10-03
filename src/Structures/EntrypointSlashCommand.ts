@@ -117,6 +117,8 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
             if (!ctx.isButton()) return;
 
+            await ctx.deferUpdate();
+
             const isUpvote = args.isUpvote === "1" ? 1 : 0;
             const pollId = +args.pollID;
             await prisma.vote.upsert({
@@ -158,14 +160,14 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
             upvoteButton.label = `${upvotes}`;
             downvoteButton.label = `${downvotes}`;
 
-            await msg.edit({ components: [actionRow] });
+            await ctx.editReply({ components: [actionRow] });
 
             await F.wait(1000);
 
             upvoteButton.setStyle("SECONDARY");
             downvoteButton.setStyle("SECONDARY");
 
-            await msg.edit({ components: [actionRow] });
+            await ctx.editReply({ components: [actionRow] });
         });
 
         const createActionRow = async (ctx: SlashCommandInteraction<T> | Message, title?: string) => {

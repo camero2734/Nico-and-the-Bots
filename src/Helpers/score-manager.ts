@@ -37,7 +37,7 @@ new Worker(
         if (job.name !== "score") return;
         try {
             const count = await scoreQueue.count();
-            if (count > 50) {
+            if (count > 10) {
                 console.log(`[Score Queue]: Items in queue: ${count}`);
             }
 

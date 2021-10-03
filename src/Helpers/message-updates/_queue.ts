@@ -41,7 +41,7 @@ const registerMessageUpdate = async (msgUpdate: MessageUpdate) => {
     messageUpdates.set(msgUpdate.name, msgUpdate);
 };
 //
-registerMessageUpdate(UpdateProgress);
+// registerMessageUpdate(UpdateProgress);
 
 //
 

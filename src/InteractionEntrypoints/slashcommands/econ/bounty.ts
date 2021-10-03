@@ -115,3 +115,5 @@ command.setHandler(async (ctx) => {
         await ctx.editReply({ embeds: [winEmbed.toJSON()] });
     }
 });
+
+export default command;

@@ -1,6 +1,6 @@
-import { CommandError } from "../../../Configuration/definitions";
-import { addMilliseconds } from "date-fns";
+import { addSeconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
+import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
         throw new CommandError(ERRORS.TOO_MANY_REMINDERS); // prettier-ignore
     }
 
-    const sendAt = addMilliseconds(new Date(), intime);
+    const sendAt = addSeconds(new Date(), intime);
 
     const confirmEmbed = new MessageEmbed()
         .setTitle("Created reminder")
@@ -50,7 +50,7 @@ command.setHandler(async (ctx) => {
         data: { userId: ctx.user.id, text, sendAt }
     });
 
-    await ctx.send({ embeds: [confirmEmbed] });
+    await ctx.editReply({ embeds: [confirmEmbed] });
 });
 
 export default command;

@@ -23,6 +23,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
             allowedMentions: { users: [], roles: [] }
         });
     } else {
+        console.log(`Unknown error:`, e);
         if (e instanceof Error) rollbar.error(e);
         else rollbar.error(`${e}`);
         const embed = new MessageEmbed()

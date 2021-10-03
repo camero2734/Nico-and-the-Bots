@@ -128,7 +128,7 @@ async function handleGold(
         );
     }
 
-    const chan = (await msg.guild?.channels.fetch(channelIDs.houseofgoldtest)) as TextChannel;
+    const chan = (await msg.guild?.channels.fetch(channelIDs.houseofgold)) as TextChannel;
     if (!chan) throw new Error("Couldn't find the gold channel");
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { goldMessageUrl: msg.url } }) : 0);

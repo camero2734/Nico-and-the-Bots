@@ -1,4 +1,4 @@
-import { addSeconds } from "date-fns";
+import { addMilliseconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
         throw new CommandError(ERRORS.TOO_MANY_REMINDERS); // prettier-ignore
     }
 
-    const sendAt = addSeconds(new Date(), intime);
+    const sendAt = addMilliseconds(new Date(), intime);
 
     const confirmEmbed = new MessageEmbed()
         .setTitle("Created reminder")

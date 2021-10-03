@@ -168,7 +168,7 @@ command.setHandler(async (ctx) => {
     const embed = new MessageEmbed()
         .setColor("#FF0000")
         .setTitle(`${ctx.member.displayName}'s Daily`)
-        .setFooter("Have an idea for another server tip? Submit it with !suggest")
+        .setFooter("Have an idea for another server tip? Submit it with /submit suggestion")
         .addField("Server Fact", randomFact)
         .addField("Tokens Earned", `${tokenMessage}`)
         .addField("Total tokens", `You have **${newTokens}** token${F.plural(newTokens)}.`)

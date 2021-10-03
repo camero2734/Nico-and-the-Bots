@@ -69,6 +69,9 @@ const channelReacts = [
     ]),
     new ChannelReactions(channelIDs.musiccreations).addReactions([
         new FileReact(["💙"], FileReact.MimeCheck(["audio", "video"]), true)
+    ]),
+    new ChannelReactions(channelIDs.memes).addReactions([
+        new FileReact(["👍", "👎"], FileReact.MimeCheck(["audio", "video", "image"]), true)
     ])
 ];
 

@@ -68,13 +68,13 @@ async function getMemberScores(
     ctx: typeof command.ContextType,
     pageNum: number,
     timeperiod?: number
-): Promise<{ member: GuildMember; score: number }[]> {
+): Promise<{ member?: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
     const paginatedUsers = await queries.scoresOverTime(timeperiod, startAt, 10);
 
     return await Promise.all(
         paginatedUsers.map(async (u) => ({
-            member: await ctx.member.guild.members.fetch(u.userId.toSnowflake()),
+            member: await ctx.member.guild.members.fetch(u.userId.toSnowflake()).catch(() => undefined),
             score: u.score
         }))
     );
@@ -83,20 +83,19 @@ async function getMemberScores(
 async function getAlltimeScores(
     ctx: typeof command.ContextType,
     pageNum: number
-): Promise<{ member: GuildMember; score: number }[]> {
+): Promise<{ member?: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
-    const endAt = startAt + 10;
 
     const paginatedUsers = await prisma.user.findMany({
         orderBy: { score: "desc" },
         skip: startAt,
-        take: endAt
+        take: 10
     });
 
     return await Promise.all(
         paginatedUsers.map(async (u) => {
             return {
-                member: await ctx.member.guild.members.fetch(u.id.toSnowflake()),
+                member: await ctx.member.guild.members.fetch(u.id.toSnowflake()).catch(() => undefined),
                 score: u.score
             };
         })
@@ -104,7 +103,7 @@ async function getAlltimeScores(
 }
 
 async function generateImage(
-    userScores: { member: GuildMember; score: number }[],
+    userScores: { member?: GuildMember; score: number }[],
     pageNum: number,
     timePeriodStr: string
 ): Promise<Buffer> {
@@ -166,13 +165,18 @@ async function generateImage(
 
         // Avatar
         cctx.translate(10, 0);
-        const avatar = await loadImage(member.user.displayAvatarURL({ format: "png", size: 128 }));
+        const avatar = await loadImage(
+            member?.user.displayAvatarURL({ format: "png", size: 128 }) ||
+                "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
+        );
 
         cctx.shadowBlur = 1;
         cctx.drawImage(avatar, 0, 0, IMAGE_HEIGHT, IMAGE_HEIGHT);
 
         // Top badge
-        const [firstBadge] = await badgeLoader(member, { placeNum, numBadges: 1 });
+        const [firstBadge] = member
+            ? await badgeLoader(member, { placeNum, numBadges: 1 })
+            : [await loadImage("./src/Assets/badges/banditos.png")];
 
         cctx.drawImage(firstBadge, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55);
 
@@ -181,9 +185,9 @@ async function generateImage(
         cctx.fillStyle = "white";
         cctx.textAlign = "start";
         cctx.font = "34px futura";
-        let displayedName = member.displayName.replace(/[^\w[\]()!@#%^&*-_+= ]/g, "").replace(/ {2,}/g, " ").trim() || member.displayName; // prettier-ignore
+        let displayedName = member?.displayName.replace(/[^\w[\]()!@#%^&*-_+= ]/g, "").replace(/ {2,}/g, " ").trim() || member?.displayName || "Missing user"; // prettier-ignore
         let textInfo = cctx.measureText(displayedName);
-        if (textInfo.width > 200 && member.user.username.length < displayedName.length) {
+        if (member && textInfo.width > 200 && member.user.username.length < displayedName.length) {
             displayedName = member.user.username;
             textInfo = cctx.measureText(displayedName);
         }

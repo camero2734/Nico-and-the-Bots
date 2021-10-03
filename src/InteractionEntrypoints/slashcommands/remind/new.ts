@@ -1,10 +1,11 @@
 import { addMilliseconds } from "date-fns";
 import { MessageEmbed } from "discord.js";
+import parseDuration from "parse-duration";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { ERRORS, REMINDER_LIMIT, REMINDER_TIMES } from "./_consts";
+import { ERRORS, REMINDER_LIMIT } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Sets up a reminder from Nico",
@@ -16,11 +17,10 @@ const command = new SlashCommand(<const>{
             type: "STRING"
         },
         {
-            name: "intime",
-            description: "When the reminder should be sent",
+            name: "time",
+            description: 'A duration string, like "4 hours and 30 minutes". A number by itself is interpreted as hours',
             required: true,
-            type: "INTEGER",
-            choices: Object.entries(REMINDER_TIMES).map(([name, value]) => <const>{ name, value })
+            type: "STRING"
         }
     ]
 });
@@ -28,7 +28,12 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
-    const { text, intime } = ctx.opts;
+    const { text, time } = ctx.opts;
+
+    const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
+    const durationMs = parseDuration(timeStr);
+
+    if (!durationMs) throw new CommandError("Unable to parse duration.");
 
     const remindersCount = await prisma.reminder.count({
         where: { userId: ctx.user.id }
@@ -38,7 +43,7 @@ command.setHandler(async (ctx) => {
         throw new CommandError(ERRORS.TOO_MANY_REMINDERS); // prettier-ignore
     }
 
-    const sendAt = addMilliseconds(new Date(), intime);
+    const sendAt = addMilliseconds(new Date(), durationMs);
 
     const confirmEmbed = new MessageEmbed()
         .setTitle("Created reminder")

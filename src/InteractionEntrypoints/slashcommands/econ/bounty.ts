@@ -23,6 +23,12 @@ command.setHandler(async (ctx) => {
     const user = ctx.opts.user;
     const isInventoryCmd = !user;
 
+    if (ctx.opts.user === ctx.member.id) {
+        throw new CommandError(
+            "Sacred Vialist Amendment IV § 280 prohibits self-incrimination under the pretense of monetary gain"
+        );
+    }
+
     await ctx.deferReply({ ephemeral: isInventoryCmd });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });

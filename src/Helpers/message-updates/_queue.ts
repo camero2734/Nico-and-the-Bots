@@ -50,7 +50,9 @@ new Worker(
     async (job) => {
         try {
             const messageUpdate = messageUpdates.get(job.name);
-            if (!messageUpdate) throw new Error("MessageUpdate does not exist");
+            if (!messageUpdate) {
+                return job.discard();
+            }
 
             const msg = await findOrCreateMessage(job.name, messageUpdate);
             await messageUpdate.update(msg);

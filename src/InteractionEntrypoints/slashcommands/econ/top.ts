@@ -59,7 +59,7 @@ command.setHandler(async (ctx) => {
     const buffer = await generateImage(memberScores, pageNum, timePeriodStr);
 
     await ctx.send({
-        // content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
+        content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
         embeds: [],
         files: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, attachment: buffer }]
     });
@@ -70,8 +70,7 @@ async function getMemberScores(
     timeperiod?: number
 ): Promise<{ member: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
-    const allUsers = await queries.scoresOverTime(timeperiod); // TODO: Should probably just skip/take in the SQL query
-    const paginatedUsers = allUsers.slice(startAt, startAt + 10);
+    const paginatedUsers = await queries.scoresOverTime(timeperiod, startAt, 10);
 
     return await Promise.all(
         paginatedUsers.map(async (u) => ({

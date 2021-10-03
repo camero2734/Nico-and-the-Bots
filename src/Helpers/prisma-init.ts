@@ -33,14 +33,16 @@ prisma.$on("query", (e) => {
 });
 
 export const queries = {
-    async scoresOverTime(weeks = 1): Promise<{ score: number; place: number; userId: string }[]> {
+    async scoresOverTime(weeks = 1, skip = 0, take = 10): Promise<{ score: number; place: number; userId: string }[]> {
         const monthAgo = startOfDay(subWeeks(new Date(), weeks));
         try {
             const results = await prisma.messageHistory.groupBy({
                 by: ["userId"],
                 where: { date: { gte: monthAgo } },
                 _sum: { pointsEarned: true },
-                orderBy: { _sum: { pointsEarned: "desc" } }
+                orderBy: { _sum: { pointsEarned: "desc" } },
+                skip,
+                take
             });
             const sorted = results.map((r, idx) => ({
                 score: r._sum.pointsEarned || 0,

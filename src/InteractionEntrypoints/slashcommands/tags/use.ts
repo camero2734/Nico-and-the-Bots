@@ -43,7 +43,7 @@ command.setHandler(async (ctx) => {
 
         await ctx.editReply({ embeds: [embed] });
     } else {
-        await ctx.editReply({ content: tag.text });
+        await ctx.editReply({ content: tag.text, allowedMentions: { parse: [] } });
     }
 });
 

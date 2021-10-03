@@ -33,7 +33,7 @@ command.setHandler(async (ctx) => {
     if (!dbUser) throw new CommandError("Unable to find user's score.");
 
     // Calculate a users all-time place
-    const placeNum = await queries.alltimePlaceNum(dbUser.score) + 1;
+    const placeNum = await queries.alltimePlaceNum(dbUser.score);
 
     // Get images to place on card as badges
     const badges = await badgeLoader(member, dbUser.golds.length, placeNum);

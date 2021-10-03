@@ -62,12 +62,14 @@ const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award
 const updateUserScoreWorker = async (msg: Message): Promise<void> => {
     const dbUser = await prisma.user.upsert({
         where: { id: msg.author.id },
-        update: { lastMessageSent: new Date() },
+        update: {},
         create: { id: msg.author.id, dailyBox: { create: {} } }
     });
 
     const now = Date.now();
     const timeSince = now - dbUser.lastMessageSent.getTime();
+
+    await prisma.user.update({ where: { id: dbUser.id }, data: { lastMessageSent: new Date() } });
 
     // Determine whether to award a point or not (i.e. spamming messages should award no points)
     let earnedPoint = true;

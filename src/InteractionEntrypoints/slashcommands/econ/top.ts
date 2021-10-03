@@ -60,7 +60,6 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({
         // content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
-        content: "",
         files: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, attachment: buffer }]
     });
 });

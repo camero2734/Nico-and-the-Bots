@@ -13,6 +13,8 @@ export const NUM_GOLDS_FOR_CERTIFICATION = 5;
 export const NUM_DAYS_FOR_CERTIFICATION = 1;
 const NOT_CERTIFIED_FIELD = "⚠️ Not certified!";
 
+const MESSAGE_ALREADY_GOLD = `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgold}>.`;
+
 const ctxMenu = new MessageContextMenu("🪙 Gold Message");
 
 ctxMenu.setHandler(async (ctx, msg) => {
@@ -29,9 +31,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
             );
         }
 
-        const embed = new MessageEmbed().setDescription(
-            `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgold}>.`
-        );
+        const embed = new MessageEmbed().setDescription(MESSAGE_ALREADY_GOLD);
         const actionRow = new MessageActionRow().addComponents([
             new MessageButton({ label: "View post", style: "LINK", url: givenGold.goldMessageUrl })
         ]);
@@ -164,6 +164,11 @@ async function handleGold(
     }
 
     const goldMessage = await prisma.$transaction(async (tx) => {
+        if (!isAdditionalGold) {
+            const previousGold = await prisma.gold.findFirst({ where: { messageId: originalMessageId } });
+            if (previousGold) throw new CommandError(MESSAGE_ALREADY_GOLD);
+        }
+
         const user = await tx.user.update({ where: { id: ctx.user.id }, data: { credits: { decrement: cost } } });
         if (user.credits < 0) throw new CommandError("You don't have enough credits!");
 

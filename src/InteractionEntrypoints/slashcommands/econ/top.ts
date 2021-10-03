@@ -59,7 +59,7 @@ command.setHandler(async (ctx) => {
     const buffer = await generateImage(memberScores, pageNum, timePeriodStr);
 
     await ctx.send({
-        content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
+        // content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
         embeds: [],
         files: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, attachment: buffer }]
     });
@@ -166,15 +166,13 @@ async function generateImage(
 
         // Avatar
         cctx.translate(10, 0);
-        if (!member.user) console.log(member.constructor.name);
-        const avatarRes = await fetch(member.user.displayAvatarURL({ format: "png", size: 128 }));
-        const avatar = await loadImage(await avatarRes.buffer());
+        const avatar = await loadImage(member.user.displayAvatarURL({ format: "png", size: 128 }));
 
         cctx.shadowBlur = 1;
         cctx.drawImage(avatar, 0, 0, IMAGE_HEIGHT, IMAGE_HEIGHT);
 
         // Top badge
-        const [firstBadge] = await badgeLoader(member, 0, placeNum);
+        const [firstBadge] = await badgeLoader(member, { placeNum, numBadges: 1 });
 
         cctx.drawImage(firstBadge, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55);
 

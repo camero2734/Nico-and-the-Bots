@@ -56,9 +56,9 @@ export const queries = {
     async alltimePlaceNum(score: number): Promise<number> {
         try {
             const res = await prisma.user.count({ where: { score: { gt: score } } });
-            return res;
+            return res + 1;
         } catch {
-            return 0;
+            return 1;
         }
     },
     async findOrCreateUser<T extends Prisma.UserInclude>(

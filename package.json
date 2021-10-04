@@ -7,7 +7,7 @@
         "build": "etsc && cp -r src/Assets dist/src/Assets && node loadsecrets.ts",
         "dev": "nodemon",
         "dev:debug": "set DEBUG=consola && yarn dev",
-        "start": "yarn build && node dist/app.js",
+        "start": "node dist/app.js",
         "update": "npm-check -u",
         "deploy": "bash ./deploy.sh",
         "dyno:restart": "heroku scale worker=1 && heroku ps:restart worker.1 --app nico-discord-clique",

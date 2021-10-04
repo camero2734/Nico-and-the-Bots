@@ -173,16 +173,18 @@ export const roles = <const>{
             "No Pink Intended": "557303175292649482",
             "Regional at Blue": "557303160197349376",
             "Dema Gray": "557303139238150154",
-            "Jumpsuit Green": "557303189976907788"
+            "Jumpsuit Green": "557303189976907788",
+            "Bounce Man Orange": "894429283441848371"
         },
         tier3: {
             "Ned Blue": "557303253143126016",
             "March to the Cyan": "557303359489703966",
+            "Never Teal It": "894427960872927242",
             "Holding on to Blue": "557303322965573848",
             "Forest Green": "557303348315815950",
             "Trees Green": "557303213728989224",
+            "Mulberry Jam": "894428312468860978",
             "Kitchen Pink": "557303336244609037",
-            "Chlorine Pink": "557303267881779222",
             "Pink You Out": "558091763856965642",
             "Rebel Red": "557303280321953810",
             "The Red and Go": "558091802813399077",

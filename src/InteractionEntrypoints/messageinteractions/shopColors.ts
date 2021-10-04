@@ -23,7 +23,7 @@ enum ActionTypes {
 
 const msgInt = new MessageInteraction();
 
-export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx, args) => {
+export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);

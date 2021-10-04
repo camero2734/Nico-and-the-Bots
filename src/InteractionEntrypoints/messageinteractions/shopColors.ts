@@ -1,4 +1,4 @@
-import { CommandError, NULL_CUSTOM_ID } from "../../../Configuration/definitions";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     EmojiIdentifierResolvable,
     GuildMember,
@@ -7,12 +7,13 @@ import {
     MessageEmbed,
     MessageOptions
 } from "discord.js";
-import { MessageTools } from "../../../Helpers";
-import F from "../../../Helpers/funcs";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { prisma, queries } from "../../../Helpers/prisma-init";
-import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
+import { MessageTools } from "../../Helpers";
+import { sendViolationNotice } from "../../Helpers/dema-notice";
+import F from "../../Helpers/funcs";
+import { prisma, queries } from "../../Helpers/prisma-init";
+import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
+import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts.shopColors";
 
 enum ActionTypes {
     View,
@@ -20,28 +21,23 @@ enum ActionTypes {
     // Delete
 }
 
-const command = new SlashCommand(<const>{
-    description: "Opens the shop menu for color roles",
-    options: []
-});
+const msgInt = new MessageInteraction();
 
-command.setHandler(async (ctx) => {
+export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx, args) => {
     await ctx.deferReply({ ephemeral: true });
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);
-    await ctx.send(initialMsg);
+    await ctx.editReply(initialMsg);
 });
 
 // Main Menu
-const genMainMenuId = command.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
-    // await ctx.deferReply({ ephemeral: true });
-
+const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
     const initialMsg = await generateMainMenuEmbed(ctx.member);
     await ctx.update(initialMsg);
 });
 
 // Category submenu
-const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
+const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
     const categories = getColorRoleCategories(ctx.guild.roles);
     const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
@@ -93,7 +89,7 @@ const genSubmenuId = command.addInteractionListener("shopColorSubmenu", <const>[
 });
 
 // Viewing a specific item
-const genItemId = command.addInteractionListener("shopColorItem", <const>["itemId", "action"], async (ctx, args) => {
+const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId", "action"], async (ctx, args) => {
     const actionType = +args.action;
 
     const categories = getColorRoleCategories(ctx.guild.roles);
@@ -236,4 +232,4 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
     return { embeds: [MenuEmbed], components: [menuActionRow] };
 }
 
-export default command;
+export default msgInt;

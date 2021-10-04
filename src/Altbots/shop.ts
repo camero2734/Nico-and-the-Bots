@@ -1,6 +1,8 @@
-import { Client, Intents, MessageEmbed, TextChannel } from "discord.js";
+import { Client, Intents, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import secrets from "../Configuration/secrets";
 import { channelIDs, guildID } from "../Configuration/config";
+import { GenBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
+import { NicoClient } from "../../app";
 
 export class KeonsBot {
     client: Client;
@@ -29,6 +31,8 @@ export class KeonsBot {
         this.ready = new Promise((resolve) => {
             this.client.on("ready", () => resolve());
         });
+
+        this.client.on("interactionCreate", (int) => NicoClient.listeners("interactionCreate")[0](int));
     }
 
     async setupShop(): Promise<void> {
@@ -70,6 +74,10 @@ export class KeonsBot {
                 "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited."
             );
 
-        await chan.send({ embeds: [welcomeEmbed] });
+        const actionRow = new MessageActionRow().addComponents([
+            new MessageButton({ style: "PRIMARY", label: "Color Roles", customId: GenBtnId({}) }) //
+        ]);
+
+        await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });
     }
 }

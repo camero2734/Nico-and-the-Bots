@@ -33,7 +33,7 @@ command.setHandler(async (ctx) => {
     embed.setTitle(ctx.opts.question);
     embed.setDescription(`**The Wise Nico Says:** ${response}`);
 
-    await ctx.send({ embeds: [embed] });
+    await ctx.editReply({ embeds: [embed] });
 });
 
 export default command;

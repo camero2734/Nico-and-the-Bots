@@ -79,7 +79,9 @@ command.setHandler(async (ctx) => {
         components: [dmActionRow]
     });
 
-    const [buttonPressed] = await timedListener.wait();
+    const [buttonPressed, bctx] = await timedListener.wait();
+
+    await bctx?.deferUpdate();
 
     if (buttonPressed !== beginId) {
         await dmMessage.edit({
@@ -113,7 +115,10 @@ const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, a
 
     await ctx.deferUpdate();
 
-    await ctx.editReply({ components: [] }); // Remove buttons to prevent multiple presses
+    const actionRow = ctx.message.components[0];
+    actionRow.components.forEach((c) => c.setDisabled(true));
+
+    await ctx.editReply({ components: [actionRow] }); // Remove buttons to prevent multiple presses
 
     const guild = await ctx.client.guilds.fetch(guildID);
 

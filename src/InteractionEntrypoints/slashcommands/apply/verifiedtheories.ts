@@ -110,7 +110,9 @@ command.setHandler(async (ctx) => {
 const veriquizArgs = <const>["currentID", "questionIDs", "previousAnswers", "chosenAnswer"];
 const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, async (ctx, args) => {
     const { currentID, questionIDs, previousAnswers, chosenAnswer } = args;
-    ctx.deferred = true;
+
+    await ctx.deferUpdate();
+
     await ctx.editReply({ components: [] }); // Remove buttons to prevent multiple presses
 
     const guild = await ctx.client.guilds.fetch(guildID);

@@ -47,7 +47,7 @@
         "chalk": "^4.1.1",
         "consola": "^2.15.3",
         "date-fns": "^2.22.1",
-        "discord.js": "^13.2.0-dev.1631966593.92f6471",
+        "discord.js": "^13.2.0-dev.1633392294.8bc1ece",
         "emittery": "^0.9.2",
         "emoji-regex": "^9.2.2",
         "esbuild-node-tsc": "^1.6.0",

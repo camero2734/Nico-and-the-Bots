@@ -10,8 +10,7 @@ import { rollbar } from "./logging/rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
 
-const onHeroku = process.env.ON_HEROKU === "1";
-const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};
+const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.REDIS_URL) } : {};
 
 const scoreQueue = new Queue(QUEUE_NAME, {
     ...redisOpts,

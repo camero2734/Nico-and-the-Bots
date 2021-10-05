@@ -9,8 +9,7 @@ import { prisma } from "../prisma-init";
 import { UpdateProgress } from "./update-progress";
 
 const QUEUE_NAME = "MessageUpdates";
-const onHeroku = process.env.ON_HEROKU === "1";
-const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};
+const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.REDIS_URL) } : {};
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 

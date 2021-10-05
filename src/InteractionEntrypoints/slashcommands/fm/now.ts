@@ -23,6 +23,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
+    await ctx.deferReply();
     const selfFM = !ctx.opts.username && !ctx.opts.user;
     const username = await getFMUsername(ctx.opts.username, ctx.opts.user, ctx.member);
 
@@ -140,7 +141,7 @@ command.setHandler(async (ctx) => {
         starActionRow.addComponents(geniusButton);
     }
 
-    await ctx.send({ embeds: [embed], components: [starActionRow] });
+    await ctx.editReply({ embeds: [embed], components: [starActionRow] });
 });
 
 const genStarId = command.addInteractionListener("fmStarInt", <const>["fmStarId"], async (ctx, args) => {

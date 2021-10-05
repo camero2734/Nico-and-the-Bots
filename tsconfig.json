@@ -16,7 +16,7 @@
         "allowSyntheticDefaultImports": true,
         "skipLibCheck": true,
         "sourceMap": true,
-        "noImplicitOverride": true,
+        "noImplicitOverride": true
     },
-    "include": ["**/*.ts"],
+    "include": ["**/*.ts"]
 }

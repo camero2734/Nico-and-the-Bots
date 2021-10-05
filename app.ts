@@ -81,10 +81,9 @@ client.on("messageCreate", async (msg: Discord.Message) => {
     updateUserScore(msg); // Add to score
 });
 
-client.on("messageUpdate", async (oldmsg: Discord.Message, newmsg: Discord.Message) => {
-    await SlurFilter(newmsg);
+client.on("messageUpdate", async (oldMsg, newMsg) => {
+    await SlurFilter(await newMsg.fetch());
 });
-
 
 client.on("messageReactionAdd", async (reaction, user) => {
     const fullReaction = reaction.partial ? await reaction.fetch() : reaction;

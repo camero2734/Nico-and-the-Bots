@@ -4,8 +4,7 @@ import IORedis from "ioredis";
 import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";
-const onHeroku = process.env.ON_HEROKU === "1";
-const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};
+const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.REDIS_URL) } : {};
 
 export type JobType = "TWITTER" | "YOUTUBE" | "INSTAGRAM" | "WEBSITES";
 

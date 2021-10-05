@@ -1,5 +1,5 @@
 import { EmbedField, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
-import { channelIDs, roles } from "../../../Configuration/config";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -14,7 +14,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
-    throw new CommandError("This command is disabled");
+    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is disabled");
 
     if (!ctx.member.roles.cache.has(roles.staff)) {
         throw new CommandError("This command is not available yet.");

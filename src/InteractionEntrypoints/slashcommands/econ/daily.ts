@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
     if (daysSinceDaily < 1 && userIDs.me !== ctx.member.id) {
         const nextDaily = addDays(lastDaily, 1);
         const timestamp = F.discordTimestamp(nextDaily, "relative");
-        throw new CommandError(`You have already used /econ daily today! You can get your next daily ${timestamp}`); // prettier-ignore
+        throw new CommandError(`You have already used daily today! You can get your next daily ${timestamp}`); // prettier-ignore
     }
 
     // Daily count

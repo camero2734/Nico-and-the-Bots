@@ -54,8 +54,8 @@ command.setHandler(async (ctx) => {
     // Validate and fetch url
     if (!F.isValidURL(url)) throw new CommandError("Invalid URL given");
 
-    const res = await fetch(url, { size: MAX_FILE_SIZE }).catch((E) => {
-        console.log(E);
+    const res = await fetch(url, { size: MAX_FILE_SIZE }).catch((e) => {
+        console.log(e);
         throw new CommandError("Unable to get the file from that URL.");
     });
 
@@ -88,7 +88,7 @@ command.setHandler(async (ctx) => {
         new MessageButton({ style: "SUCCESS", label: "Submit", customId: yesId })
     ]);
 
-    await ctx.send({ embeds: [embed.toJSON()], components: [actionRow] });
+    await ctx.editReply({ embeds: [embed], components: [actionRow] });
 
     const [buttonPressed] = await timedListener.wait();
     if (buttonPressed !== yesId) {
@@ -104,7 +104,7 @@ command.setHandler(async (ctx) => {
     await prisma.user.update({ where: { id: ctx.user.id }, data: { lastCreationUpload: new Date() } });
 
     embed.setDescription("Submitted.");
-    const doneEmbed = embed.toJSON();
+    const doneEmbed = embed;
 
     embed.description = "";
     embed.fields = [];

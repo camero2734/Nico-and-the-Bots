@@ -45,11 +45,8 @@ command.setHandler(async (ctx) => {
 
     await ctx.deferReply();
 
-    const startTime = Date.now();
     const memberScores =
         timeperiod === 0 ? await getAlltimeScores(ctx, pageNum) : await getMemberScores(ctx, pageNum, timeperiod);
-
-    const timeStamp = Date.now() - startTime;
 
     if (memberScores.length === 0) throw new CommandError("This page doesn't exist!");
 
@@ -59,7 +56,6 @@ command.setHandler(async (ctx) => {
     const buffer = await generateImage(memberScores, pageNum, timePeriodStr);
 
     await ctx.send({
-        // content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
         embeds: [],
         files: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, attachment: buffer }]
     });
@@ -68,14 +64,13 @@ async function getMemberScores(
     ctx: typeof command.ContextType,
     pageNum: number,
     timeperiod?: number
-): Promise<{ member: GuildMember; score: number }[]> {
+): Promise<{ member?: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
-    const allUsers = await queries.scoresOverTime(timeperiod); // TODO: Should probably just skip/take in the SQL query
-    const paginatedUsers = allUsers.slice(startAt, startAt + 10);
+    const paginatedUsers = await queries.scoresOverTime(timeperiod, startAt, 10);
 
     return await Promise.all(
         paginatedUsers.map(async (u) => ({
-            member: await ctx.member.guild.members.fetch(u.userId.toSnowflake()),
+            member: await ctx.member.guild.members.fetch(u.userId.toSnowflake()).catch(() => undefined),
             score: u.score
         }))
     );
@@ -84,20 +79,19 @@ async function getMemberScores(
 async function getAlltimeScores(
     ctx: typeof command.ContextType,
     pageNum: number
-): Promise<{ member: GuildMember; score: number }[]> {
+): Promise<{ member?: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
-    const endAt = startAt + 10;
 
     const paginatedUsers = await prisma.user.findMany({
         orderBy: { score: "desc" },
         skip: startAt,
-        take: endAt
+        take: 10
     });
 
     return await Promise.all(
         paginatedUsers.map(async (u) => {
             return {
-                member: await ctx.member.guild.members.fetch(u.id.toSnowflake()),
+                member: await ctx.member.guild.members.fetch(u.id.toSnowflake()).catch(() => undefined),
                 score: u.score
             };
         })
@@ -105,7 +99,7 @@ async function getAlltimeScores(
 }
 
 async function generateImage(
-    userScores: { member: GuildMember; score: number }[],
+    userScores: { member?: GuildMember; score: number }[],
     pageNum: number,
     timePeriodStr: string
 ): Promise<Buffer> {
@@ -167,15 +161,18 @@ async function generateImage(
 
         // Avatar
         cctx.translate(10, 0);
-        if (!member.user) console.log(member.constructor.name);
-        const avatarRes = await fetch(member.user.displayAvatarURL({ format: "png", size: 128 }));
-        const avatar = await loadImage(await avatarRes.buffer());
+        const avatar = await loadImage(
+            member?.user.displayAvatarURL({ format: "png", size: 128 }) ||
+                "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
+        );
 
         cctx.shadowBlur = 1;
         cctx.drawImage(avatar, 0, 0, IMAGE_HEIGHT, IMAGE_HEIGHT);
 
         // Top badge
-        const [firstBadge] = await badgeLoader(member, 0, placeNum);
+        const [firstBadge] = member
+            ? await badgeLoader(member, { placeNum, numBadges: 1 })
+            : [await loadImage("./src/Assets/badges/banditos.png")];
 
         cctx.drawImage(firstBadge, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55, IMAGE_HEIGHT * 0.55);
 
@@ -184,9 +181,9 @@ async function generateImage(
         cctx.fillStyle = "white";
         cctx.textAlign = "start";
         cctx.font = "34px futura";
-        let displayedName = member.displayName.replace(/[^\w[\]()!@#%^&*-_+= ]/g, "").replace(/ {2,}/g, " ").trim() || member.displayName; // prettier-ignore
+        let displayedName = member?.displayName.replace(/[^\w[\]()!@#%^&*-_+= ]/g, "").replace(/ {2,}/g, " ").trim() || member?.displayName || "Missing user"; // prettier-ignore
         let textInfo = cctx.measureText(displayedName);
-        if (textInfo.width > 200 && member.user.username.length < displayedName.length) {
+        if (member && textInfo.width > 200 && member.user.username.length < displayedName.length) {
             displayedName = member.user.username;
             textInfo = cctx.measureText(displayedName);
         }

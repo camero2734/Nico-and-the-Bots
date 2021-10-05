@@ -24,11 +24,13 @@ command.setHandler(async (ctx) => {
 
     const actionRow = new MessageActionRow().addComponents(selectMenu);
 
-    await ctx.send({ embeds: [selectEmbed], components: [actionRow] });
+    await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });
 
 const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
+
+    await ctx.deferUpdate();
 
     const rolesSelected = ctx.values as Snowflake[];
     if (rolesSelected.length === 0) return;

@@ -22,7 +22,7 @@ command.setHandler(async (ctx) => {
     const member = await ctx.channel.guild.members.fetch(userID);
     if (!member) throw new CommandError("Unable to find member");
     // Fetch some info
-    const dbUser = await queries.findOrCreateUser(userID, { golds: true });
+    const dbUser = await queries.findOrCreateUser(userID, { golds: true, dailyBox: true });
     const golds = dbUser.golds.length;
 
     const joinedNum = 444; //await economy.getJoinedNum();
@@ -33,6 +33,7 @@ command.setHandler(async (ctx) => {
         .addField("Originally joined on", `${dbUser.joinedAt}`)
         .addField("Last joined on", `${member.joinedAt || new Date()}`)
         .addField("Golds", `${golds}`, true)
+        .addField("Daily count", `${dbUser.dailyBox?.dailyCount || 0}`)
         .setFooter(`${ordinal(joinedNum)} member | Use the /submit joindate command if your join date is incorrect`);
     await ctx.send({ embeds: [embed.toJSON()] });
 });

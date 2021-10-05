@@ -39,7 +39,12 @@ command.setHandler(async (ctx) => {
 
     const existingUserItem = await prisma.userLastFM.findUnique({ where: { username: fmUsername } });
 
-    if (existingUserItem) throw new CommandError(`Someone already connected the last.FM user \`${fmUsername}\``);
+    if (existingUserItem) {
+        if (existingUserItem.userId === ctx.user.id) {
+            throw new CommandError("This is already your last.FM username!");
+        }
+        throw new CommandError(`Someone already connected the last.FM user \`${fmUsername}\``);
+    }
 
     const lastTrack = await getMostRecentTrack(ctx.opts.username);
     const avatar = ctx.user.displayAvatarURL();

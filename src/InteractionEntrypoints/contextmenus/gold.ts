@@ -13,6 +13,8 @@ export const NUM_GOLDS_FOR_CERTIFICATION = 5;
 export const NUM_DAYS_FOR_CERTIFICATION = 1;
 const NOT_CERTIFIED_FIELD = "⚠️ Not certified!";
 
+const MESSAGE_ALREADY_GOLD = `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgold}>.`;
+
 const ctxMenu = new MessageContextMenu("🪙 Gold Message");
 
 ctxMenu.setHandler(async (ctx, msg) => {
@@ -29,9 +31,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
             );
         }
 
-        const embed = new MessageEmbed().setDescription(
-            `This message has already been given gold! You can give it an additional gold by pressing the button on the post in <#${channelIDs.houseofgold}>.`
-        );
+        const embed = new MessageEmbed().setDescription(MESSAGE_ALREADY_GOLD);
         const actionRow = new MessageActionRow().addComponents([
             new MessageButton({ label: "View post", style: "LINK", url: givenGold.goldMessageUrl })
         ]);
@@ -39,18 +39,19 @@ ctxMenu.setHandler(async (ctx, msg) => {
         return ctx.editReply({ embeds: [embed], components: [actionRow] });
     }
 
-    await handleGold(ctx, msg, msg.id);
+    await handleGold(ctx, msg, msg.id, msg.channel.id);
 });
 
 const genAdditionalGoldId = ctxMenu.addInteractionListener(
     "additionalGold",
-    <const>["originalUserId", "originalMessageId"],
+    <const>["originalUserId", "originalMessageId", "originalChannelId"],
     async (ctx, args) => {
         await ctx.deferReply({ ephemeral: true });
         await handleGold(
             (<unknown>ctx) as typeof ContextMenu.GenericContextType,
             ctx.message,
             args.originalMessageId,
+            args.originalChannelId,
             args.originalUserId
         );
     }
@@ -60,15 +61,16 @@ async function handleGold(
     ctx: typeof ContextMenu.GenericContextType,
     msg: Message,
     originalMessageId: Snowflake,
-    originalUserId?: string
+    originalChannelId: Snowflake,
+    originalUserId?: Snowflake
 ) {
-    console.log("here");
     if (!msg.member) return;
 
     const isAdditionalGold = !!originalUserId;
     const cost = isAdditionalGold ? ADDITIONAL_GOLD_COST : GOLD_COST;
 
     const originalMember = isAdditionalGold ? await ctx.member.guild.members.fetch(originalUserId) : msg.member;
+    const originalMessageUrl = `https://discord.com/channels/${ctx.guild?.id}/${originalChannelId}/${originalMessageId}`;
 
     // Check that the user can give gold
     if (originalMember.id === ctx.user.id) throw new CommandError("You cannot give gold to yourself");
@@ -133,17 +135,18 @@ async function handleGold(
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { goldMessageUrl: msg.url } }) : 0);
 
-    const goldGiven = isAdditionalGold ? await prisma.gold.findFirst({ where: { goldMessageUrl: msg.url } }) : null;
-    const goldGivenUrl = goldGiven ? `https://discord.com/channels/${ctx.member.guild.id}/${goldGiven.channelId}/${goldGiven.messageId}` : null; // prettier-ignore
-
     const goldActionRow = new MessageActionRow().addComponents([
         new MessageButton({
             label: `${numGolds} Gold${F.plural(numGolds)}`,
             emoji: emojiIDs.gold,
             style: "PRIMARY",
-            customId: genAdditionalGoldId({ originalUserId: originalUserId ?? msg.author.id, originalMessageId })
+            customId: genAdditionalGoldId({
+                originalUserId: originalUserId ?? msg.author.id,
+                originalMessageId,
+                originalChannelId
+            })
         }),
-        new MessageButton({ label: "View message", style: "LINK", url: goldGivenUrl || msg.url })
+        new MessageButton({ label: "View message", style: "LINK", url: originalMessageUrl })
     ]);
 
     const goldEmbed = new MessageEmbed(goldBaseEmbed);
@@ -164,6 +167,11 @@ async function handleGold(
     }
 
     const goldMessage = await prisma.$transaction(async (tx) => {
+        if (!isAdditionalGold) {
+            const previousGold = await prisma.gold.findFirst({ where: { messageId: originalMessageId } });
+            if (previousGold) throw new CommandError(MESSAGE_ALREADY_GOLD);
+        }
+
         const user = await tx.user.update({ where: { id: ctx.user.id }, data: { credits: { decrement: cost } } });
         if (user.credits < 0) throw new CommandError("You don't have enough credits!");
 

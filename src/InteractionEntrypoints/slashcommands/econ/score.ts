@@ -36,7 +36,7 @@ command.setHandler(async (ctx) => {
     const placeNum = await queries.alltimePlaceNum(dbUser.score);
 
     // Get images to place on card as badges
-    const badges = await badgeLoader(member, dbUser.golds.length, placeNum);
+    const badges = await badgeLoader(member, { numGolds: dbUser.golds.length, placeNum });
 
     // Calculate progress to next level
 

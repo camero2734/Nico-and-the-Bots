@@ -9,8 +9,7 @@ import { prisma } from "../prisma-init";
 import { UpdateProgress } from "./update-progress";
 
 const QUEUE_NAME = "MessageUpdates";
-const onHeroku = process.env.ON_HEROKU === "1";
-const redisOpts = onHeroku ? { connection: new IORedis(process.env.REDIS_URL) } : {};
+const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.REDIS_URL) } : {};
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 
@@ -50,7 +49,9 @@ new Worker(
     async (job) => {
         try {
             const messageUpdate = messageUpdates.get(job.name);
-            if (!messageUpdate) throw new Error("MessageUpdate does not exist");
+            if (!messageUpdate) {
+                return job.discard();
+            }
 
             const msg = await findOrCreateMessage(job.name, messageUpdate);
             await messageUpdate.update(msg);

@@ -43,13 +43,13 @@ command.setHandler(async (ctx) => {
 
         await ctx.editReply({ embeds: [embed] });
     } else {
-        await ctx.editReply({ content: tag.text });
+        await ctx.editReply({ content: tag.text, allowedMentions: { parse: [] } });
     }
 });
 
 // TODO: Send a drop down list that sends the selected one
 async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void> {
-    const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 10 });
+    const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 5 });
 
     const embed = new MessageEmbed().setTitle(
         "That tag doesn't exist. Here are some of the most popular tags you can try."

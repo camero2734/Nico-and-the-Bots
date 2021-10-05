@@ -3,6 +3,8 @@ import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
+const TAG_COST = 1000;
+
 const command = new SlashCommand(<const>{
     description: "Creates (or edits) a command that sends a short snippet of text",
     options: [
@@ -42,7 +44,7 @@ command.setHandler(async (ctx) => {
     });
 
     const embed = new MessageEmbed()
-        .setTitle(`Create tag \`${ctx.opts.name}\`?`)
+        .setTitle(`Create tag \`${ctx.opts.name}\`? [${TAG_COST} credits]`)
         .setDescription(ctx.opts.text)
         .setFooter("Select yes or no");
 
@@ -63,10 +65,14 @@ const generateYesID = command.addInteractionListener("tcYes", <const>["name", "t
     const { value: text, id } = (await prisma.temporaryText.findUnique({ where: { id: +args.textLookup } })) || {};
     if (!text) return;
 
+    const userCredits = await prisma.user.findUnique({ where: { id: ctx.user.id }, select: { score: true } });
+    if (!userCredits || userCredits.score < TAG_COST) throw new CommandError("You don't have enough credits!");
+
     const [createdTag] = await prisma.$transaction([
         prisma.tag.create({
             data: { text, userId: ctx.user.id, name: args.name }
         }),
+        prisma.user.update({ where: { id: ctx.user.id }, data: { credits: { decrement: TAG_COST } } }),
         prisma.temporaryText.delete({ where: { id } })
     ]);
 

@@ -8,7 +8,7 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["interactiveTransactions", "referentialActions"]
+  previewFeatures = ["interactiveTransactions", "referentialActions", "orderByAggregateGroup"]
 }
 
 model DailyBox {
@@ -80,6 +80,7 @@ model MessageHistory {
   userId String
 
   @@id([date, userId])
+  @@index([pointsEarned, date])
 }
 
 enum PerkType {
@@ -214,7 +215,7 @@ model Reminder {
   text String
 
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
+  userId String
 
   sendAt      DateTime
   createdAt   DateTime @default(now())

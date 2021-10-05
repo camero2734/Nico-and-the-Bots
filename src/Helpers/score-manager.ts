@@ -15,8 +15,7 @@ const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.
 const scoreQueue = new Queue(QUEUE_NAME, {
     ...redisOpts,
     defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: true
     }
 });
 

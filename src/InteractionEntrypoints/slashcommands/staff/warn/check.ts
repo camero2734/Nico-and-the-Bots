@@ -16,7 +16,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const member = await ctx.guild.members.fetch(ctx.user);
+    const member = await ctx.guild.members.fetch(ctx.opts.user);
     if (!member) throw new CommandError("Unable to find that user");
 
     const page = ctx.opts.page ?? 1;

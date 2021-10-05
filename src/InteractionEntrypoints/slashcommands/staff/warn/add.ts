@@ -101,7 +101,7 @@ command.setHandler(async (ctx) => {
         confirmationEmbed.setTitle("You have received a warning");
         confirmationEmbed.setAuthor(member.displayName, member.user.displayAvatarURL());
         confirmationEmbed.setFooter(
-            `Initiated by ${member.displayName} || Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
+            `Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
             member.user.displayAvatarURL()
         );
         await dm.send({ embeds: [confirmationEmbed] });

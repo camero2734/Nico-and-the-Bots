@@ -3,7 +3,7 @@ const { spawnSync } = require("child_process");
 
 const files = {
     "secrets.ts": "src/Configuration/secrets.ts",
-    "quiz.ts": "src/helpers/verified-quiz/quiz.ts"
+    "quiz.ts": "src/Helpers/verified-quiz/quiz.ts"
 };
 
 if (process.env.RENDER) {

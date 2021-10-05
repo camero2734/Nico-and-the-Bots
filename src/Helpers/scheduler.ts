@@ -109,7 +109,7 @@ async function checkReminders(guild: Guild): Promise<void> {
 }
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
-    const allMembers = await guild.members.fetch();
+    const allMembers = guild.members.cache;
     const membersNoBanditos = allMembers.filter(
         (mem) =>
             !mem.roles.cache.has(roles.banditos) &&

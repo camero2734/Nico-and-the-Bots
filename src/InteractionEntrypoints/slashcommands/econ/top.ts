@@ -45,11 +45,8 @@ command.setHandler(async (ctx) => {
 
     await ctx.deferReply();
 
-    const startTime = Date.now();
     const memberScores =
         timeperiod === 0 ? await getAlltimeScores(ctx, pageNum) : await getMemberScores(ctx, pageNum, timeperiod);
-
-    const timeStamp = Date.now() - startTime;
 
     if (memberScores.length === 0) throw new CommandError("This page doesn't exist!");
 
@@ -59,7 +56,6 @@ command.setHandler(async (ctx) => {
     const buffer = await generateImage(memberScores, pageNum, timePeriodStr);
 
     await ctx.send({
-        // content: `Took ${Date.now() - startTime} ms (${timeStamp} ms) to fetch ${memberScores.length} items`,
         embeds: [],
         files: [{ name: `top-over${timeperiod || 0}-page${pageNum}.png`, attachment: buffer }]
     });

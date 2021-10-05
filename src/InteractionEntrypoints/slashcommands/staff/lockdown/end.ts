@@ -1,5 +1,5 @@
 import { APIOverwrite } from "discord-api-types";
-import { MessageEmbed, PermissionOverwrites } from "discord.js";
+import { MessageEmbed, OverwriteData, OverwriteResolvable, PermissionOverwrites } from "discord.js";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
@@ -20,10 +20,10 @@ command.setHandler(async (ctx) => {
     }
 
     // Parse permissions data
-    const rawPermissions = (<unknown>channelPermissionsBackup.permissions) as APIOverwrite[];
-    const permissions = rawPermissions.map((p) => new PermissionOverwrites(ctx.client, p, ctx.channel));
+    const rawPermissions = (<unknown>channelPermissionsBackup.permissions) as OverwriteResolvable[];
+    // const permissions = rawPermissions.map((p) => PermissionOverwrites.resolve(<unknown>p as OverwriteData, ctx.guild));
 
-    await ctx.channel.permissionOverwrites.set(permissions, `Lockdown end by ${ctx.user.id}`);
+    await ctx.channel.permissionOverwrites.set(rawPermissions, `Lockdown end by ${ctx.user.id}`);
 
     await prisma.channelPermissionsBackup.delete({ where: { channelId: ctx.channel.id } });
 

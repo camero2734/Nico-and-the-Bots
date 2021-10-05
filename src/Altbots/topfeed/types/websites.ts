@@ -12,7 +12,6 @@ import {
 import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
-import PageRes from "pageres";
 import R from "ramda";
 import { channelIDs } from "../../../Configuration/config";
 import { rollbar } from "../../../Helpers/logging/rollbar";
@@ -184,7 +183,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
     async #checkVisual(): Promise<CheckObj["VISUAL"]["_data"]> {
         const subtype = <const>"VISUAL";
-        const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
+        // const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
+        const screenshot = Buffer.from("0000", "hex");
 
         const hash = "TEMP";
         //  await new Promise<string>((resolve, reject) => {

@@ -64,7 +64,6 @@
         "normalize-url": "^4.5.0",
         "npm-check": "^5.9.2",
         "ordinal": "^1.0.3",
-        "pageres": "^6.2.3",
         "parse-duration": "^0.4.4",
         "patch-package": "^6.4.7",
         "postinstall-postinstall": "^2.1.0",

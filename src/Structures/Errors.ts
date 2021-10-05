@@ -11,7 +11,6 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
     if (!ectx.send) return;
 
     if (e instanceof CommandError) {
-        rollbar.warn(e);
         const embed = new MessageEmbed()
             .setDescription(e.message)
             .setTitle("An error occurred!")

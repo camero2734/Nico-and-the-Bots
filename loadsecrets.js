@@ -10,7 +10,7 @@ if (process.env.RENDER) {
     console.log("[Load Secrets] Copying files...");
     for (const [from, to] of Object.entries(files)) {
         const fromPath = `/etc/secrets/${from}`;
-        const toPath = `dist/${to}`;
+        const toPath = `${to}`;
 
         spawnSync("cp", [fromPath, toPath]);
     }

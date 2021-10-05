@@ -118,8 +118,10 @@ command.setHandler(async (ctx) => {
     }
 
     // Get Spotify and Genius links
-    const spotifyResults = await SpotifyClient.searchTracks(`track:${trackName} artist:${artistName}`, { limit: 1 });
-    const trackUrl = spotifyResults.body.tracks?.items?.[0]?.external_urls.spotify;
+    const spotifyResults = await SpotifyClient.searchTracks(`track:${trackName} artist:${artistName}`, {
+        limit: 1
+    }).catch(() => null);
+    const trackUrl = spotifyResults?.body.tracks?.items?.[0]?.external_urls.spotify;
     if (trackUrl) {
         const spotifyButton = new MessageButton({
             emoji: emojiIDs.spotify,

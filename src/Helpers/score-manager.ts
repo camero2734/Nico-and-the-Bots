@@ -53,7 +53,7 @@ new Worker(
             else if (e instanceof Error) rollbar.error(e);
         }
     },
-    { ...redisOpts, concurrency: 10 }
+    redisOpts
 );
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for

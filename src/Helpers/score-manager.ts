@@ -103,11 +103,9 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
 
     if (earnedPoint) {
         const userUpdateData = await onEarnPoint(msg, dbUser);
-        // Ensure the messageHistory perfectly tracks the score
-        await prisma.$transaction([
-            prisma.messageHistory.upsert(upsertData),
-            prisma.user.update(userUpdateData)
-        ]); // prettier-ignore
+
+        await prisma.messageHistory.upsert(upsertData);
+        await prisma.user.update(userUpdateData);
     } else await prisma.messageHistory.upsert(upsertData);
 };
 

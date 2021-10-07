@@ -25,7 +25,9 @@ command.setHandler(async (ctx) => {
     const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
     if (!tag?.userId) return sendSuggestionList(ctx);
 
-    const tagAuthor = await ctx.guild?.members.fetch(tag.userId.toSnowflake());
+    const tagAuthor =
+        (await ctx.guild?.members.fetch(tag.userId.toSnowflake()).catch(() => null)) ||
+        (await ctx.guild.members.fetch(ctx.client.user?.id || ""));
     if (!tagAuthor) throw new CommandError("The user that created this tag no longer exists");
 
     // Increase # of uses

@@ -16,7 +16,7 @@ const albumRoles = roles.albums;
 command.setHandler(async (ctx) => {
     await ctx.reply({
         embeds: [
-            new MessageEmbed({ description: "Connecting to Daily Electronic Mesage Archive...", color: "#FF0000" })
+            new MessageEmbed({ description: "Connecting to Daily Electronic Message Archive...", color: "#FF0000" })
         ]
     });
 

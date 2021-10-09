@@ -20,7 +20,7 @@ import { prisma } from "../Helpers/prisma-init";
 import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { EntrypointEvents } from "./Events";
-import { AutocompleteListener } from "./ListenerAutocomplete";
+import { AutocompleteListener, AutocompleteNames } from "./ListenerAutocomplete";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
 
 type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
@@ -51,7 +51,11 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         this.commandData = (<unknown>{ ...commandData, ...defaults }) as ChatInputApplicationCommandData;
     }
 
-    addAutocompleteListener(name: string, handler: AutocompleteListener<OptsType<SlashCommandData<T>>>): void {
+    addAutocompleteListener(
+        name: AutocompleteNames<SlashCommandData<T>["options"]>,
+        handler: AutocompleteListener<OptsType<SlashCommandData<T>>>
+    ): void {
+        if (typeof name !== "string") throw new Error("Name must be a string");
         this.autocompleteListeners.set(name, handler);
     }
 

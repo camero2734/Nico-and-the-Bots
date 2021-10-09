@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AutocompleteInteraction, Guild, GuildMember, Snowflake, TextChannel } from "discord.js";
+import { ElementOf, PickKeys, PickProperties, Tuple, UnionToIntersection, ValueOf } from "ts-essentials";
 
 type RequiredDiscordValues = {
     member: GuildMember;
@@ -16,9 +17,13 @@ type AutocompleteContext<OptsType> = AutocompleteInteraction &
 
 export type AutocompleteListener<OptsType> = (ctx: AutocompleteContext<OptsType>) => Promise<void>;
 
-// export const createAutocompleteListener = <OptsType extends Record<string, any>>(
-//     name: string,
-//     handler: AutocompleteListener<OptsType>
-// ): void => {
-//     //
-// };
+interface IsAutocomplete {
+    autocomplete: true;
+    name: string;
+}
+
+export type AutocompleteNames<RawOptionsData extends Readonly<Tuple>> = {
+    [Index in keyof RawOptionsData]: RawOptionsData[Index] extends IsAutocomplete
+        ? RawOptionsData[Index]["name"]
+        : never;
+}[number];

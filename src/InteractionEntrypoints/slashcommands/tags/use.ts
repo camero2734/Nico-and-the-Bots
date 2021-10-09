@@ -7,7 +7,7 @@ import { channelIDs, roles } from "../../../Configuration/config";
 const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",
     options: [
-        { name: "name", description: "The name of the tag to use", required: true, type: "STRING" },
+        { name: "name", description: "The name of the tag to use", required: true, type: "STRING", autocomplete: true },
         { name: "info", description: "Shows extra info about the tag", required: false, type: "BOOLEAN" }
     ]
 });
@@ -63,5 +63,9 @@ async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void
 
     await ctx.editReply({ embeds: [embed] });
 }
+
+command.addAutocompleteListener("name", async (ctx) => {
+    //
+});
 
 export default command;

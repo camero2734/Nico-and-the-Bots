@@ -60,7 +60,6 @@ async function checkMutes(guild: Guild): Promise<void> {
         where: { endsAt: { lte: new Date() }, finished: false }
     });
 
-    const successfulUnmuteIds: number[] = [];
     for (const mute of finishedMutes) {
         try {
             const member = await guild.members.fetch(mute.mutedUserId.toSnowflake());
@@ -71,15 +70,14 @@ async function checkMutes(guild: Guild): Promise<void> {
 
             const embed = new MessageEmbed({ description: "Your mute has ended." });
             tryToDM(member, { embeds: [embed] });
-
-            successfulUnmuteIds.push(mute.id);
         } catch (e) {
-            console.log(e, /UNABLE_TO_UNMUTE/);
+            console.log(e, mute.mutedUserId, /UNABLE_TO_UNMUTE/);
         }
     }
 
+    const fetchedIds = finishedMutes.map((r) => r.id);
     await prisma.mute.updateMany({
-        where: { id: { in: successfulUnmuteIds } },
+        where: { id: { in: fetchedIds } },
         data: { finished: true }
     });
 }

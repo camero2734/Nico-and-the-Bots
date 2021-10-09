@@ -25,7 +25,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     // Ensure the message hasn't already been golded
     const givenGold = await prisma.gold.findFirst({ where: { messageId: msg.id } });
     if (givenGold) {
-        if (!givenGold.goldMessageUrl) {
+        if (!givenGold.houseOfGoldMessageUrl) {
             throw new CommandError(
                 `This message has already been given gold. It did not receive the required ${NUM_GOLDS_FOR_CERTIFICATION} golds, so it was deleted. It is not eligible to be golded again.`
             );
@@ -33,7 +33,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
         const embed = new MessageEmbed().setDescription(MESSAGE_ALREADY_GOLD);
         const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({ label: "View post", style: "LINK", url: givenGold.goldMessageUrl })
+            new MessageButton({ label: "View post", style: "LINK", url: givenGold.houseOfGoldMessageUrl })
         ]);
 
         return ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -75,7 +75,9 @@ async function handleGold(
     // Check that the user can give gold
     if (originalMember.id === ctx.user.id) throw new CommandError("You cannot give gold to yourself");
 
-    const previousGold = await prisma.gold.findFirst({ where: { goldMessageUrl: msg.url, fromUserId: ctx.user.id } });
+    const previousGold = await prisma.gold.findFirst({
+        where: { houseOfGoldMessageUrl: msg.url, fromUserId: ctx.user.id }
+    });
     if (previousGold) throw new CommandError("You already gave this message gold!");
 
     const goldBaseEmbed = isAdditionalGold
@@ -133,7 +135,7 @@ async function handleGold(
     const chan = (await msg.guild?.channels.fetch(channelIDs.houseofgold)) as TextChannel;
     if (!chan) throw new Error("Couldn't find the gold channel");
 
-    const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { goldMessageUrl: msg.url } }) : 0);
+    const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0); // prettier-ignore
 
     const goldActionRow = new MessageActionRow().addComponents([
         new MessageButton({
@@ -184,7 +186,7 @@ async function handleGold(
                 channelId: m.channel.id,
                 fromUserId: ctx.user.id,
                 toUserId: originalMember.id,
-                goldMessageUrl: m.url
+                houseOfGoldMessageUrl: m.url
             }
         });
 

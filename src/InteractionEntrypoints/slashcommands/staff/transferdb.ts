@@ -181,7 +181,7 @@ async function transferGolds({ db, ctx, existingUsers }: TransferParams) {
         data: goldCounts
             .map((gc) => {
                 return F.indexArray(gc.count).map(() => ({
-                    goldMessageUrl: "Unavailable",
+                    houseOfGoldMessageUrl: "Unavailable",
                     messageId: "Unavailable",
                     channelId: "Unavailable",
 

@@ -111,6 +111,16 @@ const F = {
         const time = Math.floor(d.getTime() / 1000).toString() as `${bigint}`;
         return `<t:${time}:${timestampTypes[format]}>`;
     },
+    parseMessageUrl(url: string): { guildId: string; channelId: string; messageId: string } | undefined {
+        const regex = /channels\/(?<guildId>\d*)\/(?<channelId>\d*)\/(?<messageId>\d*)/;
+
+        const matches = url.match(regex) || [];
+
+        const { guildId, channelId, messageId } = matches.groups || {};
+        if (!guildId || !channelId || !messageId) return;
+
+        return { guildId, channelId, messageId };
+    },
     hash(text: string, algorithm: "md5" | "sha1" | "sha256" = "sha1"): string {
         return crypto.createHash(algorithm).update(text).digest("base64");
     },

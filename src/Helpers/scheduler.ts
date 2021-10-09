@@ -152,13 +152,13 @@ async function checkVCRoles(guild: Guild): Promise<void> {
 
 async function checkHouseOfGold(guild: Guild): Promise<void> {
     const msgsToDelete = await prisma.gold.groupBy({
-        by: ["goldMessageUrl"],
+        by: ["houseOfGoldMessageUrl"],
         _count: true,
         _min: {
             createdAt: true
         },
         having: {
-            goldMessageUrl: {
+            houseOfGoldMessageUrl: {
                 _count: { lt: NUM_GOLDS_FOR_CERTIFICATION }
             },
             createdAt: {
@@ -166,23 +166,20 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
             }
         },
         where: {
-            goldMessageUrl: { not: null }
+            houseOfGoldMessageUrl: { not: null }
         }
     });
 
     for (const toDelete of msgsToDelete) {
         try {
-            console.log(`DELETING ${toDelete.goldMessageUrl}`);
-            const originalGold = await prisma.gold.findFirst({
-                where: { goldMessageUrl: toDelete.goldMessageUrl },
-                orderBy: { createdAt: "asc" }
-            });
+            console.log(`DELETING ${toDelete.houseOfGoldMessageUrl}`);
+            const ids = F.parseMessageUrl(toDelete.houseOfGoldMessageUrl as string);
 
-            if (!originalGold) continue;
+            if (!ids) continue;
 
             try {
-                const channel = (await guild.channels.fetch(originalGold.channelId)) as TextChannel;
-                const message = await channel.messages.fetch(originalGold.messageId);
+                const channel = (await guild.channels.fetch(ids.channelId)) as TextChannel;
+                const message = await channel.messages.fetch(ids.messageId);
 
                 await message.delete();
             } catch {
@@ -190,8 +187,8 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
             }
 
             await prisma.gold.updateMany({
-                where: { goldMessageUrl: toDelete.goldMessageUrl },
-                data: { goldMessageUrl: null }
+                where: { houseOfGoldMessageUrl: toDelete.houseOfGoldMessageUrl },
+                data: { houseOfGoldMessageUrl: null }
             });
         } catch (e) {
             console.log(e, /UNABLE_TO_DELETE_HOG/);

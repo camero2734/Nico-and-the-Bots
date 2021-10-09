@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Guild, GuildMember, Message, MessageComponentInteraction, Snowflake, TextChannel } from "discord.js";
-import F from "../Helpers/funcs";
+import { AutocompleteInteraction, Guild, GuildMember, Snowflake, TextChannel } from "discord.js";
 
 type RequiredDiscordValues = {
     member: GuildMember;
@@ -9,8 +8,17 @@ type RequiredDiscordValues = {
     guildId: Snowflake;
 };
 
-export type ListenerAutocomplete = MessageComponentInteraction & RequiredDiscordValues & { message: Message };
+type AutocompleteContext<OptsType> = AutocompleteInteraction &
+    RequiredDiscordValues & {
+        opts: OptsType;
+        focused: keyof OptsType;
+    };
 
-export const createAutocompleteListener = <T extends Readonly<string[]> = any>(name: string, args: T): void => {
-    //
-};
+export type AutocompleteListener<OptsType> = (ctx: AutocompleteContext<OptsType>) => Promise<void>;
+
+// export const createAutocompleteListener = <OptsType extends Record<string, any>>(
+//     name: string,
+//     handler: AutocompleteListener<OptsType>
+// ): void => {
+//     //
+// };

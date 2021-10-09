@@ -390,14 +390,6 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node-fetch@^2.5.12":
-  version "2.5.12"
-  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.5.12.tgz#8a6f779b1d4e60b7a57fb6fd48d84fb545b9cc66"
-  integrity sha512-MKgC4dlq4kKNa/mYrwpKfzQMB5X3ee5U6fSprkKpToBqBmX4nFZL9cW5jl6sWn+xpRJ7ypWh2yyqqr8UUCstSw==
-  dependencies:
-    "@types/node" "*"
-    form-data "^3.0.0"
-
 "@types/node@*", "@types/node@>=10":
   version "16.3.3"
   resolved "https://registry.npmjs.org/@types/node/-/node-16.3.3.tgz"
@@ -1728,16 +1720,14 @@ discord-api-types@^0.23.1:
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.23.1.tgz#832d0ee2b3c8e2eae02947c1dbf38121d6d357d5"
   integrity sha512-igWmn+45mzXRWNEPU25I/pr8MwxHb767wAr51oy3VRLRcTlp5ADBbrBR0lq3SA1Rfw3MtM4TQu1xo3kxscfVdQ==
 
-discord.js@^13.3.0-dev.1633780981.26f927b:
-  version "13.3.0-dev.1633780981.26f927b"
-  resolved "https://registry.yarnpkg.com/discord.js/-/discord.js-13.3.0-dev.1633780981.26f927b.tgz#b223faa9cf47f263e9466358a1110570d9b58edc"
-  integrity sha512-ONlu5wj5EpUxEC+nBkTZBlUM/Toejk2BEhJKXIhWVOyNU1Wc9wMEtumvXdu0jrtVr2Uikj8UW3+RriWe4nmVGQ==
+discord.js@OfficialSirH/discord.js:
+  version "13.3.0-dev"
+  resolved "https://codeload.github.com/OfficialSirH/discord.js/tar.gz/18438d4c64dba683fe35872dd3074277ec394de3"
   dependencies:
     "@discordjs/builders" "^0.6.0"
     "@discordjs/collection" "^0.2.1"
     "@discordjs/form-data" "^3.0.1"
     "@sapphire/async-queue" "^1.1.5"
-    "@types/node-fetch" "^2.5.12"
     "@types/ws" "^8.2.0"
     discord-api-types "^0.23.1"
     node-fetch "^2.6.1"

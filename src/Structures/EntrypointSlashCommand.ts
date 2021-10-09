@@ -2,6 +2,7 @@
 import {
     ApplicationCommandOptionData,
     ChatInputApplicationCommandData,
+    Collection,
     CommandInteraction,
     Guild,
     GuildMember,
@@ -19,6 +20,7 @@ import { prisma } from "../Helpers/prisma-init";
 import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { EntrypointEvents } from "./Events";
+import { AutocompleteListener, AutocompleteNames } from "./ListenerAutocomplete";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
 
 type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
@@ -41,10 +43,20 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
     static GenericContextType: SlashCommandInteraction;
     public ContextType: SlashCommandInteraction<T>;
 
+    public autocompleteListeners = new Collection<string, AutocompleteListener<OptsType<SlashCommandData<T>>>>();
+
     constructor(commandData: SlashCommandData<T>) {
         super();
         const defaults: Partial<ChatInputApplicationCommandData> = { type: "CHAT_INPUT" };
         this.commandData = (<unknown>{ ...commandData, ...defaults }) as ChatInputApplicationCommandData;
+    }
+
+    addAutocompleteListener(
+        name: AutocompleteNames<SlashCommandData<T>["options"]>,
+        handler: AutocompleteListener<OptsType<SlashCommandData<T>>>
+    ): void {
+        if (typeof name !== "string") throw new Error("Name must be a string");
+        this.autocompleteListeners.set(name, handler);
     }
 
     async _run(interaction: CommandInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {

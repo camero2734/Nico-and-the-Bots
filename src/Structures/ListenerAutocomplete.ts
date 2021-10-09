@@ -9,21 +9,27 @@ type RequiredDiscordValues = {
     guildId: Snowflake;
 };
 
-type AutocompleteContext<OptsType> = AutocompleteInteraction &
+type AutocompleteContext<OptsType, AutocompleteNameOption> = AutocompleteInteraction &
     RequiredDiscordValues & {
         opts: OptsType;
-        focused: keyof OptsType;
+        focused: AutocompleteNameOption;
     };
 
-export type AutocompleteListener<OptsType> = (ctx: AutocompleteContext<OptsType>) => Promise<void>;
+export type AutocompleteListener<OptsType, RawOptionsData extends Readonly<Tuple>> = (
+    ctx: AutocompleteContext<OptsType, AutocompleteNames<RawOptionsData>>
+) => Promise<void>;
 
 interface IsAutocomplete {
     autocomplete: true;
     name: string;
 }
 
-export type AutocompleteNames<RawOptionsData extends Readonly<Tuple>> = {
+type AutocompleteNames<RawOptionsData extends Readonly<Tuple>> = {
     [Index in keyof RawOptionsData]: RawOptionsData[Index] extends IsAutocomplete
         ? RawOptionsData[Index]["name"]
         : never;
 }[number];
+
+export type AutocompleteNameOption<RawOptionsData extends Readonly<Tuple>> =
+    | AutocompleteNames<RawOptionsData>
+    | AutocompleteNames<RawOptionsData>[];

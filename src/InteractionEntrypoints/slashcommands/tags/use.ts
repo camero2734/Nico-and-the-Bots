@@ -65,7 +65,7 @@ async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void
 }
 
 command.addAutocompleteListener("name", async (ctx) => {
-    //
+    ctx.focused;
 });
 
 export default command;

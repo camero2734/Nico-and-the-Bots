@@ -20,7 +20,7 @@ import { prisma } from "../Helpers/prisma-init";
 import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { EntrypointEvents } from "./Events";
-import { AutocompleteListener, AutocompleteNames } from "./ListenerAutocomplete";
+import { AutocompleteListener, AutocompleteNameOption } from "./ListenerAutocomplete";
 import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
 
 type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
@@ -43,7 +43,10 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
     static GenericContextType: SlashCommandInteraction;
     public ContextType: SlashCommandInteraction<T>;
 
-    public autocompleteListeners = new Collection<string, AutocompleteListener<OptsType<SlashCommandData<T>>>>();
+    public autocompleteListeners = new Collection<
+        string,
+        AutocompleteListener<OptsType<SlashCommandData<T>>, SlashCommandData<T>["options"]>
+    >();
 
     constructor(commandData: SlashCommandData<T>) {
         super();
@@ -52,8 +55,8 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
     }
 
     addAutocompleteListener(
-        name: AutocompleteNames<SlashCommandData<T>["options"]>,
-        handler: AutocompleteListener<OptsType<SlashCommandData<T>>>
+        name: AutocompleteNameOption<SlashCommandData<T>["options"]>,
+        handler: AutocompleteListener<OptsType<SlashCommandData<T>>, SlashCommandData<T>["options"]>
     ): void {
         if (typeof name !== "string") throw new Error("Name must be a string");
         this.autocompleteListeners.set(name, handler);

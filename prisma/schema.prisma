@@ -363,7 +363,7 @@ model MessageReference {
 model FirebreatherApplication {
   applicationId String @id @default(uuid())
 
-  sentToStaff Boolean   @default(false)
+  messageUrl  String?
   submittedAt DateTime?
 
   approved  Boolean?

@@ -238,13 +238,13 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
         const jsonData = Object.fromEntries(keys.map((k) => [k, row[k]]));
 
         // Send to Discord
-        const success = await sendToStaff(guild, applicationId, jsonData);
-        if (!success) continue;
+        const messageUrl = await sendToStaff(guild, applicationId, jsonData);
+        if (!messageUrl) continue;
 
         // Save to DB
         await prisma.firebreatherApplication.update({
             where: { applicationId },
-            data: { submittedAt: new Date(), sentToStaff: true, responseData: jsonData }
+            data: { submittedAt: new Date(), messageUrl, responseData: jsonData }
         });
     }
 }

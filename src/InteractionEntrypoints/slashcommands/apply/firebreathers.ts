@@ -25,6 +25,10 @@ command.setHandler(async (ctx) => {
         throw new CommandError("This command is not available yet.");
     }
 
+    if (ctx.member.roles.cache.has(roles.deatheaters)) {
+        throw new CommandError("You are already a firebreather!");
+    }
+
     // Ensure they haven't already started an application
     const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 
@@ -70,7 +74,11 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
 
-export async function sendToStaff(guild: Guild, applicationId: string, data: Record<string, string>): Promise<boolean> {
+export async function sendToStaff(
+    guild: Guild,
+    applicationId: string,
+    data: Record<string, string>
+): Promise<string | undefined> {
     try {
         const fbApplicationChannel = (await guild.channels.fetch(channelIDs.deapplications)) as TextChannel;
 
@@ -117,12 +125,12 @@ export async function sendToStaff(guild: Guild, applicationId: string, data: Rec
             ]
         });
 
-        return true;
+        return m.url;
     } catch (e) {
         if (e instanceof Error) rollbar.log(e);
         else rollbar.log(`${e}`);
 
-        return false;
+        return undefined;
     }
 }
 

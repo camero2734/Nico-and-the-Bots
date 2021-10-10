@@ -11,32 +11,24 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const msgsToDelete = await prisma.gold.groupBy({
-        by: ["houseOfGoldMessageUrl"],
-        _count: true,
-        _min: {
-            createdAt: true
-        },
-        having: {
-            houseOfGoldMessageUrl: {
-                _count: { lt: 5 }
-            },
-            createdAt: {
-                _min: { lt: new Date() }
-            }
-        },
+    const app = await prisma.firebreatherApplication.findFirst({
         where: {
-            houseOfGoldMessageUrl: { not: null }
+            userId: ctx.user.id,
+            OR: [
+                { decidedAt: null }, // Hasn't been decided yet
+                {
+                    // Recently denied application
+                    decidedAt: { not: null },
+                    submittedAt: { gt: subDays(new Date(), 14) },
+                    approved: false
+                }
+            ]
         }
     });
 
-    console.log(msgsToDelete);
+    console.log(app, /APP/);
 
-    const ids = F.parseMessageUrl(msgsToDelete[0].houseOfGoldMessageUrl as string);
-
-    console.log(ids);
-
-    await ctx.editReply({ content: `ok` });
+    await ctx.editReply("ok");
 });
 
 export default command;

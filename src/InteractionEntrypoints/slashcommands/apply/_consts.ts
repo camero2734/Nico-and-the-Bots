@@ -1,21 +1,9 @@
-import { hoursToMilliseconds } from "date-fns";
-import {
-    DMChannel,
-    EmbedField,
-    GuildMember,
-    Message,
-    MessageActionRow,
-    MessageButton,
-    MessageComponentInteraction,
-    MessageEmbed,
-    MessageOptions,
-    TextChannel
-} from "discord.js";
-import { Question } from "../../../Helpers/verified-quiz/question";
-import { roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
+import { FirebreatherApplication } from ".prisma/client";
+import { hoursToMilliseconds, subDays } from "date-fns";
+import { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
-import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
+import { prisma } from "../../../Helpers/prisma-init";
+import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 
 const VERIFIED_DELAY_HOURS = 12;
@@ -93,95 +81,24 @@ export class PreviousAnswersEncoder {
     }
 }
 
-export const createFBApplication = async (msg: Message, member: GuildMember) => {
-    const role = await member.guild.roles.fetch(roles.deatheaters);
-    const NO_RESPONSE = "*Nothing yet*";
+export const FB_DELAY_DAYS = 14;
 
-    if (!role) throw new Error("No deatheaters role");
-
-    const answers: Record<string, string> = {};
-
-    let ctx: MessageComponentInteraction;
-
-    return {
-        async askQuestion(
-            question: string,
-            description: string,
-            requiresAnswer = true,
-            warning?: string
-        ): Promise<string> {
-            const embed = new MessageEmbed()
-                .setTitle(question)
-                .setColor(role.color)
-                .setDescription(description)
-                .addField("\u200b", "\u200b")
-                .addField("Your response", NO_RESPONSE)
-                .setFooter(
-                    "Submit an answer by sending a message with your response. You may edit your response by sending another message. Press 'Continue' to submit your response."
-                );
-
-            if (warning) {
-                embed.addField("Notice", warning);
-            }
-
-            const timedListener = new TimedInteractionListener(msg, <const>["continueFBId"]);
-            const [continueId] = timedListener.customIDs;
-
-            const actionRow = new MessageActionRow();
-            actionRow.addComponents([new MessageButton({ label: "Continue", customId: continueId, style: "PRIMARY" })]);
-
-            await msg.edit({
-                embeds: [embed],
-                components: [actionRow]
-            });
-
-            // Listen for user messages
-            const field = embed.fields.find((f) => f.name === "Your response") as EmbedField;
-            const listener = msg.channel.createMessageCollector({
-                filter: (m) => m.author.id === member.id,
-                time: undefined
-            });
-            let answer = field.value;
-            listener.on("collect", async (m: Message) => {
-                answer = m.content;
-                field.value = "```\n" + m.content + "```";
-
-                await msg.edit({
-                    embeds: [embed.toJSON()],
-                    components: [actionRow]
-                });
-                await m.delete();
-            });
-
-            const [buttonPressed, newCtx] = await timedListener.wait();
-            console.log(`Button pressed`);
-            listener.stop();
-
-            if (buttonPressed !== continueId || !newCtx) {
-                throw new CommandError("Your application was cancelled. You may restart if you wish.");
-            }
-
-            ctx = newCtx; // Update context
-            ctx.deferUpdate();
-
-            // Just reask the question since they didn't answer a required question
-            if (requiresAnswer && field.value === NO_RESPONSE) {
-                return this.askQuestion(
-                    question,
-                    description,
-                    requiresAnswer,
-                    "You must provide an answer for this question."
-                );
-            }
-
-            answers[question] = answer;
-            return answer;
-        },
-        getAnswers(): Record<string, string> {
-            return answers;
-        },
-        getCtx() {
-            return ctx;
+export async function getActiveFirebreathersApplication(userId: Snowflake): Promise<FirebreatherApplication | null> {
+    return await prisma.firebreatherApplication.findFirst({
+        where: {
+            userId,
+            OR: [
+                { decidedAt: null }, // Hasn't been decided yet
+                {
+                    // Recently denied application
+                    decidedAt: { not: null },
+                    submittedAt: { gt: subDays(new Date(), FB_DELAY_DAYS) },
+                    approved: false
+                }
+            ]
         }
-    };
-};
+    });
+}
+
+// prettier-ignore
+export const genApplicationLink = (applicationId: string) => `https://docs.google.com/forms/d/e/1FAIpQLSdhs01W8sAJTzp-lZNC0G2exKmNK1IcNsLtZuf5W-Zww_-p3w/viewform?usp=pp_url&entry.775451243=${applicationId}`;

@@ -1,9 +1,12 @@
+import { addDays } from "date-fns";
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { nanoid } from "nanoid";
 import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { queries } from "../../../Helpers/prisma-init";
+import F from "../../../Helpers/funcs";
+import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { FB_DELAY_DAYS, genApplicationLink, getActiveFirebreathersApplication } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Opens an application to the Firebreathers role",
@@ -19,9 +22,36 @@ command.setHandler(async (ctx) => {
         throw new CommandError("This command is not available yet.");
     }
 
-    const applicationId = nanoid(); // TODO: should be uuid primary key in DB
+    // Ensure they haven't already started an application
+    const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 
-    const link = `https://docs.google.com/forms/d/e/1FAIpQLSdhs01W8sAJTzp-lZNC0G2exKmNK1IcNsLtZuf5W-Zww_-p3w/viewform?usp=pp_url&entry.775451243=${applicationId}`;
+    if (activeApplication) {
+        const { applicationId } = activeApplication;
+        if (activeApplication.decidedAt) {
+            const timestamp = F.discordTimestamp(
+                addDays(activeApplication.submittedAt || new Date(), FB_DELAY_DAYS),
+                "relative"
+            );
+            throw new CommandError(`You have already recently applied! You can apply again ${timestamp}`);
+        } else if (!activeApplication.submittedAt) {
+            const link = genApplicationLink(applicationId);
+            throw new CommandError(
+                `You have not submitted your previous application (${applicationId}). To do so, visit [this link](${link}).\n\nIf you believe this is a mistake, please contact the staff.`
+            );
+        } else {
+            const timestamp = F.discordTimestamp(activeApplication.submittedAt || new Date(), "relative");
+            throw new CommandError(
+                `Your previous application (${applicationId}) has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`
+            );
+        }
+    }
+
+    // Start a new application
+    const { applicationId } = await prisma.firebreatherApplication.create({
+        data: { userId: ctx.user.id }
+    });
+
+    const link = genApplicationLink(applicationId);
 
     const embed = new MessageEmbed()
         .setAuthor(ctx.member.displayName, ctx.member.displayAvatarURL())

@@ -14,13 +14,13 @@ import {
     TextChannel,
     VoiceChannel
 } from "discord.js";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles } from "../Configuration/config";
+import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
 import { rollbar } from "./logging/rollbar";
 import { prisma } from "./prisma-init";
-
-const CHECK_INTERVAL = secondsToMilliseconds(5);
 
 const safeCheck = async (p: Promise<unknown>) => {
     try {
@@ -34,16 +34,32 @@ const safeCheck = async (p: Promise<unknown>) => {
 export default async function (client: Client): Promise<void> {
     const guild = await client.guilds.fetch(guildID);
 
-    async function runChecks() {
+    const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0");
+    await doc.useServiceAccountAuth({
+        client_email: secrets.apis.google.sheets.client_email,
+        private_key: secrets.apis.google.sheets.private_key
+    });
+
+    async function run5SecChecks() {
         await safeCheck(checkMutes(guild));
         await safeCheck(checkReminders(guild));
         await safeCheck(checkMemberRoles(guild));
         await safeCheck(checkVCRoles(guild));
-        await safeCheck(checkHouseOfGold(guild));
-        await F.wait(CHECK_INTERVAL);
-        runChecks();
+
+        await F.wait(secondsToMilliseconds(5));
+        run5SecChecks();
     }
-    runChecks();
+
+    async function run30SecChecks() {
+        await safeCheck(checkHouseOfGold(guild));
+        await safeCheck(checkFBApplication(guild, doc));
+
+        await F.wait(secondsToMilliseconds(30));
+        run30SecChecks();
+    }
+
+    run5SecChecks();
+    run30SecChecks();
 }
 
 async function tryToDM(member: GuildMember, msg: MessageOptions): Promise<void> {
@@ -193,5 +209,40 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
         } catch (e) {
             console.log(e, /UNABLE_TO_DELETE_HOG/);
         }
+    }
+}
+
+async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise<void> {
+    await doc.loadInfo();
+    const sheet = doc.sheetsByIndex[0];
+
+    const rows = await sheet.getRows();
+    const applicationIdKey = "Application ID";
+
+    const _lookingForIds = await prisma.firebreatherApplication.findMany({
+        where: { submittedAt: null },
+        select: { applicationId: true }
+    });
+    const lookingForIds = new Set(_lookingForIds.map((l) => l.applicationId));
+
+    if (Math.random() < 2) return;
+
+    for (const row of rows) {
+        const applicationId = row[applicationIdKey];
+
+        if (!lookingForIds.has(applicationId)) continue;
+        lookingForIds.delete(applicationId); // Ignore any resubmissions
+
+        const keys = Object.keys(row).filter((k) => !k.startsWith("_"));
+
+        const jsonData = Object.fromEntries(keys.map((k) => [k, row[k]]));
+
+        // Send to Discord
+
+        // Save to DB
+        await prisma.firebreatherApplication.update({
+            where: { applicationId },
+            data: { submittedAt: new Date(), sentToStaff: true }
+        });
     }
 }

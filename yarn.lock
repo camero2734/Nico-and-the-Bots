@@ -355,6 +355,11 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
+"@types/google-spreadsheet@^3.1.5":
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@types/google-spreadsheet/-/google-spreadsheet-3.1.5.tgz#2bdc6f9f5372551e0506cb6ef3f562adcf44fc2e"
+  integrity sha512-7N+mDtZ1pmya2RRFPPl4KYc2TRgiqCNBLUZfyrKfER+u751JgCO+C24/LzF70UmUm/zhHUbzRZ5mtfaxekQ1ZQ==
+
 "@types/ioredis@^4.26.4":
   version "4.26.7"
   resolved "https://registry.npmjs.org/@types/ioredis/-/ioredis-4.26.7.tgz"

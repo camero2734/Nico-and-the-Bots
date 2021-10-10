@@ -101,7 +101,12 @@ export async function sendToStaff(guild: Guild, applicationId: string, data: Rec
             })
         ]);
 
-        await fbApplicationChannel.send({ embeds: [embed], components: [actionRow] });
+        const m = await fbApplicationChannel.send({ embeds: [embed], components: [actionRow] });
+
+        await m.startThread({
+            name: `${member.displayName} application discussion (${applicationId})`,
+            autoArchiveDuration: "MAX"
+        });
 
         // Send message to member
         await F.sendMessageToUser(member, {
@@ -170,6 +175,12 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
             `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
         )
         .setFooter(applicationId);
+
+    // Archive thread
+    const thread = ctx.message.thread;
+    if (thread) {
+        await thread.setArchived(true, "Decision was made, thread no longer necessary");
+    }
 
     await ctx.followUp({ embeds: [doneByEmbed] });
 

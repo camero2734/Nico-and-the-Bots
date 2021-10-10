@@ -1,11 +1,20 @@
 import { addDays } from "date-fns";
-import { Guild, MessageActionRow, MessageButton, MessageEmbed, MessageOptions, TextChannel } from "discord.js";
+import {
+    Guild,
+    MessageActionRow,
+    MessageAttachment,
+    MessageButton,
+    MessageEmbed,
+    MessageOptions,
+    TextChannel
+} from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { generateScoreCard } from "../econ/score";
 import { FB_DELAY_DAYS, genApplicationLink, getActiveFirebreathersApplication } from "./_consts";
 
 enum ActionTypes {
@@ -109,12 +118,20 @@ export async function sendToStaff(
             })
         ]);
 
-        const m = await fbApplicationChannel.send({ embeds: [embed], components: [actionRow] });
+        const scoreCard = await generateScoreCard(member);
+        const attachment = new MessageAttachment(scoreCard, "score.png");
 
-        await m.startThread({
+        const m = await fbApplicationChannel.send({
+            embeds: [embed],
+            components: [actionRow]
+        });
+
+        const thread = await m.startThread({
             name: `${member.displayName} application discussion (${applicationId})`,
             autoArchiveDuration: "MAX"
         });
+
+        await thread.send({ content: `${member}`, files: [attachment] });
 
         // Send message to member
         await F.sendMessageToUser(member, {

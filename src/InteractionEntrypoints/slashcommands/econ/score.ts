@@ -1,7 +1,7 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { Snowflake } from "discord.js";
+import { GuildMember, Snowflake } from "discord.js";
 import { badgeLoader, LevelCalculator } from "../../../Helpers";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { prisma, queries } from "../../../Helpers/prisma-init";
@@ -12,7 +12,6 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    const albumRoles = roles.albums;
     const options = ctx.opts;
 
     await ctx.deferReply();
@@ -24,9 +23,19 @@ command.setHandler(async (ctx) => {
     if (!member) throw new CommandError("Unable to find that member");
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
+    const buffer = await generateScoreCard(member);
+
+    await ctx.send({
+        embeds: [],
+        files: [{ name: "score.png", attachment: buffer }]
+    });
+});
+
+export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
+    const albumRoles = roles.albums;
     // Fetch user's information
     const dbUser = await prisma.user.findUnique({
-        where: { id: userID },
+        where: { id: member.id },
         include: { golds: true, dailyBox: true }
     });
 
@@ -66,13 +75,13 @@ command.setHandler(async (ctx) => {
 
     // prettier-ignore
     const backgroundName = {
-        [albumRoles.ST]: "self_titled",
-        [albumRoles.RAB]: "rab",
-        [albumRoles.VSL]: "vessel",
-        [albumRoles.BF]: "blurryface",
-        [albumRoles.TRENCH]: "trench",
-        [albumRoles.SAI]: "sai"
-    }[src];
+    [albumRoles.ST]: "self_titled",
+    [albumRoles.RAB]: "rab",
+    [albumRoles.VSL]: "vessel",
+    [albumRoles.BF]: "blurryface",
+    [albumRoles.TRENCH]: "trench",
+    [albumRoles.SAI]: "sai"
+}[src];
 
     const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}.png`);
 
@@ -174,10 +183,7 @@ command.setHandler(async (ctx) => {
     cctx.strokeText(`${placeNum}`, 85, 100);
     cctx.fillText(`${placeNum}`, 85, 100);
 
-    await ctx.send({
-        embeds: [],
-        files: [{ name: "score.png", attachment: canvas.toBuffer() }]
-    });
-});
+    return canvas.toBuffer();
+}
 
 export default command;

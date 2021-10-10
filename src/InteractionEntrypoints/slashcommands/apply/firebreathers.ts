@@ -30,10 +30,6 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
-    if (!ctx.member.roles.cache.has(roles.staff)) {
-        throw new CommandError("This command is not available yet.");
-    }
-
     if (ctx.member.roles.cache.has(roles.deatheaters)) {
         throw new CommandError("You are already a firebreather!");
     }
@@ -102,7 +98,7 @@ export async function sendToStaff(
             .setFooter(applicationId);
 
         for (const [name, value] of Object.entries(data)) {
-            embed.addField(name, value);
+            embed.addField(name, value || "*Nothing*");
         }
 
         const actionRow = new MessageActionRow().addComponents([
@@ -132,6 +128,27 @@ export async function sendToStaff(
         });
 
         await thread.send({ content: `${member}`, files: [attachment] });
+
+        const userWarnings = await prisma.warning.findMany({
+            where: { warnedUserId: member.id },
+            take: 5,
+            orderBy: { createdAt: "desc" }
+        });
+        const totalWarnings = await prisma.warning.count({ where: { warnedUserId: member.id } });
+
+        const warningsEmbed = new MessageEmbed()
+            .setTitle(`${member.displayName}'s most recent warnings`)
+            .setFooter(`${totalWarnings} total warning(s)`);
+        if (userWarnings.length > 0) {
+            for (const warn of userWarnings) {
+                // prettier-ignore
+                warningsEmbed.addField(`${warn.reason} [${warn.severity}]`, F.discordTimestamp(warn.createdAt, "relative"))
+            }
+        } else {
+            warningsEmbed.setDescription("*This user has no warnings*");
+        }
+
+        await thread.send({ embeds: [warningsEmbed] });
 
         // Send message to member
         await F.sendMessageToUser(member, {

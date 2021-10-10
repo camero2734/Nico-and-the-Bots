@@ -1,8 +1,6 @@
-import { startOfDay, subDays, subWeeks } from "date-fns";
 import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
-import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
@@ -15,6 +13,8 @@ command.setHandler(async (ctx) => {
 
     if (ctx.user.id !== userIDs.me) throw new CommandError("You cannot use this command");
 
+    await ctx.guild.members.fetch();
+
     const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
     const formerFbRole = await ctx.guild.roles.fetch(roles.formerde);
     if (!fbRole || !formerFbRole) throw new CommandError("Role not found");
@@ -24,6 +24,7 @@ command.setHandler(async (ctx) => {
     for (const member of fbRole.members.values()) {
         await member.roles.remove(fbRole);
         await member.roles.add(formerFbRole);
+        await F.wait(500);
     }
 
     await ctx.editReply("Done");

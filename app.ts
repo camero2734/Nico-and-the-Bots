@@ -4,7 +4,7 @@ import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
-import { channelIDs, guildID } from "./src/Configuration/config";
+import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
@@ -84,6 +84,18 @@ client.on("messageCreate", async (msg: Discord.Message) => {
 
 client.on("messageUpdate", async (oldMsg, newMsg) => {
     await SlurFilter(await newMsg.fetch());
+});
+
+client.on("guildMemberUpdate", async (oldMem, newMem) => {
+    if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
+        const fbAnnouncementChannel = await newMem.guild.channels.fetch(channelIDs.fairlyannouncements) as Discord.TextChannel; // prettier-ignore
+        const embed = new Discord.MessageEmbed()
+            .setAuthor(newMem.displayName, newMem.displayAvatarURL())
+            .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
+            .setFooter("PROPERTY OF DRAGON'S DEN INC.™️", newMem.client.user?.displayAvatarURL());
+
+        await fbAnnouncementChannel.send({ embeds: [embed] });
+    }
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {

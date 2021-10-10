@@ -1,8 +1,9 @@
 import * as bigintConversion from "bigint-conversion";
-import { Snowflake } from "discord.js";
+import { GuildMember, MessageOptions, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import * as crypto from "crypto";
+import { channelIDs } from "../Configuration/config";
 
 /**
  * Just some commonly used short functions
@@ -144,6 +145,16 @@ const F = {
             if (b1[i] !== b2[i]) count++;
         }
         return count + (maxLength - minLength);
+    },
+    // Tries to DM user, defaults to pinging in #commands
+    async sendMessageToUser(member: GuildMember, msgOpts: MessageOptions) {
+        try {
+            const dm = await member.createDM();
+            await dm.send(msgOpts);
+        } catch {
+            const commandsChan = (await member.guild.channels.fetch(channelIDs.commands)) as TextChannel;
+            await commandsChan.send({ ...msgOpts, content: `${member}\n\n${msgOpts.content ?? ""}` });
+        }
     }
 };
 

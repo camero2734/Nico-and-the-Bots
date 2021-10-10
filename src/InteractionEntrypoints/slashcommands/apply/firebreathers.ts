@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import { Guild, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Guild, MessageActionRow, MessageButton, MessageEmbed, MessageOptions, TextChannel } from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -7,6 +7,11 @@ import { rollbar } from "../../../Helpers/logging/rollbar";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { FB_DELAY_DAYS, genApplicationLink, getActiveFirebreathersApplication } from "./_consts";
+
+enum ActionTypes {
+    Accept,
+    Deny
+}
 
 const command = new SlashCommand(<const>{
     description: "Opens an application to the Firebreathers role",
@@ -78,7 +83,6 @@ export async function sendToStaff(guild: Guild, applicationId: string, data: Rec
         if (!member) throw new Error("No member found");
 
         const embed = new MessageEmbed()
-            .setColor("RED")
             .setAuthor(`${member.displayName}'s application`, member.displayAvatarURL())
             .setFooter(applicationId);
 
@@ -87,11 +91,28 @@ export async function sendToStaff(guild: Guild, applicationId: string, data: Rec
         }
 
         const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({ style: "SUCCESS", label: "Accept", customId: "accept" }),
-            new MessageButton({ style: "DANGER", label: "Deny", customId: "deny" })
+            new MessageButton({
+                style: "SUCCESS",
+                label: "Accept",
+                customId: genId({ type: ActionTypes.Accept.toString(), applicationId })
+            }),
+            new MessageButton({
+                style: "DANGER",
+                label: "Deny",
+                customId: genId({ type: ActionTypes.Deny.toString(), applicationId })
+            })
         ]);
 
         await fbApplicationChannel.send({ embeds: [embed], components: [actionRow] });
+
+        // Send message to member
+        await F.sendMessageToUser(member, {
+            embeds: [
+                new MessageEmbed({
+                    description: `Your FB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`
+                })
+            ]
+        });
 
         return true;
     } catch (e) {
@@ -101,5 +122,51 @@ export async function sendToStaff(guild: Guild, applicationId: string, data: Rec
         return false;
     }
 }
+
+const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async (ctx, args) => {
+    await ctx.update({ components: [] });
+
+    const applicationId = args.applicationId;
+    const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });
+    if (!application) throw new CommandError("This application no longer exists");
+
+    const member = await ctx.guild.members.fetch(application.userId);
+    if (!member) throw new CommandError("This member appears to have left the server");
+
+    const embed = new MessageEmbed()
+        .setAuthor("Firebreathers Application results", member.client.user?.displayAvatarURL())
+        .setFooter(applicationId);
+
+    if (!embed.author) return; // Just to make typescript happy
+
+    const msgEmbed = ctx.message.embeds[0];
+
+    const action = +args.type;
+    if (action === ActionTypes.Accept) {
+        await prisma.firebreatherApplication.update({
+            where: { applicationId },
+            data: { approved: true, decidedAt: new Date() }
+        });
+        await member.roles.add(roles.deatheaters);
+
+        embed.author.name = "Firebreathers Application Approved";
+        embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
+
+        await ctx.editReply({ embeds: [msgEmbed.setColor("GREEN")] });
+    } else if (action === ActionTypes.Deny) {
+        await prisma.firebreatherApplication.update({
+            where: { applicationId },
+            data: { approved: false, decidedAt: new Date() }
+        });
+
+        const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
+
+        embed.author.name = "Firebreathers Application Denied";
+        embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
+        await ctx.editReply({ embeds: [msgEmbed.setColor("RED")] });
+    } else throw new Error("Invalid action type");
+
+    await F.sendMessageToUser(member, { embeds: [embed] });
+});
 
 export default command;

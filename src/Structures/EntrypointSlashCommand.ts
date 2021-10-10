@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ApplicationCommandOptionData,
+    AutocompleteInteraction,
     ChatInputApplicationCommandData,
     Collection,
     CommandInteraction,
@@ -212,7 +213,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         return createActionRow;
     }
 
-    static getIdentifierFromInteraction(interaction: CommandInteraction): string {
+    static getIdentifierFromInteraction(interaction: CommandInteraction | AutocompleteInteraction): string {
         const subcommandGroup = interaction.options.getSubcommandGroup(false);
         const subcommand = interaction.options.getSubcommand(false);
 

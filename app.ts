@@ -20,6 +20,7 @@ import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import "./src/Helpers/message-updates/_queue";
+import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 
 const client = new Discord.Client({
     intents: [
@@ -130,6 +131,18 @@ client.on("interactionCreate", async (interaction) => {
         } catch (e) {
             ErrorHandler(interaction, e);
         }
+    } else if (interaction.isAutocomplete()) {
+        const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
+        const optionIdentifier = interaction.options.getFocused().toString();
+
+        const slashcommand = SlashCommands.get(commandIdentifier);
+        if (!slashcommand) return console.log(`Failed to find command ${commandIdentifier} for autocomplete`);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const autocomplete = slashcommand.autocompleteListeners.get(optionIdentifier) as AutocompleteListener<any, any> | undefined; // prettier-ignore
+        if (!autocomplete) return console.log(`Failed to find autocomplete ${commandIdentifier}::${optionIdentifier}`);
+
+        autocomplete(transformAutocompleteInteraction(interaction));
     } else if (interaction.isContextMenu()) {
         const ctxMenuName = interaction.commandName;
         const contextMenu = ContextMenus.get(ctxMenuName);

@@ -7,6 +7,7 @@ import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
     ApplicationCommandOptionData,
+    AutocompleteInteraction,
     CommandInteraction,
     CommandInteractionOption,
     Snowflake
@@ -71,7 +72,7 @@ type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) exten
 
 export type OptsType<T> = T extends SlashCommandData<infer U> ? UnionToIntersection<ToObjectsArray<U>[number]> : never;
 
-export function extractOptsFromInteraction(interaction: CommandInteraction): unknown {
+export function extractOptsFromInteraction(interaction: CommandInteraction | AutocompleteInteraction): unknown {
     let arr = interaction.options.data as CommandInteractionOption[];
     const opts: Record<string, unknown> = {};
     while (arr.length !== 0) {

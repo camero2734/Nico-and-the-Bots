@@ -5,7 +5,7 @@ import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
-    description: "Bans a member",
+    description: "Shows the # of FB apps in various states",
     options: []
 });
 

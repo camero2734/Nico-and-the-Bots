@@ -75,13 +75,13 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
 
     // prettier-ignore
     const backgroundName = {
-    [albumRoles.ST]: "self_titled",
-    [albumRoles.RAB]: "rab",
-    [albumRoles.VSL]: "vessel",
-    [albumRoles.BF]: "blurryface",
-    [albumRoles.TRENCH]: "trench",
-    [albumRoles.SAI]: "sai"
-}[src];
+        [albumRoles.ST]: "self_titled",
+        [albumRoles.RAB]: "rab",
+        [albumRoles.VSL]: "vessel",
+        [albumRoles.BF]: "blurryface",
+        [albumRoles.TRENCH]: "trench",
+        [albumRoles.SAI]: "sai"
+    }[src];
 
     const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}.png`);
 

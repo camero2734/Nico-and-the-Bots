@@ -23,7 +23,6 @@ const canSend = (ctx: typeof command.ContextType): boolean => {
 };
 
 command.setHandler(async (ctx) => {
-    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is closed");
     await ctx.deferReply({ ephemeral: !canSend(ctx) });
 
     const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });

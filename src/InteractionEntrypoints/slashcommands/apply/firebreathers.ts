@@ -229,6 +229,8 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     const thread = ctx.message.thread;
     if (thread) {
         await thread.setArchived(true, "Decision was made, thread no longer necessary");
+
+        doneByEmbed.addField("Thread", `${thread}`);
     }
 
     await ctx.followUp({ embeds: [doneByEmbed] });

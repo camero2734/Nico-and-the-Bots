@@ -21,8 +21,6 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
-    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is disabled");
-
     if (!ctx.member.roles.cache.has(roles.staff)) {
         throw new CommandError("This command is not available yet.");
     }
@@ -165,6 +163,15 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
         await ctx.editReply({ embeds: [msgEmbed.setColor("RED")] });
     } else throw new Error("Invalid action type");
+
+    const doneByEmbed = new MessageEmbed()
+        .setAuthor(ctx.member.displayName, ctx.member.displayAvatarURL())
+        .setDescription(
+            `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
+        )
+        .setFooter(applicationId);
+
+    await ctx.followUp({ embeds: [doneByEmbed] });
 
     await F.sendMessageToUser(member, { embeds: [embed] });
 });

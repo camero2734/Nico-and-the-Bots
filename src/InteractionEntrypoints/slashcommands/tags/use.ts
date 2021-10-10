@@ -2,7 +2,10 @@ import { CommandError } from "../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { channelIDs, roles } from "../../../Configuration/config";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import moize from "moize";
+import { minutesToMilliseconds } from "date-fns";
+import Fuse from "fuse.js";
 
 const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",
@@ -20,6 +23,7 @@ const canSend = (ctx: typeof command.ContextType): boolean => {
 };
 
 command.setHandler(async (ctx) => {
+    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is closed");
     await ctx.deferReply({ ephemeral: !canSend(ctx) });
 
     const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
@@ -64,8 +68,35 @@ async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void
     await ctx.editReply({ embeds: [embed] });
 }
 
+// AUTOCOMPLETE
+const fuseOptions = {
+    shouldSort: true,
+    includeScore: true,
+    threshold: 0.6,
+    location: 0,
+    distance: 100,
+    minMatchCharLength: 1
+};
+
+async function _getAllTagNames(): Promise<string[]> {
+    const res = await prisma.tag.findMany({ select: { name: true } });
+
+    return res.map((r) => r.name);
+}
+const getAllTagNames = moize.promise(_getAllTagNames, { maxAge: minutesToMilliseconds(1) });
+
 command.addAutocompleteListener("name", async (ctx) => {
-    ctx.focused;
+    const tagNames = await getAllTagNames();
+    const fuse = new Fuse(tagNames, fuseOptions);
+
+    const searchedTags = fuse.search(ctx.opts.name, { limit: 10 });
+
+    const options = searchedTags.map((tag) => ({
+        name: tag.item,
+        value: tag.item
+    }));
+
+    await ctx.respond(options);
 });
 
 export default command;

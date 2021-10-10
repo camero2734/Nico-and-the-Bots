@@ -133,7 +133,7 @@ client.on("interactionCreate", async (interaction) => {
         }
     } else if (interaction.isAutocomplete()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
-        const optionIdentifier = interaction.options.getFocused().toString();
+        const optionIdentifier = interaction.options.getFocused(true)?.name;
 
         const slashcommand = SlashCommands.get(commandIdentifier);
         if (!slashcommand) return console.log(`Failed to find command ${commandIdentifier} for autocomplete`);

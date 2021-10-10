@@ -122,49 +122,53 @@ export async function sendToStaff(
             components: [actionRow]
         });
 
-        const thread = await m.startThread({
-            name: `${member.displayName} application discussion (${applicationId})`,
-            autoArchiveDuration: "MAX"
-        });
+        try {
+            const thread = await m.startThread({
+                name: `${member.displayName} application discussion (${applicationId})`,
+                autoArchiveDuration: "MAX"
+            });
 
-        await thread.send({ content: `${member}`, files: [attachment] });
+            await thread.send({ content: `${member}`, files: [attachment] });
 
-        const userWarnings = await prisma.warning.findMany({
-            where: { warnedUserId: member.id },
-            take: 5,
-            orderBy: { createdAt: "desc" }
-        });
-        const totalWarnings = await prisma.warning.count({ where: { warnedUserId: member.id } });
+            const userWarnings = await prisma.warning.findMany({
+                where: { warnedUserId: member.id },
+                take: 5,
+                orderBy: { createdAt: "desc" }
+            });
+            const totalWarnings = await prisma.warning.count({ where: { warnedUserId: member.id } });
 
-        const warningsEmbed = new MessageEmbed()
-            .setTitle(`${member.displayName}'s most recent warnings`)
-            .setFooter(`${totalWarnings} total warning(s)`);
-        if (userWarnings.length > 0) {
-            for (const warn of userWarnings) {
-                // prettier-ignore
-                warningsEmbed.addField(`${warn.reason} [${warn.severity}]`, F.discordTimestamp(warn.createdAt, "relative"))
+            const warningsEmbed = new MessageEmbed()
+                .setTitle(`${member.displayName}'s most recent warnings`)
+                .setFooter(`${totalWarnings} total warning(s)`);
+            if (userWarnings.length > 0) {
+                for (const warn of userWarnings) {
+                    // prettier-ignore
+                    warningsEmbed.addField(`${warn.reason.substring(0, 200)} [${warn.severity}]`, F.discordTimestamp(warn.createdAt, "relative"))
+                }
+            } else {
+                warningsEmbed.setDescription("*This user has no warnings*");
             }
-        } else {
-            warningsEmbed.setDescription("*This user has no warnings*");
+
+            await thread.send({ embeds: [warningsEmbed] });
+
+            // Send message to member
+            await F.sendMessageToUser(member, {
+                embeds: [
+                    new MessageEmbed({
+                        description: `Your FB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`
+                    })
+                ]
+            });
+        } catch (e) {
+            // Undo the message
+            await m.delete();
+            return;
         }
-
-        await thread.send({ embeds: [warningsEmbed] });
-
-        // Send message to member
-        await F.sendMessageToUser(member, {
-            embeds: [
-                new MessageEmbed({
-                    description: `Your FB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`
-                })
-            ]
-        });
 
         return m.url;
     } catch (e) {
         if (e instanceof Error) rollbar.log(e);
         else rollbar.log(`${e}`);
-
-        return undefined;
     }
 }
 

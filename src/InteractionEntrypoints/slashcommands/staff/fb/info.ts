@@ -1,9 +1,8 @@
-import { roles } from "../../../../Configuration/config";
-import { CommandError } from "../../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
-import { prisma } from "../../../../Helpers/prisma-init";
+import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
+import { prisma } from "../../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Bans a member",

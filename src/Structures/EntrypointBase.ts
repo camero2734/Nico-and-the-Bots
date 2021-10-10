@@ -61,9 +61,14 @@ export abstract class InteractionEntrypoint<
             const member = ctx.member as GuildMember;
             if (!member) throw new Error(`No member`);
 
+            const allowedAnywhere = ["tags"];
+
             if (ctx.isCommand()) {
                 if (!member.roles.cache.has(roles.staff)) {
-                    if (ctx.commandName === "staff" || ctx.channelId !== channelIDs.commands) {
+                    if (
+                        ctx.commandName === "staff" ||
+                        (ctx.channelId !== channelIDs.commands && !allowedAnywhere.includes(ctx.commandName))
+                    ) {
                         throw new CommandError("You don't have permission to use this command!");
                     }
                 }

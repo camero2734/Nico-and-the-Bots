@@ -37,28 +37,29 @@ model User {
   lastCreationUpload DateTime?
 
   // Relations
-  dailyBox            DailyBox?
-  lastFM              UserLastFM?
-  verifiedQuiz        VerifiedQuiz?
-  tags                Tag[]
-  messageHistory      MessageHistory[]
-  perks               Perk[]
-  givenGolds          Gold[]               @relation("Gold_fromUser")
-  golds               Gold[]               @relation("Gold_toUser")
-  polls               Poll[]
-  votesCasted         Vote[]
-  colorRoles          ColorRole[]
-  songRoles           SongRole[]
-  warnings            Warning[]            @relation("Warning_warnedUser")
-  issuedWarnings      Warning[]            @relation("Warning_issuedByUser")
-  mutes               Mute[]               @relation("Mute_mutedUser")
-  issuedMutes         Mute[]               @relation("Mute_issuedByUser")
-  submittedInterviews SubmittedInterview[]
-  reminders           Reminder[]
-  verifiedQuizAnswers VerifiedQuizAnswer[]
-  violationNotices    ViolationNotice[]
-  commandsUsed        CommandUsed[]
-  badges              Badge[]
+  dailyBox                 DailyBox?
+  lastFM                   UserLastFM?
+  verifiedQuiz             VerifiedQuiz?
+  tags                     Tag[]
+  messageHistory           MessageHistory[]
+  perks                    Perk[]
+  givenGolds               Gold[]                    @relation("Gold_fromUser")
+  golds                    Gold[]                    @relation("Gold_toUser")
+  polls                    Poll[]
+  votesCasted              Vote[]
+  colorRoles               ColorRole[]
+  songRoles                SongRole[]
+  warnings                 Warning[]                 @relation("Warning_warnedUser")
+  issuedWarnings           Warning[]                 @relation("Warning_issuedByUser")
+  mutes                    Mute[]                    @relation("Mute_mutedUser")
+  issuedMutes              Mute[]                    @relation("Mute_issuedByUser")
+  submittedInterviews      SubmittedInterview[]
+  reminders                Reminder[]
+  verifiedQuizAnswers      VerifiedQuizAnswer[]
+  violationNotices         ViolationNotice[]
+  commandsUsed             CommandUsed[]
+  badges                   Badge[]
+  firebreatherApplications FirebreatherApplication[]
 }
 
 model Tag {
@@ -357,4 +358,19 @@ model MessageReference {
   messageId String @id
   channelId String
   name      String @unique
+}
+
+model FirebreatherApplication {
+  applicationId String @id @default(uuid())
+
+  sentToStaff Boolean   @default(false)
+  submittedAt DateTime?
+
+  approved  Boolean?
+  decidedAt DateTime?
+
+  responseData Json?
+
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 }

@@ -55,6 +55,7 @@
         "file-type": "^16.5.0",
         "fuse.js": "^6.4.6",
         "glob": "^7.1.7",
+        "google-spreadsheet": "^3.1.15",
         "image-hash": "^4.0.1",
         "instagram-private-api": "^1.45.1",
         "ioredis": "^4.27.8",

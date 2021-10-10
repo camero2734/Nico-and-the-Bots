@@ -18,6 +18,7 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
+import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 import F from "./funcs";
 import { rollbar } from "./logging/rollbar";
 import { prisma } from "./prisma-init";
@@ -213,11 +214,12 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
 }
 
 async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise<void> {
+    console.log("Running FB check");
     await doc.loadInfo();
     const sheet = doc.sheetsByIndex[0];
 
     const rows = await sheet.getRows();
-    const applicationIdKey = "Application ID";
+    const ApplicationIdKey = "Application ID";
 
     const _lookingForIds = await prisma.firebreatherApplication.findMany({
         where: { submittedAt: null },
@@ -225,24 +227,24 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
     });
     const lookingForIds = new Set(_lookingForIds.map((l) => l.applicationId));
 
-    if (Math.random() < 2) return;
-
     for (const row of rows) {
-        const applicationId = row[applicationIdKey];
+        const applicationId = row[ApplicationIdKey];
 
         if (!lookingForIds.has(applicationId)) continue;
         lookingForIds.delete(applicationId); // Ignore any resubmissions
 
-        const keys = Object.keys(row).filter((k) => !k.startsWith("_"));
+        const keys = Object.keys(row).filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
 
         const jsonData = Object.fromEntries(keys.map((k) => [k, row[k]]));
 
         // Send to Discord
+        const success = await sendToStaff(guild, applicationId, jsonData);
+        if (!success) continue;
 
         // Save to DB
         await prisma.firebreatherApplication.update({
             where: { applicationId },
-            data: { submittedAt: new Date(), sentToStaff: true }
+            data: { submittedAt: new Date(), sentToStaff: true, responseData: jsonData }
         });
     }
 }

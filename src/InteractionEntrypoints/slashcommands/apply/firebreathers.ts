@@ -1,10 +1,10 @@
 import { addDays } from "date-fns";
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import { nanoid } from "nanoid";
-import { roles, userIDs } from "../../../Configuration/config";
+import { Guild, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
-import { prisma, queries } from "../../../Helpers/prisma-init";
+import { rollbar } from "../../../Helpers/logging/rollbar";
+import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { FB_DELAY_DAYS, genApplicationLink, getActiveFirebreathersApplication } from "./_consts";
 
@@ -66,5 +66,40 @@ command.setHandler(async (ctx) => {
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
+
+export async function sendToStaff(guild: Guild, applicationId: string, data: Record<string, string>): Promise<boolean> {
+    try {
+        const fbApplicationChannel = (await guild.channels.fetch(channelIDs.deapplications)) as TextChannel;
+
+        const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });
+        if (!application) throw new Error("No application found");
+
+        const member = await guild.members.fetch(application.userId);
+        if (!member) throw new Error("No member found");
+
+        const embed = new MessageEmbed()
+            .setColor("RED")
+            .setAuthor(`${member.displayName}'s application`, member.displayAvatarURL())
+            .setFooter(applicationId);
+
+        for (const [name, value] of Object.entries(data)) {
+            embed.addField(name, value);
+        }
+
+        const actionRow = new MessageActionRow().addComponents([
+            new MessageButton({ style: "SUCCESS", label: "Accept", customId: "accept" }),
+            new MessageButton({ style: "DANGER", label: "Deny", customId: "deny" })
+        ]);
+
+        await fbApplicationChannel.send({ embeds: [embed], components: [actionRow] });
+
+        return true;
+    } catch (e) {
+        if (e instanceof Error) rollbar.log(e);
+        else rollbar.log(`${e}`);
+
+        return false;
+    }
+}
 
 export default command;

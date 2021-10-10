@@ -8,7 +8,7 @@ import {
     MessageOptions,
     TextChannel
 } from "discord.js";
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
@@ -159,6 +159,9 @@ export async function sendToStaff(
                     })
                 ]
             });
+
+            await m.react(emojiIDs.upvote);
+            await m.react(emojiIDs.downvote);
         } catch (e) {
             // Undo the message
             await m.delete();

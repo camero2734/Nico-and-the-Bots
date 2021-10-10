@@ -105,11 +105,19 @@ export async function sendViolationNotice(
     cctx.translate(0, 75);
     cctx.fillText(`Issued by ${bishop}`, 0, 0);
 
+    // Determine if user can see channel already
+    const userPerms = chan.permissionsFor(member.id);
+    const canSee = userPerms?.has("VIEW_CHANNEL") || false;
+
     // Allow user to see channel
     await chan.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true });
 
     const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
-    const m = await chan.send({ content: `${member}`, embeds: [transmissionEmbed] });
+    const m = await chan.send({
+        content: `${member}`,
+        embeds: [transmissionEmbed],
+        allowedMentions: canSee ? { parse: [] } : {}
+    });
     for (let i = 0; i < 5; i++) {
         const description = transmissionEmbed.description as string;
         transmissionEmbed.description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
@@ -121,7 +129,8 @@ export async function sendViolationNotice(
 
     await m.edit({
         content: `${member}`,
-        embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")]
+        embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")],
+        allowedMentions: canSee ? { parse: [] } : {}
     });
     await chan.send({files: [new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)]}); // prettier-ignore
 }

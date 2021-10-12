@@ -98,7 +98,7 @@ export async function sendToStaff(
             .setFooter(applicationId);
 
         for (const [name, value] of Object.entries(data)) {
-            embed.addField(name, value || "*Nothing*");
+            embed.addField(name, value?.substring(0, 1000) || "*Nothing*");
         }
 
         const actionRow = new MessageActionRow().addComponents([

@@ -23,8 +23,10 @@ command.setHandler(async (ctx) => {
 
     const embeds: MessageEmbed[] = [];
 
+    await ctx.guild.members.fetch();
+
     for (const roleID of roles) {
-        const role = ctx.channel.guild.roles.cache.get(roleID);
+        const role = await ctx.channel.guild.roles.fetch(roleID);
         if (!role) continue;
 
         const embed = new MessageEmbed();

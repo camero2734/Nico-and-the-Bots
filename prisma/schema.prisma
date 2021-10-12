@@ -53,6 +53,8 @@ model User {
   issuedWarnings           Warning[]                 @relation("Warning_issuedByUser")
   mutes                    Mute[]                    @relation("Mute_mutedUser")
   issuedMutes              Mute[]                    @relation("Mute_issuedByUser")
+  userMessageReports       UserMessageReport[]       @relation("UMR_reportedUser")
+  issuedUserMessageReports UserMessageReport[]       @relation("UMR_reportedByUser")
   submittedInterviews      SubmittedInterview[]
   reminders                Reminder[]
   verifiedQuizAnswers      VerifiedQuizAnswer[]
@@ -373,4 +375,22 @@ model FirebreatherApplication {
 
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
+}
+
+model UserMessageReport {
+  id Int @id @default(autoincrement())
+
+  messageUrl String
+  reason     String
+
+  reportedUser   User?  @relation("UMR_reportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reportedUserId String
+
+  reportedByUser   User?  @relation("UMR_reportedByUser", fields: [reportedByUserId], references: [id], onDelete: Cascade)
+  reportedByUserId String
+
+  dismissed       Boolean @default(false)
+  staffMessageUrl String
+
+  @@unique([messageUrl, reportedByUserId])
 }

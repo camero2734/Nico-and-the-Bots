@@ -1,10 +1,8 @@
-import { roles, userIDs } from "../../../../Configuration/config";
-import { CommandError } from "../../../../Configuration/definitions";
 import { MessageEmbed } from "discord.js";
-import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
-import F from "../../../../Helpers/funcs";
+import { userIDs } from "../../../../Configuration/config";
+import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
-import { NodeBuilderFlags } from "typescript";
+import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const EditTypes = <const>["REPLACE", "ADD"];
 
@@ -37,8 +35,6 @@ const command = new SlashCommand(<const>{
         )
     ]
 });
-
-console.log(command.commandData.options, /OPTS/);
 
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) throw new CommandError("No");

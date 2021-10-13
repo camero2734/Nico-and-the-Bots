@@ -72,6 +72,7 @@ export const channelIDs = <const>{
     mulberrystreet: "759830064518266880",
     verifiedapplications: "470428222237179905",
     tourhelp: "857258422293757972",
+    cliqueartfriday: "689548218828455967",
     logs: {
         ban: "689685441485733952",
         staffCommands: "488076541499277333",

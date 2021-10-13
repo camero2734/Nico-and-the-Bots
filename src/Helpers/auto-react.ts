@@ -1,5 +1,5 @@
 import { channelIDs } from "../Configuration/config";
-import { EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
+import { Channel, EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
 import Mime from "mime-types";
 
 interface BaseReactType {
@@ -72,6 +72,9 @@ const channelReacts = [
     ]),
     new ChannelReactions(channelIDs.memes).addReactions([
         new FileReact(["👍", "👎"], FileReact.MimeCheck(["audio", "video", "image"]), true)
+    ]),
+    new ChannelReactions(channelIDs.cliqueartfriday).addReactions([
+        new FileReact(["💝"], FileReact.MimeCheck(["audio", "video", "image"]), true)
     ])
 ];
 

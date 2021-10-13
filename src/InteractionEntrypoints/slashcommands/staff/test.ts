@@ -1,4 +1,7 @@
 import { guildID, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { updateUserScore } from "../../../Helpers";
+import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
@@ -9,21 +12,16 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const channels = await ctx.guild.channels.fetch();
+    const msg = await F.fetchMessageFromUrl(
+        "https://discord.com/channels/269657133673349120/827679833487704094/897619370845569024",
+        ctx.guild
+    );
 
-    for (const channel of channels.values()) {
-        if (channel.type !== "GUILD_TEXT") continue;
+    if (!msg) throw new CommandError("No msg");
 
-        const channelPerms = channel.permissionsFor("335912315494989825");
-        if (!channelPerms) continue;
+    updateUserScore(msg);
 
-        if (!channelPerms.has("USE_APPLICATION_COMMANDS")) {
-            console.log(`#${channel.name}`);
-            await channel.permissionOverwrites.edit(roles.banditos, { USE_APPLICATION_COMMANDS: null }).catch(console.log); // prettier-ignore
-            await channel.permissionOverwrites.edit(guildID, { USE_APPLICATION_COMMANDS: null }).catch(console.log);
-        }
-    }
-    await ctx.editReply({ content: "ok boomer" });
+    await ctx.editReply({ content: "ok" });
 });
 
 export default command;

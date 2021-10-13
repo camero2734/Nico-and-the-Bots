@@ -1,5 +1,5 @@
 import * as bigintConversion from "bigint-conversion";
-import { GuildMember, MessageOptions, Snowflake, TextChannel } from "discord.js";
+import { Guild, GuildMember, Message, MessageOptions, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import * as crypto from "crypto";
@@ -121,6 +121,17 @@ const F = {
         if (!guildId || !channelId || !messageId) return;
 
         return { guildId, channelId, messageId };
+    },
+    async fetchMessageFromUrl(url: string, guild: Guild): Promise<Message | undefined> {
+        try {
+            const ref = this.parseMessageUrl(url);
+            if (!ref) return;
+
+            const channel = (await guild.channels.fetch(ref.channelId)) as TextChannel;
+            return await channel.messages.fetch(ref.messageId);
+        } catch {
+            return;
+        }
     },
     hash(text: string, algorithm: "md5" | "sha1" | "sha256" = "sha1"): string {
         return crypto.createHash(algorithm).update(text).digest("base64");

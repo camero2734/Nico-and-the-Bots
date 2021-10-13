@@ -6,6 +6,7 @@ import {
     MessageButton,
     MessageEmbed,
     MessageOptions,
+    MessageSelectMenu,
     TextChannel
 } from "discord.js";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
@@ -102,16 +103,12 @@ export async function sendToStaff(
         }
 
         const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({
-                style: "SUCCESS",
-                label: "Accept",
-                customId: genId({ type: ActionTypes.Accept.toString(), applicationId })
-            }),
-            new MessageButton({
-                style: "DANGER",
-                label: "Deny",
-                customId: genId({ type: ActionTypes.Deny.toString(), applicationId })
-            })
+            new MessageSelectMenu()
+                .addOptions([
+                    { label: "Accept", value: ActionTypes.Accept.toString(), emoji: emojiIDs.upvote },
+                    { label: "Deny", value: ActionTypes.Deny.toString(), emoji: emojiIDs.downvote }
+                ])
+                .setCustomId(genId({ applicationId, type: "" }))
         ]);
 
         const scoreCard = await generateScoreCard(member);
@@ -193,7 +190,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
 
     const msgEmbed = ctx.message.embeds[0];
 
-    const action = +args.type;
+    const action = ctx.isSelectMenu() ? +ctx.values[0] : +args.type;
     if (action === ActionTypes.Accept) {
         await prisma.firebreatherApplication.update({
             where: { applicationId },

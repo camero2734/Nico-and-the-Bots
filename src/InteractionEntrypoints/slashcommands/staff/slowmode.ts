@@ -1,8 +1,5 @@
 import { MessageEmbed } from "discord.js";
-import { guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { updateUserScore } from "../../../Helpers";
-import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{

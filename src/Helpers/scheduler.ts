@@ -2,7 +2,7 @@
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */
 
-import { secondsToMilliseconds, subDays } from "date-fns";
+import { differenceInHours, secondsToMilliseconds, subDays } from "date-fns";
 import {
     Client,
     Collection,
@@ -124,6 +124,7 @@ async function checkReminders(guild: Guild): Promise<void> {
 }
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
+    // Add banditos/new to members who pass membership screening
     const allMembers = guild.members.cache;
     const membersNoBanditos = allMembers.filter(
         (mem) =>
@@ -135,6 +136,18 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
 
     for (const mem of membersNoBanditos.values()) {
         await mem.roles.add(roles.banditos);
+        await mem.roles.add(roles.new);
+    }
+
+    // Remove new from members who have been in the server long enough
+    const NUM_HOURS_STAY_NEW = 6;
+    const membersToRemoveNew = allMembers.filter((mem) => {
+        if (!mem.roles.cache.has(roles.new) || !mem.joinedAt || mem.pending) return false;
+        return differenceInHours(new Date(), mem.joinedAt) >= NUM_HOURS_STAY_NEW;
+    });
+
+    for (const mem of membersToRemoveNew.values()) {
+        await mem.roles.remove(roles.new);
     }
 }
 

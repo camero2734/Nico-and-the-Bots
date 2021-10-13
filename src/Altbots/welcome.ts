@@ -204,6 +204,7 @@ export class SacarverBot {
     async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {
         if (oldMember.pending && !newMember.pending) {
             await newMember.roles.add(roles.banditos);
+            await newMember.roles.add(roles.new);
         }
     }
 }

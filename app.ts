@@ -55,7 +55,7 @@ const entrypointsReady = registerAllEntrypoints();
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
-    const guild = await client.guilds.fetch(guildID);
+    const guild = await client.guilds.fetch({ force: true, guild: guildID });
 
     await entrypointsReady;
     InteractionEntrypoint.registerAllCommands(guild);

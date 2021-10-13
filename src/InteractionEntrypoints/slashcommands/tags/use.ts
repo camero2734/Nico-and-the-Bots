@@ -6,6 +6,7 @@ import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import moize from "moize";
 import { minutesToMilliseconds } from "date-fns";
 import Fuse from "fuse.js";
+import { getTagNameSearcher } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",
@@ -67,28 +68,10 @@ async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void
     await ctx.editReply({ embeds: [embed] });
 }
 
-// AUTOCOMPLETE
-const fuseOptions = {
-    shouldSort: true,
-    includeScore: true,
-    threshold: 0.6,
-    location: 0,
-    distance: 100,
-    minMatchCharLength: 1
-};
-
-async function _getAllTagNames(): Promise<string[]> {
-    const res = await prisma.tag.findMany({ select: { name: true } });
-
-    return res.map((r) => r.name);
-}
-const getAllTagNames = moize.promise(_getAllTagNames, { maxAge: minutesToMilliseconds(1) });
-
 command.addAutocompleteListener("name", async (ctx) => {
-    const tagNames = await getAllTagNames();
-    const fuse = new Fuse(tagNames, fuseOptions);
+    const searcher = await getTagNameSearcher();
 
-    const searchedTags = fuse.search(ctx.opts.name, { limit: 10 });
+    const searchedTags = searcher.search(ctx.opts.name, { limit: 10 });
 
     const options = searchedTags.map((tag) => ({
         name: tag.item,

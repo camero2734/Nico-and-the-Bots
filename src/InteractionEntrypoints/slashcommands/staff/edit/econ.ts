@@ -37,8 +37,6 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-    if (ctx.user.id !== userIDs.me) throw new CommandError("No");
-
     await ctx.deferReply();
     const { user, type, credits, score, tokens, steals, blocks, dailycount } = ctx.opts;
     const amountField = (n: number | undefined) => {

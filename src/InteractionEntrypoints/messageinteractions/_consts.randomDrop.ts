@@ -1,9 +1,9 @@
 import { addMilliseconds, differenceInMilliseconds, endOfDay, startOfDay } from "date-fns";
-import { MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
-import { guild, NicoClient } from "../../../app";
-import { MessageTools } from "../../Helpers";
+import { GuildMember, Snowflake } from "discord.js";
+import { guild } from "../../../app";
+import { roles } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
-import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
+import { prisma } from "../../Helpers/prisma-init";
 
 export type RolePrize = { name: "role"; id: Snowflake };
 export type CreditsPrize = { name: "credits"; amount: number };
@@ -41,4 +41,27 @@ export function calculateNextPrize(lastRun?: Date): { runAt: Date; prize: DropPr
     const prize: DropPrize = { name: "credits", amount: Math.floor(Math.random() * 6 + 2) * 1000, quantity: 1 };
 
     return { runAt, prize };
+}
+
+export async function givePrize(prize: DropPrize, member: GuildMember): Promise<void> {
+    switch (prize.name) {
+        case "credits": {
+            await prisma.user.update({ where: { id: member.id }, data: { credits: { increment: prize.amount } } });
+            return;
+        }
+        case "role": {
+            const isColorRole = JSON.stringify(roles.colors).includes(prize.id); // lol
+            if (isColorRole) {
+                await prisma.colorRole.upsert({
+                    where: { roleId_userId: { roleId: prize.id, userId: member.id } },
+                    create: { roleId: prize.id, userId: member.id, amountPaid: 0 },
+                    update: {}
+                });
+            } else {
+                await member.roles.add(prize.id);
+            }
+
+            return;
+        }
+    }
 }

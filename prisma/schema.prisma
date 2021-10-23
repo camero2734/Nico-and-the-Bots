@@ -400,6 +400,7 @@ model RandomDrop {
   id String @id @default(uuid())
 
   createdAt DateTime @default(now())
+  prize     Json
 
   guesses RandomDropGuess[]
 }

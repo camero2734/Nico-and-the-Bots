@@ -2,7 +2,7 @@
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */
 
-import { differenceInHours, secondsToMilliseconds, subDays } from "date-fns";
+import { differenceInHours, secondsToMilliseconds, subDays, subMinutes } from "date-fns";
 import {
     Client,
     Collection,
@@ -41,26 +41,34 @@ export default async function (client: Client): Promise<void> {
         private_key: secrets.apis.google.sheets.private_key
     });
 
-    async function run5SecChecks() {
+    async function every5Seconds() {
         await safeCheck(checkMutes(guild));
         await safeCheck(checkReminders(guild));
         await safeCheck(checkMemberRoles(guild));
         await safeCheck(checkVCRoles(guild));
 
         await F.wait(secondsToMilliseconds(5));
-        run5SecChecks();
+        every5Seconds();
     }
 
-    async function run30SecChecks() {
+    async function every30Seconds() {
         await safeCheck(checkHouseOfGold(guild));
         await safeCheck(checkFBApplication(guild, doc));
 
         await F.wait(secondsToMilliseconds(30));
-        run30SecChecks();
+        every30Seconds();
     }
 
-    run5SecChecks();
-    run30SecChecks();
+    async function every60Seconds() {
+        await safeCheck(deleteOldDrops());
+
+        await F.wait(secondsToMilliseconds(60));
+        every60Seconds();
+    }
+
+    every5Seconds();
+    every30Seconds();
+    every60Seconds();
 }
 
 async function tryToDM(member: GuildMember, msg: MessageOptions): Promise<void> {
@@ -260,4 +268,9 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
             data: { submittedAt: new Date(), messageUrl, responseData: jsonData }
         });
     }
+}
+
+async function deleteOldDrops(): Promise<void> {
+    const cutoff = subMinutes(new Date(), 30);
+    await prisma.randomDrop.deleteMany({ where: { createdAt: { lte: cutoff } } });
 }

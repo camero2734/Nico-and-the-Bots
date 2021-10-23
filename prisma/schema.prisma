@@ -399,6 +399,8 @@ model UserMessageReport {
 model RandomDrop {
   id String @id @default(uuid())
 
+  createdAt DateTime @default(now())
+
   guesses RandomDropGuess[]
 }
 

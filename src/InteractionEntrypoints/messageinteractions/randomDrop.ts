@@ -40,6 +40,7 @@ async function runDrop(prize: DropPrize, channel: TextChannel): Promise<void> {
                 customId: GenBtnId({
                     dropId: drop.id,
                     idx: `${idx}`,
+                    maxGuessesPerUser: "1",
                     isPrize: winningIndices.includes(idx) ? "1" : "0"
                 })
             })
@@ -59,7 +60,7 @@ const msgInt = new MessageInteraction();
 
 export const GenBtnId = msgInt.addInteractionListener(
     "dropGuess",
-    <const>["dropId", "idx", "isPrize"],
+    <const>["dropId", "idx", "maxGuessesPerUser", "isPrize"],
     async (ctx, args) => {
         await ctx.deferUpdate();
 
@@ -67,13 +68,21 @@ export const GenBtnId = msgInt.addInteractionListener(
 
         const components = ctx.message.components;
         const idx = +args.idx;
+        const maxGuessesPerUser = +args.maxGuessesPerUser;
         const isPrize = args.isPrize === "1";
 
-        // Ensure only one person can hit a button by using DB unique constraint
+        // Ensure only one person can hit a button and that a user doesn't hit more than maxGuessesPerUser
         try {
-            await prisma.randomDropGuess.create({ data: { randomDropId: args.dropId, userId: ctx.user.id, idx } });
+            await prisma.$transaction(async (tx) => {
+                await tx.randomDropGuess.create({ data: { randomDropId: args.dropId, userId: ctx.user.id, idx } });
+                const count = await tx.randomDropGuess.count({
+                    where: { randomDropId: args.dropId, userId: ctx.user.id }
+                });
+                if (count > maxGuessesPerUser) throw new CommandError("You've exceeded the max number of guesses");
+            });
         } catch (e) {
-            throw new CommandError("Someone else already guessed this one!");
+            if (e instanceof CommandError) throw e;
+            else throw new CommandError("Someone else already guessed this one!");
         }
 
         const btnPressed = (() => {

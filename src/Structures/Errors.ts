@@ -5,7 +5,7 @@ import { rollbar } from "../Helpers/logging/rollbar";
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };
     ectx.send = (
-        ectx.send ? ectx.send : ectx.replied || ectx.deferred ? ectx.editReply : ectx.reply
+        ectx.send ? ectx.send : ectx.replied || ectx.deferred ? ectx.followUp : ectx.reply
     ) as typeof ectx["send"];
 
     if (!ectx.send) return;

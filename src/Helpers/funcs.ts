@@ -33,7 +33,12 @@ const F = {
         Object.entries(obj) as [keyof T, T[keyof T]][],
     // Rerurns [0, 1, 2, ..., n]
     indexArray: R.times(R.identity),
-    randomValueInArray: <U, T extends Array<U>>(arr: T): T[number] => arr[Math.floor(Math.random() * arr.length)],
+    randomIndexInArray: <U>(arr: U[]): number => Math.floor(Math.random() * arr.length),
+    randomValueInArray: <U>(arr: U[]): U => arr[F.randomIndexInArray(arr)],
+    sample: <U>(arr: U[], count: number): U[] => {
+        const shuffled = F.shuffle(arr);
+        return shuffled.slice(0, count);
+    },
     randomSpecialCharacter: (): string => F.randomValueInArray("!@#$%&_-+=?><~".split("")),
     /**
      *
@@ -166,6 +171,10 @@ const F = {
             const commandsChan = (await member.guild.channels.fetch(channelIDs.commands)) as TextChannel;
             await commandsChan.send({ ...msgOpts, content: `${member}\n\n${msgOpts.content ?? ""}` });
         }
+    },
+    ellipseText(text: string, maxLength: number): string {
+        if (text.length <= maxLength) return text;
+        else return text.substring(0, maxLength - 3) + "...";
     }
 };
 

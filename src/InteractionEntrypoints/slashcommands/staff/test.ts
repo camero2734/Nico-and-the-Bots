@@ -1,8 +1,6 @@
-import { guildID, roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
-import { updateUserScore } from "../../../Helpers";
-import F from "../../../Helpers/funcs";
+import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { testDrop } from "../../messageinteractions/randomDrop";
 
 const command = new SlashCommand(<const>{
     description: "Test command",
@@ -11,6 +9,10 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
+
+    if (ctx.user.id !== userIDs.me) return;
+
+    testDrop(ctx.channel);
 
     await ctx.editReply({ content: "ok" });
 });

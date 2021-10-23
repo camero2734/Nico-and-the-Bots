@@ -51,11 +51,12 @@ client.login(secrets.bots.nico);
 console.log("Script started");
 
 const entrypointsReady = registerAllEntrypoints();
+export let guild: Discord.Guild;
 
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
-    const guild = await client.guilds.fetch({ force: true, guild: guildID });
+    guild = await client.guilds.fetch({ force: true, guild: guildID });
 
     await entrypointsReady;
     InteractionEntrypoint.registerAllCommands(guild);

@@ -62,6 +62,7 @@ model User {
   commandsUsed             CommandUsed[]
   badges                   Badge[]
   firebreatherApplications FirebreatherApplication[]
+  randomDropGuesses        RandomDropGuess[]
 }
 
 model Tag {
@@ -393,4 +394,22 @@ model UserMessageReport {
   staffMessageUrl String
 
   @@unique([messageUrl, reportedByUserId])
+}
+
+model RandomDrop {
+  id String @id @default(uuid())
+
+  guesses RandomDropGuess[]
+}
+
+model RandomDropGuess {
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  randomDrop   RandomDrop? @relation(fields: [randomDropId], references: [id], onDelete: Cascade)
+  randomDropId String
+
+  idx Int
+
+  @@unique([randomDropId, idx])
 }

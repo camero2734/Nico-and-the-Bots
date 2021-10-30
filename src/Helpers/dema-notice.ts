@@ -88,7 +88,7 @@ export async function sendViolationNotice(
     cctx.font = "45px Arial Narrow";
     cctx.textAlign = "left";
     const mx = 163;
-    const body = `You are in volation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found ${found}. Further actions will be taken to ensure these violations will not occur again`;
+    const body = `You are in violation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found ${found}. Further actions will be taken to ensure these violations will not occur again`;
     fillParagraph(cctx, `NOTICE: ${body}.\n\nWe have people on the way. We want you home safe.`, mx, 540, width - 2 * mx); // prettier-ignore
 
     // Infraction No.

@@ -27,18 +27,23 @@ const rules = [
         "General"
     ),
     new Rule(
-        "You may not use an alt/secondary account of any kind, especially for evasion of punishments",
+        "You may not use an alt/secondary account of any kind, especially for evasion of punishments, unless permitted by staff.",
         "You may only have one account on the server at a time. You may not *under any circumstances* join on another account if you are muted, warned, or have any other actions taken against you. This will result in a permanent ban against you.",
         "General"
     ),
     new Rule(
-        "Listen to the staff; DM an admin if there is a major problem",
-        "You may contact the staff by DM'ing them, using the !suggest command (when relevant), or by sending Nico (the bot) a DM ending with `??`.",
+        "Listen to the staff; DM an admin if there is a major problem related to staff issues.",
+        "You may contact the staff by DM'ing them, using the /submit suggestion command (when relevant), or by sending Sacarver (the bot) a DM.",
         "General"
     ),
     new Rule(
         "Try not to find loopholes to justify bad behavior (Use common sense)",
-        "The server rules list can never be completely exhaustive - any common sense rules also apply, as well as a common sense understanding of the listed rules.",
+        "We base rule breaks on our own judgement. While we are open to discuss rule breaks and punishments, trying to justify poor behavior based on your judgement wont get you anywhere.",
+        "General"
+    ),
+    new Rule(
+        "If you seem like a troll, you will get banned.",
+        "We have little patience for users who join to purposefully make users uncomfortable and break rules.",
         "General"
     ),
     new Rule(
@@ -47,11 +52,6 @@ const rules = [
         "Messaging"
     ),
     new Rule("No NSFW or use of slurs, regardless of context", "This will almost always result in a ban.", "Messaging"),
-    new Rule(
-        "Never post personal information. This includes information such as full name, address, etc.",
-        "You should always be careful posting any information that someone can use to identify you. Remember, this is a public server, so tens of thousands of people have access to anything you post here.",
-        "Messaging"
-    ),
     new Rule(
         "Make sure to direct content to their appropriate channels (i.e. bot use in #commands)",
         "If you send messages that don't belong in a channel, you will simply be asked to move to the appropriate channel. Most channels are named in a way that you can easily identify their purpose!",
@@ -63,13 +63,23 @@ const rules = [
         "Messaging"
     ),
     new Rule(
+        "Civil discussions/disagreements are always welcome.",
+        "Only contact a moderator once things become hostile.",
+        "Messaging"
+    ),
+    new Rule(
+        "If at any time you need a moderator's assistance, either ping the <@&330877657132564480> role or ping/DM any online moderator/admin.",
+        "You may also DM Sacarver to contact staff.",
+        "Messaging"
+    ),
+    new Rule(
         "Respect everyone",
         "This applies even if you don't like someone; this is not the place for expressing that.",
         "Interpersonal Conduct"
     ),
     new Rule(
-        "Do not make others feel uncomfortable",
-        "If someone directly asks you to stop talking about something because it makes them uncomfortable, please do.",
+        "Always report any predatory behavior. Users who make this server an unsafe environment will be banned.",
+        "If you see someone acting predatory, contact a Staff member.",
         "Interpersonal Conduct"
     ),
     new Rule(
@@ -80,6 +90,16 @@ const rules = [
     new Rule(
         "Publicly posting negative statements about other members on social media or other servers is strictly prohibited.",
         "This mainly applies to social media sites (Twitter, Instagram, etc.) or other Discord servers. If you see this type of targeted harassment happen, please report it to a staff member.",
+        "Interpersonal Conduct"
+    ),
+    new Rule(
+        "Racism, sexism, transphobia, homophobia, fascism, or any other prejudice behavior is taken very seriously on this server.",
+        "Respect for other people has nothing to do with politics or opinion, and those who break this rule will be banned.",
+        "Interpersonal Conduct"
+    ),
+    new Rule(
+        "While you should always report direct harassment and threatening behavior, the staff is not gonna step in to manage interpersonal drama that does not break server rules or Discord TOS.",
+        "You should be able to handle the situation yourselves without bringing it into the server.",
         "Interpersonal Conduct"
     )
 ];

@@ -1,6 +1,6 @@
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { testDrop } from "../../messageinteractions/randomDrop";
+import { runDropInChannel } from "../../messageinteractions/randomDrop";
 
 const command = new SlashCommand(<const>{
     description: "Test command",
@@ -12,7 +12,7 @@ command.setHandler(async (ctx) => {
 
     if (ctx.user.id !== userIDs.me) return;
 
-    testDrop(ctx.channel);
+    runDropInChannel(ctx.channel);
 
     await ctx.editReply({ content: "ok" });
 });

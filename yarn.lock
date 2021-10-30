@@ -445,6 +445,11 @@
   resolved "https://registry.npmjs.org/@types/require-all/-/require-all-3.0.3.tgz"
   integrity sha512-y9IkD6jpxoYD2SNK4CHN2NNSL+6EVtTp26Jg3l1VbBjPdXNaKg5PeclIjdAj8lGxh0Cpur5sHRJPKRa3cPtqgA==
 
+"@types/seed-random@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@types/seed-random/-/seed-random-2.2.1.tgz#afb78531610f87140802e25d603ea3df639315df"
+  integrity sha512-A7DyRnftEWLEbdrN08XdnEASrT97y7GL/zDKaijo7gbQn05O13f7lDxmgq+SuI4JD7sAqd9XkAR2LDkkzp4s+w==
+
 "@types/serve-static@*":
   version "1.13.10"
   resolved "https://registry.npmjs.org/@types/serve-static/-/serve-static-1.13.10.tgz"
@@ -5174,6 +5179,11 @@ sax@^1.1.3, sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.npmjs.org/sax/-/sax-1.2.4.tgz"
   integrity sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
+
+seed-random@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/seed-random/-/seed-random-2.2.0.tgz#2a9b19e250a817099231a5b99a4daf80b7fbed54"
+  integrity sha1-KpsZ4lCoFwmSMaW5mk2vgLf77VQ=
 
 semver-compare@^1.0.0:
   version "1.0.0"

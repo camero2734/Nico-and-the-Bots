@@ -5,14 +5,25 @@
  */
 
 import { RandomDrop } from ".prisma/client";
-import { MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Queue, QueueScheduler, Worker } from "bullmq";
+import { MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
+import IORedis from "ioredis";
 import { NicoClient } from "../../../app";
+import { channelIDs, dropEmojiGuildId } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import F from "../../Helpers/funcs";
 import { prisma, PrismaType } from "../../Helpers/prisma-init";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
-import { calculateNextPrize, DropPrize, getDropName, getPrizeName, givePrize } from "./_consts.randomDrop";
+import {
+    calculateNextPrize,
+    DropPrize,
+    generateActionRows,
+    getDropName,
+    getPrizeName,
+    givePrize,
+    Guess
+} from "./_consts.randomDrop";
 
 const NUM_BUTTONS = 20;
 
@@ -24,99 +35,93 @@ async function runDrop(prize: DropPrize, channel: TextChannel): Promise<void> {
 
     const theFirstUsers = `The first ${quantity === 1 ? "user" : `**${quantity}** users`}`;
 
+    const winningIndices = F.sample(F.indexArray(NUM_BUTTONS), prize.quantity);
+    const maxGuessesPerUser = 2;
+
     const embed = new MessageEmbed()
         .setAuthor(`Nico tripped over ${randomNoun}`, NicoClient.user?.displayAvatarURL())
         .setColor("RED")
-        .addField(`He dropped ${dropName}`, `${theFirstUsers} to claim this prize will win ${prizeName}`);
+        .addField(`He dropped ${dropName}`, `${theFirstUsers} to claim this prize will win ${prizeName}`)
+        .setFooter(`Each user may guess ${maxGuessesPerUser} time${F.plural(maxGuessesPerUser)}`);
 
-    const winningIndices = F.sample(F.indexArray(NUM_BUTTONS), prize.quantity);
-    const maxGuessesPerUser = 15;
+    const drop = await prisma.randomDrop.create({ data: { prize, maxGuessesPerUser, winningIndices } });
 
-    const drop = await prisma.randomDrop.create({ data: { prize } });
+    const components = await generateActionRows([], drop);
 
-    const buttons = F.indexArray(NUM_BUTTONS).map(
-        (idx) =>
-            new MessageButton({
-                label: `???`,
-                style: "PRIMARY",
-                customId: GenBtnId({
-                    dropId: drop.id,
-                    idx: `${idx}`,
-                    maxGuessesPerUser: `${maxGuessesPerUser}`,
-                    isPrize: winningIndices.includes(idx) ? "1" : "0"
-                })
-            })
-    );
-
-    const actionRows = MessageTools.allocateButtonsIntoRows(buttons);
-
-    await channel.send({ embeds: [embed], components: actionRows });
+    await channel.send({ embeds: [embed], components });
 }
 
-export function testDrop(channel: TextChannel) {
+export function runDropInChannel(channel: TextChannel) {
     const { prize } = calculateNextPrize();
     runDrop(prize, channel);
 }
 
+export async function createNewDrop() {
+    // const possibleChannels = [
+    //     channelIDs.hometown,
+    //     channelIDs.slowtown,
+    //     channelIDs.off
+    // ]
+    // runDropInChannel(channel);
+}
+
 const msgInt = new MessageInteraction();
 
-export const GenBtnId = msgInt.addInteractionListener(
-    "dropGuess",
-    <const>["dropId", "idx", "maxGuessesPerUser", "isPrize"],
-    async (ctx, args) => {
-        await ctx.deferUpdate();
+export const GenBtnId = msgInt.addInteractionListener("dropGuess", <const>["dropId", "idx"], async (ctx, args) => {
+    await ctx.deferUpdate();
 
-        if (!ctx.isButton()) return;
+    if (!ctx.isButton()) return;
 
-        const components = ctx.message.components;
-        const idx = +args.idx;
-        const maxGuessesPerUser = +args.maxGuessesPerUser;
-        const isPrize = args.isPrize === "1";
+    const idx = +args.idx;
 
-        // Ensure only one person can hit a button and that a user doesn't hit more than maxGuessesPerUser
-        let randomDrop = null as RandomDrop | null;
-        try {
-            await prisma.$transaction((async (tx: PrismaType) => {
-                const guess = await tx.randomDropGuess.create({
-                    data: { randomDropId: args.dropId, userId: ctx.user.id, idx },
-                    include: { randomDrop: true }
-                });
-                const count = await tx.randomDropGuess.count({
-                    where: { randomDropId: args.dropId, userId: ctx.user.id }
-                });
-                if (count > maxGuessesPerUser) throw new CommandError("You've exceeded the max number of guesses");
-                randomDrop = guess.randomDrop;
-            }) as (tx: any) => Promise<void>); // The default TS type for transactions is so overly convoluted that is slows down the entire editor
-        } catch (e) {
-            if (e instanceof CommandError) throw e;
-            else throw new CommandError("Someone else already guessed this one!");
-        }
+    // Ensure only one person can hit a button and that a user doesn't hit more than maxGuessesPerUser
+    let randomDrop = null as RandomDrop | null;
+    try {
+        await prisma.$transaction((async (tx: PrismaType) => {
+            const guess = await tx.randomDropGuess.create({
+                data: { randomDropId: args.dropId, userId: ctx.user.id, idx },
+                include: { randomDrop: true }
+            });
+            const count = await tx.randomDropGuess.count({
+                where: { randomDropId: args.dropId, userId: ctx.user.id }
+            });
 
-        const btnPressed = (() => {
-            for (const actionRow of components) {
-                for (const button of actionRow.components) {
-                    if (button.type !== "BUTTON") continue;
-                    if (button.customId === ctx.customId) return button;
-                }
-            }
-        })();
-        if (!btnPressed || !randomDrop) throw new Error("No button or drop");
+            if (!guess.randomDrop) throw new Error("No drop");
 
-        const prize = randomDrop.prize as DropPrize;
-        if (isPrize) await givePrize(prize, ctx.member);
-
-        btnPressed.setDisabled(true);
-        btnPressed.setStyle("SECONDARY");
-        btnPressed.setLabel(F.ellipseText(ctx.member.displayName, 80));
-        btnPressed.setEmoji(isPrize ? "✅" : "❌");
-
-        await ctx.editReply({ components });
-
-        await ctx.followUp({
-            content: isPrize ? `You won ${getPrizeName(prize)}!` : "You got nothing. Sorry, I guess.",
-            ephemeral: true
-        });
+            if (count > guess.randomDrop.maxGuessesPerUser)
+                throw new CommandError("You've exceeded the max number of guesses");
+            randomDrop = guess.randomDrop;
+        }) as (tx: any) => Promise<void>); // The default TS type for transactions is so overly convoluted that is slows down the entire editor
+    } catch (e) {
+        if (e instanceof CommandError) throw e;
+        else throw new CommandError("Someone else already guessed this one!");
     }
-);
+
+    if (!randomDrop) throw new Error("No drop");
+
+    const isPrize = randomDrop.winningIndices.includes(idx);
+
+    // Update all buttons based on DB
+    const dropGuesses = await prisma.randomDropGuess.findMany({ where: { randomDropId: args.dropId } });
+
+    const guesses: Guess[] = await Promise.all(
+        dropGuesses.map(async (guess) => {
+            const member = await ctx.guild.members.fetch(guess.userId);
+            return { member, idx: guess.idx };
+        })
+    );
+
+    const newComponents = await generateActionRows(guesses, randomDrop);
+
+    const prize = randomDrop.prize as DropPrize;
+    if (isPrize) await givePrize(prize, ctx.member);
+
+    await ctx.editReply({ components: newComponents });
+
+    await ctx.followUp({
+        content: isPrize ? `You won ${getPrizeName(prize)}!` : "You got nothing. Sorry, I guess.",
+        ephemeral: true
+    });
+});
 
 export default msgInt;

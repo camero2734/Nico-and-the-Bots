@@ -15,6 +15,10 @@ export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): M
     return baseEmbed;
 }
 
+interface IAllocateButtonsOptions {
+    maxButtonsPerRow?: number;
+}
+
 export const MessageTools = {
     async awaitMessage(userID: string, channel: TextChannel, timeMS: number): Promise<Message | null> {
         const filter = (m: Message) => m.author.id === userID;
@@ -29,14 +33,18 @@ export const MessageTools = {
     },
 
     /** Takes an array of buttons and places them into an array of Action Row components */
-    allocateButtonsIntoRows(buttons: MessageActionRowComponent[]): MessageActionRow[] {
+    allocateButtonsIntoRows(
+        buttons: MessageActionRowComponent[],
+        options?: IAllocateButtonsOptions
+    ): MessageActionRow[] {
         const components = [] as MessageActionRow[];
 
-        if (buttons.length > constants.ACTION_ROW_MAX_ITEMS * constants.MAX_ACTION_ROWS)
-            throw new Error("Too many buttons");
+        const maxButtonsPerRow = options?.maxButtonsPerRow ?? constants.ACTION_ROW_MAX_ITEMS;
 
-        for (let i = 0; i < buttons.length; i += constants.ACTION_ROW_MAX_ITEMS) {
-            const slicedButtons = buttons.slice(i, i + constants.ACTION_ROW_MAX_ITEMS);
+        if (buttons.length > maxButtonsPerRow * constants.MAX_ACTION_ROWS) throw new Error("Too many buttons");
+
+        for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
+            const slicedButtons = buttons.slice(i, i + maxButtonsPerRow);
             const actionRow = new MessageActionRow().addComponents(slicedButtons);
             components.push(actionRow);
         }

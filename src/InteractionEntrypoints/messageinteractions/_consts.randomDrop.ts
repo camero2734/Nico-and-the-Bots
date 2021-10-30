@@ -1,9 +1,13 @@
+import { RandomDrop } from ".prisma/client";
+import async from "async";
 import { addMilliseconds, differenceInMilliseconds, endOfDay, startOfDay } from "date-fns";
-import { GuildMember, Snowflake } from "discord.js";
+import { Emoji, Guild, GuildMember, MessageActionRow, MessageButton, Snowflake } from "discord.js";
 import { guild } from "../../../app";
-import { roles } from "../../Configuration/config";
+import { dropEmojiGuildId, roles } from "../../Configuration/config";
+import { MessageTools } from "../../Helpers";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
+import { GenBtnId } from "./randomDrop";
 
 export type RolePrize = { name: "role"; id: Snowflake };
 export type CreditsPrize = { name: "credits"; amount: number };
@@ -64,4 +68,55 @@ export async function givePrize(prize: DropPrize, member: GuildMember): Promise<
             return;
         }
     }
+}
+
+async function getEmoji(member: GuildMember, guild: Guild): Promise<Emoji | undefined> {
+    try {
+        const EMOJI_NAME = `drop${member.id}`;
+
+        const emojis = await guild.emojis.fetch();
+        const emoji = emojis.find((e) => e.name === EMOJI_NAME);
+        if (emoji) return emoji;
+
+        return await guild.emojis.create(member.displayAvatarURL(), EMOJI_NAME);
+    } catch (e) {
+        return undefined;
+    }
+}
+
+const NUM_BUTTONS = 16;
+export type Guess = { member: GuildMember; idx: number };
+export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Promise<MessageActionRow[]> {
+    const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
+
+    const buttons: MessageButton[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
+        const button = new MessageButton({
+            style: "PRIMARY",
+            customId: GenBtnId({
+                dropId: drop.id,
+                idx: `${idx}`
+            }),
+            emoji: "❔"
+        });
+
+        const guess = guesses.find((guess) => guess.idx === idx);
+
+        if (guess) {
+            button.setDisabled(true);
+            if (drop.winningIndices.includes(idx)) {
+                button.setStyle("SUCCESS");
+            } else {
+                button.setStyle("DANGER");
+            }
+
+            if (emojiGuild) {
+                const emoji = await getEmoji(guess.member, emojiGuild);
+                if (emoji) button.setEmoji(emoji.identifier);
+            }
+        }
+
+        return button;
+    });
+
+    return MessageTools.allocateButtonsIntoRows(buttons, { maxButtonsPerRow: 4 });
 }

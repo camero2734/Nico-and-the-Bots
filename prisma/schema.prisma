@@ -403,6 +403,8 @@ model RandomDrop {
   prize     Json
 
   guesses RandomDropGuess[]
+  maxGuessesPerUser Int
+  winningIndices Int[]
 }
 
 model RandomDropGuess {

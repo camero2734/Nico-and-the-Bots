@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
     const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.tag } });
     if (!tag) throw new CommandError("This tag does not exist");
 
-    if (tag.userId !== ctx.member.id && ctx.member.roles.cache.has(roles.staff)) {
+    if (tag.userId !== ctx.member.id && !ctx.member.roles.cache.has(roles.staff)) {
         throw new CommandError("You cannot delete this command as you do not own it.");
     }
 

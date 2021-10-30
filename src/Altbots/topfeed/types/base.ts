@@ -11,7 +11,7 @@ export interface Checked<T> {
 }
 
 export abstract class Watcher<T> {
-    constructor(public handle: string, public channel: Snowflake) {}
+    constructor(public handle: string, public channel: Snowflake, public pingedRole: Snowflake) {}
     abstract type: TopfeedType;
 
     protected abstract fetchRecentItems(): Promise<Checked<T>[]>;

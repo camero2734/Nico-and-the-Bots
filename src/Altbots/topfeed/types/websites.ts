@@ -13,7 +13,7 @@ import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
-import { channelIDs } from "../../../Configuration/config";
+import { channelIDs, roles } from "../../../Configuration/config";
 import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
 import { imageHash } from "image-hash";
@@ -51,7 +51,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         public watchMethods: T,
         channelId: Snowflake = channelIDs.topfeed.dmaorg
     ) {
-        super(url, channelId);
+        super(url, channelId, roles.topfeed.selectable.dmaorg);
         this.displayedURL = url;
     }
 

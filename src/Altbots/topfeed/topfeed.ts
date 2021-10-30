@@ -1,7 +1,7 @@
 import consola from "consola";
 import { minutesToMilliseconds } from "date-fns";
 import { Client, Guild, TextChannel } from "discord.js";
-import { channelIDs, guildID } from "../../Configuration/config";
+import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
 import { rollbar } from "../../Helpers/logging/rollbar";
@@ -70,21 +70,21 @@ class TopfeedBot {
         ];
 
         this.instagrams = [
-            new InstaWatcher("twentyonepilots", channelIDs.topfeed.band),
-            new InstaWatcher("joshuadun", channelIDs.topfeed.josh),
-            new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler)
+            new InstaWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
+            new InstaWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh),
+            new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler)
         ];
 
         this.twitters = [
-            new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band),
-            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler),
-            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh)
+            new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
+            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler),
+            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh)
             //
         ];
 
         this.youtubes = [
-            new YoutubeWatcher("twentyonepilots", channelIDs.topfeed.band),
-            new YoutubeWatcher("slushieguys", channelIDs.topfeed.tyler)
+            new YoutubeWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
+            new YoutubeWatcher("slushieguys", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler)
         ];
     }
 
@@ -116,7 +116,7 @@ class TopfeedBot {
                     `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
                 const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
 
-                const threadStarter = await chan.send(mainMsg);
+                const threadStarter = await chan.send({...mainMsg, content: `<@&${watcher.pingedRole}>\n${mainMsg.content ?? ""}`}); // prettier-ignore
                 if (threadedMsgs.length < 1) {
                     watcher.afterCheck(threadStarter);
                     continue;

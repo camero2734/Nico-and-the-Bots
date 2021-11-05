@@ -17,7 +17,7 @@ export type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-type ApplicationDataType = ApplicationCommandOptionData & Pick<ApplicationCommandChoicesData, "choices">;
+type ApplicationDataType = ApplicationCommandOptionData & Pick<ApplicationCommandChoicesData, "choices" | "required">;
 
 export type CommandOptions = DeepReadonly<ApplicationDataType[]>;
 // prettier-ignore

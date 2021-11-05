@@ -42,7 +42,6 @@ async function generateReminderList(member: GuildMember): Promise<[MessageEmbed]
 
     for (const r of reminders) {
         const emoji = emojis.random();
-        emojis.delete(emoji.id);
 
         const label = r.text.substring(0, 25);
         const description = formatReminderDate(r.sendAt).substring(0, 50);

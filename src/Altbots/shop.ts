@@ -56,7 +56,7 @@ export class KeonsBot {
             )
             .addField(
                 "What are credits?",
-                "Credits are earned in two main ways:\n\n`1.` By using the `/daily` command every single day. This gives you a free drop of credits that you can use every 24 hours.\n\n`2.` By being active in the server! Every message you send has a small chance of earning credits. Additionally, when you level up, you will receive additional credits.\n\nThese credits can be used to purchase things from this shop!"
+                "Credits are earned in two main ways:\n\n`1.` By using the `/econ daily` command every single day. This gives you a free drop of credits that you can use every 24 hours.\n\n`2.` By being active in the server! Every message you send has a small chance of earning credits. Additionally, when you level up, you will receive additional credits.\n\nThese credits can be used to purchase things from this shop!"
             )
             .addField(
                 "How do I level up?",

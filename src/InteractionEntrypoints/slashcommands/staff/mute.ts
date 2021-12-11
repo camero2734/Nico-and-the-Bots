@@ -6,6 +6,7 @@ import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { MessageTools } from "../../../Helpers";
 
 const command = new SlashCommand(<const>{
     description: "Mutes a user",
@@ -66,6 +67,15 @@ command.setHandler(async (ctx) => {
         .setDescription(`${member} has been timed out for ${timeStr} (${inMinutes} minutes)`)
         .addField("Ends at", timestamp);
     await ctx.send({ embeds: [embed] });
+
+    // Message timed out member
+    const dmEmbed = new MessageEmbed()
+        .setAuthor(member.displayName, member.displayAvatarURL())
+        .setDescription(
+            `You have been muted until ${timestamp}. You can always message the server moderators if you feel there has been a mistake.`
+        );
+
+    await MessageTools.safeDM(member, { embeds: [dmEmbed] });
 });
 
 export default command;

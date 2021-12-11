@@ -1,9 +1,11 @@
 import {
     Collection,
+    GuildMember,
     Message,
     MessageActionRow,
     MessageActionRowComponent,
     MessageEmbed,
+    MessageOptions,
     Snowflake,
     TextChannel
 } from "discord.js";
@@ -69,5 +71,15 @@ export const MessageTools = {
         }
 
         return allMessages;
+    },
+
+    async safeDM(member: GuildMember, msg: MessageOptions): Promise<boolean> {
+        try {
+            const dm = await member.createDM();
+            await dm.send(msg);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 };

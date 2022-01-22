@@ -63,7 +63,7 @@
         "ioredis": "^4.27.8",
         "mime-types": "^2.1.31",
         "moize": "^6.1.0",
-        "nanoid": "^3.1.25",
+        "nanoid": "^3.1.31",
         "node-fetch": "^2.6.1",
         "normalize-url": "^4.5.0",
         "npm-check": "^5.9.2",

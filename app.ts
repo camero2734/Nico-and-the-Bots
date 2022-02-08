@@ -53,7 +53,7 @@ console.log("Script started");
 const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
 
-client.on("shardReady", async () => {
+client.on("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}!`);
 
     guild = await client.guilds.fetch({ force: true, guild: guildID });

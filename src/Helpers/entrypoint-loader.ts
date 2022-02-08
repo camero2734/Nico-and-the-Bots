@@ -28,13 +28,14 @@ async function getAllFilesRecursive(pathStr: string): Promise<Path[]> {
 }
 
 async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
-    const paths = await getAllFilesRecursive("dist/src/InteractionEntrypoints/slashcommands");
+    const paths = await getAllFilesRecursive("src/InteractionEntrypoints/slashcommands");
 
     const slashCommands = (
         await Promise.all(
             paths.map(async (path) => {
                 try {
-                    const slashCommand = (await import(`file:///${path.full}`)).default.default;
+                    const imported = (await import(`${path.full}`));
+                    const slashCommand = imported.default;
                     if (!(slashCommand instanceof SlashCommand)) return null;
 
                     return [path, slashCommand];
@@ -50,13 +51,13 @@ async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
 }
 
 async function getAllContextMenus(): Promise<[Path, ContextMenu<any>][]> {
-    const paths = await getAllFilesRecursive("dist/src/InteractionEntrypoints/contextmenus");
+    const paths = await getAllFilesRecursive("src/InteractionEntrypoints/contextmenus");
 
     const contextMenus = (
         await Promise.all(
             paths.map(async (path) => {
                 try {
-                    const contextMenu = (await import(`file:///${path.full}`)).default.default;
+                    const contextMenu = (await import(`${path.full}`)).default.default;
                     if (!(contextMenu instanceof ContextMenu)) return null;
                     return [path, contextMenu];
                 } catch {
@@ -70,13 +71,13 @@ async function getAllContextMenus(): Promise<[Path, ContextMenu<any>][]> {
 }
 
 async function getAllMessageInteractions(): Promise<[Path, MessageInteraction][]> {
-    const paths = await getAllFilesRecursive("dist/src/InteractionEntrypoints/messageinteractions");
+    const paths = await getAllFilesRecursive("src/InteractionEntrypoints/messageinteractions");
 
     const msgInteractions = (
         await Promise.all(
             paths.map(async (path) => {
                 try {
-                    const msgInteraction = (await import(`file:///${path.full}`)).default.default;
+                    const msgInteraction = (await import(`${path.full}`)).default.default;
                     if (!(msgInteraction instanceof MessageInteraction)) return null;
                     return [path, msgInteraction];
                 } catch {

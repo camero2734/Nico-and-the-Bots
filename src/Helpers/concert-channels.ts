@@ -43,7 +43,7 @@ class ConcertChannel {
     public concerts: ConcertEntry[] = [];
     constructor(public concert: ConcertEntry, private guild: Guild) {
         const { venue, title } = concert;
-        const s = (str: string) => str.toLowerCase().replace(/\(.*?\)/g, "").normalize("NFKC").replace(/\p{Diacritic}/gu, "").split(/ +/); // prettier-ignore
+        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/); // prettier-ignore
         this.channelName = [s(title || venue.name), s(venue.city)].flat().filter(a => a).join("-"); // prettier-ignore
         this.concerts.push(concert);
     }

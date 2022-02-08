@@ -56,9 +56,9 @@ command.setHandler(async (ctx) => {
     let albumPlay: AlbumResponse | null = null;
 
     try {
-        trackPlay = await (await fetch(trackRequest)).json();
-        artistPlay = await (await fetch(artistRequest)).json();
-        albumPlay = await (await fetch(albumRequest)).json();
+        trackPlay = await (await fetch(trackRequest)).json() as Record<string, any>;
+        artistPlay = await (await fetch(artistRequest)).json() as Record<string, any>;
+        albumPlay = await (await fetch(albumRequest)).json() as Record<string, any>;
     } catch (e) {
         console.log(e, /ERROR/);
     }

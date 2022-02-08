@@ -45,7 +45,7 @@ command.setHandler(async (ctx) => {
     const req_url = fmEndpoint({ method: "user.gettopalbums", period: date, limit: `${num}` });
 
     const res = await fetch(req_url);
-    const json = await res.json();
+    const json = await res.json() as Record<string, any>;
 
     const topTracks = json?.topalbums?.album as RankedAlbum[];
     if (!topTracks) throw new Error("Toptracks null");

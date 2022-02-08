@@ -10,7 +10,7 @@ import { rollbar } from "./logging/rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
 
-const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.REDIS_URL) } : {};
+const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
 
 const scoreQueue = new Queue(QUEUE_NAME, {
     ...redisOpts,

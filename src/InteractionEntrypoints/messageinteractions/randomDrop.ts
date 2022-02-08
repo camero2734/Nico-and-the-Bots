@@ -5,13 +5,9 @@
  */
 
 import { RandomDrop } from ".prisma/client";
-import { Queue, QueueScheduler, Worker } from "bullmq";
-import { MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
-import IORedis from "ioredis";
+import { MessageEmbed, TextChannel } from "discord.js";
 import { NicoClient } from "../../../app";
-import { channelIDs, dropEmojiGuildId } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
-import { MessageTools } from "../../Helpers";
 import F from "../../Helpers/funcs";
 import { prisma, PrismaType } from "../../Helpers/prisma-init";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";

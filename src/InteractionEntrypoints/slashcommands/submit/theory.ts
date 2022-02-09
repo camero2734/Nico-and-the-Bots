@@ -5,13 +5,23 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 const command = new SlashCommand(<const>{
     description: "Submits a theory to #theory-list",
     options: [
-        { name: "title", description: "The title of your theory", required: true, type: "STRING" },
-        { name: "theory", description: "Your theory in text form", required: true, type: "STRING" },
+        {
+            name: "title",
+            description: "The title of your theory",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "theory",
+            description: "Your theory in text form",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
         {
             name: "imageurl",
             description: "A direct link to a supporting image",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -37,7 +47,7 @@ command.setHandler(async (ctx) => {
     const m = await theoryChan.send({ embeds: [embed], components: [actionRow] });
 
     const responseEmbed = new Embed({ description: "Your theory has been submitted!" });
-    const responseActionRow = new ActionRowComponent().addComponents([
+    const responseActionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "LINK", url: m.url, label: "View post" })
     ]);
     await ctx.send({

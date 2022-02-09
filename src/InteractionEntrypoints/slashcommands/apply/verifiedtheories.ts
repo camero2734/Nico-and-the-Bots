@@ -1,6 +1,13 @@
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, Message, ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
+import {
+    GuildMember,
+    Message,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { Question } from "../../../Helpers/verified-quiz/question";
 import R from "ramda";
@@ -63,14 +70,14 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
     const [beginId, cancelId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({ label: "Begin", style: "SUCCESS", customId: beginId }),
         new ButtonComponent({ label: "Cancel", style: "DANGER", customId: cancelId })
     ]);
 
     await dmMessage.edit({ components: [actionRow] });
 
-    const dmActionRow = new ActionRowComponent().addComponents([
+    const dmActionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "LINK", url: dmMessage.url, label: "View message" })
     ]);
 
@@ -185,7 +192,7 @@ async function generateEmbedAndButtons(
         })
     );
 
-    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRowComponent().addComponents(cs));
+    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRow().setComponents(cs));
 
     return [embed, actionRows];
 }

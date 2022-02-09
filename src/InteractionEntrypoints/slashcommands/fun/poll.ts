@@ -1,5 +1,12 @@
 import { Poll, Vote } from "@prisma/client";
-import { EmbedField, GuildEmoji, Message, ActionRowComponent, Embed, MessageSelectMenu } from "discord.js/packages/discord.js";
+import {
+    EmbedField,
+    GuildEmoji,
+    Message,
+    ActionRowComponent,
+    Embed,
+    MessageSelectMenu
+} from "discord.js/packages/discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";
@@ -15,7 +22,7 @@ const command = new SlashCommand(<const>{
             name: "title",
             description: "The title for the poll",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
 
         ...options.map(
@@ -24,7 +31,7 @@ const command = new SlashCommand(<const>{
                     name: `option${num}`,
                     description: `Option #${num}`,
                     required: num <= 2,
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 }
         ),
         {
@@ -101,7 +108,7 @@ command.setHandler(async (ctx) => {
         selectMenu.addOptions({ label: option.text.substring(0, 100), emoji, value: `${i}` });
     }
 
-    const actionRow = new ActionRowComponent().addComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {

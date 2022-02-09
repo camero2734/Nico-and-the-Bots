@@ -12,7 +12,7 @@ const command = new SlashCommand(<const>{
         {
             name: "timeperiod",
             description: "Period of time to fetch for (defaults to 1 week)",
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: [
                 { name: "1 week", value: "7day" },
                 { name: "1 month", value: "1month" },
@@ -22,8 +22,18 @@ const command = new SlashCommand(<const>{
                 { name: "Overall", value: "overall" }
             ]
         },
-        { name: "user", description: "The user in the server to lookup", required: false, type: "USER" },
-        { name: "username", description: "The Last.FM username to lookup", required: false, type: "STRING" }
+        {
+            name: "user",
+            description: "The user in the server to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        },
+        {
+            name: "username",
+            description: "The Last.FM username to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.String
+        }
     ]
 });
 
@@ -45,7 +55,7 @@ command.setHandler(async (ctx) => {
     const req_url = fmEndpoint({ method: "user.gettopalbums", period: date, limit: `${num}` });
 
     const res = await fetch(req_url);
-    const json = await res.json() as Record<string, any>;
+    const json = (await res.json()) as Record<string, any>;
 
     const topTracks = json?.topalbums?.album as RankedAlbum[];
     if (!topTracks) throw new Error("Toptracks null");

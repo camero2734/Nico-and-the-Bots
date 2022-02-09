@@ -9,7 +9,14 @@ import { channelIDs, roles } from "../../../Configuration/config";
 
 const command = new SlashCommand(<const>{
     description: "Submits an interview to the interview channel",
-    options: [{ name: "link", description: "The YouTube URL for the video", required: true, type: "STRING" }]
+    options: [
+        {
+            name: "link",
+            description: "The YouTube URL for the video",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -60,7 +67,7 @@ command.setHandler(async (ctx) => {
         data: { url, submittedByUserId: ctx.user.id }
     });
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({
             label: "Approve",
             customId: genYesID({ interviewId: `${dbInterview.id}` }),

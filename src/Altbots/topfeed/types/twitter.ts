@@ -107,7 +107,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            const actionRow = new ActionRowComponent().addComponents([
+            const actionRow = new ActionRow().setComponents([
                 new ButtonComponent({ label: "View Tweet", style: "LINK", url })
             ]);
 

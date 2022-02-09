@@ -34,7 +34,7 @@ const generateProgressBar = (): [string, boolean] => {
 const standardizeEmbed = (embed: Embed): void => {
     embed.fields = [];
     embed
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0x7289da)
         .addField("Upgrade almost finished...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
         .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")

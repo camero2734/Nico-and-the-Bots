@@ -7,7 +7,14 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Put an image onto a clown's monitor 🤡",
-    options: [{ name: "image", description: "The URL to the image", required: true, type: "STRING" }]
+    options: [
+        {
+            name: "image",
+            description: "The URL to the image",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {

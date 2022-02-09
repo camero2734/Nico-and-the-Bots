@@ -13,7 +13,7 @@ const command = new SlashCommand(<const>{
         {
             name: "user",
             description: "The user the bounty is on, who receives a violation notice if caught by the Bishops.",
-            type: "USER",
+            type: ApplicationCommandOptionType.User,
             required: false
         }
     ]
@@ -60,7 +60,7 @@ command.setHandler(async (ctx) => {
 
     const member = await ctx.member.guild.members.fetch(user);
     if (!member || member.user.bot) throw new CommandError(`${member.displayName} investigated himself and found no wrong-doing. Case closed.`); // prettier-ignore
-    
+
     const otherDBUser = await queries.findOrCreateUser(member.id, { dailyBox: true });
     const otherDailyBox = otherDBUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: member.id } }));
 

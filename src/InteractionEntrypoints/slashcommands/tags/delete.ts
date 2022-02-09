@@ -12,7 +12,7 @@ const command = new SlashCommand(<const>{
             name: "tag",
             description: "The name of the tag to delete",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             autocomplete: true
         }
     ]

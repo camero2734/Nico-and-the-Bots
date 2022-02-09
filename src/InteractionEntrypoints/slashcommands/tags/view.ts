@@ -1,11 +1,18 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { ApplicationCommandOptionType, Embed } from "discord.js/packages/discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "View tags created by someone",
-    options: [{ name: "user", description: "The user to view tags from", required: false, type: "USER" }]
+    options: [
+        {
+            name: "user",
+            description: "The user to view tags from",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {

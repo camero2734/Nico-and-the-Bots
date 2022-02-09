@@ -20,7 +20,7 @@ const command = new SlashCommand(<const>{
             name: "album",
             description: "The album role to get",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: Object.entries(albumRoles).map(([name, roleID]) => ({
                 name,
                 value: roleID

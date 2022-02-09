@@ -13,12 +13,12 @@ const rules = Object.values(WarningType);
 const command = new SlashCommand(<const>{
     description: "Submits a warning for a user",
     options: [
-        { name: "user", description: "The user to warn", required: true, type: "USER" },
+        { name: "user", description: "The user to warn", required: true, type: ApplicationCommandOptionType.User },
         {
             name: "rule",
             description: "The rule broken",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: rules.map((name) => ({ name, value: name }))
         },
         {
@@ -33,7 +33,7 @@ const command = new SlashCommand(<const>{
             description:
                 "A description of why you are warning the user, and how they can avoid another warning in the future.",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -58,7 +58,7 @@ command.setHandler(async (ctx) => {
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({
             label: "Submit Warning",
             style: "PRIMARY",

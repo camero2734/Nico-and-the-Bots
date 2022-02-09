@@ -9,7 +9,14 @@ import { RecentTracksResponse } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Sets your lastfm username for use with other /fm commands",
-    options: [{ name: "username", description: "Your username on last.fm", required: true, type: "STRING" }]
+    options: [
+        {
+            name: "username",
+            description: "Your username on last.fm",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -72,7 +79,7 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({ label: "Yes", style: "SUCCESS", customId: yesId }),
         new ButtonComponent({ label: "No", style: "DANGER", customId: noId })
     ]);

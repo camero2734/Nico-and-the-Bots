@@ -1,4 +1,10 @@
-import { GuildMember, ActionRowComponent, ButtonComponent, Embed, MessageSelectMenu } from "discord.js/packages/discord.js";
+import {
+    GuildMember,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    MessageSelectMenu
+} from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -48,7 +54,7 @@ async function generateReminderList(member: GuildMember): Promise<[Embed] | [Emb
         selectMenu.addOptions([{ label, description, emoji, value: `${r.id}` }]);
     }
 
-    const actionRow = new ActionRowComponent().addComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents(selectMenu);
     const embed = new Embed()
         .setTitle("Your reminders")
         .setDescription(
@@ -111,7 +117,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
 
         if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
-        const actionRow = new ActionRowComponent().addComponents([
+        const actionRow = new ActionRow().setComponents([
             new ButtonComponent({
                 label: "Back to List",
                 style: "PRIMARY",

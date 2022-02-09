@@ -14,7 +14,7 @@ const command = new SlashCommand(<const>{
             name: "messageurl",
             description: "The link to the first message you sent in the server.",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });

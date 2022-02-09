@@ -12,7 +12,7 @@ const command = new SlashCommand(<const>{
                 name,
                 description: `Role #${idx} to look up information for`,
                 required: idx === 0,
-                type: "ROLE"
+                type: ApplicationCommandOptionType.Role
             }
     )
 });

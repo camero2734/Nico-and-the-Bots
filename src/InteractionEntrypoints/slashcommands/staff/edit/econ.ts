@@ -15,13 +15,13 @@ const command = new SlashCommand(<const>{
             name: "user",
             description: "The user whose economy you wish to edit",
             required: true,
-            type: "USER"
+            type: ApplicationCommandOptionType.User
         },
         {
             name: "type",
             description: "IMPORTANT: Whether to REPLACE or ADD these values to the econ",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: EditTypes.map((t) => ({ name: t, value: t }))
         },
         ...inputs.map(

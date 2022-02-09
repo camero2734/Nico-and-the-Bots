@@ -73,7 +73,7 @@ command.setHandler(async (ctx) => {
         )
         .addField("Application ID", applicationId);
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "LINK", url: link, label: "Open Application" })
     ]);
 
@@ -102,7 +102,7 @@ export async function sendToStaff(
             embed.addField(name, value?.substring(0, 1000) || "*Nothing*");
         }
 
-        const actionRow = new ActionRowComponent().addComponents([
+        const actionRow = new ActionRow().setComponents([
             new MessageSelectMenu()
                 .addOptions([
                     { label: "Accept", value: ActionTypes.Accept.toString(), emoji: emojiIDs.upvote },

@@ -21,13 +21,13 @@ const command = new SlashCommand(<const>{
             name: "title",
             description: "The title of your piece of art",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
         {
             name: "url",
             description: "A direct link to the image, video, or audio file. Max 50MB.",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -90,7 +90,7 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "SUCCESS", label: "Submit", customId: yesId })
     ]);
 
@@ -124,7 +124,7 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new ActionRowComponent().addComponents([
+    const newActionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "LINK", label: "View post", url: m.url })
     ]);
 

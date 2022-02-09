@@ -17,8 +17,18 @@ import {
 const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
     options: [
-        { name: "user", description: "The user in the server to lookup", required: false, type: "USER" },
-        { name: "username", description: "The Last.FM username to lookup", required: false, type: "STRING" }
+        {
+            name: "user",
+            description: "The user in the server to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        },
+        {
+            name: "username",
+            description: "The Last.FM username to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.String
+        }
     ]
 });
 
@@ -104,7 +114,7 @@ command.setHandler(async (ctx) => {
             `https://www.last.fm/user/${username}`
         );
 
-    const starActionRow = new ActionRowComponent();
+    const starActionRow = new ActionRow();
 
     // Add star button if own FM
     if (selfFM) {

@@ -14,8 +14,18 @@ const command = new SlashCommand(<const>{
             required: false,
             type: ApplicationCommandOptionType.Boolean
         },
-        { name: "reason", description: "Reason for banning", required: false, type: ApplicationCommandOptionType.String },
-        { name: "noappeal", description: "Don't include link for appealing the ban", required: false, type: ApplicationCommandOptionType.Boolean }
+        {
+            name: "reason",
+            description: "Reason for banning",
+            required: false,
+            type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "noappeal",
+            description: "Don't include link for appealing the ban",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
+        }
     ]
 });
 

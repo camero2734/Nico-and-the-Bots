@@ -47,7 +47,7 @@ export const MessageTools = {
 
         for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
             const slicedButtons = buttons.slice(i, i + maxButtonsPerRow);
-            const actionRow = new ActionRowComponent().addComponents(slicedButtons);
+            const actionRow = new ActionRow().setComponents(slicedButtons);
             components.push(actionRow);
         }
 

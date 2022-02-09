@@ -8,7 +8,8 @@ import {
     Embed,
     OverwriteData,
     Snowflake,
-    TextChannel
+    TextChannel,
+    ApplicationCommandOptionType
 } from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
@@ -26,7 +27,7 @@ const command = new SlashCommand(<const>{
             name: "user",
             description: "The user to jail",
             required: true,
-            type: "USER"
+            type: ApplicationCommandOptionType.User
         },
         ...[2, 3, 4, 5].map(
             (num) =>
@@ -34,14 +35,14 @@ const command = new SlashCommand(<const>{
                     name: `user${num}`,
                     description: "An additional user to jail",
                     required: false,
-                    type: "USER"
+                    type: ApplicationCommandOptionType.User
                 }
         ),
         {
             name: "explanation",
             description: "The reason the jail is being created",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -118,7 +119,7 @@ command.setHandler(async (ctx) => {
 
     jailEmbed.addField("Jailed", F.discordTimestamp(new Date(), "relative"));
 
-    const jailActionRow = new ActionRowComponent().addComponents([
+    const jailActionRow = new ActionRow().setComponents([
         new ButtonComponent({
             style: "SECONDARY",
             label: "Unmute Users",
@@ -149,7 +150,7 @@ command.setHandler(async (ctx) => {
         .setTitle(`${members.length} user${members.length === 1 ? "" : "s"} jailed`)
         .addField("Users", mentions.join("\n"));
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "LINK", label: "View channel", url: m.url })
     ]);
     await ctx.send({ embeds: [commandEmbed], components: [actionRow] });
@@ -257,7 +258,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const timedListener = new TimedInteractionListener(m, <const>["cancelId"]);
     const [cancelId] = timedListener.customIDs;
 
-    const cancelActionRow = new ActionRowComponent().addComponents([
+    const cancelActionRow = new ActionRow().setComponents([
         new ButtonComponent({ label: "Cancel", customId: cancelId, style: "DANGER" })
     ]);
 

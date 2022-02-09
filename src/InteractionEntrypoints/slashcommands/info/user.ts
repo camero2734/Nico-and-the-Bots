@@ -11,7 +11,7 @@ const command = new SlashCommand(<const>{
             name: "user",
             description: "The user to get info for",
             required: false,
-            type: "USER"
+            type: ApplicationCommandOptionType.User
         }
     ]
 });

@@ -39,7 +39,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
         .addOptions(Object.entries(ReportReasons).map(([key, value]) => ({ label: value, value: key })));
 
-    const actionRow = new ActionRowComponent().addComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -117,7 +117,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
             .addField("Reason", ReportReasons[selectedReason])
             .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
 
-        const actionRow = new ActionRowComponent().addComponents([
+        const actionRow = new ActionRow().setComponents([
             new ButtonComponent({
                 label: NUM_PEOPLE_TEXT(1),
                 style: "PRIMARY",

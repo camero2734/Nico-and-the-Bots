@@ -10,7 +10,7 @@ const command = new SlashCommand(<const>{
         {
             name: "role",
             description: "The role you wish to equip/unequip",
-            type: "ROLE",
+            type: ApplicationCommandOptionType.Role,
             required: false
         }
     ]

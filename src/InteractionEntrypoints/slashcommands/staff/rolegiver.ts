@@ -1,4 +1,11 @@
-import { EmojiIdentifierResolvable, ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
+import {
+    EmojiIdentifierResolvable,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    ApplicationCommandOptionType,
+    ActionRow
+} from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -15,19 +22,19 @@ const command = new SlashCommand(<const>{
             name: "text",
             description: "The description text for the embed",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
         {
             name: "role",
             description: "The role the interaction should give",
             required: true,
-            type: "ROLE"
+            type: ApplicationCommandOptionType.Role
         },
         {
             name: "channel",
             description: "The channel to send it in (defaults to current channel)",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -39,7 +46,7 @@ command.setHandler(async (ctx) => {
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({
             style: "SUCCESS",
             label: `Get the ${roleObj.name} role`,

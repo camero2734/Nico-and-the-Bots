@@ -11,7 +11,13 @@ import { getTagNameSearcher } from "./_consts";
 const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",
     options: [
-        { name: "name", description: "The name of the tag to use", required: true, type: "STRING", autocomplete: true },
+        {
+            name: "name",
+            description: "The name of the tag to use",
+            required: true,
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+        },
         { name: "info", description: "Shows extra info about the tag", required: false, type: "BOOLEAN" }
     ]
 });
@@ -57,9 +63,7 @@ command.setHandler(async (ctx) => {
 async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void> {
     const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 5 });
 
-    const embed = new Embed().setTitle(
-        "That tag doesn't exist. Here are some of the most popular tags you can try."
-    );
+    const embed = new Embed().setTitle("That tag doesn't exist. Here are some of the most popular tags you can try.");
 
     for (const tag of tags) {
         embed.addField(tag.name, `Uses: ${tag.uses}`);

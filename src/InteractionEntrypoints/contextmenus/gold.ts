@@ -39,7 +39,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
         }
 
         const embed = new Embed().setDescription(MESSAGE_ALREADY_GOLD);
-        const actionRow = new ActionRowComponent().addComponents([
+        const actionRow = new ActionRow().setComponents([
             new ButtonComponent({ label: "View post", style: "LINK", url: givenGold.houseOfGoldMessageUrl })
         ]);
 
@@ -113,7 +113,7 @@ async function handleGold(
     const timedListener = new TimedInteractionListener(ctx, <const>["goldCtxYes", "goldCtxNo"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({
             label: `Yes (${cost} credits)`,
             emoji: emojiIDs.gold,
@@ -144,7 +144,7 @@ async function handleGold(
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0); // prettier-ignore
 
-    const goldActionRow = new ActionRowComponent().addComponents([
+    const goldActionRow = new ActionRow().setComponents([
         new ButtonComponent({
             label: `${numGolds} Gold${F.plural(numGolds)}`,
             emoji: emojiIDs.gold,
@@ -202,7 +202,7 @@ async function handleGold(
 
     const replyEmbed = new Embed().setDescription("Gold successfully given");
 
-    const replyActionRow = new ActionRowComponent().addComponents([
+    const replyActionRow = new ActionRow().setComponents([
         new ButtonComponent({ label: "View post", style: "LINK", url: goldMessage.url })
     ]);
 

@@ -47,7 +47,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
 
     const embed = new Embed()
-                .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
+                .setAuthor({name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png"})
                 .setTitle(name)
                 .setColor(0xD07A21)
                 .setDescription(`*${category.description}*\n`)
@@ -58,7 +58,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
 
-    const actionRow = new ActionRowComponent().addComponents(
+    const actionRow = new ActionRow().setComponents(
         category.data.roles.map((role) => {
             const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
             const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
@@ -200,7 +200,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
     const dbUser = await queries.findOrCreateUser(member.id);
 
     const MenuEmbed = new Embed()
-        .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
+        .setAuthor({name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png"})
         .setColor(0xD07A21)
         .setDescription(
             [
@@ -211,7 +211,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
         )
         .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
-    const menuActionRow = new ActionRowComponent().addComponents(
+    const menuActionRow = new ActionRow().setComponents(
         Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
             return new ButtonComponent({

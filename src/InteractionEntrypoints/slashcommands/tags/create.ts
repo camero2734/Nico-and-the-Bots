@@ -8,12 +8,12 @@ const TAG_COST = 1000;
 const command = new SlashCommand(<const>{
     description: "Creates (or edits) a command that sends a short snippet of text",
     options: [
-        { name: "name", description: "The name of the tag", required: true, type: "STRING" },
+        { name: "name", description: "The name of the tag", required: true, type: ApplicationCommandOptionType.String },
         {
             name: "text",
             description: "The text that gets sent with the tag",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -48,7 +48,7 @@ command.setHandler(async (ctx) => {
         .setDescription(ctx.opts.text)
         .setFooter("Select yes or no");
 
-    const actionRow = new ActionRowComponent().addComponents(
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent({
             label: "Yes",
             style: "SUCCESS",

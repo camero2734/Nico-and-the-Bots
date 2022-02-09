@@ -122,7 +122,7 @@ const command = new SlashCommand(<const>{
             name: "rule",
             description: "A rule to search for, or a rule number",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });

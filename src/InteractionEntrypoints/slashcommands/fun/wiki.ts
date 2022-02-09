@@ -17,7 +17,12 @@ const wiki = WikiJS({
 const command = new SlashCommand(<const>{
     description: "Grabs the summary of something from Wikipedia",
     options: [
-        { name: "search", description: "The term to search for", required: true, type: "STRING" },
+        {
+            name: "search",
+            description: "The term to search for",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
         { name: "full", description: "Includes more information from the page", required: false, type: "BOOLEAN" }
     ]
 });

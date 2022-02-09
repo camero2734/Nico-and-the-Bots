@@ -14,7 +14,7 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
 
     const staffChan = (await ctx.guild.channels.fetch(channelIDs.staff)) as TextChannel;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({ style: "LINK", label: "View original", url: ctx.message.url })
     ]);
     const msg = await staffChan.send({ embeds: [embed], components: [actionRow] });
@@ -50,7 +50,7 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
 
     const staffCommandLogChan = (await member.guild.channels.fetch(channelIDs.logs.staffCommands)) as TextChannel;
 
-    const actionRow = new ActionRowComponent().addComponents([
+    const actionRow = new ActionRow().setComponents([
         new ButtonComponent({
             style: "PRIMARY",
             label: "Discuss in #staff",

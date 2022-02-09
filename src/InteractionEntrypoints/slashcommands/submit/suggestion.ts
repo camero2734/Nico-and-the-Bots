@@ -5,12 +5,17 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 const command = new SlashCommand(<const>{
     description: "Submits a suggestion to the staff",
     options: [
-        { name: "title", description: "The title of your suggestion", required: true, type: "STRING" },
+        {
+            name: "title",
+            description: "The title of your suggestion",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
         {
             name: "details",
             description: "Some more details about your suggestion",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });

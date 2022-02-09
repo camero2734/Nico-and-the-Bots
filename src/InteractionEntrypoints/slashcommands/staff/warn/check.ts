@@ -8,7 +8,12 @@ import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 const command = new SlashCommand(<const>{
     description: "Test command",
     options: [
-        { name: "user", description: "The user to check warns for", required: true, type: "USER" },
+        {
+            name: "user",
+            description: "The user to check warns for",
+            required: true,
+            type: ApplicationCommandOptionType.User
+        },
         { name: "page", description: "Warning page number", required: false, type: "INTEGER" }
     ]
 });

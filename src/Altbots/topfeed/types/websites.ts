@@ -117,7 +117,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDescription(desc)
             .setFooter(`${hashes}`);
 
-        const actionRow = new ActionRowComponent().addComponents([
+        const actionRow = new ActionRow().setComponents([
             new ButtonComponent({ style: "LINK", url: this.displayedURL, label: "Live site" })
         ]);
 

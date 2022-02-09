@@ -22,7 +22,7 @@ command.setHandler(async (ctx) => {
             `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
         );
 
-    const actionRow = new ActionRowComponent().addComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });

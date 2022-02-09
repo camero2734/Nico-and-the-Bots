@@ -14,13 +14,13 @@ const command = new SlashCommand(<const>{
             name: "text",
             description: "What you want to be reminded about",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
         {
             name: "time",
             description: 'A duration string, like "4 hours and 30 minutes". A number by itself is interpreted as hours',
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });

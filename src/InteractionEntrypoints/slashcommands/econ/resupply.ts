@@ -47,7 +47,7 @@ command.setHandler(async (ctx) => {
     );
 
     const embed = new Embed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
         .addField(
             "**Tokens**",
@@ -72,9 +72,9 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new ActionRowComponent().addComponents(menu);
+    const actionRow = new ActionRow().setComponents(menu);
 
-    const buttonActionRow = new ActionRowComponent().addComponents(
+    const buttonActionRow = new ActionRow().setComponents(
         new ButtonComponent({
             label: "View Supply List",
             customId: genButtonId({}),
@@ -127,7 +127,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     await F.wait(1500);
 
     const embed = new Embed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setFooter(
@@ -243,7 +243,7 @@ async function memberWon(
     const prizeName = getPrizeName(prize);
 
     const embed = new Embed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setTitle(`You found a ${prizeName}!`)

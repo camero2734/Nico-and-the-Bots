@@ -5,7 +5,9 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Mutes a user",
-    options: [{ name: "user", description: "The user to unmute", required: true, type: "USER" }]
+    options: [
+        { name: "user", description: "The user to unmute", required: true, type: ApplicationCommandOptionType.User }
+    ]
 });
 
 command.setHandler(async (ctx) => {

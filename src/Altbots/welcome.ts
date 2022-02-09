@@ -121,7 +121,7 @@ export class SacarverBot {
         }
 
         // Functions
-        const actionRow = new ActionRowComponent().addComponents([
+        const actionRow = new ActionRow().setComponents([
             new ButtonComponent({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",

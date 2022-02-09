@@ -14,7 +14,7 @@ const command = new SlashCommand(<const>{
             name: "stat",
             description: "The stat to display",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: [
                 { name: "Hardest Questions", value: "hardest" },
                 { name: "Easiest Questions", value: "easiest" }

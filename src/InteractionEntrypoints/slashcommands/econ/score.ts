@@ -8,7 +8,14 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 
 const command = new SlashCommand(<const>{
     description: "View your score card",
-    options: [{ name: "user", description: "The user to check the score for", required: false, type: "USER" }]
+    options: [
+        {
+            name: "user",
+            description: "The user to check the score for",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {

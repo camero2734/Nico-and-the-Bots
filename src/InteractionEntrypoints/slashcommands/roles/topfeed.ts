@@ -61,7 +61,7 @@ command.setHandler(async (ctx) => {
         .setMaxValues(options.length)
         .setCustomId(genChoiceId({}));
 
-    const actionRow = new ActionRowComponent().addComponents(menu);
+    const actionRow = new ActionRow().setComponents(menu);
 
     const embed = new Embed().setDescription(
         "Select your topfeed roles below. You will receive a ping when the channel receives an update."

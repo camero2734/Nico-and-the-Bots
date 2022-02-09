@@ -1,11 +1,18 @@
-import { ApplicationCommandData, ContextMenuInteraction, GuildMember, Message, TextChannel } from "discord.js/packages/discord.js";
+import {
+    ApplicationCommandData,
+    ApplicationCommandType,
+    ContextMenuCommandInteraction,
+    GuildMember,
+    Message,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, ContextMenus } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 
 type TargetTypes = {
-    MESSAGE: Message;
-    USER: GuildMember;
+    [ApplicationCommandType.Message]: Message;
+    [ApplicationCommandType.User]: GuildMember;
 };
 
 export type ContextMenuHandler<T extends keyof TargetTypes> = (
@@ -13,7 +20,7 @@ export type ContextMenuHandler<T extends keyof TargetTypes> = (
     target: TargetTypes[T]
 ) => Promise<unknown>;
 
-type CtxMenuInteraction = ContextMenuInteraction & { member: GuildMember; channel: TextChannel };
+type CtxMenuInteraction = ContextMenuCommandInteraction & { member: GuildMember; channel: TextChannel };
 
 export abstract class ContextMenu<T extends keyof TargetTypes> extends InteractionEntrypoint<ContextMenuHandler<T>> {
     public commandData: ApplicationCommandData;
@@ -39,21 +46,21 @@ export abstract class ContextMenu<T extends keyof TargetTypes> extends Interacti
     }
 }
 
-export class UserContextMenu extends ContextMenu<"USER"> {
+export class UserContextMenu extends ContextMenu<ApplicationCommandType.User> {
     constructor(name: string) {
-        super(name, "USER");
+        super(name, ApplicationCommandType.User);
     }
 
     getTarget(ctx: CtxMenuInteraction) {
-        const member = ctx.options.getMember("user", false);
+        const member = ctx.options.getMember("user");
         if (!member) throw new CommandError("Failed to get member");
         return member as GuildMember;
     }
 }
 
-export class MessageContextMenu extends ContextMenu<"MESSAGE"> {
+export class MessageContextMenu extends ContextMenu<ApplicationCommandType.Message> {
     constructor(name: string) {
-        super(name, "MESSAGE");
+        super(name, ApplicationCommandType.Message);
     }
 
     getTarget(ctx: CtxMenuInteraction) {

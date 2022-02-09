@@ -1,4 +1,4 @@
-import { APIOverwrite } from "discord-api-types";
+import { APIOverwrite } from "discord-api-types/v9";
 import {
     Embed,
     OverwriteData,

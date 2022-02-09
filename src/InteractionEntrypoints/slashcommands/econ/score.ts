@@ -1,7 +1,13 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, Snowflake, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import {
+    GuildMember,
+    Snowflake,
+    ApplicationCommandOptionType,
+    Embed,
+    MessageAttachment
+} from "discord.js/packages/discord.js";
 import { badgeLoader, LevelCalculator } from "../../../Helpers";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { prisma, queries } from "../../../Helpers/prisma-init";
@@ -20,21 +26,18 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     const options = ctx.opts;
-
     await ctx.deferReply();
 
     const userID = options.user || (ctx.user.id as Snowflake);
-
     const member = await ctx.member.guild.members.fetch(userID);
 
     if (!member) throw new CommandError("Unable to find that member");
     if (member?.user?.bot) throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue."); // prettier-ignore
 
     const buffer = await generateScoreCard(member);
-
-    await ctx.send({
+    await ctx.editReply({
         embeds: [],
-        files: [{ name: "score.png", attachment: buffer }]
+        files: [new MessageAttachment(buffer, "score.png")]
     });
 });
 
@@ -74,7 +77,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     const cctx = canvas.getContext("2d");
 
     // Get images
-    let avatar_url = member.user.avatarURL({ format: "png", size: 512 });
+    let avatar_url = member.user.avatarURL({ extension: "png", size: 512 });
     if (!avatar_url) avatar_url = `https://ui-avatars.com/api/?background=random&name=${member.displayName}`;
 
     const img = await loadImage(avatar_url);

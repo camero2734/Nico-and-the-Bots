@@ -164,7 +164,7 @@ export class SacarverBot {
 
         // Avatar
         ctx.translate(0, 88);
-        const avatar = await loadImage(member.user.displayAvatarURL({ format: "png" }));
+        const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png" }));
         ctx.drawImage(avatar, 104, 0, 144, 144);
 
         // Member name

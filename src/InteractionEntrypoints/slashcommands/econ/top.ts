@@ -162,7 +162,7 @@ async function generateImage(
         // Avatar
         cctx.translate(10, 0);
         const avatar = await loadImage(
-            member?.user.displayAvatarURL({ format: "png", size: 128 }) ||
+            member?.user.displayAvatarURL({ extension: "png", size: 128 }) ||
                 "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
         );
 

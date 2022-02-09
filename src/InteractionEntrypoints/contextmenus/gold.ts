@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types";
+import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v9";
 import {
     Message,
     ActionRowComponent,

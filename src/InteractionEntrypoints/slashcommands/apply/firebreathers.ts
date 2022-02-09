@@ -7,7 +7,8 @@ import {
     Embed,
     MessageOptions,
     MessageSelectMenu,
-    TextChannel
+    TextChannel,
+    ApplicationCommandOptionType
 } from "discord.js/packages/discord.js";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -67,14 +68,14 @@ command.setHandler(async (ctx) => {
     const link = genApplicationLink(applicationId);
 
     const embed = new Embed()
-        .setAuthor(ctx.member.displayName, ctx.member.displayAvatarURL())
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.displayAvatarURL() })
         .setDescription(
             "Click the button below to open the application. It should be pre-filled with your **Application ID**, which is a one-time code. This code is only valid for you, and only once."
         )
-        .addField("Application ID", applicationId);
+        .addField({ name: "Application ID", value: applicationId });
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({ style: "LINK", url: link, label: "Open Application" })
+        new ButtonComponent().setStyle("LINK").setURL(link).setLabel("Open Application")
     ]);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -95,11 +96,11 @@ export async function sendToStaff(
         if (!member) throw new Error("No member found");
 
         const embed = new Embed()
-            .setAuthor(`${member.displayName}'s application`, member.displayAvatarURL())
+            .setAuthor({ name: `${member.displayName}'s application`, iconURL: member.displayAvatarURL() })
             .setFooter(applicationId);
 
         for (const [name, value] of Object.entries(data)) {
-            embed.addField(name, value?.substring(0, 1000) || "*Nothing*");
+            embed.addField({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
         }
 
         const actionRow = new ActionRow().setComponents([
@@ -183,7 +184,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     if (!member) throw new CommandError("This member appears to have left the server");
 
     const embed = new Embed()
-        .setAuthor("Firebreathers Application results", member.client.user?.displayAvatarURL())
+        .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
         .setFooter(applicationId);
 
     if (!embed.author) return; // Just to make typescript happy
@@ -216,7 +217,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     } else throw new Error("Invalid action type");
 
     const doneByEmbed = new Embed()
-        .setAuthor(ctx.member.displayName, ctx.member.displayAvatarURL())
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.displayAvatarURL() })
         .setDescription(
             `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
         )
@@ -227,7 +228,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     if (thread) {
         await thread.setArchived(true, "Decision was made, thread no longer necessary");
 
-        doneByEmbed.addField("Thread", `${thread}`);
+        doneByEmbed.addField({ name: "Thread", value: `${thread}` });
     }
 
     await ctx.followUp({ embeds: [doneByEmbed] });

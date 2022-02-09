@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
@@ -18,7 +18,12 @@ const command = new SlashCommand(<const>{
             type: ApplicationCommandOptionType.String,
             autocomplete: true
         },
-        { name: "info", description: "Shows extra info about the tag", required: false, type: "BOOLEAN" }
+        {
+            name: "info",
+            description: "Shows extra info about the tag",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
+        }
     ]
 });
 
@@ -51,7 +56,7 @@ command.setHandler(async (ctx) => {
             .setTitle(tag.name)
             .setDescription(tag.text)
             .setColor(tagAuthor.displayColor)
-            .setFooter(`Created by ${tagAuthor.displayName}`, tagAuthor.user.displayAvatarURL());
+            .setFooter({ text: `Created by ${tagAuthor.displayName}`, iconURL: tagAuthor.user.displayAvatarURL() });
 
         await ctx.editReply({ embeds: [embed] });
     } else {
@@ -66,7 +71,7 @@ async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void
     const embed = new Embed().setTitle("That tag doesn't exist. Here are some of the most popular tags you can try.");
 
     for (const tag of tags) {
-        embed.addField(tag.name, `Uses: ${tag.uses}`);
+        embed.addField({ name: tag.name, value: `Uses: ${tag.uses}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

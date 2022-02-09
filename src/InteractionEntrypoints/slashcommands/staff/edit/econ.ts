@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import { userIDs } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -30,7 +30,7 @@ const command = new SlashCommand(<const>{
                     name,
                     description: `Value of ${name} to add or replace`,
                     required: false,
-                    type: "INTEGER"
+                    type: ApplicationCommandOptionType.Integer
                 }
         )
     ]
@@ -49,7 +49,7 @@ command.setHandler(async (ctx) => {
     if (!member) throw new CommandError("Couldn't find that member");
 
     const embed = new Embed()
-        .setAuthor(member.displayName, member.displayAvatarURL())
+        .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setColor(member.displayColor)
         .setTitle("Edit successful");
 
@@ -75,14 +75,14 @@ command.setHandler(async (ctx) => {
             const value = result[v] as number;
             if (value < 0) throw new CommandError(`These actions would cause ${v} to go negative.`);
 
-            embed.addField(v, `${value}`, true);
+            embed.addField({ name: v, value: `${value}`, inline: true });
         });
 
         (<const>["steals", "blocks", "tokens", "dailyCount"]).forEach((v) => {
             const value = result.dailyBox?.[v] as number;
             if (value < 0) throw new CommandError(`These actions would cause ${v} to go negative.`);
 
-            embed.addField(v, `${value}`, true);
+            embed.addField({ name: v, value: `${value}`, inline: true });
         });
     });
 

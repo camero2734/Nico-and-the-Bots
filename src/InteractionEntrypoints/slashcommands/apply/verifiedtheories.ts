@@ -6,7 +6,10 @@ import {
     ActionRowComponent,
     ButtonComponent,
     Embed,
-    TextChannel
+    TextChannel,
+    ApplicationCommandOptionType,
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { Question } from "../../../Helpers/verified-quiz/question";
@@ -54,10 +57,10 @@ command.setHandler(async (ctx) => {
                 `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
             ].join("\n\n")
         )
-        .addField(
-            "Cheating is not allowed",
-            "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
-        );
+        .addField({
+            name: "Cheating is not allowed",
+            value: "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
+        });
 
     let dmMessage: Message;
     try {
@@ -71,14 +74,14 @@ command.setHandler(async (ctx) => {
     const [beginId, cancelId] = timedListener.customIDs;
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({ label: "Begin", style: "SUCCESS", customId: beginId }),
-        new ButtonComponent({ label: "Cancel", style: "DANGER", customId: cancelId })
+        new ButtonComponent().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
+        new ButtonComponent().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
     ]);
 
     await dmMessage.edit({ components: [actionRow] });
 
     const dmActionRow = new ActionRow().setComponents([
-        new ButtonComponent({ style: "LINK", url: dmMessage.url, label: "View message" })
+        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
     ]);
 
     await ctx.send({
@@ -153,7 +156,7 @@ const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, a
         member
     );
 
-    await ctx.editReply({ embeds: [embed], components });
+    await ctx.editReply({ embeds: [embed], components: components });
 });
 
 async function generateEmbedAndButtons(
@@ -162,7 +165,7 @@ async function generateEmbedAndButtons(
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
     member: GuildMember
-): Promise<[Embed, ActionRowComponent[]]> {
+): Promise<[Embed, ActionRow<ActionRowComponent>[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
@@ -171,24 +174,25 @@ async function generateEmbedAndButtons(
 
     const newQuestion = questionList[newIndex];
     const embed = new Embed()
-        .setAuthor(`Question ${newIndex + 1} / ${numQs}`)
+        .setAuthor({ name: `Question ${newIndex + 1} / ${numQs}` })
         .setTitle("Verified Theories Quiz")
         .setDescription(newQuestion.question)
-        .setFooter("Select the correct answer by hitting a button below");
+        .setFooter({ text: "Select the correct answer by hitting a button below" });
 
     // Update variables and encode into buttons' customIDs
     const components = F.shuffle(
         newQuestion.answers.map((answer, idx) => {
-            return new ButtonComponent({
-                label: answer,
-                style: "PRIMARY",
-                customId: genVeriquizId({
-                    currentID: newQuestion.hexID,
-                    questionIDs,
-                    previousAnswers: answerEncode.toString(),
-                    chosenAnswer: idx.toString()
-                })
-            });
+            return new ButtonComponent()
+                .setLabel(answer)
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId(
+                    genVeriquizId({
+                        currentID: newQuestion.hexID,
+                        questionIDs,
+                        previousAnswers: answerEncode.toString(),
+                        chosenAnswer: idx.toString()
+                    })
+                );
         })
     );
 
@@ -201,11 +205,11 @@ async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     member: GuildMember
-): Promise<[Embed, ActionRowComponent[]]> {
+): Promise<[Embed, ActionRow<ActionRowComponent>[]]> {
     const answers = answerEncode.answerIndices;
 
     // Send to staff channel
-    const staffEmbed = new Embed().setAuthor(member.displayName, member.user.displayAvatarURL());
+    const staffEmbed = new Embed().setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
 
     let incorrect = 0;
     for (const q of questionList) {
@@ -214,7 +218,10 @@ async function sendFinalEmbed(
 
         const givenAnswerText = q.answers[answerGiven] || "None";
         const correctAnswerText = q.answers[q.correct];
-        staffEmbed.addField(q.question.split("\n")[0], `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`);
+        staffEmbed.addField({
+            name: q.question.split("\n")[0],
+            value: `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`
+        });
 
         // Record question answer
         await prisma.verifiedQuizAnswer.create({
@@ -227,7 +234,7 @@ async function sendFinalEmbed(
 
     staffEmbed
         .setTitle(`${passed ? "Passed" : "Failed"}: ${correct}/${questionList.length} correct`)
-        .setColor(passed ? "#88FF88" : "#FF8888");
+        .setColor(passed ? 0x88ff88 : 0xff8888);
     const staffChan = member.guild.channels.cache.get(channelIDs.verifiedapplications) as TextChannel;
     await staffChan.send({ embeds: [staffEmbed] });
 
@@ -238,7 +245,7 @@ async function sendFinalEmbed(
     // Send embed to normal user
     const embed = new Embed()
         .setTitle(`${correct}/${questionList.length} correct`)
-        .setColor(passed ? "#88FF88" : "#FF8888")
+        .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
             `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
                 passed

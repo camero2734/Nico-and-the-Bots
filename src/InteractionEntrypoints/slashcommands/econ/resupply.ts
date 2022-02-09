@@ -12,7 +12,8 @@ import {
     Embed,
     MessageSelectMenu,
     MessageSelectOptionData,
-    SelectMenuInteraction
+    SelectMenuInteraction,
+    ApplicationCommandOptionType
 } from "discord.js/packages/discord.js";
 import fs from "fs";
 import F from "../../../Helpers/funcs";
@@ -53,7 +54,7 @@ command.setHandler(async (ctx) => {
             "**Tokens**",
             `You have ${tokens} token${tokens === 1 ? "" : "s"} available. A token is used when searching a district.`
         )
-        .addField("**CONSOLE**", description)
+        .addField({ name: "**CONSOLE**", value: description })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setFooter(

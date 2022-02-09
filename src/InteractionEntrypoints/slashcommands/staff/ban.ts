@@ -1,8 +1,8 @@
+import { ApplicationCommandOptionType, Colors, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { ApplicationCommandOptionType, Embed, TextChannel } from "discord.js/packages/discord.js";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { MessageTools } from "../../../Helpers";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Bans a member",
@@ -39,19 +39,20 @@ command.setHandler(async (ctx) => {
     }
 
     const bannedEmbed = new Embed()
-        .setAuthor(member.displayName, member.displayAvatarURL())
+        .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription("You have been banned from the twenty one pilots Discord server")
-        .addField("Reason", reason || "None provided")
-        .setColor("RED");
+        .addField({ name: "Reason", value: reason || "None provided" })
+        .setColor(Colors.Red);
 
     if (!noappeal) {
-        bannedEmbed.addField("Appeal", "You may appeal your ban by visiting:\ndiscordclique.com/appeals");
+        bannedEmbed.addField({
+            name: "Appeal",
+            value: "You may appeal your ban by visiting:\ndiscordclique.com/appeals"
+        });
     }
 
     await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
-
     await member.ban({ days: purge ? 7 : 0, reason });
-
     await ctx.send({ embeds: [new Embed({ description: `${member.toString()} was banned.` }).toJSON()] });
 
     sendToBanLog(ctx, bannedEmbed);
@@ -59,7 +60,6 @@ command.setHandler(async (ctx) => {
 
 async function sendToBanLog(ctx: typeof command.ContextType, bannedEmbed: Embed) {
     const banLogChannel = (await ctx.guild.channels.fetch(channelIDs.banlog)) as TextChannel;
-
     await banLogChannel.send({ embeds: [bannedEmbed] });
 }
 

@@ -109,13 +109,13 @@ export class SacarverBot {
 
         const embed = new Embed()
             .setTitle("Welcome to the twenty one pilots Discord server!")
-            .setAuthor(member.displayName, member.user.displayAvatarURL())
+            .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
             .setDescription(
                 "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n"
             )
             .setImage("attachment://welcome.png");
 
-        embed.addField("\u200b", "\u200b");
+        embed.addField({ name: "\u200b", value: "\u200b" });
         for (const { emoji, title, text } of noteworthyChannels) {
             embed.addField(`${emoji} ${title}`, text);
         }

@@ -2,7 +2,7 @@ import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { addDays, differenceInDays } from "date-fns";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -166,10 +166,10 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setColor(0xff0000)
         .setTitle(`${ctx.member.displayName}'s Daily`)
-        .setFooter("Have an idea for another server tip? Submit it with /submit suggestion")
-        .addField("Server Fact", randomFact)
-        .addField("Tokens Earned", `${tokenMessage}`)
-        .addField("Total tokens", `You have **${newTokens}** token${F.plural(newTokens)}.`)
+        .setFooter({ text: "Have an idea for another server tip? Submit it with /submit suggestion" })
+        .addField({ name: "Server Fact", value: randomFact })
+        .addField({ name: "Tokens Earned", value: `${tokenMessage}` })
+        .addField({ name: "Total tokens", value: `You have **${newTokens}** token${F.plural(newTokens)}.` })
         .setImage("attachment://daily.png");
 
     if (isWeeklyBonus) {

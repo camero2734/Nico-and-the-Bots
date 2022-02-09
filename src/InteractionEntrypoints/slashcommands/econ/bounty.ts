@@ -1,6 +1,6 @@
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -39,13 +39,17 @@ command.setHandler(async (ctx) => {
 
         const embed = new Embed()
             .setTitle("Your inventory")
-            .addField("📑 Bounties", `${steals} bount${steals === 1 ? "y" : "ies"} available`, true)
+            .addField({
+                name: "📑 Bounties",
+                value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
+                inline: true
+            })
             .addField(
                 "<:jumpsuit:860724950070984735> Jumpsuits",
                 `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
                 true
             )
-            .addField("Current bounty value", `${BOUNTY_NUM_CREDITS} credits`)
+            .addField({ name: "Current bounty value", value: `${BOUNTY_NUM_CREDITS} credits` })
             .setFooter(
                 "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
             );
@@ -66,7 +70,7 @@ command.setHandler(async (ctx) => {
 
     // Template embed
     const embed = new Embed()
-        .setAuthor(`${ctx.member.displayName}'s Bounty`, ctx.member.user.displayAvatarURL())
+        .setAuthor({ name: `${ctx.member.displayName}'s Bounty`, iconURL: ctx.member.user.displayAvatarURL() })
         .setFooter(`Bounties remaining: ${dailyBox.steals - 1}`);
 
     const assignedBishop = F.randomValueInArray(districts); // prettier-ignore
@@ -76,7 +80,7 @@ command.setHandler(async (ctx) => {
         .setDescription(
             `Thank you for reporting <@${user}> to the Dema Council for infractions against the laws of The Sacred Municipality of Dema.\n\nWe have people on the way to find and rehabilitate them under the tenets of Vialism.`
         )
-        .addField("Assigned Bishop", `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}`)
+        .addField({ name: "Assigned Bishop", value: `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}` })
         .setImage("https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
 
     await ctx.send({ embeds: [waitEmbed.toJSON()] });

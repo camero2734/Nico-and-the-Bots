@@ -5,7 +5,8 @@ import {
     Message,
     ActionRowComponent,
     Embed,
-    MessageSelectMenu
+    MessageSelectMenu,
+    ApplicationCommandOptionType
 } from "discord.js/packages/discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
@@ -38,13 +39,13 @@ const command = new SlashCommand(<const>{
             name: "min_choices",
             description: "The min number of choices a user must choose",
             required: false,
-            type: "INTEGER"
+            type: ApplicationCommandOptionType.Integer
         },
         {
             name: "max_choices",
             description: "The max number of choices a user must choose",
             required: false,
-            type: "INTEGER"
+            type: ApplicationCommandOptionType.Integer
         }
     ]
 });
@@ -92,7 +93,7 @@ command.setHandler(async (ctx) => {
         include: { votes: true }
     });
 
-    const embed = new Embed().setAuthor(title, ctx.user.displayAvatarURL());
+    const embed = new Embed().setAuthor({ name: title, iconURL: ctx.user.displayAvatarURL() });
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 

@@ -1,6 +1,11 @@
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
-import { ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
+import {
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    ApplicationCommandOptionType
+} from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -62,26 +67,26 @@ command.setHandler(async (ctx) => {
         .setDescription(
             `Please ensure you are linking the correct profile by going here\n**-->** https://www.last.fm/user/${fmUsername}\n\nThis should link to **your** last.fm profile.`
         )
-        .setFooter("Respond with yes or no");
+        .setFooter({ text: "Respond with yes or no" });
 
     if (lastTrack?.name) {
         trackEmbed = new Embed()
             .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
             .setTitle("This is your most recently scrobbled song. Does this look correct?")
-            .addField("Track", lastTrack.name, true)
-            .addField("Artist", lastTrack.artist, true)
-            .addField("Album", lastTrack.album, true)
-            .addField("Time", lastTrack.date, true)
+            .addField({ name: "Track", value: lastTrack.name, inline: true })
+            .addField({ name: "Artist", value: lastTrack.artist, inline: true })
+            .addField({ name: "Album", value: lastTrack.album, inline: true })
+            .addField({ name: "Time", value: lastTrack.date, inline: true })
             .setThumbnail(lastTrack.image)
-            .setFooter("Press one of the buttons below to respond");
+            .setFooter({ text: "Press one of the buttons below to respond" });
     }
 
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({ label: "Yes", style: "SUCCESS", customId: yesId }),
-        new ButtonComponent({ label: "No", style: "DANGER", customId: noId })
+        new ButtonComponent().setLabel("Yes").setStyle("SUCCESS").setCustomId(yesId),
+        new ButtonComponent().setLabel("No").setStyle("DANGER").setCustomId(noId)
     ]);
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });

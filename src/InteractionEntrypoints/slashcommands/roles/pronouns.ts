@@ -1,4 +1,10 @@
-import { ActionRowComponent, Embed, MessageSelectMenu, Snowflake } from "discord.js/packages/discord.js";
+import {
+    ActionRowComponent,
+    Embed,
+    MessageSelectMenu,
+    Snowflake,
+    ApplicationCommandOptionType
+} from "discord.js/packages/discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -43,7 +49,7 @@ const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[
     for (const r of rolesSelected) await ctx.member.roles.add(r);
 
     const embed = new Embed()
-        .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL())
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.user.displayAvatarURL() })
         .setDescription(`Your pronoun roles have been updated!`);
 
     await ctx.editReply({ embeds: [embed], components: [] });

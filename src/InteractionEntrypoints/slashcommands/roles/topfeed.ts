@@ -4,7 +4,8 @@ import {
     ActionRowComponent,
     Embed,
     MessageSelectMenu,
-    Snowflake
+    Snowflake,
+    ApplicationCommandOptionType
 } from "discord.js/packages/discord.js";
 import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -29,7 +30,7 @@ const command = new SlashCommand(<const>{
         {
             name: "removeall",
             description: "Removes all your topfeed roles",
-            type: "BOOLEAN",
+            type: ApplicationCommandOptionType.Boolean,
             required: false
         }
     ]

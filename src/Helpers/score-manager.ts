@@ -1,5 +1,12 @@
 import { startOfDay } from "date-fns";
-import { DiscordAPIError, Message, Embed, MessageReference, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import {
+    DiscordAPIError,
+    Message,
+    Embed,
+    MessageReference,
+    Snowflake,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 
@@ -10,7 +17,9 @@ import { rollbar } from "./logging/rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
 
-const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
+const redisOpts = {
+    connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false })
+};
 
 const scoreQueue = new Queue(QUEUE_NAME, {
     ...redisOpts,
@@ -127,7 +136,7 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<Parameters<typeo
 
         if (hasPerk) {
             const randomReward = Math.floor(Math.random() * 1500) + 201;
-            lvlEmbed.addField("Perk Bonus", `You gained ${randomReward} credits for leveling up!`);
+            lvlEmbed.addField({ name: "Perk Bonus", value: `You gained ${randomReward} credits for leveling up!` });
             creditIncrement += randomReward;
         }
 

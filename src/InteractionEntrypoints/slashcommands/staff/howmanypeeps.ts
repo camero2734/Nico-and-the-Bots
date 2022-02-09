@@ -1,5 +1,5 @@
 import { subHours } from "date-fns";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -11,7 +11,7 @@ const command = new SlashCommand(<const>{
             name: "hours",
             description: "The number of previous hours to look over",
             required: false,
-            type: "INTEGER"
+            type: ApplicationCommandOptionType.Integer
         }
     ]
 });

@@ -1,5 +1,11 @@
 import { APIOverwrite } from "discord-api-types";
-import { Embed, OverwriteData, OverwriteResolvable, PermissionOverwrites } from "discord.js/packages/discord.js";
+import {
+    Embed,
+    OverwriteData,
+    OverwriteResolvable,
+    PermissionOverwrites,
+    ApplicationCommandOptionType
+} from "discord.js/packages/discord.js";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";

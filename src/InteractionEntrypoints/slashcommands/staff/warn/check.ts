@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import R from "ramda";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -14,7 +14,12 @@ const command = new SlashCommand(<const>{
             required: true,
             type: ApplicationCommandOptionType.User
         },
-        { name: "page", description: "Warning page number", required: false, type: "INTEGER" }
+        {
+            name: "page",
+            description: "Warning page number",
+            required: false,
+            type: ApplicationCommandOptionType.Integer
+        }
     ]
 });
 
@@ -51,13 +56,13 @@ command.setHandler(async (ctx) => {
     const averageSeverity = R.mean(warns.map((w) => w.severity || 5));
 
     const embed = new Embed()
-        .setAuthor(`${member.displayName}'s warnings`, member.user.displayAvatarURL())
-        .setColor([(255 * averageSeverity) / 10, 0, 0])
-        .setFooter(`Page ${page}/${numPages}`);
+        .setAuthor({ name: `${member.displayName}'s warnings`, iconURL: member.user.displayAvatarURL() })
+        .setColor(((255 * averageSeverity) / 10) << 16)
+        .setFooter({ text: `Page ${page}/${numPages}` });
     for (const warn of warns) {
         const emoji = severityEmoji(warn.severity);
         const timestamp = F.discordTimestamp(warn.createdAt, "relative");
-        embed.addField(`${warn.reason}`, `${emoji} ${warn.type}\n${timestamp}`);
+        embed.addField({ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

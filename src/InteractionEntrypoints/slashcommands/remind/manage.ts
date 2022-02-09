@@ -3,7 +3,8 @@ import {
     ActionRowComponent,
     ButtonComponent,
     Embed,
-    MessageSelectMenu
+    MessageSelectMenu,
+    ApplicationCommandOptionType
 } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -92,7 +93,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
         const embed = new Embed()
             .setTitle("Deleted reminder")
             .setDescription("Your reminder has been deleted.")
-            .addField("Text", reminder.text);
+            .addField({ name: "Text", value: reminder.text });
 
         await ctx.editReply({ embeds: [embed], components: [] });
     } else if (actionType === ActionTypes.SelectReminder) {
@@ -112,8 +113,8 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
 
         const embed = new Embed()
             .setTitle(reminderTitle)
-            .addField("Sending", `${sendTS} (${sendTSRelative})`)
-            .addField("Created", madeTS);
+            .addField({ name: "Sending", value: `${sendTS} (${sendTSRelative})` })
+            .addField({ name: "Created", value: madeTS });
 
         if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 

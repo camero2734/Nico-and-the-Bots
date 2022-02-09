@@ -1,5 +1,5 @@
 import { VerifiedQuizAnswer } from "@prisma/client";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import R from "ramda";
 import progressBar from "string-progressbar";
 import F from "../../../Helpers/funcs";
@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
     for (const stat of topSortedStats) {
         const questionName = stat.question.question.split("\n")[0];
         const [progress] = progressBar.filledBar(stat.total, stat.correct, 20);
-        embed.addField(questionName, `${progress} [${stat.correct}/${stat.total}]`);
+        embed.addField({ name: questionName, value: `${progress} [${stat.correct}/${stat.total}]` });
     }
 
     await ctx.send({ embeds: [embed.toJSON()] });

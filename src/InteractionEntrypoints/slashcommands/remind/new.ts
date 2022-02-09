@@ -1,5 +1,5 @@
 import { addMilliseconds } from "date-fns";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import parseDuration from "parse-duration";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -47,9 +47,9 @@ command.setHandler(async (ctx) => {
 
     const confirmEmbed = new Embed()
         .setTitle("Created reminder")
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .addField("Reminder", text)
-        .addField("Send time", F.discordTimestamp(sendAt, "longDateTime"));
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
+        .addField({ name: "Reminder", value: text })
+        .addField({ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") });
 
     await prisma.reminder.create({
         data: { userId: ctx.user.id, text, sendAt }

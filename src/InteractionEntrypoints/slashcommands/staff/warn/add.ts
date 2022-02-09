@@ -1,7 +1,15 @@
 import { WarningType } from "@prisma/client";
 import { CommandError } from "../../../../Configuration/definitions";
 import { subYears } from "date-fns";
-import { GuildMember, ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
+import {
+    GuildMember,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    ApplicationCommandOptionType,
+    ActionRow,
+    ButtonStyle
+} from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
@@ -25,7 +33,7 @@ const command = new SlashCommand(<const>{
             name: "severity",
             description: "The severity of the warning",
             required: true,
-            type: "INTEGER",
+            type: ApplicationCommandOptionType.Integer,
             choices: (<const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map((n) => <const>{ name: `${n}`, value: n })
         },
         {
@@ -50,20 +58,16 @@ command.setHandler(async (ctx) => {
 
     const confirmationEmbed = new Embed()
         .setTitle("Would you like to submit this warning?")
-        .addField("User", `<@${user}>`)
-        .addField("Explanation", explanation)
-        .addField("Rule Broken", ruleBroken)
-        .addField("Severity", `${severity}`);
+        .addField({ name: "User", value: `<@${user}>` })
+        .addField({ name: "Explanation", value: explanation })
+        .addField({ name: "Rule Broken", value: ruleBroken })
+        .addField({ name: "Severity", value: `${severity}` });
 
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({
-            label: "Submit Warning",
-            style: "PRIMARY",
-            customId: submitId
-        })
+        new ButtonComponent().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId)
     ]);
 
     await ctx.send({ embeds: [confirmationEmbed.toJSON()], components: [actionRow] });
@@ -99,11 +103,11 @@ command.setHandler(async (ctx) => {
     try {
         const dm = await member.createDM();
         confirmationEmbed.setTitle("You have received a warning");
-        confirmationEmbed.setAuthor(member.displayName, member.user.displayAvatarURL());
-        confirmationEmbed.setFooter(
-            `Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
-            member.user.displayAvatarURL()
-        );
+        confirmationEmbed.setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
+        confirmationEmbed.setFooter({
+            text: `Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
+            iconURL: member.user.displayAvatarURL()
+        });
         await dm.send({ embeds: [confirmationEmbed] });
     } catch (e) {
         await ctx.followUp({

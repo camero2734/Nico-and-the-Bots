@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -26,10 +26,10 @@ command.setHandler(async (ctx) => {
 
     const embed = new Embed()
         .setAuthor("Firebreather Application Stats", fbRole?.iconURL() || undefined)
-        .addField("Awaiting submission", `${unsubmitted} application${F.plural(unsubmitted)}`)
-        .addField("Needs decision", `${awaiting} application${F.plural(awaiting)}`)
-        .addField("Approved", `${approved} application${F.plural(approved)}`)
-        .addField("Denied", `${denied} application${F.plural(denied)}`);
+        .addField({ name: "Awaiting submission", value: `${unsubmitted} application${F.plural(unsubmitted)}` })
+        .addField({ name: "Needs decision", value: `${awaiting} application${F.plural(awaiting)}` })
+        .addField({ name: "Approved", value: `${approved} application${F.plural(approved)}` })
+        .addField({ name: "Denied", value: `${denied} application${F.plural(denied)}` });
 
     await ctx.editReply({ embeds: [embed] });
 });

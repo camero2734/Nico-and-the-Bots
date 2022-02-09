@@ -26,10 +26,10 @@ command.setHandler(async (ctx) => {
     if (!tags || tags.length === 0) throw new CommandError("This person does not have any tags");
 
     const embed = new Embed() //
-        .setAuthor(`${member.displayName}'s tags`, member.user.displayAvatarURL());
+        .setAuthor({ name: `${member.displayName}'s tags`, iconURL: member.user.displayAvatarURL() });
 
     for (const tag of tags) {
-        embed.addField(`${tag.name} [${tag.uses}]`, tag.text);
+        embed.addField({ name: `${tag.name} [${tag.uses}]`, value: tag.text });
     }
 
     await ctx.editReply({ embeds: [embed] });

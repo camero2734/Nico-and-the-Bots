@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -34,7 +34,7 @@ command.setHandler(async (ctx) => {
 
     try {
         const member = await ctx.guild.members.fetch(tag.userId);
-        embed.setAuthor(member.displayName, member.displayAvatarURL());
+        embed.setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() });
     } catch {
         //
     }

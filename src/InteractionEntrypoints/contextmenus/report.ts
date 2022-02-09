@@ -94,7 +94,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
 
         const embed = new Embed()
             .setDescription("A new report was added for this message")
-            .addField("Reason", reasonText)
+            .addField({ name: "Reason", value: reasonText })
             .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
 
         await prisma.userMessageReport.create({
@@ -114,7 +114,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
             .setAuthor(msgMember.displayName, msgMember.displayAvatarURL())
             .setTitle("Message Reported")
             .setDescription(msg.content)
-            .addField("Reason", ReportReasons[selectedReason])
+            .addField({ name: "Reason", value: ReportReasons[selectedReason] })
             .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
 
         const actionRow = new ActionRow().setComponents([

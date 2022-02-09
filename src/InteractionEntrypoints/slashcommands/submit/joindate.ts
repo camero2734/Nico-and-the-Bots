@@ -1,6 +1,6 @@
 import { guildID } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import { Embed, Snowflake, TextChannel, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import F from "../../../Helpers/funcs";
@@ -68,11 +68,11 @@ command.setHandler(async (ctx) => {
     const newJoinedNum = await queries.getJoinedNum(msg.createdAt);
 
     const embed = new Embed()
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setDescription("Your join date was updated!")
-        .addField("Reference message", msg.content || "*No content*")
-        .addField("New join date", F.discordTimestamp(msg.createdAt))
-        .addField("Member num change", `${ordinal(oldJoinedNum)} → ${ordinal(newJoinedNum)}`);
+        .addField({ name: "Reference message", value: msg.content || "*No content*" })
+        .addField({ name: "New join date", value: F.discordTimestamp(msg.createdAt) })
+        .addField({ name: "Member num change", value: `${ordinal(oldJoinedNum)} → ${ordinal(newJoinedNum)}` });
 
     await prisma.user.update({
         where: { id: dbUser.id },

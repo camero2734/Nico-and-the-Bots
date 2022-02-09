@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import ordinal from "ordinal";
 import { queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -29,11 +29,11 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setTitle(member.displayName)
         .setThumbnail(member.user.displayAvatarURL())
-        .addField("Account created on", `${member.user.createdAt}`)
-        .addField("Originally joined on", `${dbUser.joinedAt}`)
-        .addField("Last joined on", `${member.joinedAt || new Date()}`)
-        .addField("Golds", `${golds}`, true)
-        .addField("Daily count", `${dbUser.dailyBox?.dailyCount || 0}`)
+        .addField({ name: "Account created on", value: `${member.user.createdAt}` })
+        .addField({ name: "Originally joined on", value: `${dbUser.joinedAt}` })
+        .addField({ name: "Last joined on", value: `${member.joinedAt || new Date()}` })
+        .addField({ name: "Golds", value: `${golds}`, inline: true })
+        .addField({ name: "Daily count", value: `${dbUser.dailyBox?.dailyCount || 0}` })
         .setFooter(`${ordinal(joinedNum)} member | Use the /submit joindate command if your join date is incorrect`);
     await ctx.send({ embeds: [embed.toJSON()] });
 });

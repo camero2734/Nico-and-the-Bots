@@ -51,9 +51,9 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
                 .setTitle(name)
                 .setColor(0xD07A21)
                 .setDescription(`*${category.description}*\n`)
-                .addField("Credits", `${category.data.credits}`)
-                .addField("\u200b", category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063")
-                .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
+                .addField({ name: "Credits", value: `${category.data.credits}` })
+                .addField({ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" })
+                .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
@@ -121,8 +121,12 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
     if (actionType === ActionTypes.View) {
         embed
             .setDescription(`Would you like to purchase this item?`)
-            .addField("Cost", `${category.data.credits}`, true)
-            .addField("Your credits", `${dbUser.credits} → ${dbUser.credits - category.data.credits}`, true);
+            .addField({ name: "Cost", value: `${category.data.credits}`, inline: true })
+            .addField({
+                name: "Your credits",
+                value: `${dbUser.credits} → ${dbUser.credits - category.data.credits}`,
+                inline: true
+            });
 
         if (contraband) {
             embed.addField(
@@ -209,7 +213,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
                 "Choose one of the categories below. A submenu will open that allows you to purchase roles within that category.",
             ].join("\n")
         )
-        .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
+        .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const menuActionRow = new ActionRow().setComponents(
         Object.entries(categories).map(([label, item], idx) => {
@@ -226,7 +230,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
     );
 
     for (const [name, item] of Object.entries(categories)) {
-        MenuEmbed.addField(name, item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063");
+        MenuEmbed.addField({ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" });
     }
 
     return { embeds: [MenuEmbed], components: [menuActionRow] };

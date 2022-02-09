@@ -1,6 +1,6 @@
 import { createCanvas, Image, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -8,7 +8,11 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 const command = new SlashCommand(<const>{
     description: "Generates a weekly overview for your last.fm stats",
     options: [
-        { name: "size", description: "The number of rows and columns in the output", type: "INTEGER" },
+        {
+            name: "size",
+            description: "The number of rows and columns in the output",
+            type: ApplicationCommandOptionType.Integer
+        },
         {
             name: "timeperiod",
             description: "Period of time to fetch for (defaults to 1 week)",

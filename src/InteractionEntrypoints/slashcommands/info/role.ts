@@ -1,4 +1,4 @@
-import { Embed, Snowflake } from "discord.js/packages/discord.js";
+import { Embed, Snowflake, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -32,10 +32,10 @@ command.setHandler(async (ctx) => {
         const embed = new Embed();
         embed.setTitle(role.name);
         embed.setColor(role.color);
-        embed.addField("Hex", role.hexColor);
-        embed.addField("Members", `${role.members.size}`);
-        embed.addField("Created", `${role.createdAt}`);
-        embed.addField("ID", role.id);
+        embed.addField({ name: "Hex", value: role.hexColor });
+        embed.addField({ name: "Members", value: `${role.members.size}` });
+        embed.addField({ name: "Created", value: `${role.createdAt}` });
+        embed.addField({ name: "ID", value: role.id });
 
         embeds.push(embed);
     }

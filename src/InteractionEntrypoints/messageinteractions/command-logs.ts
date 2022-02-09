@@ -43,10 +43,10 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
         : "*None*";
 
     const embed = new Embed()
-        .setAuthor(member.displayName, member.user.displayAvatarURL())
+        .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
         .setTitle(`${commandName} used`)
-        .addField("Args", args)
-        .addField("Used", F.discordTimestamp(new Date(), "relative"));
+        .addField({ name: "Args", value: args })
+        .addField({ name: "Used", value: F.discordTimestamp(new Date(), "relative") });
 
     const staffCommandLogChan = (await member.guild.channels.fetch(channelIDs.logs.staffCommands)) as TextChannel;
 

@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -41,7 +41,10 @@ command.setHandler(async (ctx) => {
         .setDescription(
             "A lockdown has been started by a staff member. Until they unlock the channel, non-staff will not be allowed to talk in the channel."
         )
-        .addField("For staff members", "You may unlock this channel with the `/staff lockdown end` slash command.");
+        .addField({
+            name: "For staff members",
+            value: "You may unlock this channel with the `/staff lockdown end` slash command."
+        });
 
     await ctx.followUp({ embeds: [lockEmbed] });
 });

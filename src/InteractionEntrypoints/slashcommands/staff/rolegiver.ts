@@ -4,7 +4,8 @@ import {
     ButtonComponent,
     Embed,
     ApplicationCommandOptionType,
-    ActionRow
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -47,29 +48,27 @@ command.setHandler(async (ctx) => {
     if (!roleObj) throw new CommandError("Invalid role given");
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({
-            style: "SUCCESS",
-            label: `Get the ${roleObj.name} role`,
-            customId: genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }),
-            emoji: <EmojiIdentifierResolvable>{
+        new ButtonComponent()
+            .setStyle(ButtonStyle.Success)
+            .setLabel(`Get the ${roleObj.name} role`)
+            .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }))
+            .setEmoji({
                 name: "😎"
-            }
-        }),
-        new ButtonComponent({
-            style: "DANGER",
-            label: `Remove the ${roleObj.name} role`,
-            customId: genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }),
-            emoji: <EmojiIdentifierResolvable>{
+            }),
+        new ButtonComponent()
+            .setStyle(ButtonStyle.Danger)
+            .setLabel(`Remove the ${roleObj.name} role`)
+            .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }))
+            .setEmoji({
                 name: "😔"
-            }
-        })
+            })
     ]);
 
     const embed = new Embed()
         .setTitle("Role Giver™️") //
         .setDescription(`By clicking the buttons below, you can get/remove the ${roleObj.name} role.`)
-        .addField("Description", text)
-        .addField("Role", `${roleObj}`);
+        .addField({ name: "Description", value: text })
+        .addField({ name: "Role", value: `${roleObj}` });
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });

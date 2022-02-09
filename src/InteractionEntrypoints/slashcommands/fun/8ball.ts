@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -36,7 +36,7 @@ command.setHandler(async (ctx) => {
 
     await F.wait(2000);
 
-    embed.setAuthor(ctx.member?.displayName, ctx.user.displayAvatarURL());
+    embed.setAuthor({ name: ctx.member?.displayName, iconURL: ctx.user.displayAvatarURL() });
     embed.setTitle(ctx.opts.question);
     embed.setDescription(`**The Wise Nico Says:** ${response}`);
 

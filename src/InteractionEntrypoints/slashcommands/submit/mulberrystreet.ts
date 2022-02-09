@@ -5,7 +5,10 @@ import {
     MessageAttachment,
     ButtonComponent,
     Embed,
-    TextChannel
+    TextChannel,
+    ApplicationCommandOptionType,
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
@@ -78,20 +81,20 @@ command.setHandler(async (ctx) => {
     const fileName = `${title.split(" ").join("-")}.${fileType.ext}`;
 
     const embed = new Embed()
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(0xe3b3d8)
         .setTitle(`"${title}"`)
         .setDescription(
             `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
         )
-        .addField("URL", url)
-        .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
+        .addField({ name: "URL", value: url })
+        .setFooter({ text: "Courtesy of Mulberry Street Creations™", iconURL: "https://i.imgur.com/fkninOC.png" });
 
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({ style: "SUCCESS", label: "Submit", customId: yesId })
+        new ButtonComponent().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
     ]);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -112,8 +115,8 @@ command.setHandler(async (ctx) => {
     embed.setDescription("Submitted.");
     const doneEmbed = embed;
 
-    embed.description = "";
-    embed.fields = [];
+    embed.setDescription("");
+    embed.setFields();
 
     const attachment = new MessageAttachment(buffer, fileName);
 
@@ -125,7 +128,7 @@ command.setHandler(async (ctx) => {
     m.react("💙");
 
     const newActionRow = new ActionRow().setComponents([
-        new ButtonComponent({ style: "LINK", label: "View post", url: m.url })
+        new ButtonComponent().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
     ]);
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });

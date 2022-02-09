@@ -1,4 +1,9 @@
-import { ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
+import {
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    ApplicationCommandOptionType
+} from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -103,9 +108,9 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
-        .addField("Track", trackField, true)
-        .addField("Album", albumField, true)
-        .addField("Artist", artistField, true)
+        .addField({ name: "Track", value: trackField, inline: true })
+        .addField({ name: "Album", value: albumField, inline: true })
+        .addField({ name: "Artist", value: artistField, inline: true })
         .setThumbnail(thumbnail)
         .setFooter(track.date)
         .setAuthor(

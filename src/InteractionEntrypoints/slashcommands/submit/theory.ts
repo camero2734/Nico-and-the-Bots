@@ -1,5 +1,13 @@
 import { channelIDs } from "../../../Configuration/config";
-import { ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
+import {
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    TextChannel,
+    ApplicationCommandOptionType,
+    ActionRow,
+    ButtonStyle
+} from "discord.js/packages/discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
@@ -30,13 +38,13 @@ command.setHandler(async (ctx) => {
     const { title, theory, imageurl } = ctx.opts;
 
     const embed = new Embed()
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(ctx.member.displayColor)
         .setTitle(title)
         .setDescription(theory)
-        .setFooter(
-            "Use the buttons below to vote on the theory. Votes remain anonymous and should reflect the quality of the post."
-        );
+        .setFooter({
+            text: "Use the buttons below to vote on the theory. Votes remain anonymous and should reflect the quality of the post."
+        });
 
     if (imageurl) embed.setImage(imageurl);
 
@@ -48,7 +56,7 @@ command.setHandler(async (ctx) => {
 
     const responseEmbed = new Embed({ description: "Your theory has been submitted!" });
     const responseActionRow = new ActionRow().setComponents([
-        new ButtonComponent({ style: "LINK", url: m.url, label: "View post" })
+        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(m.url).setLabel("View post")
     ]);
     await ctx.send({
         embeds: [responseEmbed],

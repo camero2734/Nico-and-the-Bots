@@ -14,7 +14,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
         const embed = new Embed()
             .setDescription(e.message)
             .setTitle("An error occurred!")
-            .setFooter("DEMA internet machine broke");
+            .setFooter({ text: "DEMA internet machine broke" });
         ectx.send({
             embeds: [embed],
             components: [],
@@ -27,7 +27,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
         else rollbar.error(`${e}`);
         const embed = new Embed()
             .setTitle("An unknown error occurred!")
-            .setFooter("DEMA internet machine really broke");
+            .setFooter({ text: "DEMA internet machine really broke" });
         ectx.send({ embeds: [embed], components: [], ephemeral: true });
     }
 };

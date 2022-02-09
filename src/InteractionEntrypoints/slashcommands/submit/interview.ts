@@ -1,5 +1,13 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
+import {
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    TextChannel,
+    ApplicationCommandOptionType,
+    ActionRow,
+    ButtonStyle
+} from "discord.js/packages/discord.js";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import * as ytdl from "youtube-dl";
@@ -52,14 +60,14 @@ command.setHandler(async (ctx) => {
 
     console.log(channel, view_count, fulltitle, thumbnail);
 
-    embed.setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL());
+    embed.setAuthor({ name: ctx.member.displayName, iconURL: ctx.user.displayAvatarURL() });
     embed.setTitle(info.title);
-    embed.addField("Channel", channel, true);
-    embed.addField("Views", `${view_count}`, true);
-    embed.addField("Link", "[Click Here](https://youtu.be/" + id + ")", true);
+    embed.addField({ name: "Channel", value: channel, inline: true });
+    embed.addField({ name: "Views", value: `${view_count}`, inline: true });
+    embed.addField({ name: "Link", value: "[Click Here](https://youtu.be/" + id + ")", inline: true });
     embed.setImage(thumbnail);
     embed.setDescription(description || "No description provided");
-    embed.addField("Uploaded", F.discordTimestamp(uploadDate, "relative"));
+    embed.addField({ name: "Uploaded", value: F.discordTimestamp(uploadDate, "relative") });
 
     const interviewsChannel = ctx.channel.guild.channels.cache.get(channelIDs.interviewsubmissions) as TextChannel;
 
@@ -68,11 +76,10 @@ command.setHandler(async (ctx) => {
     });
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent({
-            label: "Approve",
-            customId: genYesID({ interviewId: `${dbInterview.id}` }),
-            style: "SUCCESS"
-        })
+        new ButtonComponent()
+            .setLabel("Approve")
+            .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
+            .setStyle(ButtonStyle.Success)
     ]);
 
     await interviewsChannel.send({ embeds: [embed], components: [actionRow] });

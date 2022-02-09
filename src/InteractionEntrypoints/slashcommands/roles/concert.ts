@@ -1,4 +1,11 @@
-import { Guild, ActionRowComponent, Embed, MessageSelectMenu, Role } from "discord.js/packages/discord.js";
+import {
+    Guild,
+    ActionRowComponent,
+    Embed,
+    MessageSelectMenu,
+    Role,
+    ApplicationCommandOptionType
+} from "discord.js/packages/discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";

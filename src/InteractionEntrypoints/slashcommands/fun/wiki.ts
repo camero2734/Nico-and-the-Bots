@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import WikiJS from "wikijs";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -23,7 +23,12 @@ const command = new SlashCommand(<const>{
             required: true,
             type: ApplicationCommandOptionType.String
         },
-        { name: "full", description: "Includes more information from the page", required: false, type: "BOOLEAN" }
+        {
+            name: "full",
+            description: "Includes more information from the page",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
+        }
     ]
 });
 
@@ -56,7 +61,7 @@ command.setHandler(async (ctx) => {
     if (ctx.opts.full) {
         for (const field of fields.slice(0, 10)) {
             const content = field.content || "*No content*";
-            embed.addField(field.title, F.truncate(content, 200));
+            embed.addField({ name: field.title, value: F.truncate(content, 200) });
         }
     }
 

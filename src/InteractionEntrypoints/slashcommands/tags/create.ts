@@ -1,4 +1,11 @@
-import { ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
+import {
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    ApplicationCommandOptionType,
+    ActionRow,
+    ButtonStyle
+} from "discord.js/packages/discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -46,15 +53,14 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setTitle(`Create tag \`${ctx.opts.name}\`? [${TAG_COST} credits]`)
         .setDescription(ctx.opts.text)
-        .setFooter("Select yes or no");
+        .setFooter({ text: "Select yes or no" });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent({
-            label: "Yes",
-            style: "SUCCESS",
-            customId: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
-        })
-    );
+    const actionRow = new ActionRow().setComponents([
+        new ButtonComponent()
+            .setLabel("Yes")
+            .setStyle(ButtonStyle.Success)
+            .setCustomId(generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` }))
+    ]);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });
@@ -79,7 +85,7 @@ const generateYesID = command.addInteractionListener("tcYes", <const>["name", "t
     const doneEmbed = new Embed()
         .setTitle(`Tag created: \`${args.name}\``)
         .setDescription(text)
-        .addField("Usage", `Use this tag with the command \`/tags use ${createdTag.name}\``);
+        .addField({ name: "Usage", value: `Use this tag with the command \`/tags use ${createdTag.name}\`` });
 
     await ctx.editReply({ embeds: [doneEmbed], components: [] });
 });

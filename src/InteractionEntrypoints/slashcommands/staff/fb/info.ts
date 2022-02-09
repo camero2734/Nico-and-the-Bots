@@ -25,7 +25,7 @@ command.setHandler(async (ctx) => {
     const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
 
     const embed = new Embed()
-        .setAuthor("Firebreather Application Stats", fbRole?.iconURL() || undefined)
+        .setAuthor({ name: "Firebreather Application Stats", iconURL: fbRole?.iconURL() || undefined })
         .addField({ name: "Awaiting submission", value: `${unsubmitted} application${F.plural(unsubmitted)}` })
         .addField({ name: "Needs decision", value: `${awaiting} application${F.plural(awaiting)}` })
         .addField({ name: "Approved", value: `${approved} application${F.plural(approved)}` })

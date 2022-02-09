@@ -3,15 +3,15 @@ import {
     GuildMember,
     Message,
     ActionRowComponent,
-    MessageActionRowComponent,
     Embed,
     MessageOptions,
     Snowflake,
-    TextChannel
+    TextChannel,
+    ActionRow
 } from "discord.js/packages/discord.js";
 import { constants } from "../Configuration/config";
 
-export function strEmbed(strings: TemplateStringsArray, color?: `#${string}`): Embed {
+export function strEmbed(strings: TemplateStringsArray, color?: number): Embed {
     const baseEmbed = new Embed().setDescription(strings.join(""));
     if (color) baseEmbed.setColor(color);
     return baseEmbed;
@@ -36,10 +36,10 @@ export const MessageTools = {
 
     /** Takes an array of buttons and places them into an array of Action Row components */
     allocateButtonsIntoRows(
-        buttons: MessageActionRowComponent[],
+        buttons: ActionRowComponent[],
         options?: IAllocateButtonsOptions
-    ): ActionRowComponent[] {
-        const components = [] as ActionRowComponent[];
+    ): ActionRow<ActionRowComponent>[] {
+        const components = [] as ActionRow<ActionRowComponent>[];
 
         const maxButtonsPerRow = options?.maxButtonsPerRow ?? constants.ACTION_ROW_MAX_ITEMS;
 

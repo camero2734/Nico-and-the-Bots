@@ -1,9 +1,11 @@
 import {
     ActionRowComponent,
     Embed,
-    MessageSelectMenu,
     Snowflake,
-    ApplicationCommandOptionType
+    ApplicationCommandOptionType,
+    ActionRow,
+    SelectMenuComponent,
+    SelectMenuOption
 } from "discord.js/packages/discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
@@ -16,11 +18,13 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-    const selectMenu = new MessageSelectMenu()
+    const selectMenu = new SelectMenuComponent()
         .setCustomId(genSelectId({}))
         .setMaxValues(Object.keys(roles.pronouns).length)
         .setPlaceholder("Select your pronoun role(s) from the list")
-        .addOptions(Object.entries(roles.pronouns).map(([name, id]) => ({ label: name, value: id })));
+        .addOptions(
+            ...Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOption({ label: name, value: id }))
+        );
 
     const selectEmbed = new Embed()
         .setTitle("Select your pronoun role(s)")
@@ -28,7 +32,7 @@ command.setHandler(async (ctx) => {
             `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
         );
 
-    const actionRow = new ActionRow().setComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents([selectMenu]);
 
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });

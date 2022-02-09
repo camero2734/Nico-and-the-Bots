@@ -7,7 +7,9 @@ import {
     GuildMember,
     ActionRowComponent,
     ButtonComponent,
-    Snowflake
+    Snowflake,
+    ButtonStyle,
+    ActionRow
 } from "discord.js/packages/discord.js";
 import { guild } from "../../../app";
 import { dropEmojiGuildId, roles } from "../../Configuration/config";
@@ -93,18 +95,19 @@ async function getEmoji(member: GuildMember, guild: Guild): Promise<Emoji | unde
 
 const NUM_BUTTONS = 16;
 export type Guess = { member: GuildMember; idx: number };
-export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Promise<ActionRowComponent[]> {
+export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Promise<ActionRow<ActionRowComponent>[]> {
     const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
 
     const buttons: ButtonComponent[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
-        const button = new ButtonComponent({
-            style: "PRIMARY",
-            customId: GenBtnId({
-                dropId: drop.id,
-                idx: `${idx}`
-            }),
-            emoji: "❔"
-        });
+        const button = new ButtonComponent()
+            .setStyle(ButtonStyle.Primary)
+            .setCustomId(
+                GenBtnId({
+                    dropId: drop.id,
+                    idx: `${idx}`
+                })
+            )
+            .setEmoji({ name: "❔" });
 
         const guess = guesses.find((guess) => guess.idx === idx);
 
@@ -113,12 +116,12 @@ export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Pr
             if (drop.winningIndices.includes(idx)) {
                 button.setStyle(ButtonStyle.Success);
             } else {
-                button.setStyle("DANGER");
+                button.setStyle(ButtonStyle.Danger);
             }
 
             if (emojiGuild) {
                 const emoji = await getEmoji(guess.member, emojiGuild);
-                if (emoji) button.setEmoji(emoji.identifier);
+                if (emoji) button.setEmoji({ name: emoji.identifier });
             }
         }
 

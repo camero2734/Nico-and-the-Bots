@@ -4,7 +4,10 @@ import {
     ActionRowComponent,
     ButtonComponent,
     Embed,
-    ApplicationCommandOptionType
+    ApplicationCommandOptionType,
+    Colors,
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -44,7 +47,7 @@ command.setHandler(async (ctx) => {
 
             \`4.\` The \`/fm now\` command should now work properly and display what you are currently listening to!`.replace(/^ +/gm,"");
         await ctx.send({
-            embeds: [new Embed({ description: instructions, color: "RANDOM" })]
+            embeds: [new Embed({ description: instructions, color: Colors.Red })]
         });
         return;
     }
@@ -62,7 +65,7 @@ command.setHandler(async (ctx) => {
     const avatar = ctx.user.displayAvatarURL();
 
     let trackEmbed = new Embed()
-        .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
+        .setAuthor({ name: fmUsername, iconURL: avatar, url: `https://www.last.fm/user/${fmUsername}` })
         .setTitle(`You have not scrobbled any songs yet. Is this your profile?`)
         .setDescription(
             `Please ensure you are linking the correct profile by going here\n**-->** https://www.last.fm/user/${fmUsername}\n\nThis should link to **your** last.fm profile.`
@@ -71,7 +74,7 @@ command.setHandler(async (ctx) => {
 
     if (lastTrack?.name) {
         trackEmbed = new Embed()
-            .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
+            .setAuthor({ name: fmUsername, iconURL: avatar, url: `https://www.last.fm/user/${fmUsername}` })
             .setTitle("This is your most recently scrobbled song. Does this look correct?")
             .addField({ name: "Track", value: lastTrack.name, inline: true })
             .addField({ name: "Artist", value: lastTrack.artist, inline: true })
@@ -85,8 +88,8 @@ command.setHandler(async (ctx) => {
     const [yesId, noId] = timedListener.customIDs;
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent().setLabel("Yes").setStyle("SUCCESS").setCustomId(yesId),
-        new ButtonComponent().setLabel("No").setStyle("DANGER").setCustomId(noId)
+        new ButtonComponent().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
+        new ButtonComponent().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
     ]);
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });

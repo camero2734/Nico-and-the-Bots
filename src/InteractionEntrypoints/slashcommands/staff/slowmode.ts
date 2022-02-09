@@ -21,10 +21,10 @@ command.setHandler(async (ctx) => {
 
     await ctx.channel.setRateLimitPerUser(ctx.opts.time);
 
-    const embed = new Embed().setAuthor(
-        `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
-        ctx.client.user?.displayAvatarURL()
-    );
+    const embed = new Embed().setAuthor({
+        name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
+        iconURL: ctx.client.user?.displayAvatarURL()
+    });
 
     if (ctx.opts.time) {
         embed.addField({ name: "Time (seconds)", value: `${ctx.opts.time}` });

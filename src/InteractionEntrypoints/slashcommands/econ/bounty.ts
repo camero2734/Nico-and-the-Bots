@@ -44,15 +44,15 @@ command.setHandler(async (ctx) => {
                 value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
                 inline: true
             })
-            .addField(
-                "<:jumpsuit:860724950070984735> Jumpsuits",
-                `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
-                true
-            )
+            .addField({
+                name: "<:jumpsuit:860724950070984735> Jumpsuits",
+                value: `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
+                inline: true
+            })
             .addField({ name: "Current bounty value", value: `${BOUNTY_NUM_CREDITS} credits` })
-            .setFooter(
-                "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
-            );
+            .setFooter({
+                text: "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
+            });
 
         await ctx.send({ embeds: [embed.toJSON()] });
         return;
@@ -71,7 +71,7 @@ command.setHandler(async (ctx) => {
     // Template embed
     const embed = new Embed()
         .setAuthor({ name: `${ctx.member.displayName}'s Bounty`, iconURL: ctx.member.user.displayAvatarURL() })
-        .setFooter(`Bounties remaining: ${dailyBox.steals - 1}`);
+        .setFooter({ text: `Bounties remaining: ${dailyBox.steals - 1}` });
 
     const assignedBishop = F.randomValueInArray(districts); // prettier-ignore
 

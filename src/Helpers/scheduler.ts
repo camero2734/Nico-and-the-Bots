@@ -23,7 +23,8 @@ import {
     MessageOptions,
     Snowflake,
     TextChannel,
-    VoiceChannel
+    VoiceChannel,
+    ChannelType
 } from "discord.js/packages/discord.js";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import SeedRandom from "seed-random";
@@ -128,10 +129,7 @@ async function checkReminders(guild: Guild): Promise<void> {
             const member = await guild.members.fetch(rem.userId as Snowflake);
 
             const dm = await member.createDM();
-            const embed = new Embed()
-                .setTitle("Your Reminder")
-                .setDescription(rem.text)
-                .setTimestamp(rem.createdAt);
+            const embed = new Embed().setTitle("Your Reminder").setDescription(rem.text).setTimestamp(rem.createdAt);
 
             await dm.send({ embeds: [embed] });
         } catch (e) {
@@ -176,7 +174,7 @@ async function checkVCRoles(guild: Guild): Promise<void> {
     const allChannels = await guild.channels.fetch();
     const allMembers = guild.members.cache;
 
-    const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === "GUILD_VOICE");
+    const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === ChannelType.GuildVoice);
 
     const membersInVc = new Collection<Snowflake, GuildMember>();
 

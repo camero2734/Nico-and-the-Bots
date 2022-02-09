@@ -30,9 +30,9 @@ command.setHandler(async (ctx) => {
     });
 
     // Disable talking permissions for non-staff
-    await ctx.channel.permissionOverwrites.edit(ctx.guild.id, { SEND_MESSAGES: false });
-    await ctx.channel.permissionOverwrites.edit(roles.banditos, { SEND_MESSAGES: false });
-    await ctx.channel.permissionOverwrites.edit(roles.staff, { SEND_MESSAGES: true });
+    await ctx.channel.permissionOverwrites.edit(ctx.guild.id, { SendMessages: false });
+    await ctx.channel.permissionOverwrites.edit(roles.banditos, { SendMessages: false });
+    await ctx.channel.permissionOverwrites.edit(roles.staff, { SendMessages: true });
 
     await ctx.send({ content: "`Lockdown successful`" });
 

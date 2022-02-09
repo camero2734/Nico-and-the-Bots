@@ -10,10 +10,13 @@ import {
     ButtonComponent,
     MessageComponentInteraction,
     Embed,
-    MessageSelectMenu,
     MessageSelectOptionData,
     SelectMenuInteraction,
-    ApplicationCommandOptionType
+    ApplicationCommandOptionType,
+    SelectMenuComponent,
+    SelectMenuOption,
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import fs from "fs";
 import F from "../../../Helpers/funcs";
@@ -50,38 +53,39 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
-        .addField(
-            "**Tokens**",
-            `You have ${tokens} token${tokens === 1 ? "" : "s"} available. A token is used when searching a district.`
-        )
+        .addField({
+            name: "**Tokens**",
+            value: `You have ${tokens} token${
+                tokens === 1 ? "" : "s"
+            } available. A token is used when searching a district.`
+        })
         .addField({ name: "**CONSOLE**", value: description })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
-        .setFooter(
-            `Choose a district. The further down the list, the higher the potential prize, but the chances of getting "caught" by the Bishop is also higher.`
-        );
+        .setFooter({
+            text: `Choose a district. The further down the list, the higher the potential prize, but the chances of getting "caught" by the Bishop is also higher.`
+        });
 
-    const options: MessageSelectOptionData[] = districts.map((d, idx) => ({
-        label: `DST. ${d.bishop.toUpperCase()}`,
-        description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
-        value: `${idx}`,
-        emoji: { id: d.emoji } as EmojiIdentifierResolvable
-    }));
+    const options = districts.map(
+        (d, idx) =>
+            new SelectMenuOption({
+                label: `DST. ${d.bishop.toUpperCase()}`,
+                description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
+                value: `${idx}`,
+                emoji: { id: d.emoji }
+            })
+    );
 
-    const menu = new MessageSelectMenu()
-        .addOptions(options)
+    const menu = new SelectMenuComponent()
+        .addOptions(...options)
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new ActionRow().setComponents(menu);
+    const actionRow = new ActionRow().setComponents([menu]);
 
-    const buttonActionRow = new ActionRow().setComponents(
-        new ButtonComponent({
-            label: "View Supply List",
-            customId: genButtonId({}),
-            style: "PRIMARY"
-        })
-    );
+    const buttonActionRow = new ActionRow().setComponents([
+        new ButtonComponent().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
+    ]);
 
     await ctx.editReply({
         embeds: [embed.toJSON()],
@@ -131,9 +135,9 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
-        .setFooter(
-            "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
-        );
+        .setFooter({
+            text: "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
+        });
 
     for (let i = 0; i < districts.length; i++) {
         const district = districts[i];
@@ -157,11 +161,14 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
 
         const catchRate = District.convPercent(District.catchPercent(i));
 
-        embed.addField(`${emoji} ${bishop}`, `**Catch Rate:** \`${catchRate}\` \n\n${prizeStr}\n\u200b`);
+        embed.addField({
+            name: `${emoji} ${bishop}`,
+            value: `**Catch Rate:** \`${catchRate}\` \n\n${prizeStr}\n\u200b`
+        });
     }
 
     for (const [item, description] of Object.entries(ItemDescriptions)) {
-        embed.addField(`What is a ${item.toLowerCase()}?`, description, true);
+        embed.addField({ name: `What is a ${item.toLowerCase()}?`, value: description, inline: true });
     }
 
     await ctx.editReply({ embeds: [embed], components: [] });
@@ -180,11 +187,11 @@ async function memberCaught(
     const embed = new Embed()
         .setColor(0xea523b)
         .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
-        .setAuthor(district.bishop, emojiURL)
+        .setAuthor({ name: district.bishop, iconURL: emojiURL })
         .setDescription(
             `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
         )
-        .setFooter(`You win nothing. ${tokensRemaining}`, "attachment://file.gif");
+        .setFooter({ text: `You win nothing. ${tokensRemaining}`, iconURL: "attachment://file.gif" });
 
     sendViolationNotice(ctx.member as GuildMember, {
         violation: "ConspiracyAndTreason",
@@ -249,7 +256,7 @@ async function memberWon(
         .setThumbnail("attachment://file.gif")
         .setTitle(`You found a ${prizeName}!`)
         .setDescription(prizeDescription)
-        .setFooter(tokensRemaining);
+        .setFooter({ text: tokensRemaining });
 
     const { steals, blocks } = dbUserWithBox.dailyBox;
     await prisma.user.update({
@@ -266,16 +273,16 @@ async function memberWon(
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
     const reply = (await interaction.fetchReply()) as Message;
     const originalEmbed = reply.embeds[0];
-    originalEmbed.fields = [];
+    originalEmbed.setFields();
     originalEmbed
         .setDescription(description)
-        .addField(
-            "**WARNING**",
-            "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
-        )
-        .setFooter(
-            "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
-        )
+        .addField({
+            name: "**WARNING**",
+            value: "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
+        })
+        .setFooter({
+            text: "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
+        })
         .setThumbnail("attachment://file.gif");
 
     await interaction.editReply({ components: [], embeds: [originalEmbed] });

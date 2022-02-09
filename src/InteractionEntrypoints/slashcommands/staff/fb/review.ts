@@ -19,13 +19,16 @@ command.setHandler(async (ctx) => {
 
     const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
 
-    const embed = new Embed().setAuthor("Firebreather Application Review Queue", fbRole?.iconURL() || undefined);
+    const embed = new Embed().setAuthor({
+        name: "Firebreather Application Review Queue",
+        iconURL: fbRole?.iconURL() || undefined
+    });
 
     for (const app of awaiting) {
         const timestamp = F.discordTimestamp(app.submittedAt || new Date(), "relative");
         const member = await ctx.guild.members.fetch(app.userId).catch((e) => undefined);
         if (!member) continue;
-        embed.addField(`${member.displayName}`, `Submitted ${timestamp} | [View](${app.messageUrl})`);
+        embed.addField({ name: `${member.displayName}`, value: `Submitted ${timestamp} | [View](${app.messageUrl})` });
     }
 
     await ctx.editReply({ embeds: [embed] });

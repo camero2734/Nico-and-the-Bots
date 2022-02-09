@@ -16,7 +16,7 @@ class Rule {
             .setColor(0xe6fafc)
             .setTitle(`Rule ${this.num}`)
             .setDescription(this.text)
-            .setFooter(this.category);
+            .setFooter({ text: this.category });
         return ctx.send({ embeds: [embed.toJSON()] });
     }
 }

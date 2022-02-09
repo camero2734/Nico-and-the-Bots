@@ -56,7 +56,10 @@ command.setHandler(async (ctx) => {
 
     if (!condensedSummary || !url || !title) throw new CommandError("Unable to find page info");
 
-    const embed = new Embed().setAuthor(title, wikipediaLogo, url).setColor(0xaaacae).setDescription(condensedSummary);
+    const embed = new Embed()
+        .setAuthor({ name: title, iconURL: wikipediaLogo, url: url })
+        .setColor(0xaaacae)
+        .setDescription(condensedSummary);
 
     if (ctx.opts.full) {
         for (const field of fields.slice(0, 10)) {

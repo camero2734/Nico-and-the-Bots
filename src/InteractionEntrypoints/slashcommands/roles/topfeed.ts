@@ -1,14 +1,14 @@
 import {
+    ActionRow,
+    ApplicationCommandOptionType,
+    Embed,
     EmojiIdentifierResolvable,
     GuildMember,
-    ActionRowComponent,
-    Embed,
-    MessageSelectMenu,
-    Snowflake,
-    ApplicationCommandOptionType
+    SelectMenuComponent,
+    SelectMenuOption,
+    Snowflake
 } from "discord.js/packages/discord.js";
-import { roles, userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
+import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const tf = roles.topfeed.selectable;
@@ -48,21 +48,24 @@ command.setHandler(async (ctx) => {
     }
 
     const options = Object.entries(roles.topfeed.selectable);
-    const menu = new MessageSelectMenu()
+    const menu = new SelectMenuComponent()
         .addOptions(
-            options.map(([roleName, roleID]) => ({
-                label: roleName,
-                description: `Enable notifications for ${roleName}`,
-                value: roleID,
-                emoji: { id: emojiMap[roleID] } as EmojiIdentifierResolvable
-            }))
+            ...options.map(
+                ([roleName, roleID]) =>
+                    new SelectMenuOption({
+                        label: roleName,
+                        description: `Enable notifications for ${roleName}`,
+                        value: roleID,
+                        emoji: { id: emojiMap[roleID] }
+                    })
+            )
         )
         .setPlaceholder("Select the topfeed role(s) you want")
         .setMinValues(0)
         .setMaxValues(options.length)
         .setCustomId(genChoiceId({}));
 
-    const actionRow = new ActionRow().setComponents(menu);
+    const actionRow = new ActionRow().setComponents([menu]);
 
     const embed = new Embed().setDescription(
         "Select your topfeed roles below. You will receive a ping when the channel receives an update."

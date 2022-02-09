@@ -18,7 +18,7 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     const userID = ctx.opts.user || ctx.user.id;
-    if (ctx.channel?.type !== "GUILD_TEXT") return;
+    if (!ctx.channel?.isText()) return;
     const member = await ctx.channel.guild.members.fetch(userID);
     if (!member) throw new CommandError("Unable to find member");
     // Fetch some info
@@ -34,7 +34,9 @@ command.setHandler(async (ctx) => {
         .addField({ name: "Last joined on", value: `${member.joinedAt || new Date()}` })
         .addField({ name: "Golds", value: `${golds}`, inline: true })
         .addField({ name: "Daily count", value: `${dbUser.dailyBox?.dailyCount || 0}` })
-        .setFooter(`${ordinal(joinedNum)} member | Use the /submit joindate command if your join date is incorrect`);
+        .setFooter({
+            text: `${ordinal(joinedNum)} member | Use the /submit joindate command if your join date is incorrect`
+        });
     await ctx.send({ embeds: [embed.toJSON()] });
 });
 

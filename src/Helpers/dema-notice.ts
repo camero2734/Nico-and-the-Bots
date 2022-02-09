@@ -107,10 +107,10 @@ export async function sendViolationNotice(
 
     // Determine if user can see channel already
     const userPerms = chan.permissionsFor(member.id);
-    const canSee = userPerms?.has("VIEW_CHANNEL") || false;
+    const canSee = userPerms?.has("ViewChannel") || false;
 
     // Allow user to see channel
-    await chan.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true });
+    await chan.permissionOverwrites.create(member.id, { ViewChannel: true });
 
     const transmissionEmbed = new Embed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
     const m = await chan.send({
@@ -120,7 +120,7 @@ export async function sendViolationNotice(
     });
     for (let i = 0; i < 5; i++) {
         const description = transmissionEmbed.description as string;
-        transmissionEmbed.description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
+        transmissionEmbed.setDescription(description.trim() + F.randomizeLetters(".      " as string, 0.1));
         await F.wait(1000);
         await m.edit({ embeds: [transmissionEmbed] });
     }

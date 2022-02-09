@@ -15,7 +15,7 @@ const command = new SlashCommand(<const>{
 const albumRoles = roles.albums;
 command.setHandler(async (ctx) => {
     await ctx.reply({
-        embeds: [new Embed({ description: "Connecting to Daily Electronic Message Archive...", color: "#FF0000" })]
+        embeds: [new Embed({ description: "Connecting to Daily Electronic Message Archive...", color: 0xff0000 })]
     });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
@@ -173,10 +173,10 @@ command.setHandler(async (ctx) => {
         .setImage("attachment://daily.png");
 
     if (isWeeklyBonus) {
-        embed.addField(
-            "Weekly daily bonus!",
-            "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
-        );
+        embed.addField({
+            name: "Weekly daily bonus!",
+            value: "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
+        });
     }
 
     await ctx.editReply({

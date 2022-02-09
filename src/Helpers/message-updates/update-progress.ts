@@ -1,5 +1,5 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { Message, Embed, MessageOptions } from "discord.js/packages/discord.js";
+import { Message, Embed, MessageOptions, Colors } from "discord.js/packages/discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -32,7 +32,7 @@ const generateProgressBar = (): [string, boolean] => {
 };
 
 const standardizeEmbed = (embed: Embed): void => {
-    embed.fields = [];
+    embed.setFields();
     embed
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0x7289da)
@@ -41,10 +41,10 @@ const standardizeEmbed = (embed: Embed): void => {
             value: `Expected to finish ${F.discordTimestamp(endDate, "relative")}`
         })
         .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")
-        .setFooter(
-            "DEMAtronix: Propaganda delivered promptly™",
-            "https://cdn.discordapp.com/emojis/860015969253326858.png"
-        );
+        .setFooter({
+            text: "DEMAtronix: Propaganda delivered promptly™",
+            iconURL: "https://cdn.discordapp.com/emojis/860015969253326858.png"
+        });
 };
 
 const initialMessage = async (): Promise<MessageOptions> => {
@@ -71,9 +71,9 @@ const update = async (msg: Message) => {
         const embed = msg.embeds[0];
         embed.setDescription(progress);
         standardizeEmbed(embed);
-        embed.fields = [];
+        embed.setFields();
         embed.addField({ name: "Upgrade almost finished...", value: `Expected to finish \`soon\`` });
-        embed.setColor("RED");
+        embed.setColor(Colors.Red);
 
         await msg.edit({ embeds: [embed] });
     }

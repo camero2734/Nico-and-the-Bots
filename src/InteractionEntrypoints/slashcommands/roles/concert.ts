@@ -2,9 +2,11 @@ import {
     Guild,
     ActionRowComponent,
     Embed,
-    MessageSelectMenu,
     Role,
-    ApplicationCommandOptionType
+    ApplicationCommandOptionType,
+    SelectMenuComponent,
+    SelectMenuOption,
+    ActionRow
 } from "discord.js/packages/discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
@@ -23,24 +25,27 @@ command.setHandler(async (ctx) => {
     const concertsByCountry = getConcertsByCountry(ctx.guild);
 
     const countries = Object.keys(concertsByCountry).map((k) => ({ name: k, count: concertsByCountry[k].length }));
-    const countrySelectMenu = new MessageSelectMenu()
+    const countrySelectMenu = new SelectMenuComponent()
         .addOptions(
-            countries.map((c) => ({
-                label: F.titleCase(c.name.split("-").join(" ")),
-                value: c.name,
-                description: `${c.count} concert${F.plural(c.count)}`
-            }))
+            ...countries.map(
+                (c) =>
+                    new SelectMenuOption({
+                        label: F.titleCase(c.name.split("-").join(" ")),
+                        value: c.name,
+                        description: `${c.count} concert${F.plural(c.count)}`
+                    })
+            )
         )
         .setPlaceholder("Select a country")
         .setCustomId(genSelectCountryId({}));
-    const temporaryConcertSelectMenu = new MessageSelectMenu()
-        .addOptions([{ label: "Dummy option", value: "Dummy value", description: "Dummy" }])
+    const temporaryConcertSelectMenu = new SelectMenuComponent()
+        .addOptions(new SelectMenuOption({ label: "Dummy option", value: "Dummy value", description: "Dummy" }))
         .setPlaceholder("❌ Select a country first")
         .setDisabled(true)
         .setCustomId("selectConcert");
 
-    const countryActionRow = new ActionRow().setComponents(countrySelectMenu);
-    const concertActionRow = new ActionRow().setComponents(temporaryConcertSelectMenu);
+    const countryActionRow = new ActionRow().setComponents([countrySelectMenu]);
+    const concertActionRow = new ActionRow().setComponents([temporaryConcertSelectMenu]);
 
     const embed = new Embed()
         .setTitle("🧙 Concert Selection Wizard")
@@ -62,13 +67,16 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
 
     if (!concerts) throw new Error("Invalid country");
 
-    const concertSelectMenu = new MessageSelectMenu()
+    const concertSelectMenu = new SelectMenuComponent()
         .addOptions(
-            concerts.map((c) => ({
-                label: c.name,
-                value: c.concert.id,
-                description: c.concert.venue.location
-            }))
+            ...concerts.map(
+                (c) =>
+                    new SelectMenuOption({
+                        label: c.name,
+                        value: c.concert.id,
+                        description: c.concert.venue.location
+                    })
+            )
         )
         .setPlaceholder("Select some concert(s)")
         .setMaxValues(concerts.length)
@@ -76,12 +84,12 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
 
     console.log(concertActionRow);
 
-    concertActionRow.spliceComponents(0, 1);
+    concertActionRow.components.splice(0, 1);
     concertActionRow.addComponents(concertSelectMenu);
 
     // Update placeholder of first select menu to reflect country choice
     const placeholder = `${F.titleCase(country.split("-").join(" "))} selected`;
-    (countryActionRow.components[0] as MessageSelectMenu).setPlaceholder(placeholder);
+    (countryActionRow.components[0] as SelectMenuComponent).setPlaceholder(placeholder);
 
     await ctx.update({ components: ctx.message.components });
 });

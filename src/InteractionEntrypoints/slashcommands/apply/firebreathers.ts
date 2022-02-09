@@ -1,16 +1,17 @@
 import { addDays } from "date-fns";
 import {
-    Guild,
-    ActionRowComponent,
-    MessageAttachment,
+    ActionRow,
     ButtonComponent,
+    ButtonStyle,
+    Colors,
     Embed,
-    MessageOptions,
-    MessageSelectMenu,
-    TextChannel,
-    ApplicationCommandOptionType
+    Guild,
+    MessageAttachment,
+    SelectMenuComponent,
+    SelectMenuOption,
+    TextChannel
 } from "discord.js/packages/discord.js";
-import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
@@ -75,7 +76,7 @@ command.setHandler(async (ctx) => {
         .addField({ name: "Application ID", value: applicationId });
 
     const actionRow = new ActionRow().setComponents([
-        new ButtonComponent().setStyle("LINK").setURL(link).setLabel("Open Application")
+        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application")
     ]);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -97,18 +98,28 @@ export async function sendToStaff(
 
         const embed = new Embed()
             .setAuthor({ name: `${member.displayName}'s application`, iconURL: member.displayAvatarURL() })
-            .setFooter(applicationId);
+            .setFooter({ text: applicationId });
 
         for (const [name, value] of Object.entries(data)) {
             embed.addField({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
         }
 
         const actionRow = new ActionRow().setComponents([
-            new MessageSelectMenu()
-                .addOptions([
-                    { label: "Accept", value: ActionTypes.Accept.toString(), emoji: emojiIDs.upvote },
-                    { label: "Deny", value: ActionTypes.Deny.toString(), emoji: emojiIDs.downvote }
-                ])
+            new SelectMenuComponent()
+                .addOptions(
+                    ...[
+                        new SelectMenuOption({
+                            label: "Accept",
+                            value: ActionTypes.Accept.toString(),
+                            emoji: { id: emojiIDs.upvote }
+                        }),
+                        new SelectMenuOption({
+                            label: "Deny",
+                            value: ActionTypes.Deny.toString(),
+                            emoji: { id: emojiIDs.downvote }
+                        })
+                    ]
+                )
                 .setCustomId(genId({ applicationId, type: "" }))
         ]);
 
@@ -137,11 +148,11 @@ export async function sendToStaff(
 
             const warningsEmbed = new Embed()
                 .setTitle(`${member.displayName}'s most recent warnings`)
-                .setFooter(`${totalWarnings} total warning(s)`);
+                .setFooter({ text: `${totalWarnings} total warning(s)` });
             if (userWarnings.length > 0) {
                 for (const warn of userWarnings) {
                     // prettier-ignore
-                    warningsEmbed.addField(`${warn.reason.substring(0, 200)} [${warn.severity}]`, F.discordTimestamp(warn.createdAt, "relative"))
+                    warningsEmbed.addField({ name: `${warn.reason.substring(0, 200)} [${warn.severity}]`, value: F.discordTimestamp(warn.createdAt, "relative") })
                 }
             } else {
                 warningsEmbed.setDescription("*This user has no warnings*");
@@ -185,7 +196,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
 
     const embed = new Embed()
         .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
-        .setFooter(applicationId);
+        .setFooter({ text: applicationId });
 
     if (!embed.author) return; // Just to make typescript happy
 
@@ -202,7 +213,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         embed.author.name = "Firebreathers Application Approved";
         embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
 
-        await ctx.editReply({ embeds: [msgEmbed.setColor("GREEN")] });
+        await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
     } else if (action === ActionTypes.Deny) {
         await prisma.firebreatherApplication.update({
             where: { applicationId },
@@ -213,7 +224,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
 
         embed.author.name = "Firebreathers Application Denied";
         embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
-        await ctx.editReply({ embeds: [msgEmbed.setColor("RED")] });
+        await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
     } else throw new Error("Invalid action type");
 
     const doneByEmbed = new Embed()
@@ -221,7 +232,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         .setDescription(
             `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
         )
-        .setFooter(applicationId);
+        .setFooter({ text: applicationId });
 
     // Archive thread
     const thread = ctx.message.thread;

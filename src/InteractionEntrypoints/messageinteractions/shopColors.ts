@@ -5,7 +5,11 @@ import {
     ActionRowComponent,
     ButtonComponent,
     Embed,
-    MessageOptions
+    MessageOptions,
+    InteractionUpdateOptions,
+    ActionRow,
+    ButtonStyle,
+    WebhookEditMessageOptions
 } from "discord.js/packages/discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
@@ -62,24 +66,21 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
         category.data.roles.map((role) => {
             const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
             const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
-            const defaultStyle = contraband ? "DANGER" : "PRIMARY";
+            const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-            return new ButtonComponent({
-                disabled: cantAfford,
-                style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
-                label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
-                customId: !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID(),
-                emoji: contraband ? <EmojiIdentifierResolvable>{ name: "🩸" } : undefined
-            });
+            return new ButtonComponent()
+                .setDisabled(cantAfford)
+                .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
+                .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
+                .setCustomId(
+                    !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID()
+                )
+                .setEmoji({ name: contraband ? "🩸" : undefined });
         })
     );
 
     actionRow.addComponents(
-        new ButtonComponent({
-            style: "DANGER",
-            label: "Go back",
-            customId: genMainMenuId({})
-        })
+        new ButtonComponent().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({}))
     );
 
     const components = MessageTools.allocateButtonsIntoRows(actionRow.components);
@@ -113,10 +114,10 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
     const embed = new Embed()
-        .setAuthor(title, shopImage)
+        .setAuthor({ name: title, iconURL: shopImage })
         .setTitle(role.name)
         .setColor(role.color)
-        .setFooter(footer); // prettier-ignore
+        .setFooter({ text: footer }); // prettier-ignore
 
     if (actionType === ActionTypes.View) {
         embed
@@ -129,23 +130,22 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
             });
 
         if (contraband) {
-            embed.addField(
-                "WARNING",
-                "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave."
-            );
+            embed.addField({
+                name: "WARNING",
+                value: "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave."
+            });
         }
 
         const roleComponents = MessageTools.allocateButtonsIntoRows([
-            new ButtonComponent({
-                style: "SUCCESS",
-                label: "Purchase",
-                customId: genItemId({ action: `${ActionTypes.Purchase}`, itemId: args.itemId })
-            }),
-            new ButtonComponent({
-                style: "DANGER",
-                label: "Go back",
-                customId: genSubmenuId({ categoryId: category.id })
-            })
+            new ButtonComponent()
+                .setStyle(ButtonStyle.Success)
+                .setLabel("Purchase")
+                .setCustomId(genItemId({ action: `${ActionTypes.Purchase}`, itemId: args.itemId })),
+
+            new ButtonComponent()
+                .setStyle(ButtonStyle.Danger)
+                .setLabel("Go back")
+                .setCustomId(genSubmenuId({ categoryId: category.id }))
         ]);
 
         await ctx.update({ embeds: [embed], components: roleComponents });
@@ -172,10 +172,10 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
             .setDescription(
                 `Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`
             ) // prettier-ignore
-            .addField(
-                `How do I "equip" this role?`,
-                "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want)."
-            );
+            .addField({
+                name: `How do I "equip" this role?`,
+                value: "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want)."
+            });
         let sent = false;
         try {
             const dm = await ctx.member.createDM();
@@ -184,8 +184,8 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         } catch (e) {
             //
         } finally {
-            embed.fields = [];
-            embed.description += ` This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}` // prettier-ignore
+            embed.setFields();
+            embed.setDescription(`${embed.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`) // prettier-ignore
             ctx.update({ embeds: [embed], components: [] });
         }
 
@@ -198,7 +198,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
     }
 });
 
-async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOptions> {
+async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMessageOptions> {
     const categories = getColorRoleCategories(member.guild.roles);
 
     const dbUser = await queries.findOrCreateUser(member.id);
@@ -218,14 +218,15 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
     const menuActionRow = new ActionRow().setComponents(
         Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
-            return new ButtonComponent({
-                style: unlocked ? "PRIMARY" : "SECONDARY",
-                label: unlocked
-                    ? `${idx + 1}. ${label}`
-                    : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
-                customId: unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID(),
-                emoji: unlocked ? undefined : ({ name: "🔒" } as EmojiIdentifierResolvable)
-            });
+            return new ButtonComponent()
+                .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
+                .setLabel(
+                    unlocked
+                        ? `${idx + 1}. ${label}`
+                        : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`
+                )
+                .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID())
+                .setEmoji({ name: unlocked ? undefined : "🔒" });
         })
     );
 

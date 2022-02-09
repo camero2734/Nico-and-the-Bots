@@ -1,6 +1,15 @@
 import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { format } from "date-fns";
-import { CategoryChannel, Client, Guild, GuildChannel, OverwriteData, Role, TextChannel } from "discord.js/packages/discord.js";
+import {
+    CategoryChannel,
+    ChannelType,
+    Client,
+    Guild,
+    GuildChannel,
+    OverwriteData,
+    Role,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
@@ -160,23 +169,23 @@ class ConcertChannelManager {
 
         const permissionOverwrites: OverwriteData[] = [
             {
-                deny: ["VIEW_CHANNEL"],
+                deny: ["ViewChannel"],
                 id: guildID
             },
             {
-                allow: ["VIEW_CHANNEL", "SEND_MESSAGES"],
+                allow: ["ViewChannel", "SendMessages"],
                 id: roles.staff // Staff
             },
             {
-                allow: ["VIEW_CHANNEL"],
+                allow: ["ViewChannel"],
                 id: role.id // The role that was just created
             },
             {
-                allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "MANAGE_CHANNELS"],
+                allow: ["ViewChannel", "SendMessages", "ManageChannels"],
                 id: roles.bots // Bots
             },
             {
-                deny: ["SEND_MESSAGES"],
+                deny: ["SendMessages"],
                 id: roles.muted // Muted
             }
         ];
@@ -187,7 +196,7 @@ class ConcertChannelManager {
 
         const channel = await this.guild.channels.create(toAdd.channelName, {
             permissionOverwrites,
-            type: "GUILD_TEXT",
+            type: ChannelType.GuildText,
             topic
         });
         await channel.setParent(categoryIDs.concerts, { lockPermissions: false });

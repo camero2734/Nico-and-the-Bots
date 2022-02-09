@@ -9,7 +9,8 @@ import {
     Embed,
     PartialGuildMember,
     Snowflake,
-    TextChannel
+    TextChannel,
+    ActionRow
 } from "discord.js/packages/discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
@@ -28,20 +29,18 @@ export class SacarverBot {
     constructor() {
         this.client = new Client({
             intents: [
-                "GUILDS",
-                "DIRECT_MESSAGES",
-                "DIRECT_MESSAGE_REACTIONS",
-                "GUILDS",
-                "GUILD_BANS",
-                "GUILD_EMOJIS_AND_STICKERS",
-                "GUILD_MEMBERS",
-                "GUILD_MESSAGES",
-                "GUILD_MESSAGE_REACTIONS",
-                "GUILD_INTEGRATIONS",
-                "GUILD_INVITES",
-                "GUILD_PRESENCES",
-                "GUILD_VOICE_STATES",
-                "GUILD_WEBHOOKS"
+                "Guilds",
+                "DirectMessages",
+                "DirectMessageReactions",
+                "GuildBans",
+                "GuildEmojisAndStickers",
+                "GuildMembers",
+                "GuildMessages",
+                "GuildIntegrations",
+                "GuildInvites",
+                "GuildPresences",
+                "GuildVoiceStates",
+                "GuildWebhooks"
             ]
         });
         this.client.login(secrets.bots.sacarver);
@@ -117,7 +116,7 @@ export class SacarverBot {
 
         embed.addField({ name: "\u200b", value: "\u200b" });
         for (const { emoji, title, text } of noteworthyChannels) {
-            embed.addField(`${emoji} ${title}`, text);
+            embed.addField({ name: `${emoji} ${title}`, value: text });
         }
 
         // Functions

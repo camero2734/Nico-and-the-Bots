@@ -3,7 +3,9 @@ import {
     MessageAttachment,
     ButtonComponent,
     Embed,
-    MessageOptions
+    MessageOptions,
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import TwitterApi, { MediaVideoInfoV1, TweetV1, TweetV2 } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
@@ -101,14 +103,14 @@ export class TwitterWatcher extends Watcher<TweetType> {
             }
 
             const mainEmbed = new Embed()
-                .setAuthor(title, TWITTER_IMG, url) // prettier-ignore
+                .setAuthor({ name: title, iconURL: TWITTER_IMG, url: url }) // prettier-ignore
                 .setThumbnail(tweeterImage || TWITTER_IMG)
                 .setColor(0x55adee)
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
             const actionRow = new ActionRow().setComponents([
-                new ButtonComponent({ label: "View Tweet", style: "LINK", url })
+                new ButtonComponent().setLabel("View Tweet").setStyle(ButtonStyle.Link).setURL(url)
             ]);
 
             const msgs: MessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];

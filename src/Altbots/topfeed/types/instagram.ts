@@ -63,7 +63,11 @@ export class InstaWatcher extends Watcher<InstaType> {
             const msgs: MessageOptions[] = [];
 
             const mainEmbed = new Embed()
-                .setAuthor(`@${this.handle} posted on Instagram`, "https://i.imgur.com/a5YxpVK.png", url)
+                .setAuthor({
+                    name: `@${this.handle} posted on Instagram`,
+                    iconURL: "https://i.imgur.com/a5YxpVK.png",
+                    url
+                })
                 .setColor(0xdd2a7b)
                 .setDescription(caption || "*No caption*")
                 .setImage(images[0])

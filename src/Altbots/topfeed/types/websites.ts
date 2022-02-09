@@ -7,7 +7,9 @@ import {
     ButtonComponent,
     Embed,
     MessageOptions,
-    Snowflake
+    Snowflake,
+    ActionRow,
+    ButtonStyle
 } from "discord.js/packages/discord.js";
 import https from "https";
 import fetch from "node-fetch";
@@ -109,16 +111,16 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const file = obj.VISUAL?._data.image || undefined;
 
         const embed = new Embed()
-            .setAuthor(
-                `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
-                this.client.user?.displayAvatarURL(),
-                this.displayedURL
-            )
+            .setAuthor({
+                name: `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
+                iconURL: this.client.user?.displayAvatarURL(),
+                url: this.displayedURL
+            })
             .setDescription(desc)
-            .setFooter(`${hashes}`);
+            .setFooter({ text: `${hashes}` });
 
         const actionRow = new ActionRow().setComponents([
-            new ButtonComponent({ style: "LINK", url: this.displayedURL, label: "Live site" })
+            new ButtonComponent().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
         ]);
 
         if (file) {
@@ -131,22 +133,23 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     override async afterCheck(msg: Message): Promise<void> {
         const actionRow = msg.components[0];
 
-        const newButton = new ButtonComponent({
-            style: "LINK",
-            url: "https://google.com",
-            disabled: true,
-            label: "Fetching archive..."
-        });
+        const newButton = new ButtonComponent()
+            .setStyle(ButtonStyle.Link)
+            .setURL("https://google.com")
+            .setDisabled(true)
+            .setLabel("Fetching archive...");
 
-        actionRow.addComponents([newButton]);
+        actionRow.addComponents(newButton);
 
         await msg.edit({ components: msg.components });
 
         const savedUrl = await this.#archivePage(this.url);
 
-        actionRow.spliceComponents(actionRow.components.length - 1, 1);
+        actionRow.components.splice(actionRow.components.length - 1, 1);
         if (savedUrl) {
-            actionRow.addComponents([new ButtonComponent({ style: "LINK", url: savedUrl, label: "Web Archive" })]);
+            actionRow.addComponents(
+                new ButtonComponent().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
+            );
         }
         await msg.edit({ components: msg.components });
     }

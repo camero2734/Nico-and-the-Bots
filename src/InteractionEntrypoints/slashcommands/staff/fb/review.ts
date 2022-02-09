@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -19,7 +19,7 @@ command.setHandler(async (ctx) => {
 
     const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
 
-    const embed = new MessageEmbed().setAuthor("Firebreather Application Review Queue", fbRole?.iconURL() || undefined);
+    const embed = new Embed().setAuthor("Firebreather Application Review Queue", fbRole?.iconURL() || undefined);
 
     for (const app of awaiting) {
         const timestamp = F.discordTimestamp(app.submittedAt || new Date(), "relative");

@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -22,7 +22,7 @@ command.setHandler(async (ctx) => {
         data: { finished: true }
     });
 
-    const embed = new MessageEmbed().setDescription(`${member} has been unmuted!`);
+    const embed = new Embed().setDescription(`${member} has been unmuted!`);
     await ctx.send({ embeds: [embed] });
 });
 

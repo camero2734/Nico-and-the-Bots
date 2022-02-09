@@ -2,13 +2,13 @@ import crypto from "crypto";
 import Diff from "diff";
 import {
     Message,
-    MessageActionRow,
+    ActionRowComponent,
     MessageAttachment,
-    MessageButton,
-    MessageEmbed,
+    ButtonComponent,
+    Embed,
     MessageOptions,
     Snowflake
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
@@ -108,7 +108,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .join(", ");
         const file = obj.VISUAL?._data.image || undefined;
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setAuthor(
                 `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
                 this.client.user?.displayAvatarURL(),
@@ -117,8 +117,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDescription(desc)
             .setFooter(`${hashes}`);
 
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({ style: "LINK", url: this.displayedURL, label: "Live site" })
+        const actionRow = new ActionRowComponent().addComponents([
+            new ButtonComponent({ style: "LINK", url: this.displayedURL, label: "Live site" })
         ]);
 
         if (file) {
@@ -131,7 +131,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     override async afterCheck(msg: Message): Promise<void> {
         const actionRow = msg.components[0];
 
-        const newButton = new MessageButton({
+        const newButton = new ButtonComponent({
             style: "LINK",
             url: "https://google.com",
             disabled: true,
@@ -146,7 +146,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         actionRow.spliceComponents(actionRow.components.length - 1, 1);
         if (savedUrl) {
-            actionRow.addComponents([new MessageButton({ style: "LINK", url: savedUrl, label: "Web Archive" })]);
+            actionRow.addComponents([new ButtonComponent({ style: "LINK", url: savedUrl, label: "Web Archive" })]);
         }
         await msg.edit({ components: msg.components });
     }

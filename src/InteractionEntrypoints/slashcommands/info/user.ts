@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import ordinal from "ordinal";
 import { queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -26,7 +26,7 @@ command.setHandler(async (ctx) => {
     const golds = dbUser.golds.length;
 
     const joinedNum = 444; //await economy.getJoinedNum();
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle(member.displayName)
         .setThumbnail(member.user.displayAvatarURL())
         .addField("Account created on", `${member.user.createdAt}`)

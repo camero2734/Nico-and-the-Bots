@@ -1,14 +1,14 @@
 import { addDays } from "date-fns";
 import {
     Guild,
-    MessageActionRow,
+    ActionRowComponent,
     MessageAttachment,
-    MessageButton,
-    MessageEmbed,
+    ButtonComponent,
+    Embed,
     MessageOptions,
     MessageSelectMenu,
     TextChannel
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -66,15 +66,15 @@ command.setHandler(async (ctx) => {
 
     const link = genApplicationLink(applicationId);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(ctx.member.displayName, ctx.member.displayAvatarURL())
         .setDescription(
             "Click the button below to open the application. It should be pre-filled with your **Application ID**, which is a one-time code. This code is only valid for you, and only once."
         )
         .addField("Application ID", applicationId);
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", url: link, label: "Open Application" })
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ style: "LINK", url: link, label: "Open Application" })
     ]);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -94,7 +94,7 @@ export async function sendToStaff(
         const member = await guild.members.fetch(application.userId);
         if (!member) throw new Error("No member found");
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setAuthor(`${member.displayName}'s application`, member.displayAvatarURL())
             .setFooter(applicationId);
 
@@ -102,7 +102,7 @@ export async function sendToStaff(
             embed.addField(name, value?.substring(0, 1000) || "*Nothing*");
         }
 
-        const actionRow = new MessageActionRow().addComponents([
+        const actionRow = new ActionRowComponent().addComponents([
             new MessageSelectMenu()
                 .addOptions([
                     { label: "Accept", value: ActionTypes.Accept.toString(), emoji: emojiIDs.upvote },
@@ -134,7 +134,7 @@ export async function sendToStaff(
             });
             const totalWarnings = await prisma.warning.count({ where: { warnedUserId: member.id } });
 
-            const warningsEmbed = new MessageEmbed()
+            const warningsEmbed = new Embed()
                 .setTitle(`${member.displayName}'s most recent warnings`)
                 .setFooter(`${totalWarnings} total warning(s)`);
             if (userWarnings.length > 0) {
@@ -151,7 +151,7 @@ export async function sendToStaff(
             // Send message to member
             await F.sendMessageToUser(member, {
                 embeds: [
-                    new MessageEmbed({
+                    new Embed({
                         description: `Your FB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`
                     })
                 ]
@@ -182,7 +182,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     const member = await ctx.guild.members.fetch(application.userId);
     if (!member) throw new CommandError("This member appears to have left the server");
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor("Firebreathers Application results", member.client.user?.displayAvatarURL())
         .setFooter(applicationId);
 
@@ -215,7 +215,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         await ctx.editReply({ embeds: [msgEmbed.setColor("RED")] });
     } else throw new Error("Invalid action type");
 
-    const doneByEmbed = new MessageEmbed()
+    const doneByEmbed = new Embed()
         .setAuthor(ctx.member.displayName, ctx.member.displayAvatarURL())
         .setDescription(
             `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`

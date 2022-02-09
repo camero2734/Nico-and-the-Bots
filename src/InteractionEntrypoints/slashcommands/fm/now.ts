@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -56,9 +56,9 @@ command.setHandler(async (ctx) => {
     let albumPlay: AlbumResponse | null = null;
 
     try {
-        trackPlay = await (await fetch(trackRequest)).json() as Record<string, any>;
-        artistPlay = await (await fetch(artistRequest)).json() as Record<string, any>;
-        albumPlay = await (await fetch(albumRequest)).json() as Record<string, any>;
+        trackPlay = (await (await fetch(trackRequest)).json()) as Record<string, any>;
+        artistPlay = (await (await fetch(artistRequest)).json()) as Record<string, any>;
+        albumPlay = (await (await fetch(albumRequest)).json()) as Record<string, any>;
     } catch (e) {
         console.log(e, /ERROR/);
     }
@@ -90,8 +90,8 @@ command.setHandler(async (ctx) => {
 
     console.log(thumbnail);
 
-    const embed = new MessageEmbed()
-        .setColor("#FF0000")
+    const embed = new Embed()
+        .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
         .addField("Track", trackField, true)
         .addField("Album", albumField, true)
@@ -104,11 +104,11 @@ command.setHandler(async (ctx) => {
             `https://www.last.fm/user/${username}`
         );
 
-    const starActionRow = new MessageActionRow();
+    const starActionRow = new ActionRowComponent();
 
     // Add star button if own FM
     if (selfFM) {
-        const starButton = new MessageButton({
+        const starButton = new ButtonComponent({
             emoji: "⭐",
             label: "0",
             style: "SECONDARY",
@@ -123,7 +123,7 @@ command.setHandler(async (ctx) => {
     }).catch(() => null);
     const trackUrl = spotifyResults?.body.tracks?.items?.[0]?.external_urls.spotify;
     if (trackUrl) {
-        const spotifyButton = new MessageButton({
+        const spotifyButton = new ButtonComponent({
             emoji: emojiIDs.spotify,
             label: "Listen",
             style: "LINK",
@@ -134,7 +134,7 @@ command.setHandler(async (ctx) => {
 
     const geniusResult = await GeniusClient.getSong([trackName, artistName].join(" "));
     if (geniusResult) {
-        const geniusButton = new MessageButton({
+        const geniusButton = new ButtonComponent({
             emoji: emojiIDs.genius,
             label: "Lyrics",
             style: "LINK",

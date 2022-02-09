@@ -1,5 +1,5 @@
 import { channelIDs } from "../Configuration/config";
-import { Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Message, ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
 
 // word1:word2:word3... encoded in base64 to avoid having slurs in plaintext
 const slursEncoded =
@@ -16,7 +16,7 @@ const filter = async (msg: Message): Promise<boolean> => {
     const member = await msg.member?.fetch();
     if (!member) return false;
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(member.displayName, member.user.displayAvatarURL())
         .setTitle("I hope you didn't mean that.")
         .setDescription(
@@ -29,15 +29,15 @@ const filter = async (msg: Message): Promise<boolean> => {
 
     const slurLog = member.guild.channels.cache.get(channelIDs.slurlog) as TextChannel;
 
-    const staffEmbed = new MessageEmbed()
+    const staffEmbed = new Embed()
         .setAuthor(member.displayName, member.user.displayAvatarURL())
-        .setColor("#FF0000")
+        .setColor(0xff0000)
         .setTitle("Slur detected")
         .setDescription(msg.content)
         .addField("Word detected", `\`${slur.replace(/[aeiou]/g, "*")}\``);
 
-    const actionRow = new MessageActionRow();
-    actionRow.addComponents([new MessageButton({ label: "View context", style: "LINK", url: msg.url })]);
+    const actionRow = new ActionRowComponent();
+    actionRow.addComponents([new ButtonComponent({ label: "View context", style: "LINK", url: msg.url })]);
 
     await slurLog.send({ embeds: [staffEmbed], components: [actionRow] });
 

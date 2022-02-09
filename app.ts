@@ -1,5 +1,5 @@
 import { registerFont } from "canvas";
-import * as Discord from "discord.js";
+import * as Discord from "discord.js/packages/discord.js";
 import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
@@ -24,22 +24,20 @@ import { AutocompleteListener, transformAutocompleteInteraction } from "./src/St
 
 const client = new Discord.Client({
     intents: [
-        "GUILDS",
-        "DIRECT_MESSAGES",
-        "DIRECT_MESSAGE_REACTIONS",
-        "GUILDS",
-        "GUILD_BANS",
-        "GUILD_EMOJIS_AND_STICKERS",
-        "GUILD_MEMBERS",
-        "GUILD_MESSAGES",
-        "GUILD_MESSAGE_REACTIONS",
-        // "GUILD_INTEGRATIONS",
-        // "GUILD_INVITES",
-        // "GUILD_PRESENCES",
-        "GUILD_VOICE_STATES"
-        // "GUILD_WEBHOOKS"
+        "Guilds",
+        "DirectMessages",
+        "DirectMessageReactions",
+        "GuildBans",
+        "GuildEmojisAndStickers",
+        "GuildMembers",
+        "GuildMessages",
+        "GuildIntegrations",
+        "GuildInvites",
+        "GuildPresences",
+        "GuildVoiceStates",
+        "GuildWebhooks"
     ],
-    partials: ["REACTION", "USER", "MESSAGE"]
+    partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message]
 });
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
@@ -67,11 +65,11 @@ client.on("ready", async () => {
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
-    await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
+    await botChan.send({ embeds: [new Discord.Embed({ description: "Bot is running" })] });
     await guild.members.fetch();
 
     await botChan.send({
-        embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
+        embeds: [new Discord.Embed({ description: `Fetched all ${guild.members.cache.size} members` })]
     });
 });
 
@@ -90,10 +88,10 @@ client.on("messageUpdate", async (oldMsg, newMsg) => {
 client.on("guildMemberUpdate", async (oldMem, newMem) => {
     if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
         const fbAnnouncementChannel = await newMem.guild.channels.fetch(channelIDs.fairlyannouncements) as Discord.TextChannel; // prettier-ignore
-        const embed = new Discord.MessageEmbed()
-            .setAuthor(newMem.displayName, newMem.displayAvatarURL())
+        const embed = new Discord.Embed()
+            .setAuthor({ name: newMem.displayName, iconURL: newMem.displayAvatarURL() })
             .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
-            .setFooter("PROPERTY OF DRAGON'S DEN INC.™️", newMem.client.user?.displayAvatarURL());
+            .setFooter({ text: "PROPERTY OF DRAGON'S DEN INC.™️", iconURL: newMem.client.user?.displayAvatarURL() });
 
         await fbAnnouncementChannel.send({ embeds: [embed] });
     }
@@ -156,7 +154,7 @@ client.on("interactionCreate", async (interaction) => {
         if (!autocomplete) return console.log(`Failed to find autocomplete ${commandIdentifier}::${optionIdentifier}`);
 
         autocomplete(transformAutocompleteInteraction(interaction));
-    } else if (interaction.isContextMenu()) {
+    } else if (interaction.isContextMenuCommand()) {
         const ctxMenuName = interaction.commandName;
         const contextMenu = ContextMenus.get(ctxMenuName);
         if (!contextMenu) return console.log(`Failed to find context menu ${ctxMenuName}`);

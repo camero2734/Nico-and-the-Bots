@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import WikiJS from "wikijs";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -46,10 +46,7 @@ command.setHandler(async (ctx) => {
 
     if (!condensedSummary || !url || !title) throw new CommandError("Unable to find page info");
 
-    const embed = new MessageEmbed()
-        .setAuthor(title, wikipediaLogo, url)
-        .setColor("#AAACAE")
-        .setDescription(condensedSummary);
+    const embed = new Embed().setAuthor(title, wikipediaLogo, url).setColor(0xaaacae).setDescription(condensedSummary);
 
     if (ctx.opts.full) {
         for (const field of fields.slice(0, 10)) {

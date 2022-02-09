@@ -1,15 +1,15 @@
 import {
     GuildMember,
     GuildMemberRoleManager,
-    MessageActionRow,
+    ActionRowComponent,
     MessageAttachment,
-    MessageButton,
+    ButtonComponent,
     MessageComponentInteraction,
-    MessageEmbed,
+    Embed,
     OverwriteData,
     Snowflake,
     TextChannel
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -105,7 +105,7 @@ command.setHandler(async (ctx) => {
     await jailChan.setParent(categoryIDs.chilltown, { lockPermissions: false });
 
     // Send a message there
-    const jailEmbed = new MessageEmbed()
+    const jailEmbed = new Embed()
         .setDescription(
             "You have been added to jail, which means your conduct has fallen below what is expected of this server.\n\n**Please wait for a staff member.**"
         ) // prettier-ignore
@@ -118,8 +118,8 @@ command.setHandler(async (ctx) => {
 
     jailEmbed.addField("Jailed", F.discordTimestamp(new Date(), "relative"));
 
-    const jailActionRow = new MessageActionRow().addComponents([
-        new MessageButton({
+    const jailActionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({
             style: "SECONDARY",
             label: "Unmute Users",
             customId: genActionId({
@@ -128,7 +128,7 @@ command.setHandler(async (ctx) => {
                 actionType: ActionTypes.UNMUTE_ALL.toString()
             })
         }),
-        new MessageButton({
+        new ButtonComponent({
             style: "DANGER",
             label: "Close channel",
             customId: genActionId({
@@ -144,13 +144,13 @@ command.setHandler(async (ctx) => {
         components: [jailActionRow]
     });
 
-    const commandEmbed = new MessageEmbed()
+    const commandEmbed = new Embed()
         .setAuthor(members[0].displayName, members[0].user.displayAvatarURL())
         .setTitle(`${members.length} user${members.length === 1 ? "" : "s"} jailed`)
         .addField("Users", mentions.join("\n"));
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", label: "View channel", url: m.url })
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ style: "LINK", label: "View channel", url: m.url })
     ]);
     await ctx.send({ embeds: [commandEmbed], components: [actionRow] });
 });
@@ -194,7 +194,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
         await member.roles.remove(roles.muted);
     }
 
-    const replyEmbed = new MessageEmbed({ description: `${args.staffMember} unmuted all users` });
+    const replyEmbed = new Embed({ description: `${args.staffMember} unmuted all users` });
     await ctx.followUp({ embeds: [replyEmbed.toJSON()] });
 
     // Change button to mute
@@ -216,7 +216,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
         await member.roles.add(roles.muted);
     }
 
-    const replyEmbed = new MessageEmbed({ description: `${args.staffMember} remuted all users` });
+    const replyEmbed = new Embed({ description: `${args.staffMember} remuted all users` });
     await ctx.followUp({ embeds: [replyEmbed.toJSON()] });
 
     // Change button to unmute
@@ -247,9 +247,9 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     await msg.edit({ components: [] });
 
     // prettier-ignore
-    const warningEmbed = new MessageEmbed()
+    const warningEmbed = new Embed()
         .setDescription("This channel is currently being archived. Once that is done, the channel will be deleted. You may cancel this by pressing the cancel button within the next 2 minutes.")
-        .setColor("#FF0000")
+        .setColor(0xFF0000)
         .addField("Closed by", `${args.staffMember}`);
 
     const m = await chan.send({ embeds: [warningEmbed] });
@@ -257,8 +257,8 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const timedListener = new TimedInteractionListener(m, <const>["cancelId"]);
     const [cancelId] = timedListener.customIDs;
 
-    const cancelActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Cancel", customId: cancelId, style: "DANGER" })
+    const cancelActionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ label: "Cancel", customId: cancelId, style: "DANGER" })
     ]);
 
     await m.edit({ components: [cancelActionRow] });
@@ -319,7 +319,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
 
     const finalM = await chan.send({
         embeds: [
-            new MessageEmbed({
+            new Embed({
                 description: `Fetched ${messages.size} messages. The channel will be deleted in 30 seconds unless cancelled.`
             })
         ]
@@ -332,7 +332,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     // No turning back now
     await chan.send("Sending channel archive...");
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle("Jail Channel Backup")
         .addField("Users", args.jailedMembers.map((m) => m.toString()).join("\n"))
         .addField("Date", new Date().toString());

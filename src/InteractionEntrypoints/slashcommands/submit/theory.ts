@@ -1,5 +1,5 @@
 import { channelIDs } from "../../../Configuration/config";
-import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
@@ -19,7 +19,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const { title, theory, imageurl } = ctx.opts;
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
         .setColor(ctx.member.displayColor)
         .setTitle(title)
@@ -36,9 +36,9 @@ command.setHandler(async (ctx) => {
 
     const m = await theoryChan.send({ embeds: [embed], components: [actionRow] });
 
-    const responseEmbed = new MessageEmbed({ description: "Your theory has been submitted!" });
-    const responseActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", url: m.url, label: "View post" })
+    const responseEmbed = new Embed({ description: "Your theory has been submitted!" });
+    const responseActionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ style: "LINK", url: m.url, label: "View post" })
     ]);
     await ctx.send({
         embeds: [responseEmbed],

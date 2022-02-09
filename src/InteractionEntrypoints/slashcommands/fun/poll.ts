@@ -1,5 +1,5 @@
 import { Poll, Vote } from "@prisma/client";
-import { EmbedField, GuildEmoji, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
+import { EmbedField, GuildEmoji, Message, ActionRowComponent, Embed, MessageSelectMenu } from "discord.js/packages/discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";
@@ -85,7 +85,7 @@ command.setHandler(async (ctx) => {
         include: { votes: true }
     });
 
-    const embed = new MessageEmbed().setAuthor(title, ctx.user.displayAvatarURL());
+    const embed = new Embed().setAuthor(title, ctx.user.displayAvatarURL());
 
     embed.fields = generateStatsDescription(poll, parsedOptions);
 
@@ -101,7 +101,7 @@ command.setHandler(async (ctx) => {
         selectMenu.addOptions({ label: option.text.substring(0, 100), emoji, value: `${i}` });
     }
 
-    const actionRow = new MessageActionRow().addComponents(selectMenu);
+    const actionRow = new ActionRowComponent().addComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {
@@ -114,7 +114,7 @@ command.setHandler(async (ctx) => {
         });
         await thread.send({
             embeds: [
-                new MessageEmbed({
+                new Embed({
                     description: "Welcome to the discussion for the poll!"
                 })
             ]
@@ -181,7 +181,7 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         .map((opt, idx) => ({ opt, count: votes[idx] }))
         .sort((opt1, opt2) => opt2.count - opt1.count);
 
-    const tempEmbed = new MessageEmbed();
+    const tempEmbed = new Embed();
 
     const toEmoji = (id: string) => `<:name:${id}>`;
     const startEmoji = toEmoji(emojiIDs.poll.start);

@@ -19,12 +19,12 @@ import {
     Collection,
     Guild,
     GuildMember,
-    MessageEmbed,
+    Embed,
     MessageOptions,
     Snowflake,
     TextChannel,
     VoiceChannel
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import SeedRandom from "seed-random";
 import { dropEmojiGuildId, guildID, roles } from "../Configuration/config";
@@ -106,7 +106,7 @@ async function checkMutes(guild: Guild): Promise<void> {
             await member.roles.remove(roles.muted);
             await member.roles.add(roles.banditos);
 
-            const embed = new MessageEmbed({ description: "Your mute has ended." });
+            const embed = new Embed({ description: "Your mute has ended." });
             tryToDM(member, { embeds: [embed] });
         } catch (e) {
             console.log(e, mute.mutedUserId, /UNABLE_TO_UNMUTE/);
@@ -128,7 +128,7 @@ async function checkReminders(guild: Guild): Promise<void> {
             const member = await guild.members.fetch(rem.userId as Snowflake);
 
             const dm = await member.createDM();
-            const embed = new MessageEmbed()
+            const embed = new Embed()
                 .setTitle("Your Reminder")
                 .setDescription(rem.text)
                 .setTimestamp(rem.createdAt);

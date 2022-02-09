@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js";
+import { Snowflake } from "discord.js/packages/discord.js";
 
 declare global {
     interface String {
@@ -7,7 +7,7 @@ declare global {
 }
 
 declare module "discord.js" {
-    interface MessageEmbed {
+    interface Embed {
         toJSON(): Record<string, unknown>;
     }
 }

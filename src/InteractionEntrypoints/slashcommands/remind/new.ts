@@ -1,5 +1,5 @@
 import { addMilliseconds } from "date-fns";
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import parseDuration from "parse-duration";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -45,7 +45,7 @@ command.setHandler(async (ctx) => {
 
     const sendAt = addMilliseconds(new Date(), durationMs);
 
-    const confirmEmbed = new MessageEmbed()
+    const confirmEmbed = new Embed()
         .setTitle("Created reminder")
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
         .addField("Reminder", text)

@@ -2,15 +2,15 @@ import { createCanvas, loadImage } from "canvas";
 import {
     Client,
     GuildMember,
-    MessageActionRow,
+    ActionRowComponent,
     MessageAttachment,
-    MessageButton,
+    ButtonComponent,
     MessageComponentInteraction,
-    MessageEmbed,
+    Embed,
     PartialGuildMember,
     Snowflake,
     TextChannel
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
@@ -107,7 +107,7 @@ export class SacarverBot {
             }
         ];
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Welcome to the twenty one pilots Discord server!")
             .setAuthor(member.displayName, member.user.displayAvatarURL())
             .setDescription(
@@ -121,8 +121,8 @@ export class SacarverBot {
         }
 
         // Functions
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({
+        const actionRow = new ActionRowComponent().addComponents([
+            new ButtonComponent({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",
                 customId: ANNOUNCEMENTS_ID,
@@ -146,7 +146,7 @@ export class SacarverBot {
 
         await interaction.reply({
             embeds: [
-                new MessageEmbed({
+                new Embed({
                     description: `You now have the announcements role! You can remove this at any time by using the \`/roles announcements\` command in <#${channelIDs.commands}>`
                 })
             ],

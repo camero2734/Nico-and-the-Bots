@@ -1,21 +1,21 @@
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed, TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { MessageTools } from "../../../Helpers";
 
 const command = new SlashCommand(<const>{
     description: "Bans a member",
     options: [
-        { name: "user", description: "The member to ban", required: true, type: "USER" },
+        { name: "user", description: "The member to ban", required: true, type: ApplicationCommandOptionType.User },
         {
             name: "purge",
             description: "Whether to delete all messages or not",
             required: false,
-            type: "BOOLEAN"
+            type: ApplicationCommandOptionType.Boolean
         },
-        { name: "reason", description: "Reason for banning", required: false, type: "STRING" },
-        { name: "noappeal", description: "Don't include link for appealing the ban", required: false, type: "BOOLEAN" }
+        { name: "reason", description: "Reason for banning", required: false, type: ApplicationCommandOptionType.String },
+        { name: "noappeal", description: "Don't include link for appealing the ban", required: false, type: ApplicationCommandOptionType.Boolean }
     ]
 });
 
@@ -28,7 +28,7 @@ command.setHandler(async (ctx) => {
         throw new CommandError("You cannot ban a staff member or bot.");
     }
 
-    const bannedEmbed = new MessageEmbed()
+    const bannedEmbed = new Embed()
         .setAuthor(member.displayName, member.displayAvatarURL())
         .setDescription("You have been banned from the twenty one pilots Discord server")
         .addField("Reason", reason || "None provided")
@@ -42,12 +42,12 @@ command.setHandler(async (ctx) => {
 
     await member.ban({ days: purge ? 7 : 0, reason });
 
-    await ctx.send({ embeds: [new MessageEmbed({ description: `${member.toString()} was banned.` }).toJSON()] });
+    await ctx.send({ embeds: [new Embed({ description: `${member.toString()} was banned.` }).toJSON()] });
 
     sendToBanLog(ctx, bannedEmbed);
 });
 
-async function sendToBanLog(ctx: typeof command.ContextType, bannedEmbed: MessageEmbed) {
+async function sendToBanLog(ctx: typeof command.ContextType, bannedEmbed: Embed) {
     const banLogChannel = (await ctx.guild.channels.fetch(channelIDs.banlog)) as TextChannel;
 
     await banLogChannel.send({ embeds: [bannedEmbed] });

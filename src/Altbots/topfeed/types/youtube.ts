@@ -1,4 +1,4 @@
-import { MessageEmbed, MessageOptions } from "discord.js";
+import { Embed, MessageOptions } from "discord.js/packages/discord.js";
 import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";
 import Youtube from "youtube.ts";
@@ -42,11 +42,11 @@ export class YoutubeWatcher extends Watcher<YoutubeType> {
 
     async generateMessages(checkedItems: Checked<YoutubeType>[]): Promise<MessageOptions[][]> {
         return checkedItems.map((item) => {
-            const embed = new MessageEmbed()
+            const embed = new Embed()
                 .setAuthor(`New Youtube video from ${this.handle}`, YOUTUBE_IMG, item._data.url) // prettier-ignore
                 .setThumbnail(item._data.thumbnail)
                 .setDescription(item._data.description.substring(0, 250))
-                .setColor("#FF0000");
+                .setColor(0xff0000);
 
             const infoMsg: MessageOptions = { embeds: [embed] };
             const ytMsg: MessageOptions = { content: item._data.url };

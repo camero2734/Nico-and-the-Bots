@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -18,7 +18,7 @@ command.setHandler(async (ctx) => {
 
     if (!tags || tags.length === 0) throw new CommandError("This person does not have any tags");
 
-    const embed = new MessageEmbed() //
+    const embed = new Embed() //
         .setAuthor(`${member.displayName}'s tags`, member.user.displayAvatarURL());
 
     for (const tag of tags) {

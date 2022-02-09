@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Interaction } from "discord.js";
+import { Interaction } from "discord.js/packages/discord.js";
 import Emittery from "emittery";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { SlashCommand } from "./EntrypointSlashCommand";

@@ -1,7 +1,14 @@
 import { RandomDrop } from ".prisma/client";
 import async from "async";
 import { addMilliseconds, differenceInMilliseconds, endOfDay, startOfDay } from "date-fns";
-import { Emoji, Guild, GuildMember, MessageActionRow, MessageButton, Snowflake } from "discord.js";
+import {
+    Emoji,
+    Guild,
+    GuildMember,
+    ActionRowComponent,
+    ButtonComponent,
+    Snowflake
+} from "discord.js/packages/discord.js";
 import { guild } from "../../../app";
 import { dropEmojiGuildId, roles } from "../../Configuration/config";
 import { MessageTools } from "../../Helpers";
@@ -86,11 +93,11 @@ async function getEmoji(member: GuildMember, guild: Guild): Promise<Emoji | unde
 
 const NUM_BUTTONS = 16;
 export type Guess = { member: GuildMember; idx: number };
-export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Promise<MessageActionRow[]> {
+export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Promise<ActionRowComponent[]> {
     const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
 
-    const buttons: MessageButton[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
-        const button = new MessageButton({
+    const buttons: ButtonComponent[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
+        const button = new ButtonComponent({
             style: "PRIMARY",
             customId: GenBtnId({
                 dropId: drop.id,
@@ -104,7 +111,7 @@ export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Pr
         if (guess) {
             button.setDisabled(true);
             if (drop.winningIndices.includes(idx)) {
-                button.setStyle("SUCCESS");
+                button.setStyle(ButtonStyle.Success);
             } else {
                 button.setStyle("DANGER");
             }

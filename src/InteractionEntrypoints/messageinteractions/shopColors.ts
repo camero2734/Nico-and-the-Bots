@@ -2,11 +2,11 @@
 import {
     EmojiIdentifierResolvable,
     GuildMember,
-    MessageActionRow,
-    MessageButton,
-    MessageEmbed,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
     MessageOptions
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -46,10 +46,10 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
                 .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
                 .setTitle(name)
-                .setColor("#D07A21")
+                .setColor(0xD07A21)
                 .setDescription(`*${category.description}*\n`)
                 .addField("Credits", `${category.data.credits}`)
                 .addField("\u200b", category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063")
@@ -58,13 +58,13 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
 
-    const actionRow = new MessageActionRow().addComponents(
+    const actionRow = new ActionRowComponent().addComponents(
         category.data.roles.map((role) => {
             const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
             const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
             const defaultStyle = contraband ? "DANGER" : "PRIMARY";
 
-            return new MessageButton({
+            return new ButtonComponent({
                 disabled: cantAfford,
                 style: cantAfford || ownsRole ? "SECONDARY" : defaultStyle,
                 label: role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
@@ -75,7 +75,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     );
 
     actionRow.addComponents(
-        new MessageButton({
+        new ButtonComponent({
             style: "DANGER",
             label: "Go back",
             customId: genMainMenuId({})
@@ -112,7 +112,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         ? F.randomizeLetters("thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_", 0.1) // prettier-ignore
         : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(title, shopImage)
         .setTitle(role.name)
         .setColor(role.color)
@@ -132,12 +132,12 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         }
 
         const roleComponents = MessageTools.allocateButtonsIntoRows([
-            new MessageButton({
+            new ButtonComponent({
                 style: "SUCCESS",
                 label: "Purchase",
                 customId: genItemId({ action: `${ActionTypes.Purchase}`, itemId: args.itemId })
             }),
-            new MessageButton({
+            new ButtonComponent({
                 style: "DANGER",
                 label: "Go back",
                 customId: genSubmenuId({ categoryId: category.id })
@@ -199,9 +199,9 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
 
     const dbUser = await queries.findOrCreateUser(member.id);
 
-    const MenuEmbed = new MessageEmbed()
+    const MenuEmbed = new Embed()
         .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
-        .setColor("#D07A21")
+        .setColor(0xD07A21)
         .setDescription(
             [
                 "Welcome to the official Discord color role shop! Feel free to peruse the shop to add a little more... saturation.",
@@ -211,10 +211,10 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<MessageOption
         )
         .setFooter("Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council."); // prettier-ignore
 
-    const menuActionRow = new MessageActionRow().addComponents(
+    const menuActionRow = new ActionRowComponent().addComponents(
         Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
-            return new MessageButton({
+            return new ButtonComponent({
                 style: unlocked ? "PRIMARY" : "SECONDARY",
                 label: unlocked
                     ? `${idx + 1}. ${label}`

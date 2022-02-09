@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -30,7 +30,7 @@ command.setHandler(async (ctx) => {
 
     await prisma.tag.delete({ where: { name: ctx.opts.tag } });
 
-    const embed = new MessageEmbed().setTitle(`Tag ${tag.name} deleted`).setDescription(tag.text);
+    const embed = new Embed().setTitle(`Tag ${tag.name} deleted`).setDescription(tag.text);
 
     try {
         const member = await ctx.guild.members.fetch(tag.userId);

@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
             data: { text: ctx.opts.text }
         });
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle(`Your tag \`${ctx.opts.name}\` was successfully edited`)
             .setDescription(ctx.opts.text);
         await ctx.send({ embeds: [embed.toJSON()] });
@@ -43,13 +43,13 @@ command.setHandler(async (ctx) => {
         data: { value: ctx.opts.text }
     });
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle(`Create tag \`${ctx.opts.name}\`? [${TAG_COST} credits]`)
         .setDescription(ctx.opts.text)
         .setFooter("Select yes or no");
 
-    const actionRow = new MessageActionRow().addComponents(
-        new MessageButton({
+    const actionRow = new ActionRowComponent().addComponents(
+        new ButtonComponent({
             label: "Yes",
             style: "SUCCESS",
             customId: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
@@ -76,7 +76,7 @@ const generateYesID = command.addInteractionListener("tcYes", <const>["name", "t
         prisma.temporaryText.delete({ where: { id } })
     ]);
 
-    const doneEmbed = new MessageEmbed()
+    const doneEmbed = new Embed()
         .setTitle(`Tag created: \`${args.name}\``)
         .setDescription(text)
         .addField("Usage", `Use this tag with the command \`/tags use ${createdTag.name}\``);

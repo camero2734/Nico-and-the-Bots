@@ -1,6 +1,6 @@
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -37,7 +37,7 @@ command.setHandler(async (ctx) => {
     if (isInventoryCmd) {
         const { steals, blocks } = dailyBox;
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Your inventory")
             .addField("📑 Bounties", `${steals} bount${steals === 1 ? "y" : "ies"} available`, true)
             .addField(
@@ -65,14 +65,14 @@ command.setHandler(async (ctx) => {
     const otherDailyBox = otherDBUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: member.id } }));
 
     // Template embed
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(`${ctx.member.displayName}'s Bounty`, ctx.member.user.displayAvatarURL())
         .setFooter(`Bounties remaining: ${dailyBox.steals - 1}`);
 
     const assignedBishop = F.randomValueInArray(districts); // prettier-ignore
 
     // Some dramatic waiting time
-    const waitEmbed = new MessageEmbed(embed)
+    const waitEmbed = new Embed(embed)
         .setDescription(
             `Thank you for reporting <@${user}> to the Dema Council for infractions against the laws of The Sacred Municipality of Dema.\n\nWe have people on the way to find and rehabilitate them under the tenets of Vialism.`
         )
@@ -96,7 +96,7 @@ command.setHandler(async (ctx) => {
             })
         ]);
 
-        const failedEmbed = new MessageEmbed(embed)
+        const failedEmbed = new Embed(embed)
             .setDescription(`<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed.`); // prettier-ignore
 
         await ctx.editReply({ embeds: [failedEmbed] });
@@ -109,7 +109,7 @@ command.setHandler(async (ctx) => {
             }
         });
 
-        const winEmbed = new MessageEmbed(embed).setDescription(
+        const winEmbed = new Embed(embed).setDescription(
             `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${BOUNTY_NUM_CREDITS}\` credits.`
         );
 

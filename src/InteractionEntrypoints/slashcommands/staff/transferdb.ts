@@ -1,5 +1,5 @@
 import { BadgeType, PerkType, WarningType } from ".prisma/client";
-import { Snowflake } from "discord.js";
+import { Snowflake } from "discord.js/packages/discord.js";
 import R from "ramda";
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";

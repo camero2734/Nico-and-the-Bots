@@ -1,5 +1,5 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { Message, MessageEmbed, MessageOptions } from "discord.js";
+import { Message, Embed, MessageOptions } from "discord.js/packages/discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -31,11 +31,11 @@ const generateProgressBar = (): [string, boolean] => {
     return [`${startEmoji}${progress}${endEmoji}\u200b`, elapsedTime > totalTime];
 };
 
-const standardizeEmbed = (embed: MessageEmbed): void => {
+const standardizeEmbed = (embed: Embed): void => {
     embed.fields = [];
     embed
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#7289DA")
+        .setColor(0x7289da)
         .addField("Upgrade almost finished...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
         .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")
         .setFooter(
@@ -47,7 +47,7 @@ const standardizeEmbed = (embed: MessageEmbed): void => {
 const initialMessage = async (): Promise<MessageOptions> => {
     const [progress] = generateProgressBar();
 
-    const embed = new MessageEmbed().setDescription(progress);
+    const embed = new Embed().setDescription(progress);
     standardizeEmbed(embed);
 
     return {

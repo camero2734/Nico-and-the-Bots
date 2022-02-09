@@ -1,4 +1,4 @@
-import { GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from "discord.js";
+import { GuildMember, ActionRowComponent, ButtonComponent, Embed, MessageSelectMenu } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -24,14 +24,14 @@ command.setHandler(async (ctx) => {
 });
 
 // Main list
-async function generateReminderList(member: GuildMember): Promise<[MessageEmbed] | [MessageEmbed, MessageActionRow]> {
+async function generateReminderList(member: GuildMember): Promise<[Embed] | [Embed, ActionRowComponent]> {
     const reminders = await prisma.reminder.findMany({
         where: { userId: member.id },
         orderBy: { sendAt: "asc" }
     });
 
     if (reminders.length < 1) {
-        return [new MessageEmbed({ description: "You don't have any reminders! Create one using `/remind new`" })];
+        return [new Embed({ description: "You don't have any reminders! Create one using `/remind new`" })];
     }
 
     const selectMenu = new MessageSelectMenu()
@@ -48,8 +48,8 @@ async function generateReminderList(member: GuildMember): Promise<[MessageEmbed]
         selectMenu.addOptions([{ label, description, emoji, value: `${r.id}` }]);
     }
 
-    const actionRow = new MessageActionRow().addComponents(selectMenu);
-    const embed = new MessageEmbed()
+    const actionRow = new ActionRowComponent().addComponents(selectMenu);
+    const embed = new Embed()
         .setTitle("Your reminders")
         .setDescription(
             "You may view your reminders in the list below. Selecting one will open a new menu with more information, as well as the ability to delete the reminder."
@@ -83,7 +83,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
         // Delete reminder
         await prisma.reminder.delete({ where: { id } });
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Deleted reminder")
             .setDescription("Your reminder has been deleted.")
             .addField("Text", reminder.text);
@@ -104,15 +104,15 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
         const reminderBody = reminder.text.substring(250);
         const reminderTitle = reminderBody === "" ? reminder.text : `${reminder.text.substring(0, 250)}...`;
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle(reminderTitle)
             .addField("Sending", `${sendTS} (${sendTSRelative})`)
             .addField("Created", madeTS);
 
         if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({
+        const actionRow = new ActionRowComponent().addComponents([
+            new ButtonComponent({
                 label: "Back to List",
                 style: "PRIMARY",
                 customId: genActionId({
@@ -120,7 +120,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
                     actionType: ActionTypes.ShowList.toString()
                 })
             }),
-            new MessageButton({
+            new ButtonComponent({
                 label: "Delete Reminder",
                 style: "DANGER",
                 customId: genActionId({

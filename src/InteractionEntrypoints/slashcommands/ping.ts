@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
 
 interface Ping {
@@ -41,7 +41,7 @@ command.setHandler(async (ctx) => {
 
     const average = Math.floor(pingSum / pingCount);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setColor("RANDOM")
         .setTitle(`Pinged ${currentPing}ms`)
         .addField("Heartbeat", `${Math.floor(ctx.client.ws.ping)}ms`)

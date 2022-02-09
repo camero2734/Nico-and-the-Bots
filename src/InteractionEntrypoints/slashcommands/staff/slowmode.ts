@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -14,7 +14,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.channel.setRateLimitPerUser(ctx.opts.time);
 
-    const embed = new MessageEmbed().setAuthor(
+    const embed = new Embed().setAuthor(
         `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
         ctx.client.user?.displayAvatarURL()
     );

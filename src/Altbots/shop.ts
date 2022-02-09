@@ -1,4 +1,4 @@
-import { Client, Intents, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Client, ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
 import secrets from "../Configuration/secrets";
 import { channelIDs, guildID } from "../Configuration/config";
 import { GenBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
@@ -10,20 +10,18 @@ export class KeonsBot {
     constructor() {
         this.client = new Client({
             intents: [
-                "GUILDS",
-                "DIRECT_MESSAGES",
-                "DIRECT_MESSAGE_REACTIONS",
-                "GUILDS",
-                "GUILD_BANS",
-                "GUILD_EMOJIS_AND_STICKERS",
-                "GUILD_MEMBERS",
-                "GUILD_MESSAGES",
-                "GUILD_MESSAGE_REACTIONS",
-                "GUILD_INTEGRATIONS",
-                "GUILD_INVITES",
-                "GUILD_PRESENCES",
-                "GUILD_VOICE_STATES",
-                "GUILD_WEBHOOKS"
+                "Guilds",
+                "DirectMessages",
+                "DirectMessageReactions",
+                "GuildBans",
+                "GuildEmojisAndStickers",
+                "GuildMembers",
+                "GuildMessages",
+                "GuildIntegrations",
+                "GuildInvites",
+                "GuildPresences",
+                "GuildVoiceStates",
+                "GuildWebhooks"
             ]
         });
         this.client.login(secrets.bots.keons);
@@ -43,10 +41,10 @@ export class KeonsBot {
 
         await chan.bulkDelete(100); // Delete all messages
 
-        const welcomeEmbed = new MessageEmbed()
+        const welcomeEmbed = new Embed()
             .setAuthor("Good Day Dema® Discord Shop", "https://i.redd.it/wd53naq96lr61.png")
             .setTitle("Welcome!")
-            .setColor("#D07A21")
+            .setColor(0xd07a21)
             .setDescription(
                 "Welcome to the ever-expanding Good Day Dema® Discord Shop! We are currently offering **five fantastic color role collections!**"
             )
@@ -74,8 +72,8 @@ export class KeonsBot {
                 "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited."
             );
 
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({ style: "PRIMARY", label: "Color Roles", customId: GenBtnId({}) }) //
+        const actionRow = new ActionRowComponent().addComponents([
+            new ButtonComponent({ style: "PRIMARY", label: "Color Roles", customId: GenBtnId({}) }) //
         ]);
 
         await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });

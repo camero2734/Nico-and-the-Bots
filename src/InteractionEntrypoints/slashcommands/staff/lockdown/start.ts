@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -36,7 +36,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({ content: "`Lockdown successful`" });
 
-    const lockEmbed = new MessageEmbed()
+    const lockEmbed = new Embed()
         .setTitle("Lockdown started")
         .setDescription(
             "A lockdown has been started by a staff member. Until they unlock the channel, non-staff will not be allowed to talk in the channel."

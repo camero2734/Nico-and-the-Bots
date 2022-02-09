@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import R from "ramda";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -45,7 +45,7 @@ command.setHandler(async (ctx) => {
 
     const averageSeverity = R.mean(warns.map((w) => w.severity || 5));
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(`${member.displayName}'s warnings`, member.user.displayAvatarURL())
         .setColor([(255 * averageSeverity) / 10, 0, 0])
         .setFooter(`Page ${page}/${numPages}`);

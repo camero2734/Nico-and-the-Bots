@@ -1,5 +1,12 @@
 import { addDays } from "date-fns";
-import { Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
+import {
+    Message,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    Snowflake,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -31,9 +38,9 @@ ctxMenu.setHandler(async (ctx, msg) => {
             );
         }
 
-        const embed = new MessageEmbed().setDescription(MESSAGE_ALREADY_GOLD);
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({ label: "View post", style: "LINK", url: givenGold.houseOfGoldMessageUrl })
+        const embed = new Embed().setDescription(MESSAGE_ALREADY_GOLD);
+        const actionRow = new ActionRowComponent().addComponents([
+            new ButtonComponent({ label: "View post", style: "LINK", url: givenGold.houseOfGoldMessageUrl })
         ]);
 
         return ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -82,9 +89,9 @@ async function handleGold(
 
     const goldBaseEmbed = isAdditionalGold
         ? msg.embeds[0]
-        : new MessageEmbed()
+        : new Embed()
               .setAuthor(originalMember.displayName, originalMember.user.displayAvatarURL())
-              .setColor("#FCE300")
+              .setColor(0xfce300)
               .addField("Channel", `${msg.channel}`, true)
               .addField("Posted", F.discordTimestamp(new Date(), "shortDateTime"), true)
               .addField("Message", msg.content || "*No content*")
@@ -95,25 +102,25 @@ async function handleGold(
         if (url) goldBaseEmbed.setImage(url);
     }
 
-    let askEmbed = new MessageEmbed(goldBaseEmbed).addField("\u200b", "**Would you like to give gold to this message?**"); // prettier-ignore
+    let askEmbed = new Embed(goldBaseEmbed).addField("\u200b", "**Would you like to give gold to this message?**"); // prettier-ignore
     if (isAdditionalGold) {
-        askEmbed = new MessageEmbed()
+        askEmbed = new Embed()
             .setAuthor(originalMember.displayName, originalMember.user.displayAvatarURL())
-            .setColor("#FCE300")
+            .setColor(0xfce300)
             .setDescription("Would you like to add another gold to this message?");
     }
 
     const timedListener = new TimedInteractionListener(ctx, <const>["goldCtxYes", "goldCtxNo"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({
             label: `Yes (${cost} credits)`,
             emoji: emojiIDs.gold,
             style: "PRIMARY",
             customId: yesId
         }),
-        new MessageButton({ label: "No", style: "SECONDARY", customId: noId })
+        new ButtonComponent({ label: "No", style: "SECONDARY", customId: noId })
     ]);
 
     await ctx.editReply({
@@ -137,8 +144,8 @@ async function handleGold(
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0); // prettier-ignore
 
-    const goldActionRow = new MessageActionRow().addComponents([
-        new MessageButton({
+    const goldActionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({
             label: `${numGolds} Gold${F.plural(numGolds)}`,
             emoji: emojiIDs.gold,
             style: "PRIMARY",
@@ -148,10 +155,10 @@ async function handleGold(
                 originalChannelId
             })
         }),
-        new MessageButton({ label: "View message", style: "LINK", url: originalMessageUrl })
+        new ButtonComponent({ label: "View message", style: "LINK", url: originalMessageUrl })
     ]);
 
-    const goldEmbed = new MessageEmbed(goldBaseEmbed);
+    const goldEmbed = new Embed(goldBaseEmbed);
     const idx = goldEmbed.fields.findIndex((f) => f.name === NOT_CERTIFIED_FIELD);
     if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
@@ -193,10 +200,10 @@ async function handleGold(
         return m;
     }, {timeout: 15000, maxWait: 15000}); // prettier-ignore
 
-    const replyEmbed = new MessageEmbed().setDescription("Gold successfully given");
+    const replyEmbed = new Embed().setDescription("Gold successfully given");
 
-    const replyActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "View post", style: "LINK", url: goldMessage.url })
+    const replyActionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ label: "View post", style: "LINK", url: goldMessage.url })
     ]);
 
     ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });

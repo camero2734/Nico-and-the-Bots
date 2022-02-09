@@ -1,6 +1,6 @@
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
 
             \`4.\` The \`/fm now\` command should now work properly and display what you are currently listening to!`.replace(/^ +/gm,"");
         await ctx.send({
-            embeds: [new MessageEmbed({ description: instructions, color: "RANDOM" })]
+            embeds: [new Embed({ description: instructions, color: "RANDOM" })]
         });
         return;
     }
@@ -49,7 +49,7 @@ command.setHandler(async (ctx) => {
     const lastTrack = await getMostRecentTrack(ctx.opts.username);
     const avatar = ctx.user.displayAvatarURL();
 
-    let trackEmbed = new MessageEmbed()
+    let trackEmbed = new Embed()
         .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
         .setTitle(`You have not scrobbled any songs yet. Is this your profile?`)
         .setDescription(
@@ -58,7 +58,7 @@ command.setHandler(async (ctx) => {
         .setFooter("Respond with yes or no");
 
     if (lastTrack?.name) {
-        trackEmbed = new MessageEmbed()
+        trackEmbed = new Embed()
             .setAuthor(fmUsername, avatar, `https://www.last.fm/user/${fmUsername}`)
             .setTitle("This is your most recently scrobbled song. Does this look correct?")
             .addField("Track", lastTrack.name, true)
@@ -72,9 +72,9 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Yes", style: "SUCCESS", customId: yesId }),
-        new MessageButton({ label: "No", style: "DANGER", customId: noId })
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ label: "Yes", style: "SUCCESS", customId: yesId }),
+        new ButtonComponent({ label: "No", style: "DANGER", customId: noId })
     ]);
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });
@@ -82,7 +82,7 @@ command.setHandler(async (ctx) => {
     const [buttonPressed] = await timedListener.wait();
 
     if (buttonPressed !== yesId) {
-        const failEmbed = new MessageEmbed({ description: "Setting FM username cancelled." });
+        const failEmbed = new Embed({ description: "Setting FM username cancelled." });
         await ctx.editReply({ embeds: [failEmbed], components: [] });
         return;
     }
@@ -94,7 +94,7 @@ command.setHandler(async (ctx) => {
     });
 
     await ctx.send({
-        embeds: [new MessageEmbed({ description: `Succesfully updated your FM username to \`${fmUsername}\`` })],
+        embeds: [new Embed({ description: `Succesfully updated your FM username to \`${fmUsername}\`` })],
         components: []
     });
 

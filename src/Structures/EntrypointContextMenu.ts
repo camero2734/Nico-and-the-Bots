@@ -1,4 +1,4 @@
-import { ApplicationCommandData, ContextMenuInteraction, GuildMember, Message, TextChannel } from "discord.js";
+import { ApplicationCommandData, ContextMenuInteraction, GuildMember, Message, TextChannel } from "discord.js/packages/discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, ContextMenus } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";

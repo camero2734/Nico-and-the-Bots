@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import Fuse from "fuse.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -12,8 +12,8 @@ class Rule {
         this.num = ++Rule.ruleNum;
     }
     send(ctx: typeof command.ContextType) {
-        const embed = new MessageEmbed()
-            .setColor("#E6FAFC")
+        const embed = new Embed()
+            .setColor(0xe6fafc)
             .setTitle(`Rule ${this.num}`)
             .setDescription(this.text)
             .setFooter(this.category);

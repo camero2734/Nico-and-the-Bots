@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { ActionRowComponent, ButtonComponent, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
@@ -14,13 +14,13 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
 
     const staffChan = (await ctx.guild.channels.fetch(channelIDs.staff)) as TextChannel;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", label: "View original", url: ctx.message.url })
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ style: "LINK", label: "View original", url: ctx.message.url })
     ]);
     const msg = await staffChan.send({ embeds: [embed], components: [actionRow] });
     const thread = await msg.startThread({ name: args.title, autoArchiveDuration: 60 });
 
-    const threadEmbed = new MessageEmbed()
+    const threadEmbed = new Embed()
         .setTitle(args.title)
         .setAuthor(`${ctx.member.displayName} requested discussion`, ctx.user.displayAvatarURL())
         .setDescription("Feel free to discuss this incident in this thread");
@@ -42,7 +42,7 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
               .join(", ")
         : "*None*";
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(member.displayName, member.user.displayAvatarURL())
         .setTitle(`${commandName} used`)
         .addField("Args", args)
@@ -50,8 +50,8 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
 
     const staffCommandLogChan = (await member.guild.channels.fetch(channelIDs.logs.staffCommands)) as TextChannel;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({
             style: "PRIMARY",
             label: "Discuss in #staff",
             customId: GenStaffDiscussId({ title: `${commandName} used by ${member.displayName}` })

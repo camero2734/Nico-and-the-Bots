@@ -6,14 +6,14 @@ import {
     EmojiIdentifierResolvable,
     GuildMember,
     Message,
-    MessageActionRow,
-    MessageButton,
+    ActionRowComponent,
+    ButtonComponent,
     MessageComponentInteraction,
-    MessageEmbed,
+    Embed,
     MessageSelectMenu,
     MessageSelectOptionData,
     SelectMenuInteraction
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import fs from "fs";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
@@ -46,7 +46,7 @@ command.setHandler(async (ctx) => {
         ].join("\n\n")
     );
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
         .addField(
@@ -54,7 +54,7 @@ command.setHandler(async (ctx) => {
             `You have ${tokens} token${tokens === 1 ? "" : "s"} available. A token is used when searching a district.`
         )
         .addField("**CONSOLE**", description)
-        .setColor("#FCE300")
+        .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setFooter(
             `Choose a district. The further down the list, the higher the potential prize, but the chances of getting "caught" by the Bishop is also higher.`
@@ -72,10 +72,10 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new MessageActionRow().addComponents(menu);
+    const actionRow = new ActionRowComponent().addComponents(menu);
 
-    const buttonActionRow = new MessageActionRow().addComponents(
-        new MessageButton({
+    const buttonActionRow = new ActionRowComponent().addComponents(
+        new ButtonComponent({
             label: "View Supply List",
             customId: genButtonId({}),
             style: "PRIMARY"
@@ -126,9 +126,9 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#FCE300")
+        .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setFooter(
             "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
@@ -176,8 +176,8 @@ async function memberCaught(
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 
-    const embed = new MessageEmbed()
-        .setColor("#EA523B")
+    const embed = new Embed()
+        .setColor(0xea523b)
         .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
         .setAuthor(district.bishop, emojiURL)
         .setDescription(
@@ -242,9 +242,9 @@ async function memberWon(
 
     const prizeName = getPrizeName(prize);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#FCE300")
+        .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setTitle(`You found a ${prizeName}!`)
         .setDescription(prizeDescription)

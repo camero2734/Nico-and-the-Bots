@@ -1,7 +1,7 @@
 import { WarningType } from "@prisma/client";
 import { CommandError } from "../../../../Configuration/definitions";
 import { subYears } from "date-fns";
-import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { GuildMember, ActionRowComponent, ButtonComponent, Embed } from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
@@ -48,7 +48,7 @@ command.setHandler(async (ctx) => {
     if (!ruleBroken) throw new CommandError(`Invalid rule given. Please choose one of:\n- ${rules.join("\n- ")}`);
     if (severity < 1 || severity > 10) throw new CommandError("Invalid severity. Must be between 1 and 10.");
 
-    const confirmationEmbed = new MessageEmbed()
+    const confirmationEmbed = new Embed()
         .setTitle("Would you like to submit this warning?")
         .addField("User", `<@${user}>`)
         .addField("Explanation", explanation)
@@ -58,8 +58,8 @@ command.setHandler(async (ctx) => {
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({
             label: "Submit Warning",
             style: "PRIMARY",
             customId: submitId
@@ -70,7 +70,7 @@ command.setHandler(async (ctx) => {
 
     const [buttonPressed] = await ephemeralListener.wait();
     if (buttonPressed !== submitId) {
-        await ctx.editReply({ embeds: [new MessageEmbed({ description: "Warning not submitted" })], components: [] });
+        await ctx.editReply({ embeds: [new Embed({ description: "Warning not submitted" })], components: [] });
         return;
     }
 
@@ -124,8 +124,8 @@ async function autoJailCheck(ctx: typeof command["ContextType"], member: GuildMe
     console.log(`Recent warns: ${recentWarns}`);
 
     if (recentWarns < 3) {
-        const embed = new MessageEmbed();
-        embed.setColor("#FF0000");
+        const embed = new Embed();
+        embed.setColor(0xff0000);
         embed.setDescription(
             `${Math.max(0, 3 - recentWarns)} more warning${
                 recentWarns === 1 ? "" : "s"

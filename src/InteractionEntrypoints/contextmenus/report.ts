@@ -1,12 +1,12 @@
 import {
-    MessageActionRow,
+    ActionRowComponent,
     MessageAttachment,
-    MessageButton,
-    MessageEmbed,
+    ButtonComponent,
+    Embed,
     MessageOptions,
     MessageSelectMenu,
     TextChannel
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { ValueOf } from "ts-essentials";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
@@ -29,7 +29,7 @@ const ctxMenu = new MessageContextMenu("🚩 Report message");
 ctxMenu.setHandler(async (ctx, msg) => {
     await ctx.deferReply({ ephemeral: true });
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle("Report message")
         .setDescription(
             "If you want to report this message to the server staff, please choose the reason in the dropdown below.\n\nIf this was an accident, you may safely ignore this message"
@@ -39,7 +39,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
         .addOptions(Object.entries(ReportReasons).map(([key, value]) => ({ label: value, value: key })));
 
-    const actionRow = new MessageActionRow().addComponents(selectMenu);
+    const actionRow = new ActionRowComponent().addComponents(selectMenu);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -92,7 +92,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
 
         btn.setLabel(NUM_PEOPLE_TEXT(priorReports.length + 1));
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setDescription("A new report was added for this message")
             .addField("Reason", reasonText)
             .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
@@ -110,21 +110,21 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         await staffMsg.edit({ components: [actionRow] });
         await staffMsg.reply({ embeds: [embed] });
     } else {
-        const staffEmbed = new MessageEmbed()
+        const staffEmbed = new Embed()
             .setAuthor(msgMember.displayName, msgMember.displayAvatarURL())
             .setTitle("Message Reported")
             .setDescription(msg.content)
             .addField("Reason", ReportReasons[selectedReason])
             .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
 
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({
+        const actionRow = new ActionRowComponent().addComponents([
+            new ButtonComponent({
                 label: NUM_PEOPLE_TEXT(1),
                 style: "PRIMARY",
                 disabled: true,
                 customId: NULL_CUSTOM_ID()
             }),
-            new MessageButton({ label: "View message", style: "LINK", url: msg.url })
+            new ButtonComponent({ label: "View message", style: "LINK", url: msg.url })
         ]);
 
         const msgOpts: MessageOptions = { embeds: [staffEmbed], components: [actionRow] };
@@ -153,7 +153,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
     }
 
     await ctx.editReply({
-        embeds: [new MessageEmbed({ description: "Your report has been submitted." })],
+        embeds: [new Embed({ description: "Your report has been submitted." })],
         components: []
     });
 });

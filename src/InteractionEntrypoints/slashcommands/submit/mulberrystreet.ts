@@ -1,6 +1,12 @@
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import {
+    ActionRowComponent,
+    MessageAttachment,
+    ButtonComponent,
+    Embed,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
@@ -71,9 +77,9 @@ command.setHandler(async (ctx) => {
 
     const fileName = `${title.split(" ").join("-")}.${fileType.ext}`;
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .setColor("#E3B3D8")
+        .setColor(0xe3b3d8)
         .setTitle(`"${title}"`)
         .setDescription(
             `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
@@ -84,8 +90,8 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "SUCCESS", label: "Submit", customId: yesId })
+    const actionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ style: "SUCCESS", label: "Submit", customId: yesId })
     ]);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -93,7 +99,7 @@ command.setHandler(async (ctx) => {
     const [buttonPressed] = await timedListener.wait();
     if (buttonPressed !== yesId) {
         await ctx.editReply({
-            embeds: [new MessageEmbed({ description: "Submission cancelled." })],
+            embeds: [new Embed({ description: "Submission cancelled." })],
             components: []
         });
         return;
@@ -118,8 +124,8 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", label: "View post", url: m.url })
+    const newActionRow = new ActionRowComponent().addComponents([
+        new ButtonComponent({ style: "LINK", label: "View post", url: m.url })
     ]);
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });

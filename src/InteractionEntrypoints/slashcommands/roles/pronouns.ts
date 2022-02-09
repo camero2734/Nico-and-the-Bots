@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageEmbed, MessageSelectMenu, Snowflake } from "discord.js";
+import { ActionRowComponent, Embed, MessageSelectMenu, Snowflake } from "discord.js/packages/discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -16,13 +16,13 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select your pronoun role(s) from the list")
         .addOptions(Object.entries(roles.pronouns).map(([name, id]) => ({ label: name, value: id })));
 
-    const selectEmbed = new MessageEmbed()
+    const selectEmbed = new Embed()
         .setTitle("Select your pronoun role(s)")
         .setDescription(
             `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
         );
 
-    const actionRow = new MessageActionRow().addComponents(selectMenu);
+    const actionRow = new ActionRowComponent().addComponents(selectMenu);
 
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });
@@ -42,7 +42,7 @@ const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[
     // Give the pronoun roles mentioned
     for (const r of rolesSelected) await ctx.member.roles.add(r);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL())
         .setDescription(`Your pronoun roles have been updated!`);
 

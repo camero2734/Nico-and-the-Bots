@@ -1,5 +1,5 @@
 import { VerifiedQuizAnswer } from "@prisma/client";
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import R from "ramda";
 import progressBar from "string-progressbar";
 import F from "../../../Helpers/funcs";
@@ -51,7 +51,7 @@ command.setHandler(async (ctx) => {
 
     const topSortedStats = sortedStats.filter((s) => s.question).slice(0, 10);
 
-    const embed = new MessageEmbed().setTitle(`${F.titleCase(ctx.opts.stat)} Verified Quiz Questions`);
+    const embed = new Embed().setTitle(`${F.titleCase(ctx.opts.stat)} Verified Quiz Questions`);
 
     for (const stat of topSortedStats) {
         const questionName = stat.question.question.split("\n")[0];

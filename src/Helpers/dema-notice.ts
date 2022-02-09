@@ -1,6 +1,6 @@
 import { BishopType, ViolationType } from "@prisma/client";
 import { createCanvas, loadImage } from "canvas";
-import { GuildMember, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { GuildMember, MessageAttachment, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -112,7 +112,7 @@ export async function sendViolationNotice(
     // Allow user to see channel
     await chan.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true });
 
-    const transmissionEmbed = new MessageEmbed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
+    const transmissionEmbed = new Embed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
     const m = await chan.send({
         content: `${member}`,
         embeds: [transmissionEmbed],

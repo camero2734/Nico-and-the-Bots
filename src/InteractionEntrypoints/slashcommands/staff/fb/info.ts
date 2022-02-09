@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
 
     const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor("Firebreather Application Stats", fbRole?.iconURL() || undefined)
         .addField("Awaiting submission", `${unsubmitted} application${F.plural(unsubmitted)}`)
         .addField("Needs decision", `${awaiting} application${F.plural(awaiting)}`)

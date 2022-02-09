@@ -1,6 +1,6 @@
 import { guildID } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed, Snowflake, TextChannel } from "discord.js";
+import { Embed, Snowflake, TextChannel } from "discord.js/packages/discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import F from "../../../Helpers/funcs";
@@ -22,7 +22,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const rawURL = ctx.opts.messageurl;
 
-    const explainEmbed = new MessageEmbed().setDescription(
+    const explainEmbed = new Embed().setDescription(
         [
             "Because join dates previously weren't stored, this command allows you to restore your join date to when your first message was sent.",
             "",
@@ -67,7 +67,7 @@ command.setHandler(async (ctx) => {
     const oldJoinedNum = await queries.getJoinedNum(dbUser.joinedAt);
     const newJoinedNum = await queries.getJoinedNum(msg.createdAt);
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
         .setDescription("Your join date was updated!")
         .addField("Reference message", msg.content || "*No content*")

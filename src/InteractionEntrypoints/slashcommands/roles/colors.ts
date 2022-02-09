@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed } from "discord.js/packages/discord.js";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -30,7 +30,7 @@ command.setHandler(async (ctx) => {
     }
 
     if (!role) {
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Your Color Roles")
             .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
             .addField(
@@ -60,13 +60,13 @@ command.setHandler(async (ctx) => {
 
     // If they requested a role they already had, leave them with no color roles
     if (currentlyEquippedRoles.includes(role)) {
-        const embed = new MessageEmbed().setTitle("Success!").setDescription("Removed your color role");
+        const embed = new Embed().setTitle("Success!").setDescription("Removed your color role");
         return ctx.send({ embeds: [embed] });
     }
 
     // Otherwise add the role they requested
     await ctx.member.roles.add(role);
-    const embed = new MessageEmbed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
+    const embed = new Embed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
     return ctx.send({ embeds: [embed] });
 });
 

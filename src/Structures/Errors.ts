@@ -1,4 +1,4 @@
-import { CommandInteraction, DMChannel, Interaction, MessageEmbed, TextChannel } from "discord.js";
+import { CommandInteraction, DMChannel, Interaction, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { rollbar } from "../Helpers/logging/rollbar";
 
@@ -11,7 +11,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
     if (!ectx.send) return;
 
     if (e instanceof CommandError) {
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setDescription(e.message)
             .setTitle("An error occurred!")
             .setFooter("DEMA internet machine broke");
@@ -25,7 +25,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
         console.log(`Unknown error:`, e);
         if (e instanceof Error) rollbar.error(e);
         else rollbar.error(`${e}`);
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("An unknown error occurred!")
             .setFooter("DEMA internet machine really broke");
         ectx.send({ embeds: [embed], components: [], ephemeral: true });

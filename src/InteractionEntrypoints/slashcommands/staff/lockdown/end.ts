@@ -1,5 +1,5 @@
 import { APIOverwrite } from "discord-api-types";
-import { MessageEmbed, OverwriteData, OverwriteResolvable, PermissionOverwrites } from "discord.js";
+import { Embed, OverwriteData, OverwriteResolvable, PermissionOverwrites } from "discord.js/packages/discord.js";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
@@ -30,7 +30,7 @@ command.setHandler(async (ctx) => {
     // Disable talking permissions for non-staff
     await ctx.send({ content: "`Lockdown successfully ended`" });
 
-    const lockEndEmbed = new MessageEmbed()
+    const lockEndEmbed = new Embed()
         .setTitle("Lockdown ended")
         .setDescription("The lockdown in this channel has ended. Normal channel permissions have been restored.");
 

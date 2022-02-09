@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CollectorFilter, Message, MessageComponentInteraction } from "discord.js";
+import { CollectorFilter, Message, MessageComponentInteraction } from "discord.js/packages/discord.js";
 import F from "../Helpers/funcs";
 import { ContextMenu } from "./EntrypointContextMenu";
 import { SlashCommand } from "./EntrypointSlashCommand";

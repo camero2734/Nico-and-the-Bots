@@ -6,7 +6,7 @@ import {
     ApplicationCommandOptionType,
     ActionRow,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

@@ -9,7 +9,7 @@ import {
     ApplicationCommandOptionType,
     ActionRow,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";

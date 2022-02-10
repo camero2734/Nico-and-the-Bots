@@ -7,7 +7,7 @@ import {
     SelectMenuComponent,
     SelectMenuOption,
     ActionRow
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";

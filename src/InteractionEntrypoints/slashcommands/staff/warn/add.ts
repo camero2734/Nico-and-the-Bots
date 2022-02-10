@@ -9,7 +9,7 @@ import {
     ApplicationCommandOptionType,
     ActionRow,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
 import { prisma, queries } from "../../../../Helpers/prisma-init";

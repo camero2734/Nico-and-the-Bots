@@ -10,7 +10,7 @@ import {
     Snowflake,
     ActionRow,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";

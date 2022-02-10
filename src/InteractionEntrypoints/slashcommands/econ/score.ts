@@ -1,13 +1,7 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import {
-    GuildMember,
-    Snowflake,
-    ApplicationCommandOptionType,
-    Embed,
-    MessageAttachment
-} from "discord.js/packages/discord.js";
+import { GuildMember, Snowflake, ApplicationCommandOptionType, Embed, MessageAttachment } from "discord.js";
 import { badgeLoader, LevelCalculator } from "../../../Helpers";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { prisma, queries } from "../../../Helpers/prisma-init";

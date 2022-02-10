@@ -1,4 +1,4 @@
-import { Embed, Snowflake, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, Snowflake, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

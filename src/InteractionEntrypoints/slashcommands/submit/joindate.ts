@@ -1,6 +1,6 @@
 import { guildID } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, Snowflake, TextChannel, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, Snowflake, TextChannel, ApplicationCommandOptionType } from "discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import F from "../../../Helpers/funcs";
@@ -37,7 +37,7 @@ command.setHandler(async (ctx) => {
     );
 
     if (!rawURL) {
-        return await ctx.send({ embeds: [explainEmbed.toJSON()] });
+        return await ctx.send({ embeds: [explainEmbed] });
     }
 
     // Ensure it is a valid URL
@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
         data: { joinedAt: msg.createdAt }
     });
 
-    await ctx.send({ embeds: [embed.toJSON()] });
+    await ctx.send({ embeds: [embed] });
 });
 
 export default command;

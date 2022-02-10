@@ -10,7 +10,7 @@ import {
     SelectMenuComponent,
     SelectMenuOption,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";

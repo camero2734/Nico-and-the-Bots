@@ -8,7 +8,7 @@ import {
     Colors,
     ActionRow,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import fetch from "node-fetch";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

@@ -8,7 +8,7 @@ import {
     Snowflake,
     TextChannel,
     ActionRow
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { constants } from "../Configuration/config";
 
 export function strEmbed(strings: TemplateStringsArray, color?: number): Embed {

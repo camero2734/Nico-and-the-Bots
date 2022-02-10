@@ -10,7 +10,7 @@ import {
     Snowflake,
     ButtonStyle,
     ActionRow
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { guild } from "../../../app";
 import { dropEmojiGuildId, roles } from "../../Configuration/config";
 import { MessageTools } from "../../Helpers";

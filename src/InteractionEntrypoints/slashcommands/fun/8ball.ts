@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

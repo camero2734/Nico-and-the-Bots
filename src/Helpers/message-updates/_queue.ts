@@ -1,6 +1,6 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { minutesToMilliseconds } from "date-fns";
-import { Collection, Message, MessageOptions, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import { Collection, Message, MessageOptions, Snowflake, TextChannel } from "discord.js";
 import IORedis from "ioredis";
 import { NicoClient } from "../../../app";
 import { guildID } from "../../Configuration/config";
@@ -9,7 +9,9 @@ import { prisma } from "../prisma-init";
 import { UpdateProgress } from "./update-progress";
 
 const QUEUE_NAME = "MessageUpdates";
-const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
+const redisOpts = {
+    connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false })
+};
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 

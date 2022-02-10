@@ -8,7 +8,7 @@ import {
     SelectMenuComponent,
     SelectMenuOption,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

@@ -1,5 +1,5 @@
 import * as bigintConversion from "bigint-conversion";
-import { Guild, GuildMember, Message, MessageOptions, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import { Guild, GuildMember, Message, MessageOptions, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import * as crypto from "crypto";

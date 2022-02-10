@@ -13,7 +13,7 @@ import {
     OverwriteData,
     Snowflake,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

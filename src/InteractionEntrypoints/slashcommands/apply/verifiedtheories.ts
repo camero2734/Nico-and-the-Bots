@@ -10,7 +10,7 @@ import {
     ApplicationCommandOptionType,
     ActionRow,
     ButtonStyle
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import F from "../../../Helpers/funcs";
 import { Question } from "../../../Helpers/verified-quiz/question";
 import R from "ramda";

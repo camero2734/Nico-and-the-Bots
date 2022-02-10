@@ -1,6 +1,6 @@
 import { createCanvas, Image, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType, Colors } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType, Colors } from "discord.js";
 import fetch from "node-fetch";
 import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

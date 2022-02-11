@@ -15,12 +15,19 @@ import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";
-import { ContextMenus, InteractionHandlers, ReactionHandlers, SlashCommands } from "./src/Structures/data";
+import {
+    ApplicationData,
+    ContextMenus,
+    InteractionHandlers,
+    ReactionHandlers,
+    SlashCommands
+} from "./src/Structures/data";
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import "./src/Helpers/message-updates/_queue";
 import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
+import http from "http";
 
 const client = new Discord.Client({
     intents: [
@@ -187,3 +194,6 @@ async function setup() {
 }
 
 export const NicoClient = client;
+
+const server = http.createServer();
+server.listen(4242, "127.0.0.1");

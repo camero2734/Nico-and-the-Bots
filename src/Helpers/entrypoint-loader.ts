@@ -34,8 +34,7 @@ async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
         await Promise.all(
             paths.map(async (path) => {
                 try {
-                    const imported = (await import(`${path.full}`));
-                    const slashCommand = imported.default;
+                    const slashCommand = (await import(`${path.full}`)).default;
                     if (!(slashCommand instanceof SlashCommand)) return null;
 
                     return [path, slashCommand];
@@ -57,7 +56,7 @@ async function getAllContextMenus(): Promise<[Path, ContextMenu<any>][]> {
         await Promise.all(
             paths.map(async (path) => {
                 try {
-                    const contextMenu = (await import(`${path.full}`)).default.default;
+                    const contextMenu = (await import(`${path.full}`)).default;
                     if (!(contextMenu instanceof ContextMenu)) return null;
                     return [path, contextMenu];
                 } catch {
@@ -77,7 +76,7 @@ async function getAllMessageInteractions(): Promise<[Path, MessageInteraction][]
         await Promise.all(
             paths.map(async (path) => {
                 try {
-                    const msgInteraction = (await import(`${path.full}`)).default.default;
+                    const msgInteraction = (await import(`${path.full}`)).default;
                     if (!(msgInteraction instanceof MessageInteraction)) return null;
                     return [path, msgInteraction];
                 } catch {

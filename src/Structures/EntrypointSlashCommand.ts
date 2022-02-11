@@ -105,7 +105,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     options: [],
                     ...(isLast ? commandData : {}),
                     name: value,
-                    type: "CHAT_INPUT"
+                    type: ApplicationCommandType.ChatInput
                 };
                 if (!foundCommand) data.push(command);
             } else if (step === "SUBCOMMAND_GROUP") {

@@ -131,7 +131,7 @@ client.on("interactionCreate", async (interaction) => {
         if (!command) return console.log(`Failed to find command ${commandIdentifier}`);
 
         command.run(interaction, undefined);
-    } else if (interaction.isMessageComponent()) {
+    } else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
         if (interaction.customId.startsWith(NULL_CUSTOM_ID_PREFIX)) return;
 
         console.log(`Got interaction: ${interaction.customId}`);

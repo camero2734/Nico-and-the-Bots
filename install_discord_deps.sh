@@ -4,7 +4,7 @@ set -e
 
 # Installs and links to specified commits to test new discord.js features
 # before release
-BRANCH="https://github.com/suneettipirneni/discord.js.git"
+BRANCH="-b feat/text-input-interactions https://github.com/suneettipirneni/discord.js.git"
 
 # Clone monorepo
 rm -rf /tmp/discord.js || true

@@ -17,6 +17,7 @@ cd "$ROOT/packages/builders"
 yarn
 yarn build
 yarn pack
+mkdir -p "$PROJ/.discord"
 mv package.tgz "$PROJ/.discord/builders.tgz"
 
 # Remove installed

@@ -8,7 +8,7 @@
         "dev:debug": "set DEBUG=consola && yarn dev",
         "start": "ts-node app.ts",
         "update": "npm-check -u",
-        "deploy": "bash ./deploy.sh",
+        "deploy": "fish ./deploy.fish",
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
         "postinstall": "patch-package"

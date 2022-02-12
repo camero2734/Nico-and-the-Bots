@@ -20,7 +20,7 @@ import {
     ButtonStyle,
     ComponentType,
     ActionRow
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
 import F from "../Helpers/funcs";

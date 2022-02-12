@@ -1,4 +1,4 @@
-import { MessageReaction, User } from "discord.js";
+import { MessageReaction, User } from "discord.js/packages/discord.js";
 
 export type ReactionListener = (
     reaction: MessageReaction,

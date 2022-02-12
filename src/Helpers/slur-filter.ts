@@ -1,5 +1,13 @@
 import { channelIDs } from "../Configuration/config";
-import { Message, ActionRowComponent, ButtonComponent, Embed, TextChannel, ActionRow, ButtonStyle } from "discord.js";
+import {
+    Message,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    TextChannel,
+    ActionRow,
+    ButtonStyle
+} from "discord.js/packages/discord.js";
 
 // word1:word2:word3... encoded in base64 to avoid having slurs in plaintext
 const slursEncoded =

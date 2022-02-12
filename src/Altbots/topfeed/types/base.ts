@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TopfeedPost, TopfeedType } from ".prisma/client";
-import { Message, MessageOptions, Snowflake } from "discord.js";
+import { Message, MessageOptions, Snowflake } from "discord.js/packages/discord.js";
 import { NicoClient } from "../../../../app";
 import { prisma } from "../../../Helpers/prisma-init";
 

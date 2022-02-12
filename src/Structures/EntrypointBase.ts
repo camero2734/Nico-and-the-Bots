@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
+import {
+    ApplicationCommandData,
+    Collection,
+    Guild,
+    GuildMember,
+    Interaction,
+    Snowflake
+} from "discord.js/packages/discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";

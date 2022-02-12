@@ -1,6 +1,6 @@
 import { guildID } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, Snowflake, TextChannel, ApplicationCommandOptionType } from "discord.js";
+import { Embed, Snowflake, TextChannel, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import F from "../../../Helpers/funcs";

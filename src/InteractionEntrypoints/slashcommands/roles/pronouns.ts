@@ -6,7 +6,7 @@ import {
     ActionRow,
     SelectMenuComponent,
     SelectMenuOption
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

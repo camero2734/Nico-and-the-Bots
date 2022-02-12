@@ -1,4 +1,12 @@
-import { Client, ActionRowComponent, ButtonComponent, Embed, TextChannel, ActionRow, ButtonStyle } from "discord.js";
+import {
+    Client,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    TextChannel,
+    ActionRow,
+    ButtonStyle
+} from "discord.js/packages/discord.js";
 import secrets from "../Configuration/secrets";
 import { channelIDs, guildID } from "../Configuration/config";
 import { GenBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";

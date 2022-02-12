@@ -1,6 +1,14 @@
 import { addDays } from "date-fns";
 import { APIMessageComponentEmoji, ButtonStyle } from "discord-api-types/v9";
-import { Message, ActionRowComponent, ButtonComponent, Embed, Snowflake, TextChannel, ActionRow } from "discord.js";
+import {
+    Message,
+    ActionRowComponent,
+    ButtonComponent,
+    Embed,
+    Snowflake,
+    TextChannel,
+    ActionRow
+} from "discord.js/packages/discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";

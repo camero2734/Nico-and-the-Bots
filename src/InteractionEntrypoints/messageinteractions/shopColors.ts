@@ -10,7 +10,7 @@ import {
     ActionRow,
     ButtonStyle,
     WebhookEditMessageOptions
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";

@@ -1,6 +1,6 @@
 import { BishopType, ViolationType } from "@prisma/client";
 import { createCanvas, loadImage } from "canvas";
-import { GuildMember, MessageAttachment, Embed, TextChannel } from "discord.js";
+import { GuildMember, MessageAttachment, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";

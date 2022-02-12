@@ -1,4 +1,4 @@
-import { InteractionType } from "discord.js";
+import { InteractionType } from "discord.js/packages/discord.js";
 import { EntrypointEvents } from "../../Structures/Events";
 import { prisma } from "../prisma-init";
 

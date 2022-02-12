@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRow, ActionRowComponent, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
+import {
+    ActionRow,
+    ActionRowComponent,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";

@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Guild, GuildMember, Message, MessageComponentInteraction, Snowflake, TextChannel } from "discord.js";
+import {
+    Guild,
+    GuildMember,
+    Message,
+    MessageComponentInteraction,
+    Snowflake,
+    TextChannel
+} from "discord.js/packages/discord.js";
 import F from "../Helpers/funcs";
 
 type RequiredDiscordValues = {

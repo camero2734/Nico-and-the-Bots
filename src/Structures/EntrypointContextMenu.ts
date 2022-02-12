@@ -5,7 +5,7 @@ import {
     GuildMember,
     Message,
     TextChannel
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, ContextMenus } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";

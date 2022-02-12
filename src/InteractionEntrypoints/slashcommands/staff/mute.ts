@@ -1,6 +1,6 @@
 import { CommandError } from "../../../Configuration/definitions";
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import parseDuration from "parse-duration";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";

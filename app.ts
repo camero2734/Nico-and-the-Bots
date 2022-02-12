@@ -1,5 +1,5 @@
 import { registerFont } from "canvas";
-import * as Discord from "discord.js";
+import * as Discord from "discord.js/packages/discord.js";
 import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";

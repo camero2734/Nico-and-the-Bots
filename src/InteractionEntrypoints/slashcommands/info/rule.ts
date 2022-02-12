@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import Fuse from "fuse.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

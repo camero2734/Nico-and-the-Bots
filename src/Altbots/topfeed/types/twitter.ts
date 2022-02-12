@@ -6,7 +6,7 @@ import {
     MessageOptions,
     ActionRow,
     ButtonStyle
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import TwitterApi, { MediaVideoInfoV1, TweetV1, TweetV2 } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";

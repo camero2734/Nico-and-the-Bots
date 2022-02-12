@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

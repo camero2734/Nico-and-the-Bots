@@ -10,7 +10,7 @@ import {
     ActionRow,
     ComponentType,
     ButtonStyle
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { ValueOf } from "ts-essentials";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";

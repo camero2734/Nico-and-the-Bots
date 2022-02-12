@@ -5,7 +5,7 @@
  */
 
 import { RandomDrop } from ".prisma/client";
-import { Colors, Embed, TextChannel } from "discord.js";
+import { Colors, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { NicoClient } from "../../../app";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";

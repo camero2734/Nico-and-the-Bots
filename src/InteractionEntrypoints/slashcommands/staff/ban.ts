@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, Colors, Embed, TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, Colors, Embed, TextChannel } from "discord.js/packages/discord.js";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";

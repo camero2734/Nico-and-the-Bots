@@ -1,5 +1,5 @@
 import { channelIDs } from "../Configuration/config";
-import { Channel, EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
+import { Channel, EmojiIdentifierResolvable, Message, Snowflake } from "discord.js/packages/discord.js";
 import Mime from "mime-types";
 
 interface BaseReactType {

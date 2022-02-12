@@ -7,7 +7,7 @@ import {
     SelectMenuComponent,
     SelectMenuOption,
     Snowflake
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

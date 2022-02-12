@@ -25,7 +25,7 @@ import {
     TextChannel,
     VoiceChannel,
     ChannelType
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import SeedRandom from "seed-random";
 import { dropEmojiGuildId, guildID, roles } from "../Configuration/config";

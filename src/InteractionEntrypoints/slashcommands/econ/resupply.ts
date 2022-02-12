@@ -17,7 +17,7 @@ import {
     SelectMenuOption,
     ActionRow,
     ButtonStyle
-} from "discord.js";
+} from "discord.js/packages/discord.js";
 import fs from "fs";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";

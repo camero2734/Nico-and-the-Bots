@@ -1,6 +1,6 @@
 import { FirebreatherApplication } from ".prisma/client";
 import { hoursToMilliseconds, subDays } from "date-fns";
-import { Snowflake, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Snowflake } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { Question } from "../../../Helpers/verified-quiz/question";

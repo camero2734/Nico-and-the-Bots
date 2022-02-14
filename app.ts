@@ -29,6 +29,8 @@ import "./src/Helpers/message-updates/_queue";
 import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import http from "http";
 
+import { startTopfeed } from "./src/Altbots/topfeed2";
+
 const client = new Discord.Client({
     intents: [
         "Guilds",
@@ -70,6 +72,7 @@ client.on("ready", async () => {
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
+    startTopfeed();
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;

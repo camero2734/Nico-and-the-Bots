@@ -112,6 +112,7 @@ export const emojiIDs = <const>{
     downvote: "850586787805265990",
     spotify: "869731229853970432",
     genius: "869733049347211374",
+    twitter: "942473594120835182",
     poll: {
         start: "871795753293578240",
         filled: "871795752760918018",

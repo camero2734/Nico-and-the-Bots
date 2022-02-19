@@ -121,7 +121,7 @@ async function handleGold(
     const actionRow = new ActionRow().setComponents([
         new ButtonComponent()
             .setLabel(`Yes (${cost} credits)`)
-            .setEmoji(emojiIDs.gold as APIMessageComponentEmoji)
+            .setEmoji({ id: emojiIDs.gold })
             .setStyle(ButtonStyle.Primary)
             .setCustomId(yesId),
         new ButtonComponent().setLabel("No").setStyle(ButtonStyle.Secondary).setCustomId(noId)
@@ -151,7 +151,7 @@ async function handleGold(
     const goldActionRow = new ActionRow().setComponents([
         new ButtonComponent()
             .setLabel(`${numGolds} Gold${F.plural(numGolds)}`)
-            .setEmoji(emojiIDs.gold as APIMessageComponentEmoji)
+            .setEmoji({ id: emojiIDs.gold })
             .setStyle(ButtonStyle.Primary)
             .setCustomId(
                 genAdditionalGoldId({

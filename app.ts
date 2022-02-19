@@ -129,7 +129,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-    if (interaction.isCommand()) {
+    if (interaction.isChatInputCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
         const command = SlashCommands.get(commandIdentifier);
         if (!command) return console.log(`Failed to find command ${commandIdentifier}`);

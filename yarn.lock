@@ -2001,10 +2001,6 @@ discord-api-types@^0.28.0-next.7abeb2e.1644668901:
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.28.0-next.7abeb2e.1644668901.tgz#5d56df82c3da0d6754647dbd2f335c434a0bbae7"
   integrity sha512-RSPLmAiyx/XI1zILIGfwYbwznroJvrXv8kvzR0paGIz4ZZhSI4rP3faS3Ak/9dVQoqNuyZaLt3mf7d3rvhKo4g==
 
-"discord.js@https://github.com/suneettipirneni/discord.js.git#feat/text-input-interactions":
-  version "0.0.0"
-  resolved "https://github.com/suneettipirneni/discord.js.git#a8401ec1000fac3fbf852f457b311e351c5bbd8b"
-
 doctrine@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/doctrine/-/doctrine-3.0.0.tgz"

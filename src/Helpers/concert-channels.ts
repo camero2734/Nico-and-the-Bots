@@ -4,6 +4,7 @@ import {
     CategoryChannel,
     ChannelType,
     Client,
+    Collection,
     Guild,
     GuildChannel,
     OverwriteData,
@@ -130,7 +131,7 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
-            const channelsCollection = this.concertCategory.children;
+            const channelsCollection = this.concertCategory.children.cache as Collection<string, GuildChannel>;
             channelsCollection.delete(channelIDs.tourhelp);
             const channels = [...channelsCollection.values()];
 

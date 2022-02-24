@@ -2,14 +2,14 @@ import { RandomDrop } from ".prisma/client";
 import async from "async";
 import { addMilliseconds, differenceInMilliseconds, endOfDay, startOfDay } from "date-fns";
 import {
+    ActionRow,
+    MessageActionRowComponent,
+    ButtonComponent,
+    ButtonStyle,
     Emoji,
     Guild,
     GuildMember,
-    ActionRowComponent,
-    ButtonComponent,
-    Snowflake,
-    ButtonStyle,
-    ActionRow
+    Snowflake
 } from "discord.js/packages/discord.js";
 import { guild } from "../../../app";
 import { dropEmojiGuildId, roles } from "../../Configuration/config";
@@ -95,7 +95,10 @@ async function getEmoji(member: GuildMember, guild: Guild): Promise<Emoji | unde
 
 const NUM_BUTTONS = 16;
 export type Guess = { member: GuildMember; idx: number };
-export async function generateActionRows(guesses: Guess[], drop: RandomDrop): Promise<ActionRow<ActionRowComponent>[]> {
+export async function generateActionRows(
+    guesses: Guess[],
+    drop: RandomDrop
+): Promise<ActionRow<MessageActionRowComponent>[]> {
     const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
 
     const buttons: ButtonComponent[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {

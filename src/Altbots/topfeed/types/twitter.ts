@@ -1,20 +1,17 @@
+import async from "async";
 import {
-    ActionRowComponent,
-    MessageAttachment,
-    ButtonComponent,
-    Embed,
-    MessageOptions,
     ActionRow,
-    ButtonStyle
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    MessageAttachment,
+    MessageOptions
 } from "discord.js/packages/discord.js";
-import TwitterApi, { MediaVideoInfoV1, TweetV1, TweetV2 } from "twitter-api-v2";
+import TwitterApi, { MediaVideoInfoV1 } from "twitter-api-v2";
+import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { Checked, Watcher } from "./base";
-import Mime from "mime-types";
-import async from "async";
-import VideoUrl from "video-url-link";
-import normalizeUrl from "normalize-url";
 
 type TweetType = {
     images: string[];

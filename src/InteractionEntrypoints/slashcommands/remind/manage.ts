@@ -1,13 +1,12 @@
 import {
-    GuildMember,
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    ApplicationCommandOptionType,
     ActionRow,
+    MessageActionRowComponent,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    GuildMember,
     SelectMenuComponent,
-    SelectMenuOption,
-    ButtonStyle
+    SelectMenuOption
 } from "discord.js/packages/discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -34,7 +33,9 @@ command.setHandler(async (ctx) => {
 });
 
 // Main list
-async function generateReminderList(member: GuildMember): Promise<[Embed] | [Embed, ActionRow<ActionRowComponent>]> {
+async function generateReminderList(
+    member: GuildMember
+): Promise<[Embed] | [Embed, ActionRow<MessageActionRowComponent>]> {
     const reminders = await prisma.reminder.findMany({
         where: { userId: member.id },
         orderBy: { sendAt: "asc" }

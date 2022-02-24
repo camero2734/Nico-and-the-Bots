@@ -1,21 +1,20 @@
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import {
-    ActionRowComponent,
-    MessageAttachment,
-    ButtonComponent,
-    Embed,
-    TextChannel,
-    ApplicationCommandOptionType,
     ActionRow,
-    ButtonStyle
+    ApplicationCommandOptionType,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    MessageAttachment,
+    TextChannel
 } from "discord.js/packages/discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
-import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 
 const command = new SlashCommand(<const>{
     description: "Submits an image, video, or audio file to #mulberry-street",

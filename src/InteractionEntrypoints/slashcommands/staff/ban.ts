@@ -52,7 +52,7 @@ command.setHandler(async (ctx) => {
     }
 
     await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
-    await member.ban({ days: purge ? 7 : 0, reason });
+    await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
     await ctx.send({ embeds: [new Embed({ description: `${member.toString()} was banned.` }).toJSON()] });
 
     sendToBanLog(ctx, bannedEmbed);

@@ -1,11 +1,9 @@
 import {
-    EmojiIdentifierResolvable,
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    ApplicationCommandOptionType,
     ActionRow,
-    ButtonStyle
+    ApplicationCommandOptionType,
+    ButtonComponent,
+    ButtonStyle,
+    Embed
 } from "discord.js/packages/discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

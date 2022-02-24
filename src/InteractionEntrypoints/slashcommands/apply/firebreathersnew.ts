@@ -138,7 +138,7 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
 
     modal.setComponents(...wrappedTextFields);
 
-    (<any>ctx).presentModal(modal);
+    ctx.showModal(modal);
 });
 
 const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>["name"], async (ctx, args) => {
@@ -150,7 +150,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>
     const newData: Record<string, string> = {};
 
     for (let id of Object.keys(formPart)) {
-        const value = ctx.fields.getTextInputValue(id, true);
+        const value = ctx.fields.getTextInputValue(id);
         newData[id] = value;
     }
 

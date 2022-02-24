@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    EmojiIdentifierResolvable,
-    GuildMember,
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    MessageOptions,
-    InteractionUpdateOptions,
     ActionRow,
+    ButtonComponent,
     ButtonStyle,
+    Embed,
+    GuildMember,
     WebhookEditMessageOptions
 } from "discord.js/packages/discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";

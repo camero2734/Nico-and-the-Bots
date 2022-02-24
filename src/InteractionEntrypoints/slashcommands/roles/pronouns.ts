@@ -1,12 +1,4 @@
-import {
-    ActionRowComponent,
-    Embed,
-    Snowflake,
-    ApplicationCommandOptionType,
-    ActionRow,
-    SelectMenuComponent,
-    SelectMenuOption
-} from "discord.js/packages/discord.js";
+import { ActionRow, Embed, SelectMenuComponent, SelectMenuOption, Snowflake } from "discord.js/packages/discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

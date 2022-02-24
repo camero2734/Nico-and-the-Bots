@@ -24,13 +24,13 @@ command.setHandler(async (ctx) => {
 
     modal.setComponents(new ActionRow<TextInputComponent>().addComponents(inputComponent));
 
-    ctx.presentModal(modal);
+    ctx.showModal(modal);
 });
 
 const genModalId = command.addInteractionListener("myForm", [], async (ctx) => {
     if (!ctx.isModalSubmit()) return;
 
-    const inputField = ctx.fields.getTextInputValue(MODAL_FIELDS.TV_FIELD, true);
+    const inputField = ctx.fields.getTextInputValue(MODAL_FIELDS.TV_FIELD);
 
     console.log("Got a response from the modal!");
     ctx.reply(`Thank you for saying ${inputField}`);

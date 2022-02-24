@@ -1,15 +1,14 @@
-import { CommandError } from "../../../Configuration/definitions";
-import secrets from "../../../Configuration/secrets";
 import {
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    ApplicationCommandOptionType,
-    Colors,
     ActionRow,
-    ButtonStyle
+    ApplicationCommandOptionType,
+    ButtonComponent,
+    ButtonStyle,
+    Colors,
+    Embed
 } from "discord.js/packages/discord.js";
 import fetch from "node-fetch";
+import { CommandError } from "../../../Configuration/definitions";
+import secrets from "../../../Configuration/secrets";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";

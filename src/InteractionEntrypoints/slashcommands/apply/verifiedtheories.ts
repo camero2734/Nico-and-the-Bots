@@ -1,23 +1,22 @@
-import { channelIDs, guildID, roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import {
+    ActionRow,
+    MessageActionRowComponent,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
     GuildMember,
     Message,
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    TextChannel,
-    ApplicationCommandOptionType,
-    ActionRow,
-    ButtonStyle
+    TextChannel
 } from "discord.js/packages/discord.js";
-import F from "../../../Helpers/funcs";
-import { Question } from "../../../Helpers/verified-quiz/question";
 import R from "ramda";
+import { channelIDs, guildID, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
+import { Question } from "../../../Helpers/verified-quiz/question";
+import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
-import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 
@@ -165,7 +164,7 @@ async function generateEmbedAndButtons(
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
     member: GuildMember
-): Promise<[Embed, ActionRow<ActionRowComponent>[]]> {
+): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
@@ -205,7 +204,7 @@ async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     member: GuildMember
-): Promise<[Embed, ActionRow<ActionRowComponent>[]]> {
+): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
     const answers = answerEncode.answerIndices;
 
     // Send to staff channel

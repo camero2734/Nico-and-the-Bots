@@ -1,19 +1,18 @@
-import { CommandError } from "../../../Configuration/definitions";
+import { parse } from "date-fns";
 import {
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    TextChannel,
-    ApplicationCommandOptionType,
     ActionRow,
-    ButtonStyle
+    ApplicationCommandOptionType,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    TextChannel
 } from "discord.js/packages/discord.js";
+import * as ytdl from "youtube-dl";
+import { channelIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import * as ytdl from "youtube-dl";
-import { parse } from "date-fns";
-import F from "../../../Helpers/funcs";
-import { channelIDs, roles } from "../../../Configuration/config";
 
 const command = new SlashCommand(<const>{
     description: "Submits an interview to the interview channel",

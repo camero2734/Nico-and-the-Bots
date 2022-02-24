@@ -1,13 +1,12 @@
-import { channelIDs } from "../../../Configuration/config";
 import {
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    TextChannel,
-    ApplicationCommandOptionType,
     ActionRow,
-    ButtonStyle
+    ApplicationCommandOptionType,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    TextChannel
 } from "discord.js/packages/discord.js";
+import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{

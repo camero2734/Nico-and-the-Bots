@@ -1,29 +1,25 @@
 import { DailyBox, User } from "@prisma/client";
-import { channelIDs, roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import { format } from "date-fns";
 import {
-    EmojiIdentifierResolvable,
+    ActionRow,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
     GuildMember,
     Message,
-    ActionRowComponent,
-    ButtonComponent,
     MessageComponentInteraction,
-    Embed,
-    MessageSelectOptionData,
-    SelectMenuInteraction,
-    ApplicationCommandOptionType,
     SelectMenuComponent,
-    SelectMenuOption,
-    ActionRow,
-    ButtonStyle
+    SelectMenuInteraction,
+    SelectMenuOption
 } from "discord.js/packages/discord.js";
 import fs from "fs";
+import { channelIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
 
 const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",

@@ -1,14 +1,12 @@
 import { Poll, Vote } from "@prisma/client";
 import { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v9";
 import {
-    EmbedField,
+    ActionRow,
+    ApplicationCommandOptionType,
+    ComponentType,
+    Embed,
     GuildEmoji,
     Message,
-    ActionRowComponent,
-    Embed,
-    ApplicationCommandOptionType,
-    ActionRow,
-    ComponentType,
     SelectMenuComponent,
     SelectMenuOption
 } from "discord.js/packages/discord.js";

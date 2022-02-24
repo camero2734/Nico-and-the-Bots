@@ -1,18 +1,16 @@
 import {
-    ActionRowComponent,
-    MessageAttachment,
+    ActionRow,
     ButtonComponent,
+    ButtonStyle,
+    ComponentType,
     Embed,
+    MessageAttachment,
     MessageOptions,
-    TextChannel,
     SelectMenuComponent,
     SelectMenuOption,
-    ActionRow,
-    ComponentType,
-    ButtonStyle
+    TextChannel
 } from "discord.js/packages/discord.js";
-import { ValueOf } from "ts-essentials";
-import { channelIDs, roles } from "../../Configuration/config";
+import { roles } from "../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";

@@ -1,33 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { addDays } from "date-fns";
 import {
-    EmojiIdentifierResolvable,
-    GuildMember,
-    ActionRowComponent,
-    ButtonComponent,
-    Embed,
-    MessageOptions,
-    InteractionUpdateOptions,
     ActionRow,
-    ButtonStyle,
-    WebhookEditMessageOptions,
     Colors,
+    Embed,
     Guild,
-    TextChannel,
+    MessageAttachment,
     SelectMenuComponent,
     SelectMenuOption,
-    MessageAttachment
+    TextChannel
 } from "discord.js/packages/discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
-import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
-import { MessageTools } from "../../Helpers";
-import { sendViolationNotice } from "../../Helpers/dema-notice";
+import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { rollbar } from "../../Helpers/logging/rollbar";
-import { prisma, queries } from "../../Helpers/prisma-init";
+import { prisma } from "../../Helpers/prisma-init";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
 import { generateScoreCard } from "../slashcommands/econ/score";
-import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts.shopColors";
 
 export const FB_DELAY_DAYS = 14;
 enum ActionTypes {

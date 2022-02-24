@@ -1,16 +1,15 @@
 import { createCanvas, loadImage } from "canvas";
 import {
-    Client,
-    GuildMember,
-    ActionRowComponent,
-    MessageAttachment,
+    ActionRow,
     ButtonComponent,
-    MessageComponentInteraction,
+    Client,
     Embed,
+    GuildMember,
+    MessageAttachment,
+    MessageComponentInteraction,
     PartialGuildMember,
     Snowflake,
-    TextChannel,
-    ActionRow
+    TextChannel
 } from "discord.js/packages/discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";

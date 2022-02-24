@@ -1,26 +1,23 @@
 import crypto from "crypto";
 import Diff from "diff";
 import {
-    Message,
-    ActionRowComponent,
-    MessageAttachment,
-    ButtonComponent,
-    Embed,
-    MessageOptions,
-    Snowflake,
     ActionRow,
-    ButtonStyle
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    Message,
+    MessageAttachment,
+    MessageOptions,
+    Snowflake
 } from "discord.js/packages/discord.js";
 import https from "https";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
+import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
-import { imageHash } from "image-hash";
-import consola from "consola";
-import F from "../../../Helpers/funcs";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];

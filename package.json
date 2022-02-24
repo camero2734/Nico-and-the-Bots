@@ -66,6 +66,8 @@
         "instagram-private-api": "^1.45.1",
         "ioredis": "4.28.5",
         "is-ci": "^3.0.1",
+        "lodash": "^4.17.21",
+        "lodash.snakecase": "^4.1.1",
         "mime-types": "^2.1.31",
         "moize": "^6.1.0",
         "nanoid": "3.2.0",

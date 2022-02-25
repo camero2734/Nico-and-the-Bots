@@ -20,7 +20,7 @@
     "license": "ISC",
     "dependencies": {
         "@discordjs/collection": "^0.6.0-dev.1644235500.b936103",
-        "@discordjs/rest": "^0.3.0",
+        "@discordjs/rest": "^0.4.0-dev.1645661242.8203c5d",
         "@prisma/client": "3.9.1",
         "@swc/core": "^1.2.137",
         "@swc/helpers": "^0.3.2",

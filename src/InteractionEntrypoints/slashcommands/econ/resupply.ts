@@ -34,8 +34,6 @@ command.setHandler(async (ctx) => {
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
 
-    if (!tokens) throw new CommandError("You don't have any tokens! Use the `/econ daily` command to get some.");
-
     const wrapXML = (xml: string) => `\`\`\`xml\n${xml}\n\`\`\``;
 
     // prettier-ignore
@@ -106,7 +104,16 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
-    if (!dbUser.dailyBox || !tokens) return ctx.deleteReply();
+    if (!dbUser.dailyBox || !tokens) {
+        const embed = new Embed()
+            .setDescription("You don't have any tokens! Use the `/econ daily` command to get some.")
+            .setThumbnail("attachment://file.gif");
+        await ctx.editReply({
+            embeds: [embed],
+            components: []
+        });
+        return;
+    }
 
     await prisma.dailyBox.update({
         where: { userId: ctx.member.id },

@@ -108,7 +108,7 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
         .setCustomId(genSubmitApplicationId({}))
         .setDisabled(!allFinished);
 
-    const actionRow = new ActionRow().setComponents([...buttons, submitButton]);
+    const actionRow = new ActionRow<ButtonComponent>().setComponents(...buttons, submitButton);
 
     return { components: [actionRow], embeds: [embed], ephemeral: true };
 }

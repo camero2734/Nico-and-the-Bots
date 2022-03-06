@@ -32,10 +32,10 @@ command.setHandler(async (ctx) => {
         const embed = new Embed();
         embed.setTitle(role.name);
         embed.setColor(role.color);
-        embed.addField({ name: "Hex", value: role.hexColor });
-        embed.addField({ name: "Members", value: `${role.members.size}` });
-        embed.addField({ name: "Created", value: `${role.createdAt}` });
-        embed.addField({ name: "ID", value: role.id });
+        embed.addFields({ name: "Hex", value: role.hexColor });
+        embed.addFields({ name: "Members", value: `${role.members.size}` });
+        embed.addFields({ name: "Created", value: `${role.createdAt}` });
+        embed.addFields({ name: "ID", value: role.id });
 
         embeds.push(embed);
     }

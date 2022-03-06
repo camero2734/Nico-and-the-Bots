@@ -44,8 +44,10 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setColor(Colors.Gold)
         .setTitle(`Pinged ${currentPing}ms`)
-        .addField({ name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` })
-        .addField({ name: "Average ping", value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}` });
+        .addFields(
+            { name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` },
+            { name: "Average ping", value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}` }
+        );
     await ctx.editReply({ embeds: [embed] });
 });
 

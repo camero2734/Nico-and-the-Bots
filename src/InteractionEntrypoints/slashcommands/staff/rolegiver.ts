@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");
 
-    const actionRow = new ActionRow().setComponents([
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent()
             .setStyle(ButtonStyle.Success)
             .setLabel(`Get the ${roleObj.name} role`)
@@ -54,13 +54,13 @@ command.setHandler(async (ctx) => {
             .setEmoji({
                 name: "😔"
             })
-    ]);
+    );
 
     const embed = new Embed()
         .setTitle("Role Giver™️") //
         .setDescription(`By clicking the buttons below, you can get/remove the ${roleObj.name} role.`)
-        .addField({ name: "Description", value: text })
-        .addField({ name: "Role", value: `${roleObj}` });
+        .addFields({ name: "Description", value: text })
+        .addFields({ name: "Role", value: `${roleObj}` });
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });

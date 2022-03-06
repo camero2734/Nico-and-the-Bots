@@ -43,7 +43,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
             ...Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOption({ label: value, value: key }))
         );
 
-    const actionRow = new ActionRow().setComponents([selectMenu]);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -91,14 +91,14 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         if (!staffMsg) throw new Error("The message disappeared"); // TODO: Delete from DB?
 
         const actionRow = staffMsg.components[0];
-        const btn = actionRow.components.find((c) => c.custom_id?.startsWith(NULL_CUSTOM_ID_PREFIX));
+        const btn = actionRow.components.find((c) => c.customId?.startsWith(NULL_CUSTOM_ID_PREFIX));
         if (btn?.type !== ComponentType.Button) throw new Error("The button disappeared");
 
         btn.setLabel(NUM_PEOPLE_TEXT(priorReports.length + 1));
 
         const embed = new Embed()
             .setDescription("A new report was added for this message")
-            .addField({ name: "Reason", value: reasonText })
+            .addFields({ name: "Reason", value: reasonText })
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
         await prisma.userMessageReport.create({
@@ -118,17 +118,17 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
             .setAuthor({ name: msgMember.displayName, iconURL: msgMember.displayAvatarURL() })
             .setTitle("Message Reported")
             .setDescription(msg.content)
-            .addField({ name: "Reason", value: ReportReasons[selectedReason] })
+            .addFields({ name: "Reason", value: ReportReasons[selectedReason] })
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
-        const actionRow = new ActionRow().setComponents([
+        const actionRow = new ActionRow().setComponents(
             new ButtonComponent()
                 .setLabel(NUM_PEOPLE_TEXT(1))
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(true)
                 .setCustomId(NULL_CUSTOM_ID()),
             new ButtonComponent().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url)
-        ]);
+        );
 
         const msgOpts: MessageOptions = { embeds: [staffEmbed], components: [actionRow] };
 

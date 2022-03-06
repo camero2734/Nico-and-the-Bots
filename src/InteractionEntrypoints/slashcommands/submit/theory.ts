@@ -47,9 +47,9 @@ command.setHandler(async (ctx) => {
     const m = await theoryChan.send({ embeds: [embed], components: [actionRow] });
 
     const responseEmbed = new Embed({ description: "Your theory has been submitted!" });
-    const responseActionRow = new ActionRow().setComponents([
+    const responseActionRow = new ActionRow().setComponents(
         new ButtonComponent().setStyle(ButtonStyle.Link).setURL(m.url).setLabel("View post")
-    ]);
+    );
     await ctx.send({
         embeds: [responseEmbed],
         components: [responseActionRow]

@@ -36,7 +36,7 @@ const standardizeEmbed = (embed: Embed): void => {
     embed
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0x7289da)
-        .addField({
+        .addFields({
             name: "Upgrade almost finished...",
             value: `Expected to finish ${F.discordTimestamp(endDate, "relative")}`
         })
@@ -72,7 +72,7 @@ const update = async (msg: Message) => {
         embed.setDescription(progress);
         standardizeEmbed(embed);
         embed.setFields();
-        embed.addField({ name: "Upgrade almost finished...", value: `Expected to finish \`soon\`` });
+        embed.addFields({ name: "Upgrade almost finished...", value: `Expected to finish \`soon\`` });
         embed.setColor(Colors.Red);
 
         await msg.edit({ embeds: [embed] });

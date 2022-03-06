@@ -202,7 +202,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 }
             });
 
-            return new ActionRow().setComponents([
+            return new ActionRow().setComponents(
                 new ButtonComponent()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
@@ -213,7 +213,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))
                     .setEmoji(emojiIDs.downvote as APIMessageComponentEmoji)
-            ]);
+            );
         };
 
         return createActionRow;

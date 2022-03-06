@@ -44,15 +44,15 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
                 .setTitle(name)
                 .setColor(0xD07A21)
                 .setDescription(`*${category.description}*\n`)
-                .addField({ name: "Credits", value: `${category.data.credits}` })
-                .addField({ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" })
+                .addFields({ name: "Credits", value: `${category.data.credits}` })
+                .addFields({ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" })
                 .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
 
     const actionRow = new ActionRow().setComponents(
-        category.data.roles.map((role) => {
+        ...category.data.roles.map((role) => {
             const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
             const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
             const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
@@ -111,15 +111,15 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
     if (actionType === ActionTypes.View) {
         embed
             .setDescription(`Would you like to purchase this item?`)
-            .addField({ name: "Cost", value: `${category.data.credits}`, inline: true })
-            .addField({
+            .addFields({ name: "Cost", value: `${category.data.credits}`, inline: true })
+            .addFields({
                 name: "Your credits",
                 value: `${dbUser.credits} → ${dbUser.credits - category.data.credits}`,
                 inline: true
             });
 
         if (contraband) {
-            embed.addField({
+            embed.addFields({
                 name: "WARNING",
                 value: "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave."
             });
@@ -161,7 +161,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
             .setDescription(
                 `Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`
             ) // prettier-ignore
-            .addField({
+            .addFields({
                 name: `How do I "equip" this role?`,
                 value: "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want)."
             });
@@ -205,7 +205,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const menuActionRow = new ActionRow().setComponents(
-        Object.entries(categories).map(([label, item], idx) => {
+        ...Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
             return new ButtonComponent()
                 .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
@@ -220,7 +220,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
     );
 
     for (const [name, item] of Object.entries(categories)) {
-        MenuEmbed.addField({ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" });
+        MenuEmbed.addFields({ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" });
     }
 
     return { embeds: [MenuEmbed], components: [menuActionRow] };

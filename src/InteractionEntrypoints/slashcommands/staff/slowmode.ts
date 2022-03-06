@@ -27,7 +27,7 @@ command.setHandler(async (ctx) => {
     });
 
     if (ctx.opts.time) {
-        embed.addField({ name: "Time (seconds)", value: `${ctx.opts.time}` });
+        embed.addFields({ name: "Time (seconds)", value: `${ctx.opts.time}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

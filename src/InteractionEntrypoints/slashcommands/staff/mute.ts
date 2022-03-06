@@ -65,7 +65,7 @@ command.setHandler(async (ctx) => {
     const timestamp = F.discordTimestamp(endsAt, "shortDateTime");
     const embed = new Embed()
         .setDescription(`${member} has been timed out for ${timeStr} (${inMinutes} minutes)`)
-        .addField({ name: "Ends at", value: timestamp });
+        .addFields({ name: "Ends at", value: timestamp });
     await ctx.send({ embeds: [embed] });
 
     // Message timed out member

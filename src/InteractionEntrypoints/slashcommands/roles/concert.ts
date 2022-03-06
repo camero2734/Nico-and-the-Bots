@@ -35,8 +35,8 @@ command.setHandler(async (ctx) => {
         .setDisabled(true)
         .setCustomId("selectConcert");
 
-    const countryActionRow = new ActionRow().setComponents([countrySelectMenu]);
-    const concertActionRow = new ActionRow().setComponents([temporaryConcertSelectMenu]);
+    const countryActionRow = new ActionRow().setComponents(countrySelectMenu);
+    const concertActionRow = new ActionRow().setComponents(temporaryConcertSelectMenu);
 
     const embed = new Embed()
         .setTitle("🧙 Concert Selection Wizard")

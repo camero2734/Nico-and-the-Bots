@@ -28,7 +28,7 @@ command.setHandler(async (ctx) => {
         const timestamp = F.discordTimestamp(app.submittedAt || new Date(), "relative");
         const member = await ctx.guild.members.fetch(app.userId).catch((e) => undefined);
         if (!member) continue;
-        embed.addField({ name: `${member.displayName}`, value: `Submitted ${timestamp} | [View](${app.messageUrl})` });
+        embed.addFields({ name: `${member.displayName}`, value: `Submitted ${timestamp} | [View](${app.messageUrl})` });
     }
 
     await ctx.editReply({ embeds: [embed] });

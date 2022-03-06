@@ -48,8 +48,8 @@ command.setHandler(async (ctx) => {
     const confirmEmbed = new Embed()
         .setTitle("Created reminder")
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
-        .addField({ name: "Reminder", value: text })
-        .addField({ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") });
+        .addFields({ name: "Reminder", value: text })
+        .addFields({ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") });
 
     await prisma.reminder.create({
         data: { userId: ctx.user.id, text, sendAt }

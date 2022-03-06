@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
     for (const stat of topSortedStats) {
         const questionName = stat.question.question.split("\n")[0];
         const [progress] = progressBar.filledBar(stat.total, stat.correct, 20);
-        embed.addField({ name: questionName, value: `${progress} [${stat.correct}/${stat.total}]` });
+        embed.addFields({ name: questionName, value: `${progress} [${stat.correct}/${stat.total}]` });
     }
 
     await ctx.send({ embeds: [embed.toJSON()] });

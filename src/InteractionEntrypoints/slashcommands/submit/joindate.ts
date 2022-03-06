@@ -70,9 +70,9 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setDescription("Your join date was updated!")
-        .addField({ name: "Reference message", value: msg.content || "*No content*" })
-        .addField({ name: "New join date", value: F.discordTimestamp(msg.createdAt) })
-        .addField({ name: "Member num change", value: `${ordinal(oldJoinedNum)} → ${ordinal(newJoinedNum)}` });
+        .addFields({ name: "Reference message", value: msg.content || "*No content*" })
+        .addFields({ name: "New join date", value: F.discordTimestamp(msg.createdAt) })
+        .addFields({ name: "Member num change", value: `${ordinal(oldJoinedNum)} → ${ordinal(newJoinedNum)}` });
 
     await prisma.user.update({
         where: { id: dbUser.id },

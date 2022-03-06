@@ -167,13 +167,13 @@ command.setHandler(async (ctx) => {
         .setColor(0xff0000)
         .setTitle(`${ctx.member.displayName}'s Daily`)
         .setFooter({ text: "Have an idea for another server tip? Submit it with /submit suggestion" })
-        .addField({ name: "Server Fact", value: randomFact })
-        .addField({ name: "Tokens Earned", value: `${tokenMessage}` })
-        .addField({ name: "Total tokens", value: `You have **${newTokens}** token${F.plural(newTokens)}.` })
+        .addFields({ name: "Server Fact", value: randomFact })
+        .addFields({ name: "Tokens Earned", value: `${tokenMessage}` })
+        .addFields({ name: "Total tokens", value: `You have **${newTokens}** token${F.plural(newTokens)}.` })
         .setImage("attachment://daily.png");
 
     if (isWeeklyBonus) {
-        embed.addField({
+        embed.addFields({
             name: "Weekly daily bonus!",
             value: "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
         });

@@ -103,9 +103,9 @@ command.setHandler(async (ctx) => {
     const embed = new Embed()
         .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
-        .addField({ name: "Track", value: trackField, inline: true })
-        .addField({ name: "Album", value: albumField, inline: true })
-        .addField({ name: "Artist", value: artistField, inline: true })
+        .addFields({ name: "Track", value: trackField, inline: true })
+        .addFields({ name: "Album", value: albumField, inline: true })
+        .addFields({ name: "Artist", value: artistField, inline: true })
         .setThumbnail(thumbnail)
         .setFooter({ text: track.date })
         .setAuthor({

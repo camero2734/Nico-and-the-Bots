@@ -62,7 +62,7 @@ command.setHandler(async (ctx) => {
     for (const warn of warns) {
         const emoji = severityEmoji(warn.severity);
         const timestamp = F.discordTimestamp(warn.createdAt, "relative");
-        embed.addField({ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` });
+        embed.addFields({ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

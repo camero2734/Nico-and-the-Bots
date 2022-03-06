@@ -41,7 +41,7 @@ command.setHandler(async (ctx) => {
         .setDescription(
             "A lockdown has been started by a staff member. Until they unlock the channel, non-staff will not be allowed to talk in the channel."
         )
-        .addField({
+        .addFields({
             name: "For staff members",
             value: "You may unlock this channel with the `/staff lockdown end` slash command."
         });

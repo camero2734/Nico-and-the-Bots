@@ -86,15 +86,15 @@ command.setHandler(async (ctx) => {
         .setDescription(
             `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
         )
-        .addField({ name: "URL", value: url })
+        .addFields({ name: "URL", value: url })
         .setFooter({ text: "Courtesy of Mulberry Street Creations™", iconURL: "https://i.imgur.com/fkninOC.png" });
 
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents([
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
-    ]);
+    );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 
@@ -126,9 +126,9 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new ActionRow().setComponents([
+    const newActionRow = new ActionRow().setComponents(
         new ButtonComponent().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
-    ]);
+    );
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });
 });

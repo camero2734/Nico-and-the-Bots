@@ -71,7 +71,7 @@ async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void
     const embed = new Embed().setTitle("That tag doesn't exist. Here are some of the most popular tags you can try.");
 
     for (const tag of tags) {
-        embed.addField({ name: tag.name, value: `Uses: ${tag.uses}` });
+        embed.addFields({ name: tag.name, value: `Uses: ${tag.uses}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

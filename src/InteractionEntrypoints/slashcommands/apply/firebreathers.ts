@@ -73,11 +73,11 @@ command.setHandler(async (ctx) => {
         .setDescription(
             "Click the button below to open the application. It should be pre-filled with your **Application ID**, which is a one-time code. This code is only valid for you, and only once."
         )
-        .addField({ name: "Application ID", value: applicationId });
+        .addFields({ name: "Application ID", value: applicationId });
 
-    const actionRow = new ActionRow().setComponents([
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application")
-    ]);
+    );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -101,10 +101,10 @@ export async function sendToStaff(
             .setFooter({ text: applicationId });
 
         for (const [name, value] of Object.entries(data)) {
-            embed.addField({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
+            embed.addFields({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
         }
 
-        const actionRow = new ActionRow().setComponents([
+        const actionRow = new ActionRow().setComponents(
             new SelectMenuComponent()
                 .addOptions(
                     ...[
@@ -121,7 +121,7 @@ export async function sendToStaff(
                     ]
                 )
                 .setCustomId(genId({ applicationId, type: "" }))
-        ]);
+        );
 
         const scoreCard = await generateScoreCard(member);
         const attachment = new MessageAttachment(scoreCard, "score.png");
@@ -152,7 +152,7 @@ export async function sendToStaff(
             if (userWarnings.length > 0) {
                 for (const warn of userWarnings) {
                     // prettier-ignore
-                    warningsEmbed.addField({ name: `${warn.reason.substring(0, 200)} [${warn.severity}]`, value: F.discordTimestamp(warn.createdAt, "relative") })
+                    warningsEmbed.addFields({ name: `${warn.reason.substring(0, 200)} [${warn.severity}]`, value: F.discordTimestamp(warn.createdAt, "relative") })
                 }
             } else {
                 warningsEmbed.setDescription("*This user has no warnings*");
@@ -239,7 +239,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     if (thread) {
         await thread.setArchived(true, "Decision was made, thread no longer necessary");
 
-        doneByEmbed.addField({ name: "Thread", value: `${thread}` });
+        doneByEmbed.addFields({ name: "Thread", value: `${thread}` });
     }
 
     await ctx.followUp({ embeds: [doneByEmbed] });

@@ -116,9 +116,9 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDescription(desc)
             .setFooter({ text: `${hashes}` });
 
-        const actionRow = new ActionRow().setComponents([
+        const actionRow = new ActionRow().setComponents(
             new ButtonComponent().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
-        ]);
+        );
 
         if (file) {
             const att = new MessageAttachment(file, "file.png");

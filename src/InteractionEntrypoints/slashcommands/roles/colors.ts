@@ -33,7 +33,7 @@ command.setHandler(async (ctx) => {
         const embed = new Embed()
             .setTitle("Your Color Roles")
             .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
-            .addField({
+            .addFields({
                 name: "How do I choose one?",
                 value: `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles colors <@&${roleIDs[0]}>`
             });

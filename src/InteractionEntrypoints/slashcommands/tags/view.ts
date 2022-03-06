@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
         .setAuthor({ name: `${member.displayName}'s tags`, iconURL: member.user.displayAvatarURL() });
 
     for (const tag of tags) {
-        embed.addField({ name: `${tag.name} [${tag.uses}]`, value: tag.text });
+        embed.addFields({ name: `${tag.name} [${tag.uses}]`, value: tag.text });
     }
 
     await ctx.editReply({ embeds: [embed] });

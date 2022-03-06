@@ -129,7 +129,7 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<Parameters<typeo
 
         if (hasPerk) {
             const randomReward = Math.floor(Math.random() * 1500) + 201;
-            lvlEmbed.addField({ name: "Perk Bonus", value: `You gained ${randomReward} credits for leveling up!` });
+            lvlEmbed.addFields({ name: "Perk Bonus", value: `You gained ${randomReward} credits for leveling up!` });
             creditIncrement += randomReward;
         }
 

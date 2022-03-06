@@ -64,7 +64,7 @@ command.setHandler(async (ctx) => {
     if (ctx.opts.full) {
         for (const field of fields.slice(0, 10)) {
             const content = field.content || "*No content*";
-            embed.addField({ name: field.title, value: F.truncate(content, 200) });
+            embed.addFields({ name: field.title, value: F.truncate(content, 200) });
         }
     }
 

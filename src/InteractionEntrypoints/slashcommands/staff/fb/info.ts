@@ -26,10 +26,10 @@ command.setHandler(async (ctx) => {
 
     const embed = new Embed()
         .setAuthor({ name: "Firebreather Application Stats", iconURL: fbRole?.iconURL() || undefined })
-        .addField({ name: "Awaiting submission", value: `${unsubmitted} application${F.plural(unsubmitted)}` })
-        .addField({ name: "Needs decision", value: `${awaiting} application${F.plural(awaiting)}` })
-        .addField({ name: "Approved", value: `${approved} application${F.plural(approved)}` })
-        .addField({ name: "Denied", value: `${denied} application${F.plural(denied)}` });
+        .addFields({ name: "Awaiting submission", value: `${unsubmitted} application${F.plural(unsubmitted)}` })
+        .addFields({ name: "Needs decision", value: `${awaiting} application${F.plural(awaiting)}` })
+        .addFields({ name: "Approved", value: `${approved} application${F.plural(approved)}` })
+        .addFields({ name: "Denied", value: `${denied} application${F.plural(denied)}` });
 
     await ctx.editReply({ embeds: [embed] });
 });

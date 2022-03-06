@@ -75,14 +75,14 @@ command.setHandler(async (ctx) => {
             const value = result[v] as number;
             if (value < 0) throw new CommandError(`These actions would cause ${v} to go negative.`);
 
-            embed.addField({ name: v, value: `${value}`, inline: true });
+            embed.addFields({ name: v, value: `${value}`, inline: true });
         });
 
         (<const>["steals", "blocks", "tokens", "dailyCount"]).forEach((v) => {
             const value = result.dailyBox?.[v] as number;
             if (value < 0) throw new CommandError(`These actions would cause ${v} to go negative.`);
 
-            embed.addField({ name: v, value: `${value}`, inline: true });
+            embed.addFields({ name: v, value: `${value}`, inline: true });
         });
     });
 

@@ -41,11 +41,11 @@ command.setHandler(async (ctx) => {
     const bannedEmbed = new Embed()
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription("You have been banned from the twenty one pilots Discord server")
-        .addField({ name: "Reason", value: reason || "None provided" })
+        .addFields({ name: "Reason", value: reason || "None provided" })
         .setColor(Colors.Red);
 
     if (!noappeal) {
-        bannedEmbed.addField({
+        bannedEmbed.addFields({
             name: "Appeal",
             value: "You may appeal your ban by visiting:\ndiscordclique.com/appeals"
         });

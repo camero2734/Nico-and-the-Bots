@@ -111,7 +111,7 @@ command.setHandler(async (ctx) => {
         selectMenu.addOptions(new SelectMenuOption({ label: option.text.substring(0, 100), emoji, value: `${i}` }));
     }
 
-    const actionRow = new ActionRow().setComponents([selectMenu]);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {
@@ -205,13 +205,13 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         const basePercent = (100 * count) / totalVotes;
         const percent = (isFinite(basePercent) ? basePercent : 0).toPrecision(3);
 
-        tempEmbed.addField({
+        tempEmbed.addFields({
             name: `${emoji}${opt.text}`.trim(),
             value: `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`
         });
     });
 
-    return tempEmbed.fields;
+    return tempEmbed.fields || [];
 }
 
 export default command;

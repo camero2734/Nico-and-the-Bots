@@ -39,17 +39,17 @@ command.setHandler(async (ctx) => {
 
         const embed = new Embed()
             .setTitle("Your inventory")
-            .addField({
+            .addFields({
                 name: "📑 Bounties",
                 value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
                 inline: true
             })
-            .addField({
+            .addFields({
                 name: "<:jumpsuit:860724950070984735> Jumpsuits",
                 value: `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
                 inline: true
             })
-            .addField({ name: "Current bounty value", value: `${BOUNTY_NUM_CREDITS} credits` })
+            .addFields({ name: "Current bounty value", value: `${BOUNTY_NUM_CREDITS} credits` })
             .setFooter({
                 text: "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
             });
@@ -80,7 +80,7 @@ command.setHandler(async (ctx) => {
         .setDescription(
             `Thank you for reporting <@${user}> to the Dema Council for infractions against the laws of The Sacred Municipality of Dema.\n\nWe have people on the way to find and rehabilitate them under the tenets of Vialism.`
         )
-        .addField({ name: "Assigned Bishop", value: `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}` })
+        .addFields({ name: "Assigned Bishop", value: `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}` })
         .setImage("https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
 
     await ctx.send({ embeds: [waitEmbed.toJSON()] });

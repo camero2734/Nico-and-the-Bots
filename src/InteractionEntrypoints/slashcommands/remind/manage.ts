@@ -59,7 +59,7 @@ async function generateReminderList(
         selectMenu.addOptions(new SelectMenuOption({ label, description, emoji: { id: emoji?.id }, value: `${r.id}` }));
     }
 
-    const actionRow = new ActionRow().setComponents([selectMenu]);
+    const actionRow = new ActionRow().setComponents(selectMenu);
     const embed = new Embed()
         .setTitle("Your reminders")
         .setDescription(
@@ -97,7 +97,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
         const embed = new Embed()
             .setTitle("Deleted reminder")
             .setDescription("Your reminder has been deleted.")
-            .addField({ name: "Text", value: reminder.text });
+            .addFields({ name: "Text", value: reminder.text });
 
         await ctx.editReply({ embeds: [embed], components: [] });
     } else if (actionType === ActionTypes.SelectReminder) {
@@ -117,12 +117,12 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
 
         const embed = new Embed()
             .setTitle(reminderTitle)
-            .addField({ name: "Sending", value: `${sendTS} (${sendTSRelative})` })
-            .addField({ name: "Created", value: madeTS });
+            .addFields({ name: "Sending", value: `${sendTS} (${sendTSRelative})` })
+            .addFields({ name: "Created", value: madeTS });
 
         if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
-        const actionRow = new ActionRow().setComponents([
+        const actionRow = new ActionRow().setComponents(
             new ButtonComponent()
                 .setLabel("Back to List")
                 .setStyle(ButtonStyle.Primary)
@@ -141,7 +141,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
                         actionType: ActionTypes.DeleteReminder.toString()
                     })
                 )
-        ]);
+        );
 
         await ctx.editReply({ components: [actionRow], embeds: [embed] });
     }

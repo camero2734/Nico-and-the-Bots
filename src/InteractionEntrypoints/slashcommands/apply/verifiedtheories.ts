@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
                 `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
             ].join("\n\n")
         )
-        .addField({
+        .addFields({
             name: "Cheating is not allowed",
             value: "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
         });
@@ -72,16 +72,16 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
     const [beginId, cancelId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents([
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
         new ButtonComponent().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
-    ]);
+    );
 
     await dmMessage.edit({ components: [actionRow] });
 
-    const dmActionRow = new ActionRow().setComponents([
+    const dmActionRow = new ActionRow().setComponents(
         new ButtonComponent().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
-    ]);
+    );
 
     await ctx.send({
         embeds: [new Embed().setDescription("The quiz was DM'd to you!").toJSON()],
@@ -195,7 +195,7 @@ async function generateEmbedAndButtons(
         })
     );
 
-    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRow().setComponents(cs));
+    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRow().setComponents(...cs));
 
     return [embed, actionRows];
 }
@@ -217,7 +217,7 @@ async function sendFinalEmbed(
 
         const givenAnswerText = q.answers[answerGiven] || "None";
         const correctAnswerText = q.answers[q.correct];
-        staffEmbed.addField({
+        staffEmbed.addFields({
             name: q.question.split("\n")[0],
             value: `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`
         });

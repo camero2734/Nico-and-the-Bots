@@ -50,17 +50,17 @@ command.setHandler(async (ctx) => {
 
     const confirmationEmbed = new Embed()
         .setTitle("Would you like to submit this warning?")
-        .addField({ name: "User", value: `<@${user}>` })
-        .addField({ name: "Explanation", value: explanation })
-        .addField({ name: "Rule Broken", value: ruleBroken })
-        .addField({ name: "Severity", value: `${severity}` });
+        .addFields({ name: "User", value: `<@${user}>` })
+        .addFields({ name: "Explanation", value: explanation })
+        .addFields({ name: "Rule Broken", value: ruleBroken })
+        .addFields({ name: "Severity", value: `${severity}` });
 
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents([
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId)
-    ]);
+    );
 
     await ctx.send({ embeds: [confirmationEmbed.toJSON()], components: [actionRow] });
 

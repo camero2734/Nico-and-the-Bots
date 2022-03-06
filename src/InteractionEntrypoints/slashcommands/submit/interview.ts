@@ -54,12 +54,12 @@ command.setHandler(async (ctx) => {
 
     embed.setAuthor({ name: ctx.member.displayName, iconURL: ctx.user.displayAvatarURL() });
     embed.setTitle(info.title);
-    embed.addField({ name: "Channel", value: channel, inline: true });
-    embed.addField({ name: "Views", value: `${view_count}`, inline: true });
-    embed.addField({ name: "Link", value: "[Click Here](https://youtu.be/" + id + ")", inline: true });
+    embed.addFields({ name: "Channel", value: channel, inline: true });
+    embed.addFields({ name: "Views", value: `${view_count}`, inline: true });
+    embed.addFields({ name: "Link", value: "[Click Here](https://youtu.be/" + id + ")", inline: true });
     embed.setImage(thumbnail);
     embed.setDescription(description || "No description provided");
-    embed.addField({ name: "Uploaded", value: F.discordTimestamp(uploadDate, "relative") });
+    embed.addFields({ name: "Uploaded", value: F.discordTimestamp(uploadDate, "relative") });
 
     const interviewsChannel = ctx.channel.guild.channels.cache.get(channelIDs.interviewsubmissions) as TextChannel;
 
@@ -67,12 +67,12 @@ command.setHandler(async (ctx) => {
         data: { url, submittedByUserId: ctx.user.id }
     });
 
-    const actionRow = new ActionRow().setComponents([
+    const actionRow = new ActionRow().setComponents(
         new ButtonComponent()
             .setLabel("Approve")
             .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
             .setStyle(ButtonStyle.Success)
-    ]);
+    );
 
     await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 

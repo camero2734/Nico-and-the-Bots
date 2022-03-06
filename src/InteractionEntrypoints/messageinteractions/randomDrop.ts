@@ -37,7 +37,7 @@ async function runDrop(prize: DropPrize, channel: TextChannel): Promise<void> {
     const embed = new Embed()
         .setAuthor({ name: `Nico tripped over ${randomNoun}`, iconURL: NicoClient.user?.displayAvatarURL() })
         .setColor(Colors.Red)
-        .addField({
+        .addFields({
             name: `He dropped ${dropName}`,
             value: `${theFirstUsers} to claim this prize will win ${prizeName}`
         })

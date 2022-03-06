@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AutocompleteInteraction, Guild, GuildMember, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import { AutocompleteInteraction, Guild, GuildMember, Snowflake, TextChannel } from "discord.js";
 import { Tuple } from "ts-essentials";
 import { extractOptsFromInteraction } from "./SlashCommandOptions";
 

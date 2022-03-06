@@ -1,5 +1,5 @@
 import { secondsToMilliseconds } from "date-fns";
-import { Embed, MessageOptions } from "discord.js/packages/discord.js";
+import { Embed, MessageOptions } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";

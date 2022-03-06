@@ -1,10 +1,4 @@
-import {
-    ActionRow,
-    ApplicationCommandOptionType,
-    ButtonComponent,
-    ButtonStyle,
-    Embed
-} from "discord.js/packages/discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

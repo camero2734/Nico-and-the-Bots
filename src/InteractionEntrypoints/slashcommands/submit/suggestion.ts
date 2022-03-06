@@ -1,5 +1,5 @@
 import { channelIDs } from "../../../Configuration/config";
-import { Embed, TextChannel, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, TextChannel, ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{

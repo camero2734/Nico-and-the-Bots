@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import WikiJS from "wikijs";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";

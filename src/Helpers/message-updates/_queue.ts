@@ -1,6 +1,6 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { minutesToMilliseconds } from "date-fns";
-import { Collection, Message, MessageOptions, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import { Collection, Message, MessageOptions, Snowflake, TextChannel } from "discord.js";
 import IORedis from "ioredis";
 import { NicoClient } from "../../../app";
 import { guildID } from "../../Configuration/config";

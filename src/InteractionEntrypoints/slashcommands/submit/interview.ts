@@ -1,12 +1,5 @@
 import { parse } from "date-fns";
-import {
-    ActionRow,
-    ApplicationCommandOptionType,
-    ButtonComponent,
-    ButtonStyle,
-    Embed,
-    TextChannel
-} from "discord.js/packages/discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
 import * as ytdl from "youtube-dl";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

@@ -1,6 +1,6 @@
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

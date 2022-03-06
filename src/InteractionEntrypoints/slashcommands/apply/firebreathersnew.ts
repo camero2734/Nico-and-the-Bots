@@ -8,7 +8,7 @@ import {
     MessageComponentInteraction,
     MessageEditOptions,
     MessagePayload
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { nanoid } from "nanoid";
 import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID } from "../../../Configuration/definitions";

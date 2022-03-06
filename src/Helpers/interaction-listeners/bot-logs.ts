@@ -1,4 +1,4 @@
-import { Embed } from "discord.js/packages/discord.js";
+import { Embed } from "discord.js";
 import { createInteractionListener } from "../../Structures/ListenerInteraction";
 
 const [name, interaction, genCustomId] = createInteractionListener("botLog", <const>[], async (ctx, args) => {

@@ -9,7 +9,7 @@ import {
     SelectMenuComponent,
     SelectMenuOption,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { roles } from "../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";

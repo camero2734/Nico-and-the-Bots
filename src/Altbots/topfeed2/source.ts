@@ -1,5 +1,5 @@
 import { secondsToMilliseconds } from "date-fns";
-import { Embed, MessageOptions } from "discord.js/packages/discord.js";
+import { Embed, MessageOptions } from "discord.js";
 import { prisma } from "../../Helpers/prisma-init";
 
 export class TopfeedError extends Error {}

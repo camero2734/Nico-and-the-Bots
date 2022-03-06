@@ -6,7 +6,7 @@ import {
     Embed,
     MessageAttachment,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";

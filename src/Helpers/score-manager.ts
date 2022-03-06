@@ -1,12 +1,5 @@
 import { startOfDay } from "date-fns";
-import {
-    DiscordAPIError,
-    Message,
-    Embed,
-    MessageReference,
-    Snowflake,
-    TextChannel
-} from "discord.js/packages/discord.js";
+import { DiscordAPIError, Message, Embed, MessageReference, Snowflake, TextChannel } from "discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 

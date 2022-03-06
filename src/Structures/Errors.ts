@@ -1,4 +1,4 @@
-import { CommandInteraction, DMChannel, Interaction, Embed, TextChannel } from "discord.js/packages/discord.js";
+import { CommandInteraction, DMChannel, Interaction, Embed, TextChannel } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { rollbar } from "../Helpers/logging/rollbar";
 

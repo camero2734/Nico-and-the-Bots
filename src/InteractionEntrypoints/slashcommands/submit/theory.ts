@@ -1,11 +1,4 @@
-import {
-    ActionRow,
-    ApplicationCommandOptionType,
-    ButtonComponent,
-    ButtonStyle,
-    Embed,
-    TextChannel
-} from "discord.js/packages/discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

@@ -1,15 +1,7 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedError, TopfeedSource } from "../source";
 import { TweetV2, TwitterApi, TwitterApiReadOnly, TwitterV2IncludesHelper } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
-import {
-    ActionRow,
-    ButtonComponent,
-    ButtonStyle,
-    Colors,
-    Embed,
-    MessageAttachment,
-    MessageOptions
-} from "discord.js/packages/discord.js";
+import { ActionRow, ButtonComponent, ButtonStyle, Colors, Embed, MessageAttachment, MessageOptions } from "discord.js";
 import { emojiIDs } from "../../../Configuration/config";
 
 interface ITwitterSourceInput extends ITopfeedSourceInput {

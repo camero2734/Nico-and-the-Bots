@@ -9,7 +9,7 @@ import {
     Message,
     SelectMenuComponent,
     SelectMenuOption
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";

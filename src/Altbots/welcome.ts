@@ -10,7 +10,7 @@ import {
     PartialGuildMember,
     Snowflake,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";

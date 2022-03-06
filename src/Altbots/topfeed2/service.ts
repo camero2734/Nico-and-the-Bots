@@ -1,4 +1,4 @@
-import { Guild } from "discord.js/packages/discord.js";
+import { Guild } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
 import { TopfeedSource } from "./source";
 

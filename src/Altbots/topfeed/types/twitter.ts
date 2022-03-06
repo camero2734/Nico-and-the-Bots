@@ -1,12 +1,5 @@
 import async from "async";
-import {
-    ActionRow,
-    ButtonComponent,
-    ButtonStyle,
-    Embed,
-    MessageAttachment,
-    MessageOptions
-} from "discord.js/packages/discord.js";
+import { ActionRow, ButtonComponent, ButtonStyle, Embed, MessageAttachment, MessageOptions } from "discord.js";
 import TwitterApi, { MediaVideoInfoV1 } from "twitter-api-v2";
 import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";

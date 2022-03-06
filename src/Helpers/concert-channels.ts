@@ -10,7 +10,7 @@ import {
     OverwriteData,
     Role,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import fetch from "node-fetch";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";

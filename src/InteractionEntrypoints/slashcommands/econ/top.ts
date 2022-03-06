@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { badgeLoader } from "../../../Helpers";
 import { LevelCalculator } from "../../../Helpers/score-manager";
 import fetch from "node-fetch";

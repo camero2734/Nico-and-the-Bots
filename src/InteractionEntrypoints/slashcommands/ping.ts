@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType, Colors } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType, Colors } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
 
 interface Ping {

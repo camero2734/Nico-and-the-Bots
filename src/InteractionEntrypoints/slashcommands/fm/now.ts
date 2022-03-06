@@ -1,10 +1,4 @@
-import {
-    ActionRow,
-    ApplicationCommandOptionType,
-    ButtonComponent,
-    ButtonStyle,
-    Embed
-} from "discord.js/packages/discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

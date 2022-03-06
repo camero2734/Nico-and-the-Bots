@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js/packages/discord.js";
+import { Snowflake } from "discord.js";
 
 declare global {
     interface String {

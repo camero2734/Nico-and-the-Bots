@@ -1,6 +1,6 @@
 import { addDays } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v9";
-import { ActionRow, ButtonComponent, Embed, Message, Snowflake, TextChannel } from "discord.js/packages/discord.js";
+import { ActionRow, ButtonComponent, Embed, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";

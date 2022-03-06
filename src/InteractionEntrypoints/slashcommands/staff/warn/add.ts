@@ -1,13 +1,6 @@
 import { WarningType } from "@prisma/client";
 import { subYears } from "date-fns";
-import {
-    ActionRow,
-    ApplicationCommandOptionType,
-    ButtonComponent,
-    ButtonStyle,
-    Embed,
-    GuildMember
-} from "discord.js/packages/discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, GuildMember } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";

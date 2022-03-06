@@ -1,6 +1,6 @@
 import consola from "consola";
 import { minutesToMilliseconds } from "date-fns";
-import { Client, Guild, TextChannel } from "discord.js/packages/discord.js";
+import { Client, Guild, TextChannel } from "discord.js";
 import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";

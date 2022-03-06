@@ -1,11 +1,4 @@
-import {
-    ActionRow,
-    ApplicationCommandOptionType,
-    ButtonComponent,
-    ButtonStyle,
-    Colors,
-    Embed
-} from "discord.js/packages/discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Colors, Embed } from "discord.js";
 import fetch from "node-fetch";
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";

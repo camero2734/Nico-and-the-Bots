@@ -11,7 +11,7 @@ import {
     SelectMenuComponent,
     SelectMenuInteraction,
     SelectMenuOption
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import fs from "fs";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

@@ -7,7 +7,7 @@ import {
     GuildMember,
     Message,
     TextChannel
-} from "discord.js/packages/discord.js";
+} from "discord.js";
 import R from "ramda";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

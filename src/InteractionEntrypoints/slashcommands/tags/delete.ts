@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js/packages/discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";

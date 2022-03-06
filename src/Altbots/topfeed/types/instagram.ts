@@ -1,4 +1,4 @@
-import { Embed, MessageOptions } from "discord.js/packages/discord.js";
+import { Embed, MessageOptions } from "discord.js";
 import { IgApiClient, UserFeedResponseItemsItem } from "instagram-private-api";
 import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";

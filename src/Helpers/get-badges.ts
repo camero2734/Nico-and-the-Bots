@@ -1,5 +1,5 @@
 import { Image, loadImage } from "canvas";
-import { GuildMember } from "discord.js/packages/discord.js";
+import { GuildMember } from "discord.js";
 import { prisma } from "./prisma-init";
 
 interface BadgeLoaderOptions {

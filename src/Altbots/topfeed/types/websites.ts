@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import Diff from "diff";
+const Diff = require("diff");
 import {
     ActionRow,
     ButtonComponent,
@@ -153,6 +153,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
     async #checkHTML(): Promise<CheckObj["HTML"]["_data"]> {
         const subtype = <const>"HTML";
+
+        console.log(`Checking html for ${this.url}`);
 
         const res = await fetch(this.url, { agent });
         const buff = await res.buffer();

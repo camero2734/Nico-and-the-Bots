@@ -1,5 +1,5 @@
 import crypto from "crypto";
-const Diff = require("diff");
+import * as Diff from "diff";
 import {
     ActionRow,
     ButtonComponent,
@@ -11,6 +11,7 @@ import {
     Snowflake
 } from "discord.js";
 import https from "https";
+import { imageHash } from "image-hash";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
@@ -18,6 +19,7 @@ import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
+import PageRes from "pageres";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
@@ -78,6 +80,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const response = await Promise.all(promises);
 
         const validResponses = response.filter((r) => r.isNew);
+
         if (validResponses.length === 0) return [];
 
         return validResponses.map((res) => ({
@@ -186,20 +189,22 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     async #checkVisual(): Promise<CheckObj["VISUAL"]["_data"]> {
         const subtype = <const>"VISUAL";
         // const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
-        const screenshot = Buffer.from("0000", "hex");
 
-        const hash = "TEMP";
-        //  await new Promise<string>((resolve, reject) => {
+        // const hash = await new Promise<string>((resolve, reject) => {
         //     imageHash({ data: screenshot }, 64, true, (error: Error, data: string) => {
         //         if (error) reject(error);
         //         else resolve(data);
         //     });
         // });
+        const screenshot = Buffer.from("");
+        const hash = "TEMP";
 
         const old = await this.getLatestItem(subtype);
 
         const oldBuffer = Buffer.from(old?.data?.hash || "", "hex");
         const newBuffer = Buffer.from(hash, "hex");
+
+        console.log(`${this.url}`, oldBuffer.byteLength, newBuffer.byteLength);
 
         const distance = F.hammingDist(oldBuffer, newBuffer);
 

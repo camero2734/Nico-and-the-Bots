@@ -61,7 +61,7 @@ class TopfeedBot {
         // prettier-ignore
         this.websites = [
             new SiteWatcher("https://dmaorg.info", "DMAORG 404 Page", ["VISUAL", "HTML"]),
-            new SiteWatcher("https://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML"]),
+            new SiteWatcher("https://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML", "VISUAL"]),
             new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
                 .setDisplayedURL("https://live.twentyonepilots.com"),
             new SiteWatcher("https://twentyonepilots.com", "Band Homepage", ["VISUAL"], channelIDs.topfeed.band)

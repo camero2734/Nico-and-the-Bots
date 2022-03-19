@@ -73,6 +73,9 @@ const channelReacts = [
     new ChannelReactions(channelIDs.memes).addReactions([
         new FileReact(["👍", "👎"], FileReact.MimeCheck(["audio", "video", "image"]), true)
     ]),
+    new ChannelReactions(channelIDs.trenchmemes).addReactions([
+        new FileReact(["👍", "👎"], FileReact.MimeCheck(["audio", "video", "image"]), true)
+    ]),
     new ChannelReactions(channelIDs.cliqueartfriday).addReactions([
         new FileReact(["💝"], FileReact.MimeCheck(["audio", "video", "image"]), true)
     ]),

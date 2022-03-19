@@ -207,12 +207,12 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "1", pollID: `${poll.id}` }))
-                    .setEmoji(emojiIDs.upvote as APIMessageComponentEmoji),
+                    .setEmoji({ id: emojiIDs.upvote }),
                 new ButtonComponent()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))
-                    .setEmoji(emojiIDs.downvote as APIMessageComponentEmoji)
+                    .setEmoji({ id: emojiIDs.downvote })
             );
         };
 

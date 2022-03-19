@@ -1,6 +1,16 @@
 import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { format } from "date-fns";
-import { CategoryChannel, Client, Guild, GuildChannel, OverwriteData, Role, TextChannel } from "discord.js";
+import {
+    CategoryChannel,
+    ChannelType,
+    Client,
+    Collection,
+    Guild,
+    GuildChannel,
+    OverwriteData,
+    Role,
+    TextChannel
+} from "discord.js";
 import fetch from "node-fetch";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
@@ -43,7 +53,7 @@ class ConcertChannel {
     public concerts: ConcertEntry[] = [];
     constructor(public concert: ConcertEntry, private guild: Guild) {
         const { venue, title } = concert;
-        const s = (str: string) => str.toLowerCase().replace(/\(.*?\)/g, "").normalize("NFKC").replace(/\p{Diacritic}/gu, "").split(/ +/); // prettier-ignore
+        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/); // prettier-ignore
         this.channelName = [s(title || venue.name), s(venue.city)].flat().filter(a => a).join("-"); // prettier-ignore
         this.concerts.push(concert);
     }
@@ -121,7 +131,7 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
-            const channelsCollection = this.concertCategory.children;
+            const channelsCollection = this.concertCategory.children.cache as Collection<string, GuildChannel>;
             channelsCollection.delete(channelIDs.tourhelp);
             const channels = [...channelsCollection.values()];
 
@@ -160,23 +170,23 @@ class ConcertChannelManager {
 
         const permissionOverwrites: OverwriteData[] = [
             {
-                deny: ["VIEW_CHANNEL"],
+                deny: ["ViewChannel"],
                 id: guildID
             },
             {
-                allow: ["VIEW_CHANNEL", "SEND_MESSAGES"],
+                allow: ["ViewChannel", "SendMessages"],
                 id: roles.staff // Staff
             },
             {
-                allow: ["VIEW_CHANNEL"],
+                allow: ["ViewChannel"],
                 id: role.id // The role that was just created
             },
             {
-                allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "MANAGE_CHANNELS"],
+                allow: ["ViewChannel", "SendMessages", "ManageChannels"],
                 id: roles.bots // Bots
             },
             {
-                deny: ["SEND_MESSAGES"],
+                deny: ["SendMessages"],
                 id: roles.muted // Muted
             }
         ];
@@ -187,7 +197,7 @@ class ConcertChannelManager {
 
         const channel = await this.guild.channels.create(toAdd.channelName, {
             permissionOverwrites,
-            type: "GUILD_TEXT",
+            type: ChannelType.GuildText,
             topic
         });
         await channel.setParent(categoryIDs.concerts, { lockPermissions: false });

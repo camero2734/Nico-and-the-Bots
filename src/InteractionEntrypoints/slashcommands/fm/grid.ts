@@ -1,6 +1,6 @@
 import { createCanvas, Image, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType, Colors } from "discord.js";
 import fetch from "node-fetch";
 import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -8,11 +8,15 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 const command = new SlashCommand(<const>{
     description: "Generates a weekly overview for your last.fm stats",
     options: [
-        { name: "size", description: "The number of rows and columns in the output", type: "INTEGER" },
+        {
+            name: "size",
+            description: "The number of rows and columns in the output",
+            type: ApplicationCommandOptionType.Integer
+        },
         {
             name: "timeperiod",
             description: "Period of time to fetch for (defaults to 1 week)",
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: [
                 { name: "1 week", value: "7day" },
                 { name: "1 month", value: "1month" },
@@ -22,8 +26,18 @@ const command = new SlashCommand(<const>{
                 { name: "Overall", value: "overall" }
             ]
         },
-        { name: "user", description: "The user in the server to lookup", required: false, type: "USER" },
-        { name: "username", description: "The Last.FM username to lookup", required: false, type: "STRING" }
+        {
+            name: "user",
+            description: "The user in the server to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        },
+        {
+            name: "username",
+            description: "The Last.FM username to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.String
+        }
     ]
 });
 
@@ -45,7 +59,7 @@ command.setHandler(async (ctx) => {
     const req_url = fmEndpoint({ method: "user.gettopalbums", period: date, limit: `${num}` });
 
     const res = await fetch(req_url);
-    const json = await res.json();
+    const json = (await res.json()) as Record<string, any>;
 
     const topTracks = json?.topalbums?.album as RankedAlbum[];
     if (!topTracks) throw new Error("Toptracks null");
@@ -77,12 +91,12 @@ command.setHandler(async (ctx) => {
     }
 
     const lastFMIcon = "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png";
-    const embed = new MessageEmbed()
-        .setAuthor(username, lastFMIcon, `https://www.last.fm/user/${username}`)
+    const embed = new Embed()
+        .setAuthor({ name: username, iconURL: lastFMIcon, url: `https://www.last.fm/user/${username}` })
         .setImage("attachment://chart.png")
-        .setColor("RANDOM")
+        .setColor(Colors.Red)
         .setDescription(`${size}x${size}, ${date}`)
-        .setFooter(`${Date.now() - start}ms`);
+        .setFooter({ text: `${Date.now() - start}ms` });
 
     await ctx.send({
         embeds: [embed.toJSON()],

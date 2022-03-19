@@ -1,12 +1,20 @@
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
-import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import {
+    ActionRow,
+    ApplicationCommandOptionType,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    MessageAttachment,
+    TextChannel
+} from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";
-import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 
 const command = new SlashCommand(<const>{
     description: "Submits an image, video, or audio file to #mulberry-street",
@@ -15,13 +23,13 @@ const command = new SlashCommand(<const>{
             name: "title",
             description: "The title of your piece of art",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
         {
             name: "url",
             description: "A direct link to the image, video, or audio file. Max 50MB.",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -71,29 +79,29 @@ command.setHandler(async (ctx) => {
 
     const fileName = `${title.split(" ").join("-")}.${fileType.ext}`;
 
-    const embed = new MessageEmbed()
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .setColor("#E3B3D8")
+    const embed = new Embed()
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
+        .setColor(0xe3b3d8)
         .setTitle(`"${title}"`)
         .setDescription(
             `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
         )
-        .addField("URL", url)
-        .setFooter("Courtesy of Mulberry Street Creations™", "https://i.imgur.com/fkninOC.png");
+        .addFields({ name: "URL", value: url })
+        .setFooter({ text: "Courtesy of Mulberry Street Creations™", iconURL: "https://i.imgur.com/fkninOC.png" });
 
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "SUCCESS", label: "Submit", customId: yesId })
-    ]);
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
+    );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 
     const [buttonPressed] = await timedListener.wait();
     if (buttonPressed !== yesId) {
         await ctx.editReply({
-            embeds: [new MessageEmbed({ description: "Submission cancelled." })],
+            embeds: [new Embed({ description: "Submission cancelled." })],
             components: []
         });
         return;
@@ -106,8 +114,8 @@ command.setHandler(async (ctx) => {
     embed.setDescription("Submitted.");
     const doneEmbed = embed;
 
-    embed.description = "";
-    embed.fields = [];
+    embed.setDescription("");
+    embed.setFields();
 
     const attachment = new MessageAttachment(buffer, fileName);
 
@@ -118,9 +126,9 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", label: "View post", url: m.url })
-    ]);
+    const newActionRow = new ActionRow().setComponents(
+        new ButtonComponent().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
+    );
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });
 });

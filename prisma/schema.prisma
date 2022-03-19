@@ -366,7 +366,9 @@ model MessageReference {
 model FirebreatherApplication {
   applicationId String @id @default(uuid())
 
-  messageUrl  String?
+  messageUrl String?
+
+  startedAt   DateTime?
   submittedAt DateTime?
 
   approved  Boolean?
@@ -402,9 +404,9 @@ model RandomDrop {
   createdAt DateTime @default(now())
   prize     Json
 
-  guesses RandomDropGuess[]
+  guesses           RandomDropGuess[]
   maxGuessesPerUser Int
-  winningIndices Int[]
+  winningIndices    Int[]
 }
 
 model RandomDropGuess {

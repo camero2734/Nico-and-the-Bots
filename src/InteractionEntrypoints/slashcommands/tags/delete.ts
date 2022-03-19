@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -12,7 +12,7 @@ const command = new SlashCommand(<const>{
             name: "tag",
             description: "The name of the tag to delete",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             autocomplete: true
         }
     ]
@@ -30,11 +30,11 @@ command.setHandler(async (ctx) => {
 
     await prisma.tag.delete({ where: { name: ctx.opts.tag } });
 
-    const embed = new MessageEmbed().setTitle(`Tag ${tag.name} deleted`).setDescription(tag.text);
+    const embed = new Embed().setTitle(`Tag ${tag.name} deleted`).setDescription(tag.text);
 
     try {
         const member = await ctx.guild.members.fetch(tag.userId);
-        embed.setAuthor(member.displayName, member.displayAvatarURL());
+        embed.setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() });
     } catch {
         //
     }

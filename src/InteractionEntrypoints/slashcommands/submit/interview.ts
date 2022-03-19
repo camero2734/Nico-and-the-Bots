@@ -1,15 +1,22 @@
+import { parse } from "date-fns";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
+import * as ytdl from "youtube-dl";
+import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import * as ytdl from "youtube-dl";
-import { parse } from "date-fns";
-import F from "../../../Helpers/funcs";
-import { channelIDs, roles } from "../../../Configuration/config";
 
 const command = new SlashCommand(<const>{
     description: "Submits an interview to the interview channel",
-    options: [{ name: "link", description: "The YouTube URL for the video", required: true, type: "STRING" }]
+    options: [
+        {
+            name: "link",
+            description: "The YouTube URL for the video",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -32,7 +39,7 @@ command.setHandler(async (ctx) => {
     if (existingInterview) throw new CommandError("This interview has already been submitted");
 
     // Fetch info
-    const embed = new MessageEmbed().setDescription("Fetching video info...").setColor("#111111");
+    const embed = new Embed().setDescription("Fetching video info...").setColor(0x111111);
     await ctx.send({ embeds: [embed] });
 
     const info: Record<string, string> = await new Promise((resolve) =>
@@ -45,14 +52,14 @@ command.setHandler(async (ctx) => {
 
     console.log(channel, view_count, fulltitle, thumbnail);
 
-    embed.setAuthor(ctx.member.displayName, ctx.user.displayAvatarURL());
+    embed.setAuthor({ name: ctx.member.displayName, iconURL: ctx.user.displayAvatarURL() });
     embed.setTitle(info.title);
-    embed.addField("Channel", channel, true);
-    embed.addField("Views", `${view_count}`, true);
-    embed.addField("Link", "[Click Here](https://youtu.be/" + id + ")", true);
+    embed.addFields({ name: "Channel", value: channel, inline: true });
+    embed.addFields({ name: "Views", value: `${view_count}`, inline: true });
+    embed.addFields({ name: "Link", value: "[Click Here](https://youtu.be/" + id + ")", inline: true });
     embed.setImage(thumbnail);
     embed.setDescription(description || "No description provided");
-    embed.addField("Uploaded", F.discordTimestamp(uploadDate, "relative"));
+    embed.addFields({ name: "Uploaded", value: F.discordTimestamp(uploadDate, "relative") });
 
     const interviewsChannel = ctx.channel.guild.channels.cache.get(channelIDs.interviewsubmissions) as TextChannel;
 
@@ -60,23 +67,22 @@ command.setHandler(async (ctx) => {
         data: { url, submittedByUserId: ctx.user.id }
     });
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({
-            label: "Approve",
-            customId: genYesID({ interviewId: `${dbInterview.id}` }),
-            style: "SUCCESS"
-        })
-    ]);
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent()
+            .setLabel("Approve")
+            .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
+            .setStyle(ButtonStyle.Success)
+    );
 
     await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 
-    const finalEmbed = new MessageEmbed().setColor("#111111").setDescription("Sent video to staff for approval!");
+    const finalEmbed = new Embed().setColor(0x111111).setDescription("Sent video to staff for approval!");
     await ctx.send({ embeds: [finalEmbed] });
 });
 
 const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId"], async (ctx, args) => {
     const embed = ctx.message.embeds[0];
-    embed.setColor("#00FF00");
+    embed.setColor(0x00ff00);
 
     await ctx.editReply({ components: [], embeds: [embed] });
     const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
@@ -95,7 +101,7 @@ const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId
 //     await msg.reactions.removeAll();
 
 //     // Do something
-//     const newEmbed = new MessageEmbed(msg.embeds[0]);
+//     const newEmbed = new Embed(msg.embeds[0]);
 //     newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
 //     msg.edit({ embeds: [newEmbed] });
 

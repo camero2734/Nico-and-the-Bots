@@ -1,12 +1,12 @@
 import { createCanvas, loadImage } from "canvas";
 import {
+    ActionRow,
+    ButtonComponent,
     Client,
+    Embed,
     GuildMember,
-    MessageActionRow,
     MessageAttachment,
-    MessageButton,
     MessageComponentInteraction,
-    MessageEmbed,
     PartialGuildMember,
     Snowflake,
     TextChannel
@@ -28,20 +28,18 @@ export class SacarverBot {
     constructor() {
         this.client = new Client({
             intents: [
-                "GUILDS",
-                "DIRECT_MESSAGES",
-                "DIRECT_MESSAGE_REACTIONS",
-                "GUILDS",
-                "GUILD_BANS",
-                "GUILD_EMOJIS_AND_STICKERS",
-                "GUILD_MEMBERS",
-                "GUILD_MESSAGES",
-                "GUILD_MESSAGE_REACTIONS",
-                "GUILD_INTEGRATIONS",
-                "GUILD_INVITES",
-                "GUILD_PRESENCES",
-                "GUILD_VOICE_STATES",
-                "GUILD_WEBHOOKS"
+                "Guilds",
+                "DirectMessages",
+                "DirectMessageReactions",
+                "GuildBans",
+                "GuildEmojisAndStickers",
+                "GuildMembers",
+                "GuildMessages",
+                "GuildIntegrations",
+                "GuildInvites",
+                "GuildPresences",
+                "GuildVoiceStates",
+                "GuildWebhooks"
             ]
         });
         this.client.login(secrets.bots.sacarver);
@@ -107,28 +105,28 @@ export class SacarverBot {
             }
         ];
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Welcome to the twenty one pilots Discord server!")
-            .setAuthor(member.displayName, member.user.displayAvatarURL())
+            .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
             .setDescription(
                 "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n"
             )
             .setImage("attachment://welcome.png");
 
-        embed.addField("\u200b", "\u200b");
+        embed.addFields({ name: "\u200b", value: "\u200b" });
         for (const { emoji, title, text } of noteworthyChannels) {
-            embed.addField(`${emoji} ${title}`, text);
+            embed.addFields({ name: `${emoji} ${title}`, value: text });
         }
 
         // Functions
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({
+        const actionRow = new ActionRow().setComponents(
+            new ButtonComponent({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",
                 customId: ANNOUNCEMENTS_ID,
                 ...emoji("📢")
             })
-        ]);
+        );
 
         await welcomeChan.send({
             content: member.toString(),
@@ -146,7 +144,7 @@ export class SacarverBot {
 
         await interaction.reply({
             embeds: [
-                new MessageEmbed({
+                new Embed({
                     description: `You now have the announcements role! You can remove this at any time by using the \`/roles announcements\` command in <#${channelIDs.commands}>`
                 })
             ],
@@ -165,7 +163,7 @@ export class SacarverBot {
 
         // Avatar
         ctx.translate(0, 88);
-        const avatar = await loadImage(member.user.displayAvatarURL({ format: "png" }));
+        const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png" }));
         ctx.drawImage(avatar, 104, 0, 144, 144);
 
         // Member name

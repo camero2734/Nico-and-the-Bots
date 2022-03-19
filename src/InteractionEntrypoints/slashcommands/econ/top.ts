@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember } from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { badgeLoader } from "../../../Helpers";
 import { LevelCalculator } from "../../../Helpers/score-manager";
 import fetch from "node-fetch";
@@ -25,14 +25,14 @@ const command = new SlashCommand(<const>{
             name: "page",
             description: "The page number of the leaderboard to check",
             required: false,
-            type: "INTEGER",
+            type: ApplicationCommandOptionType.Integer,
             choices: []
         },
         {
             name: "timeperiod",
             description: "The time period over which to display statistics. Defaults to 1 month.",
             required: false,
-            type: "INTEGER",
+            type: ApplicationCommandOptionType.Integer,
             choices: timePeriodChoices
         }
     ]
@@ -162,7 +162,7 @@ async function generateImage(
         // Avatar
         cctx.translate(10, 0);
         const avatar = await loadImage(
-            member?.user.displayAvatarURL({ format: "png", size: 128 }) ||
+            member?.user.displayAvatarURL({ extension: "png", size: 128 }) ||
                 "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
         );
 

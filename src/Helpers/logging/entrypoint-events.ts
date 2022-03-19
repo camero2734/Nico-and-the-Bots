@@ -1,3 +1,4 @@
+import { InteractionType } from "discord.js";
 import { EntrypointEvents } from "../../Structures/Events";
 import { prisma } from "../prisma-init";
 
@@ -11,7 +12,7 @@ async function storeStartedCommands() {
                 id: ctx.id,
                 channelId: ctx.channel?.id,
                 identifier: entrypoint.identifier,
-                type: ctx.type,
+                type: ctx.type.toString(),
                 userId: ctx.user.id,
                 createdAt: ctx.createdAt
             }
@@ -31,7 +32,7 @@ async function storeFinishedCommands() {
                 id: ctx.id,
                 channelId: ctx.channel?.id,
                 identifier: entrypoint.identifier,
-                type: ctx.type,
+                type: ctx.type.toString(),
                 userId: ctx.user.id,
                 createdAt: ctx.createdAt
             }
@@ -51,7 +52,7 @@ async function storeErroredCommands() {
                 id: ctx.id,
                 channelId: ctx.channel?.id,
                 identifier: entrypoint.identifier,
-                type: ctx.type,
+                type: ctx.type.toString(),
                 userId: ctx.user.id,
                 createdAt: ctx.createdAt
             }

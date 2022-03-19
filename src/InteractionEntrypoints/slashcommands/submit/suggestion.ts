@@ -1,16 +1,21 @@
 import { channelIDs } from "../../../Configuration/config";
-import { MessageEmbed, TextChannel } from "discord.js";
+import { Embed, TextChannel, ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Submits a suggestion to the staff",
     options: [
-        { name: "title", description: "The title of your suggestion", required: true, type: "STRING" },
+        {
+            name: "title",
+            description: "The title of your suggestion",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
         {
             name: "details",
             description: "Some more details about your suggestion",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -18,8 +23,8 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const { title, details } = ctx.opts;
 
-    const embed = new MessageEmbed()
-        .setAuthor(`Suggestion from ${ctx.member.displayName}`, ctx.member.user.displayAvatarURL())
+    const embed = new Embed()
+        .setAuthor({ name: `Suggestion from ${ctx.member.displayName}`, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(ctx.member.displayColor)
         .setTitle(title)
         .setDescription(details);
@@ -28,7 +33,7 @@ command.setHandler(async (ctx) => {
 
     await suggestChan.send({ embeds: [embed] });
 
-    const responseEmbed = new MessageEmbed({ description: "Your suggestion has been submitted!" });
+    const responseEmbed = new Embed({ description: "Your suggestion has been submitted!" });
     await ctx.send({ embeds: [responseEmbed] });
 });
 

@@ -7,6 +7,7 @@ import {
     ApplicationCommandData,
     ApplicationCommandOptionChoice,
     ApplicationCommandOptionData,
+    ApplicationCommandOptionType,
     AutocompleteInteraction,
     CommandInteraction,
     CommandInteractionOption,
@@ -26,16 +27,20 @@ export type SlashCommandData<T extends CommandOptions = ApplicationDataType[]> =
     options: T;
 };
 
-type SnowflakeTypes = "USER" | "CHANNEL" | "MENTIONABLE" | "ROLE"; // prettier-ignore
+type SnowflakeTypes =
+    | ApplicationCommandOptionType.User
+    | ApplicationCommandOptionType.Channel
+    | ApplicationCommandOptionType.Mentionable
+    | ApplicationCommandOptionType.Role;
 // prettier-ignore
 type ToPrimitiveType<OType> = 
       OType extends SnowflakeTypes
           ? Snowflake
-      : OType extends "BOOLEAN"
+      : OType extends ApplicationCommandOptionType.Boolean
           ? boolean
-      : OType extends "INTEGER"
+      : OType extends ApplicationCommandOptionType.Integer | ApplicationCommandOptionType.Number
           ? number
-      : OType extends "STRING"
+      : OType extends ApplicationCommandOptionType.String
           ? string
       : unknown;
 

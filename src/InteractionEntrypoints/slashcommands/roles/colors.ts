@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -10,7 +10,7 @@ const command = new SlashCommand(<const>{
         {
             name: "role",
             description: "The role you wish to equip/unequip",
-            type: "ROLE",
+            type: ApplicationCommandOptionType.Role,
             required: false
         }
     ]
@@ -30,13 +30,13 @@ command.setHandler(async (ctx) => {
     }
 
     if (!role) {
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Your Color Roles")
             .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
-            .addField(
-                "How do I choose one?",
-                `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles colors <@&${roleIDs[0]}>`
-            );
+            .addFields({
+                name: "How do I choose one?",
+                value: `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles colors <@&${roleIDs[0]}>`
+            });
 
         return ctx.send({ embeds: [embed] });
     }
@@ -60,13 +60,13 @@ command.setHandler(async (ctx) => {
 
     // If they requested a role they already had, leave them with no color roles
     if (currentlyEquippedRoles.includes(role)) {
-        const embed = new MessageEmbed().setTitle("Success!").setDescription("Removed your color role");
+        const embed = new Embed().setTitle("Success!").setDescription("Removed your color role");
         return ctx.send({ embeds: [embed] });
     }
 
     // Otherwise add the role they requested
     await ctx.member.roles.add(role);
-    const embed = new MessageEmbed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
+    const embed = new Embed().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
     return ctx.send({ embeds: [embed] });
 });
 

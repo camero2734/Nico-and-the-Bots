@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -20,7 +20,7 @@ const command = new SlashCommand(<const>{
             name: "album",
             description: "The album role to get",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: Object.entries(albumRoles).map(([name, roleID]) => ({
                 name,
                 value: roleID
@@ -45,7 +45,7 @@ command.setHandler(async (ctx) => {
     }
 
     if (removedAll) {
-        const embed = new MessageEmbed({ description: "Your album role was removed" });
+        const embed = new Embed({ description: "Your album role was removed" });
         return ctx.send({ embeds: [embed] });
     }
 
@@ -53,7 +53,7 @@ command.setHandler(async (ctx) => {
     const role = await ctx.member.guild.roles.fetch(roleID);
     if (!role) throw new CommandError("Unable to find role");
 
-    const embed = new MessageEmbed().setDescription(`You now have the ${role.name} album role!`).setColor(role.color);
+    const embed = new Embed().setDescription(`You now have the ${role.name} album role!`).setColor(role.color);
 
     ctx.send({ embeds: [embed] });
 });

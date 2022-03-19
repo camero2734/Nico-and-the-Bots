@@ -1,17 +1,27 @@
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
 import { channelIDs } from "../../../Configuration/config";
-import { MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Submits a theory to #theory-list",
     options: [
-        { name: "title", description: "The title of your theory", required: true, type: "STRING" },
-        { name: "theory", description: "Your theory in text form", required: true, type: "STRING" },
+        {
+            name: "title",
+            description: "The title of your theory",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "theory",
+            description: "Your theory in text form",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
         {
             name: "imageurl",
             description: "A direct link to a supporting image",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -19,14 +29,14 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const { title, theory, imageurl } = ctx.opts;
 
-    const embed = new MessageEmbed()
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
+    const embed = new Embed()
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(ctx.member.displayColor)
         .setTitle(title)
         .setDescription(theory)
-        .setFooter(
-            "Use the buttons below to vote on the theory. Votes remain anonymous and should reflect the quality of the post."
-        );
+        .setFooter({
+            text: "Use the buttons below to vote on the theory. Votes remain anonymous and should reflect the quality of the post."
+        });
 
     if (imageurl) embed.setImage(imageurl);
 
@@ -36,10 +46,10 @@ command.setHandler(async (ctx) => {
 
     const m = await theoryChan.send({ embeds: [embed], components: [actionRow] });
 
-    const responseEmbed = new MessageEmbed({ description: "Your theory has been submitted!" });
-    const responseActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", url: m.url, label: "View post" })
-    ]);
+    const responseEmbed = new Embed({ description: "Your theory has been submitted!" });
+    const responseActionRow = new ActionRow().setComponents(
+        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(m.url).setLabel("View post")
+    );
     await ctx.send({
         embeds: [responseEmbed],
         components: [responseActionRow]

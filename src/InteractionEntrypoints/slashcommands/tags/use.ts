@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
@@ -11,8 +11,19 @@ import { getTagNameSearcher } from "./_consts";
 const command = new SlashCommand(<const>{
     description: "Uses or searches for a tag",
     options: [
-        { name: "name", description: "The name of the tag to use", required: true, type: "STRING", autocomplete: true },
-        { name: "info", description: "Shows extra info about the tag", required: false, type: "BOOLEAN" }
+        {
+            name: "name",
+            description: "The name of the tag to use",
+            required: true,
+            type: ApplicationCommandOptionType.String,
+            autocomplete: true
+        },
+        {
+            name: "info",
+            description: "Shows extra info about the tag",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
+        }
     ]
 });
 
@@ -41,11 +52,11 @@ command.setHandler(async (ctx) => {
     });
 
     if (ctx.opts.info) {
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle(tag.name)
             .setDescription(tag.text)
             .setColor(tagAuthor.displayColor)
-            .setFooter(`Created by ${tagAuthor.displayName}`, tagAuthor.user.displayAvatarURL());
+            .setFooter({ text: `Created by ${tagAuthor.displayName}`, iconURL: tagAuthor.user.displayAvatarURL() });
 
         await ctx.editReply({ embeds: [embed] });
     } else {
@@ -57,12 +68,10 @@ command.setHandler(async (ctx) => {
 async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void> {
     const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 5 });
 
-    const embed = new MessageEmbed().setTitle(
-        "That tag doesn't exist. Here are some of the most popular tags you can try."
-    );
+    const embed = new Embed().setTitle("That tag doesn't exist. Here are some of the most popular tags you can try.");
 
     for (const tag of tags) {
-        embed.addField(tag.name, `Uses: ${tag.uses}`);
+        embed.addFields({ name: tag.name, value: `Uses: ${tag.uses}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

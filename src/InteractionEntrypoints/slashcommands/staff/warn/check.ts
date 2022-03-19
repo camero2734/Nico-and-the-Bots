@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import R from "ramda";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -8,8 +8,18 @@ import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 const command = new SlashCommand(<const>{
     description: "Test command",
     options: [
-        { name: "user", description: "The user to check warns for", required: true, type: "USER" },
-        { name: "page", description: "Warning page number", required: false, type: "INTEGER" }
+        {
+            name: "user",
+            description: "The user to check warns for",
+            required: true,
+            type: ApplicationCommandOptionType.User
+        },
+        {
+            name: "page",
+            description: "Warning page number",
+            required: false,
+            type: ApplicationCommandOptionType.Integer
+        }
     ]
 });
 
@@ -45,14 +55,14 @@ command.setHandler(async (ctx) => {
 
     const averageSeverity = R.mean(warns.map((w) => w.severity || 5));
 
-    const embed = new MessageEmbed()
-        .setAuthor(`${member.displayName}'s warnings`, member.user.displayAvatarURL())
-        .setColor([(255 * averageSeverity) / 10, 0, 0])
-        .setFooter(`Page ${page}/${numPages}`);
+    const embed = new Embed()
+        .setAuthor({ name: `${member.displayName}'s warnings`, iconURL: member.user.displayAvatarURL() })
+        .setColor(((255 * averageSeverity) / 10) << 16)
+        .setFooter({ text: `Page ${page}/${numPages}` });
     for (const warn of warns) {
         const emoji = severityEmoji(warn.severity);
         const timestamp = F.discordTimestamp(warn.createdAt, "relative");
-        embed.addField(`${warn.reason}`, `${emoji} ${warn.type}\n${timestamp}`);
+        embed.addFields({ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

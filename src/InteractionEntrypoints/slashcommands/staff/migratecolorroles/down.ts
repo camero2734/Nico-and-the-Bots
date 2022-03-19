@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js";
+import { Snowflake, ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { Change, changes } from "./_consts";
 

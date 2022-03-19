@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -8,12 +8,12 @@ const TAG_COST = 1000;
 const command = new SlashCommand(<const>{
     description: "Creates (or edits) a command that sends a short snippet of text",
     options: [
-        { name: "name", description: "The name of the tag", required: true, type: "STRING" },
+        { name: "name", description: "The name of the tag", required: true, type: ApplicationCommandOptionType.String },
         {
             name: "text",
             description: "The text that gets sent with the tag",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
             data: { text: ctx.opts.text }
         });
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle(`Your tag \`${ctx.opts.name}\` was successfully edited`)
             .setDescription(ctx.opts.text);
         await ctx.send({ embeds: [embed.toJSON()] });
@@ -43,17 +43,16 @@ command.setHandler(async (ctx) => {
         data: { value: ctx.opts.text }
     });
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle(`Create tag \`${ctx.opts.name}\`? [${TAG_COST} credits]`)
         .setDescription(ctx.opts.text)
-        .setFooter("Select yes or no");
+        .setFooter({ text: "Select yes or no" });
 
-    const actionRow = new MessageActionRow().addComponents(
-        new MessageButton({
-            label: "Yes",
-            style: "SUCCESS",
-            customId: generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })
-        })
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent()
+            .setLabel("Yes")
+            .setStyle(ButtonStyle.Success)
+            .setCustomId(generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` }))
     );
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
@@ -76,10 +75,10 @@ const generateYesID = command.addInteractionListener("tcYes", <const>["name", "t
         prisma.temporaryText.delete({ where: { id } })
     ]);
 
-    const doneEmbed = new MessageEmbed()
+    const doneEmbed = new Embed()
         .setTitle(`Tag created: \`${args.name}\``)
         .setDescription(text)
-        .addField("Usage", `Use this tag with the command \`/tags use ${createdTag.name}\``);
+        .addFields({ name: "Usage", value: `Use this tag with the command \`/tags use ${createdTag.name}\`` });
 
     await ctx.editReply({ embeds: [doneEmbed], components: [] });
 });

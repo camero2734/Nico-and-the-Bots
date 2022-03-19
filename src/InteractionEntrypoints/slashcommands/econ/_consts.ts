@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js";
+import { Snowflake, ApplicationCommandOptionType } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 

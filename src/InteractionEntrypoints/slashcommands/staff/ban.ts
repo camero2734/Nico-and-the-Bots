@@ -1,24 +1,36 @@
-import { roles } from "../../../Configuration/config";
+import { ApplicationCommandOptionType, Colors, Embed, TextChannel } from "discord.js";
+import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { MessageTools } from "../../../Helpers";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Bans a member",
     options: [
-        { name: "user", description: "The member to ban", required: true, type: "USER" },
+        { name: "user", description: "The member to ban", required: true, type: ApplicationCommandOptionType.User },
         {
             name: "purge",
             description: "Whether to delete all messages or not",
             required: false,
-            type: "BOOLEAN"
+            type: ApplicationCommandOptionType.Boolean
         },
-        { name: "reason", description: "Reason for banning", required: false, type: "STRING" }
+        {
+            name: "reason",
+            description: "Reason for banning",
+            required: false,
+            type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "noappeal",
+            description: "Don't include link for appealing the ban",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
+        }
     ]
 });
 
 command.setHandler(async (ctx) => {
-    const { user, purge, reason } = ctx.opts;
+    const { user, purge, reason, noappeal } = ctx.opts;
     const member = await ctx.member.guild.members.fetch(user);
     if (!member) throw new CommandError("Could not find this member. They may have already been banned or left.");
 
@@ -26,9 +38,29 @@ command.setHandler(async (ctx) => {
         throw new CommandError("You cannot ban a staff member or bot.");
     }
 
-    await member.ban({ days: purge ? 7 : 0, reason });
+    const bannedEmbed = new Embed()
+        .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+        .setDescription("You have been banned from the twenty one pilots Discord server")
+        .addFields({ name: "Reason", value: reason || "None provided" })
+        .setColor(Colors.Red);
 
-    await ctx.send({ embeds: [new MessageEmbed({ description: `${member.toString()} was banned.` }).toJSON()] });
+    if (!noappeal) {
+        bannedEmbed.addFields({
+            name: "Appeal",
+            value: "You may appeal your ban by visiting:\ndiscordclique.com/appeals"
+        });
+    }
+
+    await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
+    await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
+    await ctx.send({ embeds: [new Embed({ description: `${member.toString()} was banned.` }).toJSON()] });
+
+    sendToBanLog(ctx, bannedEmbed);
 });
+
+async function sendToBanLog(ctx: typeof command.ContextType, bannedEmbed: Embed) {
+    const banLogChannel = (await ctx.guild.channels.fetch(channelIDs.banlog)) as TextChannel;
+    await banLogChannel.send({ embeds: [bannedEmbed] });
+}
 
 export default command;

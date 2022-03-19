@@ -1,13 +1,20 @@
 import { createCanvas, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Put an image onto a clown's monitor 🤡",
-    options: [{ name: "image", description: "The URL to the image", required: true, type: "STRING" }]
+    options: [
+        {
+            name: "image",
+            description: "The URL to the image",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -32,7 +39,7 @@ command.setHandler(async (ctx) => {
     cctx.rotate(-Math.PI / 15.0);
     cctx.drawImage(img, 0, 0, 174 * scale, 147 * scale);
 
-    const embed = new MessageEmbed().setImage("attachment://clown.png");
+    const embed = new Embed().setImage("attachment://clown.png");
 
     await ctx.send({ embeds: [embed], files: [{ name: "clown.png", attachment: canvas.toBuffer() }] });
 });

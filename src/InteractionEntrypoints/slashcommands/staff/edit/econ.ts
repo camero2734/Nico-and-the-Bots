@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { userIDs } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -15,13 +15,13 @@ const command = new SlashCommand(<const>{
             name: "user",
             description: "The user whose economy you wish to edit",
             required: true,
-            type: "USER"
+            type: ApplicationCommandOptionType.User
         },
         {
             name: "type",
             description: "IMPORTANT: Whether to REPLACE or ADD these values to the econ",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: EditTypes.map((t) => ({ name: t, value: t }))
         },
         ...inputs.map(
@@ -30,7 +30,7 @@ const command = new SlashCommand(<const>{
                     name,
                     description: `Value of ${name} to add or replace`,
                     required: false,
-                    type: "INTEGER"
+                    type: ApplicationCommandOptionType.Integer
                 }
         )
     ]
@@ -48,8 +48,8 @@ command.setHandler(async (ctx) => {
     const member = await ctx.guild.members.fetch(user);
     if (!member) throw new CommandError("Couldn't find that member");
 
-    const embed = new MessageEmbed()
-        .setAuthor(member.displayName, member.displayAvatarURL())
+    const embed = new Embed()
+        .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setColor(member.displayColor)
         .setTitle("Edit successful");
 
@@ -75,14 +75,14 @@ command.setHandler(async (ctx) => {
             const value = result[v] as number;
             if (value < 0) throw new CommandError(`These actions would cause ${v} to go negative.`);
 
-            embed.addField(v, `${value}`, true);
+            embed.addFields({ name: v, value: `${value}`, inline: true });
         });
 
         (<const>["steals", "blocks", "tokens", "dailyCount"]).forEach((v) => {
             const value = result.dailyBox?.[v] as number;
             if (value < 0) throw new CommandError(`These actions would cause ${v} to go negative.`);
 
-            embed.addField(v, `${value}`, true);
+            embed.addFields({ name: v, value: `${value}`, inline: true });
         });
     });
 

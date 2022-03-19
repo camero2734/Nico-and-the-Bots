@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import WikiJS from "wikijs";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -17,8 +17,18 @@ const wiki = WikiJS({
 const command = new SlashCommand(<const>{
     description: "Grabs the summary of something from Wikipedia",
     options: [
-        { name: "search", description: "The term to search for", required: true, type: "STRING" },
-        { name: "full", description: "Includes more information from the page", required: false, type: "BOOLEAN" }
+        {
+            name: "search",
+            description: "The term to search for",
+            required: true,
+            type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "full",
+            description: "Includes more information from the page",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
+        }
     ]
 });
 
@@ -46,15 +56,15 @@ command.setHandler(async (ctx) => {
 
     if (!condensedSummary || !url || !title) throw new CommandError("Unable to find page info");
 
-    const embed = new MessageEmbed()
-        .setAuthor(title, wikipediaLogo, url)
-        .setColor("#AAACAE")
+    const embed = new Embed()
+        .setAuthor({ name: title, iconURL: wikipediaLogo, url: url })
+        .setColor(0xaaacae)
         .setDescription(condensedSummary);
 
     if (ctx.opts.full) {
         for (const field of fields.slice(0, 10)) {
             const content = field.content || "*No content*";
-            embed.addField(field.title, F.truncate(content, 200));
+            embed.addFields({ name: field.title, value: F.truncate(content, 200) });
         }
     }
 

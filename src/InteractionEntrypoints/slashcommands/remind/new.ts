@@ -1,5 +1,5 @@
 import { addMilliseconds } from "date-fns";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import parseDuration from "parse-duration";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -14,13 +14,13 @@ const command = new SlashCommand(<const>{
             name: "text",
             description: "What you want to be reminded about",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
         {
             name: "time",
             description: 'A duration string, like "4 hours and 30 minutes". A number by itself is interpreted as hours',
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -45,11 +45,11 @@ command.setHandler(async (ctx) => {
 
     const sendAt = addMilliseconds(new Date(), durationMs);
 
-    const confirmEmbed = new MessageEmbed()
+    const confirmEmbed = new Embed()
         .setTitle("Created reminder")
-        .setAuthor(ctx.member.displayName, ctx.member.user.displayAvatarURL())
-        .addField("Reminder", text)
-        .addField("Send time", F.discordTimestamp(sendAt, "longDateTime"));
+        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
+        .addFields({ name: "Reminder", value: text })
+        .addFields({ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") });
 
     await prisma.reminder.create({
         data: { userId: ctx.user.id, text, sendAt }

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { APIMessageComponentEmoji } from "discord-api-types/v9";
 import {
     ApplicationCommandOptionData,
     AutocompleteInteraction,
@@ -8,11 +9,17 @@ import {
     Guild,
     GuildMember,
     Message,
-    MessageActionRow,
-    MessageButton,
+    ButtonComponent,
     MessageOptions,
     Snowflake,
-    TextChannel
+    TextChannel,
+    CommandInteractionOptionResolver,
+    ApplicationCommandType,
+    InteractionReplyOptions,
+    ApplicationCommandOptionType,
+    ButtonStyle,
+    ComponentType,
+    ActionRow
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
@@ -51,7 +58,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
 
     constructor(commandData: SlashCommandData<T>) {
         super();
-        const defaults: Partial<ChatInputApplicationCommandData> = { type: "CHAT_INPUT" };
+        const defaults: Partial<ChatInputApplicationCommandData> = { type: ApplicationCommandType.ChatInput };
         this.commandData = (<unknown>{ ...commandData, ...defaults }) as ChatInputApplicationCommandData;
     }
 
@@ -67,7 +74,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         const ctx = interaction as SlashCommandInteraction<T>;
         ctx.send = async (payload) => {
             if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
-            else return ctx.reply(payload);
+            else return ctx.reply(payload as InteractionReplyOptions);
         };
         ctx.opts =
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
@@ -98,7 +105,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     options: [],
                     ...(isLast ? commandData : {}),
                     name: value,
-                    type: "CHAT_INPUT"
+                    type: ApplicationCommandType.ChatInput
                 };
                 if (!foundCommand) data.push(command);
             } else if (step === "SUBCOMMAND_GROUP") {
@@ -107,7 +114,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     name: value,
                     description: value,
                     options: [],
-                    type: "SUB_COMMAND_GROUP"
+                    type: ApplicationCommandOptionType.SubcommandGroup
                 };
                 if (!foundSubcommandGroup) command.options?.push(subcommandGroup);
             } else if (step === "SUBCOMMAND") {
@@ -118,7 +125,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     description: "Not provided",
                     ...(isLast ? commandData : {}),
                     name: value,
-                    type: "SUB_COMMAND"
+                    type: ApplicationCommandOptionType.Subcommand
                 } as ApplicationCommandOptionData);
             }
         }
@@ -161,27 +168,27 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 return;
             }
 
-            const getMessageButtonWithEmoji = (name: string): MessageButton | undefined => {
+            const getMessageButtonWithEmoji = (name: string): ButtonComponent | undefined => {
                 return actionRow.components.find(
-                    (c) => c.type === "BUTTON" && c.emoji?.name?.startsWith(name)
-                ) as MessageButton;
+                    (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name)
+                ) as ButtonComponent;
             };
             const upvoteButton = getMessageButtonWithEmoji("upvote");
             const downvoteButton = getMessageButtonWithEmoji("downvote");
             if (!upvoteButton || !downvoteButton) return; // prettier-ignore
 
-            if (isUpvote) upvoteButton.setStyle("SUCCESS");
-            else downvoteButton.setStyle("DANGER");
+            if (isUpvote) upvoteButton.setStyle(ButtonStyle.Success);
+            else downvoteButton.setStyle(ButtonStyle.Danger);
 
-            upvoteButton.label = `${upvotes}`;
-            downvoteButton.label = `${downvotes}`;
+            upvoteButton.setLabel(`${upvotes}`);
+            downvoteButton.setLabel(`${downvotes}`);
 
             await ctx.editReply({ components: [actionRow] });
 
             await F.wait(1000);
 
-            upvoteButton.setStyle("SECONDARY");
-            downvoteButton.setStyle("SECONDARY");
+            upvoteButton.setStyle(ButtonStyle.Secondary);
+            downvoteButton.setStyle(ButtonStyle.Secondary);
 
             await ctx.editReply({ components: [actionRow] });
         });
@@ -194,28 +201,28 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     options: ["downvote", "upvote"]
                 }
             });
-            return new MessageActionRow().addComponents([
-                new MessageButton({
-                    emoji: emojiIDs.upvote,
-                    style: "SECONDARY",
-                    label: "0",
-                    customId: gen({ isUpvote: "1", pollID: `${poll.id}` })
-                }),
-                new MessageButton({
-                    emoji: emojiIDs.downvote,
-                    style: "SECONDARY",
-                    label: "0",
-                    customId: gen({ isUpvote: "0", pollID: `${poll.id}` })
-                })
-            ]);
+
+            return new ActionRow().setComponents(
+                new ButtonComponent()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setLabel("0")
+                    .setCustomId(gen({ isUpvote: "1", pollID: `${poll.id}` }))
+                    .setEmoji({ id: emojiIDs.upvote }),
+                new ButtonComponent()
+                    .setStyle(ButtonStyle.Secondary)
+                    .setLabel("0")
+                    .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))
+                    .setEmoji({ id: emojiIDs.downvote })
+            );
         };
 
         return createActionRow;
     }
 
     static getIdentifierFromInteraction(interaction: CommandInteraction | AutocompleteInteraction): string {
-        const subcommandGroup = interaction.options.getSubcommandGroup(false);
-        const subcommand = interaction.options.getSubcommand(false);
+        const optionResolver = interaction.options as CommandInteractionOptionResolver;
+        const subcommandGroup = optionResolver.getSubcommandGroup(false);
+        const subcommand = optionResolver.getSubcommand(false);
 
         return [interaction.commandName, subcommandGroup, subcommand].filter((s) => s).join(":");
     }

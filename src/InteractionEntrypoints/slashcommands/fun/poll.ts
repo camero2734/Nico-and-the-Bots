@@ -1,5 +1,15 @@
 import { Poll, Vote } from "@prisma/client";
-import { EmbedField, GuildEmoji, Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from "discord.js";
+import { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v9";
+import {
+    ActionRow,
+    ApplicationCommandOptionType,
+    ComponentType,
+    Embed,
+    GuildEmoji,
+    Message,
+    SelectMenuComponent,
+    SelectMenuOption
+} from "discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";
@@ -15,7 +25,7 @@ const command = new SlashCommand(<const>{
             name: "title",
             description: "The title for the poll",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
 
         ...options.map(
@@ -24,20 +34,20 @@ const command = new SlashCommand(<const>{
                     name: `option${num}`,
                     description: `Option #${num}`,
                     required: num <= 2,
-                    type: "STRING"
+                    type: ApplicationCommandOptionType.String
                 }
         ),
         {
             name: "min_choices",
             description: "The min number of choices a user must choose",
             required: false,
-            type: "INTEGER"
+            type: ApplicationCommandOptionType.Integer
         },
         {
             name: "max_choices",
             description: "The max number of choices a user must choose",
             required: false,
-            type: "INTEGER"
+            type: ApplicationCommandOptionType.Integer
         }
     ]
 });
@@ -85,11 +95,11 @@ command.setHandler(async (ctx) => {
         include: { votes: true }
     });
 
-    const embed = new MessageEmbed().setAuthor(title, ctx.user.displayAvatarURL());
+    const embed = new Embed().setAuthor({ name: title, iconURL: ctx.user.displayAvatarURL() });
 
-    embed.fields = generateStatsDescription(poll, parsedOptions);
+    embed.setFields(...generateStatsDescription(poll, parsedOptions));
 
-    const selectMenu = new MessageSelectMenu()
+    const selectMenu = new SelectMenuComponent()
         .setCustomId(genPollResId({ pollId: poll.id.toString() }))
         .setMinValues((min_choices as number) || 1)
         .setMaxValues((max_choices as number) || 1)
@@ -97,11 +107,11 @@ command.setHandler(async (ctx) => {
 
     for (let i = 0; i < parsedOptions.length; i++) {
         const option = parsedOptions[i];
-        const emoji = option.emoji;
-        selectMenu.addOptions({ label: option.text.substring(0, 100), emoji, value: `${i}` });
+        const emoji = option.emoji as APIMessageComponentEmoji;
+        selectMenu.addOptions(new SelectMenuOption({ label: option.text.substring(0, 100), emoji, value: `${i}` }));
     }
 
-    const actionRow = new MessageActionRow().addComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {
@@ -114,7 +124,7 @@ command.setHandler(async (ctx) => {
         });
         await thread.send({
             embeds: [
-                new MessageEmbed({
+                new Embed({
                     description: "Welcome to the discussion for the poll!"
                 })
             ]
@@ -150,7 +160,7 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
     const parsedOptions: ParsedOption[] = [];
     for (const actionRow of msg.components) {
         const selectMenu = actionRow.components[0];
-        if (selectMenu.type !== "SELECT_MENU") return;
+        if (selectMenu.type !== ComponentType.SelectMenu) return;
 
         for (const option of selectMenu.options) {
             const emoji = option.emoji as GuildEmoji;
@@ -160,13 +170,13 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
     }
 
     const embed = ctx.message.embeds[0];
-    embed.fields = generateStatsDescription(poll, parsedOptions);
+    embed.setFields(...generateStatsDescription(poll, parsedOptions));
 
     await ctx.update({ embeds: [embed] });
 });
 
 type PollWithVotes = Poll & { votes: Vote[] };
-function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOption[]): EmbedField[] {
+function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOption[]): APIEmbedField[] {
     // Calculate votes for each option
     const votes = parsedOptions.map(() => 0);
     const totalVotes = poll.votes.length;
@@ -181,7 +191,7 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         .map((opt, idx) => ({ opt, count: votes[idx] }))
         .sort((opt1, opt2) => opt2.count - opt1.count);
 
-    const tempEmbed = new MessageEmbed();
+    const tempEmbed = new Embed();
 
     const toEmoji = (id: string) => `<:name:${id}>`;
     const startEmoji = toEmoji(emojiIDs.poll.start);
@@ -195,10 +205,13 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         const basePercent = (100 * count) / totalVotes;
         const percent = (isFinite(basePercent) ? basePercent : 0).toPrecision(3);
 
-        tempEmbed.addField(`${emoji}${opt.text}`.trim(), `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`);
+        tempEmbed.addFields({
+            name: `${emoji}${opt.text}`.trim(),
+            value: `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`
+        });
     });
 
-    return tempEmbed.fields;
+    return tempEmbed.fields || [];
 }
 
 export default command;

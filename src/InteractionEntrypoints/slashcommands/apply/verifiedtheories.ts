@@ -1,13 +1,22 @@
+import {
+    ActionRow,
+    MessageActionRowComponent,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
+    GuildMember,
+    Message,
+    TextChannel
+} from "discord.js";
+import R from "ramda";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import F from "../../../Helpers/funcs";
-import { Question } from "../../../Helpers/verified-quiz/question";
-import R from "ramda";
 import { prisma } from "../../../Helpers/prisma-init";
+import { Question } from "../../../Helpers/verified-quiz/question";
+import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
-import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 
@@ -38,7 +47,7 @@ command.setHandler(async (ctx) => {
     }
 
     // Ensure they're ready to take the quiz
-    const initialEmbed = new MessageEmbed()
+    const initialEmbed = new Embed()
         .setTitle("Verified Theories Quiz")
         .setDescription(
             [
@@ -47,10 +56,10 @@ command.setHandler(async (ctx) => {
                 `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
             ].join("\n\n")
         )
-        .addField(
-            "Cheating is not allowed",
-            "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
-        );
+        .addFields({
+            name: "Cheating is not allowed",
+            value: "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
+        });
 
     let dmMessage: Message;
     try {
@@ -63,19 +72,19 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
     const [beginId, cancelId] = timedListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({ label: "Begin", style: "SUCCESS", customId: beginId }),
-        new MessageButton({ label: "Cancel", style: "DANGER", customId: cancelId })
-    ]);
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
+        new ButtonComponent().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
+    );
 
     await dmMessage.edit({ components: [actionRow] });
 
-    const dmActionRow = new MessageActionRow().addComponents([
-        new MessageButton({ style: "LINK", url: dmMessage.url, label: "View message" })
-    ]);
+    const dmActionRow = new ActionRow().setComponents(
+        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
+    );
 
     await ctx.send({
-        embeds: [new MessageEmbed().setDescription("The quiz was DM'd to you!").toJSON()],
+        embeds: [new Embed().setDescription("The quiz was DM'd to you!").toJSON()],
         components: [dmActionRow]
     });
 
@@ -85,7 +94,7 @@ command.setHandler(async (ctx) => {
 
     if (buttonPressed !== beginId) {
         await dmMessage.edit({
-            embeds: [new MessageEmbed().setDescription("Okay, you may restart the quiz at any time.")],
+            embeds: [new Embed().setDescription("Okay, you may restart the quiz at any time.")],
             components: []
         });
         return;
@@ -146,7 +155,7 @@ const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, a
         member
     );
 
-    await ctx.editReply({ embeds: [embed], components });
+    await ctx.editReply({ embeds: [embed], components: components });
 });
 
 async function generateEmbedAndButtons(
@@ -155,7 +164,7 @@ async function generateEmbedAndButtons(
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
     member: GuildMember
-): Promise<[MessageEmbed, MessageActionRow[]]> {
+): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
@@ -163,29 +172,30 @@ async function generateEmbedAndButtons(
     if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, member);
 
     const newQuestion = questionList[newIndex];
-    const embed = new MessageEmbed()
-        .setAuthor(`Question ${newIndex + 1} / ${numQs}`)
+    const embed = new Embed()
+        .setAuthor({ name: `Question ${newIndex + 1} / ${numQs}` })
         .setTitle("Verified Theories Quiz")
         .setDescription(newQuestion.question)
-        .setFooter("Select the correct answer by hitting a button below");
+        .setFooter({ text: "Select the correct answer by hitting a button below" });
 
     // Update variables and encode into buttons' customIDs
     const components = F.shuffle(
         newQuestion.answers.map((answer, idx) => {
-            return new MessageButton({
-                label: answer,
-                style: "PRIMARY",
-                customId: genVeriquizId({
-                    currentID: newQuestion.hexID,
-                    questionIDs,
-                    previousAnswers: answerEncode.toString(),
-                    chosenAnswer: idx.toString()
-                })
-            });
+            return new ButtonComponent()
+                .setLabel(answer)
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId(
+                    genVeriquizId({
+                        currentID: newQuestion.hexID,
+                        questionIDs,
+                        previousAnswers: answerEncode.toString(),
+                        chosenAnswer: idx.toString()
+                    })
+                );
         })
     );
 
-    const actionRows = R.splitEvery(5, components).map((cs) => new MessageActionRow().addComponents(cs));
+    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRow().setComponents(...cs));
 
     return [embed, actionRows];
 }
@@ -194,11 +204,11 @@ async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     member: GuildMember
-): Promise<[MessageEmbed, MessageActionRow[]]> {
+): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
     const answers = answerEncode.answerIndices;
 
     // Send to staff channel
-    const staffEmbed = new MessageEmbed().setAuthor(member.displayName, member.user.displayAvatarURL());
+    const staffEmbed = new Embed().setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
 
     let incorrect = 0;
     for (const q of questionList) {
@@ -207,7 +217,10 @@ async function sendFinalEmbed(
 
         const givenAnswerText = q.answers[answerGiven] || "None";
         const correctAnswerText = q.answers[q.correct];
-        staffEmbed.addField(q.question.split("\n")[0], `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`);
+        staffEmbed.addFields({
+            name: q.question.split("\n")[0],
+            value: `🙋 ${givenAnswerText}\n📘 ${correctAnswerText}`
+        });
 
         // Record question answer
         await prisma.verifiedQuizAnswer.create({
@@ -220,7 +233,7 @@ async function sendFinalEmbed(
 
     staffEmbed
         .setTitle(`${passed ? "Passed" : "Failed"}: ${correct}/${questionList.length} correct`)
-        .setColor(passed ? "#88FF88" : "#FF8888");
+        .setColor(passed ? 0x88ff88 : 0xff8888);
     const staffChan = member.guild.channels.cache.get(channelIDs.verifiedapplications) as TextChannel;
     await staffChan.send({ embeds: [staffEmbed] });
 
@@ -229,9 +242,9 @@ async function sendFinalEmbed(
     }
 
     // Send embed to normal user
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle(`${correct}/${questionList.length} correct`)
-        .setColor(passed ? "#88FF88" : "#FF8888")
+        .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
             `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
                 passed

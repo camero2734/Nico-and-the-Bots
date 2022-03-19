@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -17,8 +17,18 @@ import {
 const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
     options: [
-        { name: "user", description: "The user in the server to lookup", required: false, type: "USER" },
-        { name: "username", description: "The Last.FM username to lookup", required: false, type: "STRING" }
+        {
+            name: "user",
+            description: "The user in the server to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        },
+        {
+            name: "username",
+            description: "The Last.FM username to lookup",
+            required: false,
+            type: ApplicationCommandOptionType.String
+        }
     ]
 });
 
@@ -56,9 +66,9 @@ command.setHandler(async (ctx) => {
     let albumPlay: AlbumResponse | null = null;
 
     try {
-        trackPlay = await (await fetch(trackRequest)).json();
-        artistPlay = await (await fetch(artistRequest)).json();
-        albumPlay = await (await fetch(albumRequest)).json();
+        trackPlay = (await (await fetch(trackRequest)).json()) as Record<string, any>;
+        artistPlay = (await (await fetch(artistRequest)).json()) as Record<string, any>;
+        albumPlay = (await (await fetch(albumRequest)).json()) as Record<string, any>;
     } catch (e) {
         console.log(e, /ERROR/);
     }
@@ -90,30 +100,29 @@ command.setHandler(async (ctx) => {
 
     console.log(thumbnail);
 
-    const embed = new MessageEmbed()
-        .setColor("#FF0000")
+    const embed = new Embed()
+        .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
-        .addField("Track", trackField, true)
-        .addField("Album", albumField, true)
-        .addField("Artist", artistField, true)
+        .addFields({ name: "Track", value: trackField, inline: true })
+        .addFields({ name: "Album", value: albumField, inline: true })
+        .addFields({ name: "Artist", value: artistField, inline: true })
         .setThumbnail(thumbnail)
-        .setFooter(track.date)
-        .setAuthor(
-            `${total} total scrobbles`,
-            "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",
-            `https://www.last.fm/user/${username}`
-        );
+        .setFooter({ text: track.date })
+        .setAuthor({
+            name: `${total} total scrobbles`,
+            iconURL: "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",
+            url: `https://www.last.fm/user/${username}`
+        });
 
-    const starActionRow = new MessageActionRow();
+    const starActionRow = new ActionRow();
 
     // Add star button if own FM
     if (selfFM) {
-        const starButton = new MessageButton({
-            emoji: "⭐",
-            label: "0",
-            style: "SECONDARY",
-            customId: genStarId({ fmStarId: "" })
-        });
+        const starButton = new ButtonComponent()
+            .setLabel("0")
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji({ name: "⭐" })
+            .setCustomId(genStarId({ fmStarId: "" }));
         starActionRow.addComponents(starButton);
     }
 
@@ -123,23 +132,21 @@ command.setHandler(async (ctx) => {
     }).catch(() => null);
     const trackUrl = spotifyResults?.body.tracks?.items?.[0]?.external_urls.spotify;
     if (trackUrl) {
-        const spotifyButton = new MessageButton({
-            emoji: emojiIDs.spotify,
-            label: "Listen",
-            style: "LINK",
-            url: trackUrl
-        });
+        const spotifyButton = new ButtonComponent()
+            .setEmoji({ id: emojiIDs.spotify })
+            .setLabel("Listen")
+            .setStyle(ButtonStyle.Link)
+            .setURL(trackUrl);
         starActionRow.addComponents(spotifyButton);
     }
 
     const geniusResult = await GeniusClient.getSong([trackName, artistName].join(" "));
     if (geniusResult) {
-        const geniusButton = new MessageButton({
-            emoji: emojiIDs.genius,
-            label: "Lyrics",
-            style: "LINK",
-            url: geniusResult.result.url
-        });
+        const geniusButton = new ButtonComponent()
+            .setEmoji({ id: emojiIDs.genius })
+            .setLabel("Lyrics")
+            .setStyle(ButtonStyle.Link)
+            .setURL(geniusResult.result.url);
         starActionRow.addComponents(geniusButton);
     }
 

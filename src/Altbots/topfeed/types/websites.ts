@@ -1,24 +1,25 @@
 import crypto from "crypto";
-import Diff from "diff";
+import * as Diff from "diff";
 import {
+    ActionRow,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
     Message,
-    MessageActionRow,
     MessageAttachment,
-    MessageButton,
-    MessageEmbed,
     MessageOptions,
     Snowflake
 } from "discord.js";
 import https from "https";
+import { imageHash } from "image-hash";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
+import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
-import { imageHash } from "image-hash";
-import consola from "consola";
-import F from "../../../Helpers/funcs";
+import PageRes from "pageres";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
@@ -79,6 +80,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const response = await Promise.all(promises);
 
         const validResponses = response.filter((r) => r.isNew);
+
         if (validResponses.length === 0) return [];
 
         return validResponses.map((res) => ({
@@ -108,18 +110,18 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .join(", ");
         const file = obj.VISUAL?._data.image || undefined;
 
-        const embed = new MessageEmbed()
-            .setAuthor(
-                `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
-                this.client.user?.displayAvatarURL(),
-                this.displayedURL
-            )
+        const embed = new Embed()
+            .setAuthor({
+                name: `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
+                iconURL: this.client.user?.displayAvatarURL(),
+                url: this.displayedURL
+            })
             .setDescription(desc)
-            .setFooter(`${hashes}`);
+            .setFooter({ text: `${hashes}` });
 
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({ style: "LINK", url: this.displayedURL, label: "Live site" })
-        ]);
+        const actionRow = new ActionRow().setComponents(
+            new ButtonComponent().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
+        );
 
         if (file) {
             const att = new MessageAttachment(file, "file.png");
@@ -131,28 +133,31 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     override async afterCheck(msg: Message): Promise<void> {
         const actionRow = msg.components[0];
 
-        const newButton = new MessageButton({
-            style: "LINK",
-            url: "https://google.com",
-            disabled: true,
-            label: "Fetching archive..."
-        });
+        const newButton = new ButtonComponent()
+            .setStyle(ButtonStyle.Link)
+            .setURL("https://google.com")
+            .setDisabled(true)
+            .setLabel("Fetching archive...");
 
-        actionRow.addComponents([newButton]);
+        actionRow.addComponents(newButton);
 
         await msg.edit({ components: msg.components });
 
         const savedUrl = await this.#archivePage(this.url);
 
-        actionRow.spliceComponents(actionRow.components.length - 1, 1);
+        actionRow.components.splice(actionRow.components.length - 1, 1);
         if (savedUrl) {
-            actionRow.addComponents([new MessageButton({ style: "LINK", url: savedUrl, label: "Web Archive" })]);
+            actionRow.addComponents(
+                new ButtonComponent().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
+            );
         }
         await msg.edit({ components: msg.components });
     }
 
     async #checkHTML(): Promise<CheckObj["HTML"]["_data"]> {
         const subtype = <const>"HTML";
+
+        console.log(`Checking html for ${this.url}`);
 
         const res = await fetch(this.url, { agent });
         const buff = await res.buffer();
@@ -184,20 +189,22 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     async #checkVisual(): Promise<CheckObj["VISUAL"]["_data"]> {
         const subtype = <const>"VISUAL";
         // const [screenshot] = await new PageRes({ delay: 2 }).src(this.httpURL, ["1024x768"]).run();
-        const screenshot = Buffer.from("0000", "hex");
 
-        const hash = "TEMP";
-        //  await new Promise<string>((resolve, reject) => {
+        // const hash = await new Promise<string>((resolve, reject) => {
         //     imageHash({ data: screenshot }, 64, true, (error: Error, data: string) => {
         //         if (error) reject(error);
         //         else resolve(data);
         //     });
         // });
+        const screenshot = Buffer.from("");
+        const hash = "TEMP";
 
         const old = await this.getLatestItem(subtype);
 
         const oldBuffer = Buffer.from(old?.data?.hash || "", "hex");
         const newBuffer = Buffer.from(hash, "hex");
+
+        console.log(`${this.url}`, oldBuffer.byteLength, newBuffer.byteLength);
 
         const distance = F.hammingDist(oldBuffer, newBuffer);
 

@@ -18,7 +18,7 @@ const command = new SlashCommand(<const>{
             name: "kangaroo",
             description: "The description of the option",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });

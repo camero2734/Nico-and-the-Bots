@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import Fuse from "fuse.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -12,11 +12,11 @@ class Rule {
         this.num = ++Rule.ruleNum;
     }
     send(ctx: typeof command.ContextType) {
-        const embed = new MessageEmbed()
-            .setColor("#E6FAFC")
+        const embed = new Embed()
+            .setColor(0xe6fafc)
             .setTitle(`Rule ${this.num}`)
             .setDescription(this.text)
-            .setFooter(this.category);
+            .setFooter({ text: this.category });
         return ctx.send({ embeds: [embed.toJSON()] });
     }
 }
@@ -122,7 +122,7 @@ const command = new SlashCommand(<const>{
             name: "rule",
             description: "A rule to search for, or a rule number",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });

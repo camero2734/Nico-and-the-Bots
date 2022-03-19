@@ -1,14 +1,16 @@
 import {
-    MessageActionRow,
+    ActionRow,
+    ButtonComponent,
+    ButtonStyle,
+    ComponentType,
+    Embed,
     MessageAttachment,
-    MessageButton,
-    MessageEmbed,
     MessageOptions,
-    MessageSelectMenu,
+    SelectMenuComponent,
+    SelectMenuOption,
     TextChannel
 } from "discord.js";
-import { ValueOf } from "ts-essentials";
-import { channelIDs, roles } from "../../Configuration/config";
+import { roles } from "../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -29,17 +31,19 @@ const ctxMenu = new MessageContextMenu("🚩 Report message");
 ctxMenu.setHandler(async (ctx, msg) => {
     await ctx.deferReply({ ephemeral: true });
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle("Report message")
         .setDescription(
             "If you want to report this message to the server staff, please choose the reason in the dropdown below.\n\nIf this was an accident, you may safely ignore this message"
         );
 
-    const selectMenu = new MessageSelectMenu()
+    const selectMenu = new SelectMenuComponent()
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
-        .addOptions(Object.entries(ReportReasons).map(([key, value]) => ({ label: value, value: key })));
+        .addOptions(
+            ...Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOption({ label: value, value: key }))
+        );
 
-    const actionRow = new MessageActionRow().addComponents(selectMenu);
+    const actionRow = new ActionRow().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -88,14 +92,14 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
 
         const actionRow = staffMsg.components[0];
         const btn = actionRow.components.find((c) => c.customId?.startsWith(NULL_CUSTOM_ID_PREFIX));
-        if (btn?.type !== "BUTTON") throw new Error("The button disappeared");
+        if (btn?.type !== ComponentType.Button) throw new Error("The button disappeared");
 
         btn.setLabel(NUM_PEOPLE_TEXT(priorReports.length + 1));
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setDescription("A new report was added for this message")
-            .addField("Reason", reasonText)
-            .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
+            .addFields({ name: "Reason", value: reasonText })
+            .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
         await prisma.userMessageReport.create({
             data: {
@@ -110,22 +114,21 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         await staffMsg.edit({ components: [actionRow] });
         await staffMsg.reply({ embeds: [embed] });
     } else {
-        const staffEmbed = new MessageEmbed()
-            .setAuthor(msgMember.displayName, msgMember.displayAvatarURL())
+        const staffEmbed = new Embed()
+            .setAuthor({ name: msgMember.displayName, iconURL: msgMember.displayAvatarURL() })
             .setTitle("Message Reported")
             .setDescription(msg.content)
-            .addField("Reason", ReportReasons[selectedReason])
-            .setFooter(`Reported by ${ctx.member.displayName}`, ctx.member.displayAvatarURL());
+            .addFields({ name: "Reason", value: ReportReasons[selectedReason] })
+            .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
-        const actionRow = new MessageActionRow().addComponents([
-            new MessageButton({
-                label: NUM_PEOPLE_TEXT(1),
-                style: "PRIMARY",
-                disabled: true,
-                customId: NULL_CUSTOM_ID()
-            }),
-            new MessageButton({ label: "View message", style: "LINK", url: msg.url })
-        ]);
+        const actionRow = new ActionRow().setComponents(
+            new ButtonComponent()
+                .setLabel(NUM_PEOPLE_TEXT(1))
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(true)
+                .setCustomId(NULL_CUSTOM_ID()),
+            new ButtonComponent().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url)
+        );
 
         const msgOpts: MessageOptions = { embeds: [staffEmbed], components: [actionRow] };
 
@@ -153,7 +156,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
     }
 
     await ctx.editReply({
-        embeds: [new MessageEmbed({ description: "Your report has been submitted." })],
+        embeds: [new Embed({ description: "Your report has been submitted." })],
         components: []
     });
 });

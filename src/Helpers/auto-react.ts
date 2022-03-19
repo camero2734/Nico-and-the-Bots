@@ -1,5 +1,5 @@
 import { channelIDs } from "../Configuration/config";
-import { Channel, EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
+import { Channel, EmojiIdentifierResolvable, Message, Snowflake, ThreadChannel } from "discord.js";
 import Mime from "mime-types";
 
 interface BaseReactType {
@@ -27,7 +27,7 @@ class FileReact implements BaseReactType {
     }
 
     appliesTo(msg: Message): boolean {
-        const files: { url: string | null }[] = [...msg.attachments.values()];
+        const files: { url?: string | undefined }[] = [...msg.attachments.values()];
         if (this.checkRawURLs) files.push(...msg.embeds); // If a url is used, then it gets embedded (usually)
         return files.some((f) => f.url && this.checkFile(f.url));
     }
@@ -56,7 +56,7 @@ type AnyReact = FileReact | MessageReact;
 
 class ChannelReactions {
     reacts: AnyReact[] = [];
-    constructor(public channel: Snowflake) {}
+    constructor(public channel: Snowflake, public includeThreads = false) {}
     addReactions(reacts: AnyReact[]): this {
         this.reacts.push(...reacts);
         return this;
@@ -73,14 +73,29 @@ const channelReacts = [
     new ChannelReactions(channelIDs.memes).addReactions([
         new FileReact(["👍", "👎"], FileReact.MimeCheck(["audio", "video", "image"]), true)
     ]),
+    new ChannelReactions(channelIDs.trenchmemes).addReactions([
+        new FileReact(["👍", "👎"], FileReact.MimeCheck(["audio", "video", "image"]), true)
+    ]),
     new ChannelReactions(channelIDs.cliqueartfriday).addReactions([
+        new FileReact(["💝"], FileReact.MimeCheck(["audio", "video", "image"]), true)
+    ]),
+    new ChannelReactions(channelIDs.artevents, true).addReactions([
         new FileReact(["💝"], FileReact.MimeCheck(["audio", "video", "image"]), true)
     ])
 ];
 
 async function onMessage(msg: Message): Promise<void> {
+    const msgInThread = msg.channel.isThread();
+
     // Find ChannelReactions object for this channel
-    const channelReact = channelReacts.find((cr) => cr.channel === msg.channel.id);
+    const channelReact = channelReacts.find((cr) => {
+        // Simple in channel
+        if (cr.channel === msg.channel.id) return true;
+
+        // In thread of channel
+        return msgInThread && cr.includeThreads && msg.channel.parentId === cr.channel;
+    });
+
     if (!channelReact) return;
 
     // Find reaction that applies to this message

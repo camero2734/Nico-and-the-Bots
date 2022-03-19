@@ -5,13 +5,9 @@
  */
 
 import { RandomDrop } from ".prisma/client";
-import { Queue, QueueScheduler, Worker } from "bullmq";
-import { MessageButton, MessageEmbed, Snowflake, TextChannel } from "discord.js";
-import IORedis from "ioredis";
+import { Colors, Embed, TextChannel } from "discord.js";
 import { NicoClient } from "../../../app";
-import { channelIDs, dropEmojiGuildId } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
-import { MessageTools } from "../../Helpers";
 import F from "../../Helpers/funcs";
 import { prisma, PrismaType } from "../../Helpers/prisma-init";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
@@ -38,11 +34,14 @@ async function runDrop(prize: DropPrize, channel: TextChannel): Promise<void> {
     const winningIndices = F.sample(F.indexArray(NUM_BUTTONS), prize.quantity);
     const maxGuessesPerUser = 2;
 
-    const embed = new MessageEmbed()
-        .setAuthor(`Nico tripped over ${randomNoun}`, NicoClient.user?.displayAvatarURL())
-        .setColor("RED")
-        .addField(`He dropped ${dropName}`, `${theFirstUsers} to claim this prize will win ${prizeName}`)
-        .setFooter(`Each user may guess ${maxGuessesPerUser} time${F.plural(maxGuessesPerUser)}`);
+    const embed = new Embed()
+        .setAuthor({ name: `Nico tripped over ${randomNoun}`, iconURL: NicoClient.user?.displayAvatarURL() })
+        .setColor(Colors.Red)
+        .addFields({
+            name: `He dropped ${dropName}`,
+            value: `${theFirstUsers} to claim this prize will win ${prizeName}`
+        })
+        .setFooter({ text: `Each user may guess ${maxGuessesPerUser} time${F.plural(maxGuessesPerUser)}` });
 
     const drop = await prisma.randomDrop.create({ data: { prize, maxGuessesPerUser, winningIndices } });
 

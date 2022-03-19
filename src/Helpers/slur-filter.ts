@@ -1,5 +1,5 @@
+import { ActionRow, ButtonComponent, ButtonStyle, Embed, Message, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
-import { Message, MessageActionRow, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 
 // word1:word2:word3... encoded in base64 to avoid having slurs in plaintext
 const slursEncoded =
@@ -16,28 +16,29 @@ const filter = async (msg: Message): Promise<boolean> => {
     const member = await msg.member?.fetch();
     if (!member) return false;
 
-    const embed = new MessageEmbed()
-        .setAuthor(member.displayName, member.user.displayAvatarURL())
+    const embed = new Embed()
+        .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
         .setTitle("I hope you didn't mean that.")
         .setDescription(
             "Please refrain from using slurs. Your message was forwarded to the staff team and will be reviewed."
         )
-        .addField("Word detected", `\`${slur.replace(/[aeiou]/g, "*")}\``)
-        .setFooter("If this was a false alarm, you have nothing to worry about.");
+        .addFields({ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` })
+        .setFooter({ text: "If this was a false alarm, you have nothing to worry about." });
 
     await msg.reply({ embeds: [embed] });
 
     const slurLog = member.guild.channels.cache.get(channelIDs.slurlog) as TextChannel;
 
-    const staffEmbed = new MessageEmbed()
-        .setAuthor(member.displayName, member.user.displayAvatarURL())
-        .setColor("#FF0000")
+    const staffEmbed = new Embed()
+        .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
+        .setColor(0xff0000)
         .setTitle("Slur detected")
         .setDescription(msg.content)
-        .addField("Word detected", `\`${slur.replace(/[aeiou]/g, "*")}\``);
+        .addFields({ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` });
 
-    const actionRow = new MessageActionRow();
-    actionRow.addComponents([new MessageButton({ label: "View context", style: "LINK", url: msg.url })]);
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent().setLabel("View context").setStyle(ButtonStyle.Link).setURL(msg.url)
+    );
 
     await slurLog.send({ embeds: [staffEmbed], components: [actionRow] });
 

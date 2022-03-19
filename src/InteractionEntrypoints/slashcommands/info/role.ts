@@ -1,4 +1,4 @@
-import { MessageEmbed, Snowflake } from "discord.js";
+import { Embed, Snowflake, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -12,7 +12,7 @@ const command = new SlashCommand(<const>{
                 name,
                 description: `Role #${idx} to look up information for`,
                 required: idx === 0,
-                type: "ROLE"
+                type: ApplicationCommandOptionType.Role
             }
     )
 });
@@ -21,7 +21,7 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     const roles = Object.values(ctx.opts).filter((r): r is Snowflake => !!r);
 
-    const embeds: MessageEmbed[] = [];
+    const embeds: Embed[] = [];
 
     await ctx.guild.members.fetch();
 
@@ -29,13 +29,13 @@ command.setHandler(async (ctx) => {
         const role = await ctx.channel.guild.roles.fetch(roleID);
         if (!role) continue;
 
-        const embed = new MessageEmbed();
+        const embed = new Embed();
         embed.setTitle(role.name);
         embed.setColor(role.color);
-        embed.addField("Hex", role.hexColor);
-        embed.addField("Members", `${role.members.size}`);
-        embed.addField("Created", `${role.createdAt}`);
-        embed.addField("ID", role.id);
+        embed.addFields({ name: "Hex", value: role.hexColor });
+        embed.addFields({ name: "Members", value: `${role.members.size}` });
+        embed.addFields({ name: "Created", value: `${role.createdAt}` });
+        embed.addFields({ name: "ID", value: role.id });
 
         embeds.push(embed);
     }

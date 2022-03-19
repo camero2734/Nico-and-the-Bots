@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -11,7 +11,7 @@ command.setHandler(async (ctx) => {
     const hasAnnouncements = ctx.member.roles.cache.has(roles.announcements);
     const action = hasAnnouncements ? "Removed" : "Added";
 
-    const embed = new MessageEmbed().setDescription(`${action} the <@&${roles.announcements}> role`);
+    const embed = new Embed().setDescription(`${action} the <@&${roles.announcements}> role`);
 
     if (hasAnnouncements) ctx.member.roles.remove(roles.announcements);
     else ctx.member.roles.add(roles.announcements);

@@ -1,5 +1,5 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { Message, MessageEmbed, MessageOptions } from "discord.js";
+import { Message, Embed, MessageOptions, Colors } from "discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -31,23 +31,26 @@ const generateProgressBar = (): [string, boolean] => {
     return [`${startEmoji}${progress}${endEmoji}\u200b`, elapsedTime > totalTime];
 };
 
-const standardizeEmbed = (embed: MessageEmbed): void => {
-    embed.fields = [];
+const standardizeEmbed = (embed: Embed): void => {
+    embed.setFields();
     embed
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#7289DA")
-        .addField("Upgrade almost finished...", `Expected to finish ${F.discordTimestamp(endDate, "relative")}`)
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
+        .setColor(0x7289da)
+        .addFields({
+            name: "Upgrade almost finished...",
+            value: `Expected to finish ${F.discordTimestamp(endDate, "relative")}`
+        })
         .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")
-        .setFooter(
-            "DEMAtronix: Propaganda delivered promptly™",
-            "https://cdn.discordapp.com/emojis/860015969253326858.png"
-        );
+        .setFooter({
+            text: "DEMAtronix: Propaganda delivered promptly™",
+            iconURL: "https://cdn.discordapp.com/emojis/860015969253326858.png"
+        });
 };
 
 const initialMessage = async (): Promise<MessageOptions> => {
     const [progress] = generateProgressBar();
 
-    const embed = new MessageEmbed().setDescription(progress);
+    const embed = new Embed().setDescription(progress);
     standardizeEmbed(embed);
 
     return {
@@ -68,9 +71,9 @@ const update = async (msg: Message) => {
         const embed = msg.embeds[0];
         embed.setDescription(progress);
         standardizeEmbed(embed);
-        embed.fields = [];
-        embed.addField("Upgrade almost finished...", `Expected to finish \`soon\``);
-        embed.setColor("RED");
+        embed.setFields();
+        embed.addFields({ name: "Upgrade almost finished...", value: `Expected to finish \`soon\`` });
+        embed.setColor(Colors.Red);
 
         await msg.edit({ embeds: [embed] });
     }

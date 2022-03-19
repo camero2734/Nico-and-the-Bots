@@ -1,6 +1,6 @@
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -13,7 +13,7 @@ const command = new SlashCommand(<const>{
         {
             name: "user",
             description: "The user the bounty is on, who receives a violation notice if caught by the Bishops.",
-            type: "USER",
+            type: ApplicationCommandOptionType.User,
             required: false
         }
     ]
@@ -37,18 +37,22 @@ command.setHandler(async (ctx) => {
     if (isInventoryCmd) {
         const { steals, blocks } = dailyBox;
 
-        const embed = new MessageEmbed()
+        const embed = new Embed()
             .setTitle("Your inventory")
-            .addField("📑 Bounties", `${steals} bount${steals === 1 ? "y" : "ies"} available`, true)
-            .addField(
-                "<:jumpsuit:860724950070984735> Jumpsuits",
-                `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
-                true
-            )
-            .addField("Current bounty value", `${BOUNTY_NUM_CREDITS} credits`)
-            .setFooter(
-                "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
-            );
+            .addFields({
+                name: "📑 Bounties",
+                value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
+                inline: true
+            })
+            .addFields({
+                name: "<:jumpsuit:860724950070984735> Jumpsuits",
+                value: `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
+                inline: true
+            })
+            .addFields({ name: "Current bounty value", value: `${BOUNTY_NUM_CREDITS} credits` })
+            .setFooter({
+                text: "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
+            });
 
         await ctx.send({ embeds: [embed.toJSON()] });
         return;
@@ -60,23 +64,23 @@ command.setHandler(async (ctx) => {
 
     const member = await ctx.member.guild.members.fetch(user);
     if (!member || member.user.bot) throw new CommandError(`${member.displayName} investigated himself and found no wrong-doing. Case closed.`); // prettier-ignore
-    
+
     const otherDBUser = await queries.findOrCreateUser(member.id, { dailyBox: true });
     const otherDailyBox = otherDBUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: member.id } }));
 
     // Template embed
-    const embed = new MessageEmbed()
-        .setAuthor(`${ctx.member.displayName}'s Bounty`, ctx.member.user.displayAvatarURL())
-        .setFooter(`Bounties remaining: ${dailyBox.steals - 1}`);
+    const embed = new Embed()
+        .setAuthor({ name: `${ctx.member.displayName}'s Bounty`, iconURL: ctx.member.user.displayAvatarURL() })
+        .setFooter({ text: `Bounties remaining: ${dailyBox.steals - 1}` });
 
     const assignedBishop = F.randomValueInArray(districts); // prettier-ignore
 
     // Some dramatic waiting time
-    const waitEmbed = new MessageEmbed(embed)
+    const waitEmbed = new Embed(embed)
         .setDescription(
             `Thank you for reporting <@${user}> to the Dema Council for infractions against the laws of The Sacred Municipality of Dema.\n\nWe have people on the way to find and rehabilitate them under the tenets of Vialism.`
         )
-        .addField("Assigned Bishop", `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}`)
+        .addFields({ name: "Assigned Bishop", value: `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}` })
         .setImage("https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
 
     await ctx.send({ embeds: [waitEmbed.toJSON()] });
@@ -96,7 +100,7 @@ command.setHandler(async (ctx) => {
             })
         ]);
 
-        const failedEmbed = new MessageEmbed(embed)
+        const failedEmbed = new Embed(embed)
             .setDescription(`<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed.`); // prettier-ignore
 
         await ctx.editReply({ embeds: [failedEmbed] });
@@ -109,7 +113,7 @@ command.setHandler(async (ctx) => {
             }
         });
 
-        const winEmbed = new MessageEmbed(embed).setDescription(
+        const winEmbed = new Embed(embed).setDescription(
             `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${BOUNTY_NUM_CREDITS}\` credits.`
         );
 

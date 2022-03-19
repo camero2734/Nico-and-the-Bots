@@ -4,7 +4,7 @@
 		"body": [
 		  "import { CommandOptionType } from \"slash-create\";",
 		  "import { CommandOptions, CommandRunner } from \"configuration/definitions\";",
-		  "import { MessageEmbed } from \"discord.js\";",
+		  "import { Embed } from \"discord.js\";",
 		  "",
 		  "export const Options: CommandOptions = {",
 		  "    description: \"$1\",",

@@ -1,12 +1,10 @@
-import { MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageOptions } from "discord.js";
-import TwitterApi, { MediaVideoInfoV1, TweetV1, TweetV2 } from "twitter-api-v2";
+import async from "async";
+import { ActionRow, ButtonComponent, ButtonStyle, Embed, MessageAttachment, MessageOptions } from "discord.js";
+import TwitterApi, { MediaVideoInfoV1 } from "twitter-api-v2";
+import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { Checked, Watcher } from "./base";
-import Mime from "mime-types";
-import async from "async";
-import VideoUrl from "video-url-link";
-import normalizeUrl from "normalize-url";
 
 type TweetType = {
     images: string[];
@@ -94,16 +92,16 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 title = `@${this.handle} ${tweetType} @${tweeterUsername}`;
             }
 
-            const mainEmbed = new MessageEmbed()
-                .setAuthor(title, TWITTER_IMG, url) // prettier-ignore
+            const mainEmbed = new Embed()
+                .setAuthor({ name: title, iconURL: TWITTER_IMG, url: url }) // prettier-ignore
                 .setThumbnail(tweeterImage || TWITTER_IMG)
-                .setColor("#55ADEE")
+                .setColor(0x55adee)
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            const actionRow = new MessageActionRow().addComponents([
-                new MessageButton({ label: "View Tweet", style: "LINK", url })
-            ]);
+            const actionRow = new ActionRow().setComponents(
+                new ButtonComponent().setLabel("View Tweet").setStyle(ButtonStyle.Link).setURL(url)
+            );
 
             const msgs: MessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];
 
@@ -117,7 +115,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 for (let i = start; i < images.length; i++) {
                     const image = images[i];
 
-                    const embed = new MessageEmbed().setTitle(`${i + 1}/${images.length}`);
+                    const embed = new Embed().setTitle(`${i + 1}/${images.length}`);
                     const att = new MessageAttachment(image);
 
                     const isVideo = image.includes(".mp4");

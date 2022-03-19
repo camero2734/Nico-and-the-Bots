@@ -1,5 +1,5 @@
 import { VerifiedQuizAnswer } from "@prisma/client";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import R from "ramda";
 import progressBar from "string-progressbar";
 import F from "../../../Helpers/funcs";
@@ -14,7 +14,7 @@ const command = new SlashCommand(<const>{
             name: "stat",
             description: "The stat to display",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: [
                 { name: "Hardest Questions", value: "hardest" },
                 { name: "Easiest Questions", value: "easiest" }
@@ -51,12 +51,12 @@ command.setHandler(async (ctx) => {
 
     const topSortedStats = sortedStats.filter((s) => s.question).slice(0, 10);
 
-    const embed = new MessageEmbed().setTitle(`${F.titleCase(ctx.opts.stat)} Verified Quiz Questions`);
+    const embed = new Embed().setTitle(`${F.titleCase(ctx.opts.stat)} Verified Quiz Questions`);
 
     for (const stat of topSortedStats) {
         const questionName = stat.question.question.split("\n")[0];
         const [progress] = progressBar.filledBar(stat.total, stat.correct, 20);
-        embed.addField(questionName, `${progress} [${stat.correct}/${stat.total}]`);
+        embed.addFields({ name: questionName, value: `${progress} [${stat.correct}/${stat.total}]` });
     }
 
     await ctx.send({ embeds: [embed.toJSON()] });

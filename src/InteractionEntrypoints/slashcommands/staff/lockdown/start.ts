@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -30,18 +30,21 @@ command.setHandler(async (ctx) => {
     });
 
     // Disable talking permissions for non-staff
-    await ctx.channel.permissionOverwrites.edit(ctx.guild.id, { SEND_MESSAGES: false });
-    await ctx.channel.permissionOverwrites.edit(roles.banditos, { SEND_MESSAGES: false });
-    await ctx.channel.permissionOverwrites.edit(roles.staff, { SEND_MESSAGES: true });
+    await ctx.channel.permissionOverwrites.edit(ctx.guild.id, { SendMessages: false });
+    await ctx.channel.permissionOverwrites.edit(roles.banditos, { SendMessages: false });
+    await ctx.channel.permissionOverwrites.edit(roles.staff, { SendMessages: true });
 
     await ctx.send({ content: "`Lockdown successful`" });
 
-    const lockEmbed = new MessageEmbed()
+    const lockEmbed = new Embed()
         .setTitle("Lockdown started")
         .setDescription(
             "A lockdown has been started by a staff member. Until they unlock the channel, non-staff will not be allowed to talk in the channel."
         )
-        .addField("For staff members", "You may unlock this channel with the `/staff lockdown end` slash command.");
+        .addFields({
+            name: "For staff members",
+            value: "You may unlock this channel with the `/staff lockdown end` slash command."
+        });
 
     await ctx.followUp({ embeds: [lockEmbed] });
 });

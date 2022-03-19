@@ -1,25 +1,25 @@
 import { DailyBox, User } from "@prisma/client";
-import { channelIDs, roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import { format } from "date-fns";
 import {
-    EmojiIdentifierResolvable,
+    ActionRow,
+    ButtonComponent,
+    ButtonStyle,
+    Embed,
     GuildMember,
     Message,
-    MessageActionRow,
-    MessageButton,
     MessageComponentInteraction,
-    MessageEmbed,
-    MessageSelectMenu,
-    MessageSelectOptionData,
-    SelectMenuInteraction
+    SelectMenuComponent,
+    SelectMenuInteraction,
+    SelectMenuOption
 } from "discord.js";
 import fs from "fs";
+import { channelIDs, roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
 
 const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
@@ -34,8 +34,6 @@ command.setHandler(async (ctx) => {
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
 
-    if (!tokens) throw new CommandError("You don't have any tokens! Use the `/econ daily` command to get some.");
-
     const wrapXML = (xml: string) => `\`\`\`xml\n${xml}\n\`\`\``;
 
     // prettier-ignore
@@ -46,40 +44,41 @@ command.setHandler(async (ctx) => {
         ].join("\n\n")
     );
 
-    const embed = new MessageEmbed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
+    const embed = new Embed()
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
-        .addField(
-            "**Tokens**",
-            `You have ${tokens} token${tokens === 1 ? "" : "s"} available. A token is used when searching a district.`
-        )
-        .addField("**CONSOLE**", description)
-        .setColor("#FCE300")
+        .addFields({
+            name: "**Tokens**",
+            value: `You have ${tokens} token${
+                tokens === 1 ? "" : "s"
+            } available. A token is used when searching a district.`
+        })
+        .addFields({ name: "**CONSOLE**", value: description })
+        .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
-        .setFooter(
-            `Choose a district. The further down the list, the higher the potential prize, but the chances of getting "caught" by the Bishop is also higher.`
-        );
+        .setFooter({
+            text: `Choose a district. The further down the list, the higher the potential prize, but the chances of getting "caught" by the Bishop is also higher.`
+        });
 
-    const options: MessageSelectOptionData[] = districts.map((d, idx) => ({
-        label: `DST. ${d.bishop.toUpperCase()}`,
-        description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
-        value: `${idx}`,
-        emoji: { id: d.emoji } as EmojiIdentifierResolvable
-    }));
+    const options = districts.map(
+        (d, idx) =>
+            new SelectMenuOption({
+                label: `DST. ${d.bishop.toUpperCase()}`,
+                description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
+                value: `${idx}`,
+                emoji: { id: d.emoji }
+            })
+    );
 
-    const menu = new MessageSelectMenu()
-        .addOptions(options)
+    const menu = new SelectMenuComponent()
+        .addOptions(...options)
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new MessageActionRow().addComponents(menu);
+    const actionRow = new ActionRow().setComponents(menu);
 
-    const buttonActionRow = new MessageActionRow().addComponents(
-        new MessageButton({
-            label: "View Supply List",
-            customId: genButtonId({}),
-            style: "PRIMARY"
-        })
+    const buttonActionRow = new ActionRow().setComponents(
+        new ButtonComponent().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
     );
 
     await ctx.editReply({
@@ -105,7 +104,16 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
-    if (!dbUser.dailyBox || !tokens) return ctx.deleteReply();
+    if (!dbUser.dailyBox || !tokens) {
+        const embed = new Embed()
+            .setDescription("You don't have any tokens! Use the `/econ daily` command to get some.")
+            .setThumbnail("attachment://file.gif");
+        await ctx.editReply({
+            embeds: [embed],
+            components: []
+        });
+        return;
+    }
 
     await prisma.dailyBox.update({
         where: { userId: ctx.member.id },
@@ -126,13 +134,13 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
 
-    const embed = new MessageEmbed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#FCE300")
+    const embed = new Embed()
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
+        .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
-        .setFooter(
-            "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
-        );
+        .setFooter({
+            text: "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
+        });
 
     for (let i = 0; i < districts.length; i++) {
         const district = districts[i];
@@ -156,11 +164,14 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
 
         const catchRate = District.convPercent(District.catchPercent(i));
 
-        embed.addField(`${emoji} ${bishop}`, `**Catch Rate:** \`${catchRate}\` \n\n${prizeStr}\n\u200b`);
+        embed.addFields({
+            name: `${emoji} ${bishop}`,
+            value: `**Catch Rate:** \`${catchRate}\` \n\n${prizeStr}\n\u200b`
+        });
     }
 
     for (const [item, description] of Object.entries(ItemDescriptions)) {
-        embed.addField(`What is a ${item.toLowerCase()}?`, description, true);
+        embed.addFields({ name: `What is a ${item.toLowerCase()}?`, value: description, inline: true });
     }
 
     await ctx.editReply({ embeds: [embed], components: [] });
@@ -176,14 +187,14 @@ async function memberCaught(
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 
-    const embed = new MessageEmbed()
-        .setColor("#EA523B")
+    const embed = new Embed()
+        .setColor(0xea523b)
         .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
-        .setAuthor(district.bishop, emojiURL)
+        .setAuthor({ name: district.bishop, iconURL: emojiURL })
         .setDescription(
             `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
         )
-        .setFooter(`You win nothing. ${tokensRemaining}`, "attachment://file.gif");
+        .setFooter({ text: `You win nothing. ${tokensRemaining}`, iconURL: "attachment://file.gif" });
 
     sendViolationNotice(ctx.member as GuildMember, {
         violation: "ConspiracyAndTreason",
@@ -242,13 +253,13 @@ async function memberWon(
 
     const prizeName = getPrizeName(prize);
 
-    const embed = new MessageEmbed()
-        .setAuthor("DEMAtronix™ Telephony System", "https://i.imgur.com/csHALvp.png")
-        .setColor("#FCE300")
+    const embed = new Embed()
+        .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
+        .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setTitle(`You found a ${prizeName}!`)
         .setDescription(prizeDescription)
-        .setFooter(tokensRemaining);
+        .setFooter({ text: tokensRemaining });
 
     const { steals, blocks } = dbUserWithBox.dailyBox;
     await prisma.user.update({
@@ -265,16 +276,16 @@ async function memberWon(
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
     const reply = (await interaction.fetchReply()) as Message;
     const originalEmbed = reply.embeds[0];
-    originalEmbed.fields = [];
+    originalEmbed.setFields();
     originalEmbed
         .setDescription(description)
-        .addField(
-            "**WARNING**",
-            "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
-        )
-        .setFooter(
-            "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
-        )
+        .addFields({
+            name: "**WARNING**",
+            value: "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
+        })
+        .setFooter({
+            text: "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
+        })
         .setThumbnail("attachment://file.gif");
 
     await interaction.editReply({ components: [], embeds: [originalEmbed] });

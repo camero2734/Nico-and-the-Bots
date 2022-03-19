@@ -1,4 +1,4 @@
-import { EmojiIdentifierResolvable, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -15,19 +15,19 @@ const command = new SlashCommand(<const>{
             name: "text",
             description: "The description text for the embed",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         },
         {
             name: "role",
             description: "The role the interaction should give",
             required: true,
-            type: "ROLE"
+            type: ApplicationCommandOptionType.Role
         },
         {
             name: "channel",
             description: "The channel to send it in (defaults to current channel)",
             required: false,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -39,30 +39,28 @@ command.setHandler(async (ctx) => {
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({
-            style: "SUCCESS",
-            label: `Get the ${roleObj.name} role`,
-            customId: genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }),
-            emoji: <EmojiIdentifierResolvable>{
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent()
+            .setStyle(ButtonStyle.Success)
+            .setLabel(`Get the ${roleObj.name} role`)
+            .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }))
+            .setEmoji({
                 name: "😎"
-            }
-        }),
-        new MessageButton({
-            style: "DANGER",
-            label: `Remove the ${roleObj.name} role`,
-            customId: genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }),
-            emoji: <EmojiIdentifierResolvable>{
+            }),
+        new ButtonComponent()
+            .setStyle(ButtonStyle.Danger)
+            .setLabel(`Remove the ${roleObj.name} role`)
+            .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }))
+            .setEmoji({
                 name: "😔"
-            }
-        })
-    ]);
+            })
+    );
 
-    const embed = new MessageEmbed()
+    const embed = new Embed()
         .setTitle("Role Giver™️") //
         .setDescription(`By clicking the buttons below, you can get/remove the ${roleObj.name} role.`)
-        .addField("Description", text)
-        .addField("Role", `${roleObj}`);
+        .addFields({ name: "Description", value: text })
+        .addFields({ name: "Role", value: `${roleObj}` });
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });
@@ -86,7 +84,7 @@ const genActionId = command.addInteractionListener("reactForRole", <const>["role
 
     await ctx.followUp({
         embeds: [
-            new MessageEmbed({
+            new Embed({
                 description: `The ${role} role was successfully ${action === ActionTypes.Give ? "added" : "removed"}`
             })
         ],

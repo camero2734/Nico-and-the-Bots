@@ -1,5 +1,5 @@
 import secrets from "../../../Configuration/secrets";
-import { GuildMember } from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 

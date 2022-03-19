@@ -15,31 +15,39 @@ import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";
-import { ContextMenus, InteractionHandlers, ReactionHandlers, SlashCommands } from "./src/Structures/data";
+import {
+    ApplicationData,
+    ContextMenus,
+    InteractionHandlers,
+    ReactionHandlers,
+    SlashCommands
+} from "./src/Structures/data";
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import "./src/Helpers/message-updates/_queue";
 import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
+import http from "http";
+
+import { startTopfeed } from "./src/Altbots/topfeed2";
 
 const client = new Discord.Client({
     intents: [
-        "GUILDS",
-        "DIRECT_MESSAGES",
-        "DIRECT_MESSAGE_REACTIONS",
-        "GUILDS",
-        "GUILD_BANS",
-        "GUILD_EMOJIS_AND_STICKERS",
-        "GUILD_MEMBERS",
-        "GUILD_MESSAGES",
-        "GUILD_MESSAGE_REACTIONS",
-        // "GUILD_INTEGRATIONS",
-        // "GUILD_INVITES",
-        // "GUILD_PRESENCES",
-        "GUILD_VOICE_STATES"
-        // "GUILD_WEBHOOKS"
+        "Guilds",
+        "DirectMessages",
+        "DirectMessageReactions",
+        "GuildMessageReactions",
+        "GuildBans",
+        "GuildEmojisAndStickers",
+        "GuildMembers",
+        "GuildMessages",
+        "GuildIntegrations",
+        "GuildInvites",
+        "GuildPresences",
+        "GuildVoiceStates",
+        "GuildWebhooks"
     ],
-    partials: ["REACTION", "USER", "MESSAGE"]
+    partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message]
 });
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
@@ -64,14 +72,15 @@ client.on("ready", async () => {
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
+    startTopfeed();
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
-    await botChan.send({ embeds: [new Discord.MessageEmbed({ description: "Bot is running" })] });
+    await botChan.send({ embeds: [new Discord.Embed({ description: "Bot is running" })] });
     await guild.members.fetch();
 
     await botChan.send({
-        embeds: [new Discord.MessageEmbed({ description: `Fetched all ${guild.members.cache.size} members` })]
+        embeds: [new Discord.Embed({ description: `Fetched all ${guild.members.cache.size} members` })]
     });
 });
 
@@ -90,10 +99,10 @@ client.on("messageUpdate", async (oldMsg, newMsg) => {
 client.on("guildMemberUpdate", async (oldMem, newMem) => {
     if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
         const fbAnnouncementChannel = await newMem.guild.channels.fetch(channelIDs.fairlyannouncements) as Discord.TextChannel; // prettier-ignore
-        const embed = new Discord.MessageEmbed()
-            .setAuthor(newMem.displayName, newMem.displayAvatarURL())
+        const embed = new Discord.Embed()
+            .setAuthor({ name: newMem.displayName, iconURL: newMem.displayAvatarURL() })
             .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
-            .setFooter("PROPERTY OF DRAGON'S DEN INC.™️", newMem.client.user?.displayAvatarURL());
+            .setFooter({ text: "PROPERTY OF DRAGON'S DEN INC.™️", iconURL: newMem.client.user?.displayAvatarURL() });
 
         await fbAnnouncementChannel.send({ embeds: [embed] });
     }
@@ -120,13 +129,13 @@ client.on("messageReactionAdd", async (reaction, user) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-    if (interaction.isCommand()) {
+    if (interaction.isChatInputCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
         const command = SlashCommands.get(commandIdentifier);
         if (!command) return console.log(`Failed to find command ${commandIdentifier}`);
 
         command.run(interaction, undefined);
-    } else if (interaction.isMessageComponent()) {
+    } else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
         if (interaction.customId.startsWith(NULL_CUSTOM_ID_PREFIX)) return;
 
         console.log(`Got interaction: ${interaction.customId}`);
@@ -156,7 +165,7 @@ client.on("interactionCreate", async (interaction) => {
         if (!autocomplete) return console.log(`Failed to find autocomplete ${commandIdentifier}::${optionIdentifier}`);
 
         autocomplete(transformAutocompleteInteraction(interaction));
-    } else if (interaction.isContextMenu()) {
+    } else if (interaction.isContextMenuCommand()) {
         const ctxMenuName = interaction.commandName;
         const contextMenu = ContextMenus.get(ctxMenuName);
         if (!contextMenu) return console.log(`Failed to find context menu ${ctxMenuName}`);
@@ -189,3 +198,6 @@ async function setup() {
 }
 
 export const NicoClient = client;
+
+const server = http.createServer();
+server.listen(4242, "127.0.0.1");

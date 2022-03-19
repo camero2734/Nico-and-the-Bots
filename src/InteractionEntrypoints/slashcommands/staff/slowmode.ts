@@ -1,10 +1,17 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Enables slow mode in the channel",
-    options: [{ name: "time", description: "Time for slowmode in seconds. 0 = off", required: true, type: "INTEGER" }]
+    options: [
+        {
+            name: "time",
+            description: "Time for slowmode in seconds. 0 = off",
+            required: true,
+            type: ApplicationCommandOptionType.Integer
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -14,13 +21,13 @@ command.setHandler(async (ctx) => {
 
     await ctx.channel.setRateLimitPerUser(ctx.opts.time);
 
-    const embed = new MessageEmbed().setAuthor(
-        `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
-        ctx.client.user?.displayAvatarURL()
-    );
+    const embed = new Embed().setAuthor({
+        name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
+        iconURL: ctx.client.user?.displayAvatarURL()
+    });
 
     if (ctx.opts.time) {
-        embed.addField("Time (seconds)", `${ctx.opts.time}`);
+        embed.addFields({ name: "Time (seconds)", value: `${ctx.opts.time}` });
     }
 
     await ctx.editReply({ embeds: [embed] });

@@ -4,7 +4,7 @@ import IORedis from "ioredis";
 import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";
-const redisOpts = process.env.REDIS_URL ? { connection: new IORedis(process.env.REDIS_URL) } : {};
+const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
 
 export type JobType = "TWITTER" | "YOUTUBE" | "INSTAGRAM" | "WEBSITES";
 

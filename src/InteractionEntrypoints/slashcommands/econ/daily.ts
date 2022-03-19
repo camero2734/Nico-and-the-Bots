@@ -2,7 +2,7 @@ import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { addDays, differenceInDays } from "date-fns";
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -15,9 +15,7 @@ const command = new SlashCommand(<const>{
 const albumRoles = roles.albums;
 command.setHandler(async (ctx) => {
     await ctx.reply({
-        embeds: [
-            new MessageEmbed({ description: "Connecting to Daily Electronic Message Archive...", color: "#FF0000" })
-        ]
+        embeds: [new Embed({ description: "Connecting to Daily Electronic Message Archive...", color: 0xff0000 })]
     });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
@@ -165,20 +163,20 @@ command.setHandler(async (ctx) => {
     ];
 
     const randomFact = F.randomValueInArray(facts);
-    const embed = new MessageEmbed()
-        .setColor("#FF0000")
+    const embed = new Embed()
+        .setColor(0xff0000)
         .setTitle(`${ctx.member.displayName}'s Daily`)
-        .setFooter("Have an idea for another server tip? Submit it with /submit suggestion")
-        .addField("Server Fact", randomFact)
-        .addField("Tokens Earned", `${tokenMessage}`)
-        .addField("Total tokens", `You have **${newTokens}** token${F.plural(newTokens)}.`)
+        .setFooter({ text: "Have an idea for another server tip? Submit it with /submit suggestion" })
+        .addFields({ name: "Server Fact", value: randomFact })
+        .addFields({ name: "Tokens Earned", value: `${tokenMessage}` })
+        .addFields({ name: "Total tokens", value: `You have **${newTokens}** token${F.plural(newTokens)}.` })
         .setImage("attachment://daily.png");
 
     if (isWeeklyBonus) {
-        embed.addField(
-            "Weekly daily bonus!",
-            "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
-        );
+        embed.addFields({
+            name: "Weekly daily bonus!",
+            value: "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
+        });
     }
 
     await ctx.editReply({

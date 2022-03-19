@@ -1,31 +1,31 @@
 import { WarningType } from "@prisma/client";
-import { CommandError } from "../../../../Configuration/definitions";
 import { subYears } from "date-fns";
-import { GuildMember, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, GuildMember } from "discord.js";
 import { roles } from "../../../../Configuration/config";
-import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
+import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
-import JailCommand from "./../jail";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
+import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
+import JailCommand from "./../jail";
 
 const rules = Object.values(WarningType);
 
 const command = new SlashCommand(<const>{
     description: "Submits a warning for a user",
     options: [
-        { name: "user", description: "The user to warn", required: true, type: "USER" },
+        { name: "user", description: "The user to warn", required: true, type: ApplicationCommandOptionType.User },
         {
             name: "rule",
             description: "The rule broken",
             required: true,
-            type: "STRING",
+            type: ApplicationCommandOptionType.String,
             choices: rules.map((name) => ({ name, value: name }))
         },
         {
             name: "severity",
             description: "The severity of the warning",
             required: true,
-            type: "INTEGER",
+            type: ApplicationCommandOptionType.Integer,
             choices: (<const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map((n) => <const>{ name: `${n}`, value: n })
         },
         {
@@ -33,7 +33,7 @@ const command = new SlashCommand(<const>{
             description:
                 "A description of why you are warning the user, and how they can avoid another warning in the future.",
             required: true,
-            type: "STRING"
+            type: ApplicationCommandOptionType.String
         }
     ]
 });
@@ -48,29 +48,25 @@ command.setHandler(async (ctx) => {
     if (!ruleBroken) throw new CommandError(`Invalid rule given. Please choose one of:\n- ${rules.join("\n- ")}`);
     if (severity < 1 || severity > 10) throw new CommandError("Invalid severity. Must be between 1 and 10.");
 
-    const confirmationEmbed = new MessageEmbed()
+    const confirmationEmbed = new Embed()
         .setTitle("Would you like to submit this warning?")
-        .addField("User", `<@${user}>`)
-        .addField("Explanation", explanation)
-        .addField("Rule Broken", ruleBroken)
-        .addField("Severity", `${severity}`);
+        .addFields({ name: "User", value: `<@${user}>` })
+        .addFields({ name: "Explanation", value: explanation })
+        .addFields({ name: "Rule Broken", value: ruleBroken })
+        .addFields({ name: "Severity", value: `${severity}` });
 
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
 
-    const actionRow = new MessageActionRow().addComponents([
-        new MessageButton({
-            label: "Submit Warning",
-            style: "PRIMARY",
-            customId: submitId
-        })
-    ]);
+    const actionRow = new ActionRow().setComponents(
+        new ButtonComponent().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId)
+    );
 
     await ctx.send({ embeds: [confirmationEmbed.toJSON()], components: [actionRow] });
 
     const [buttonPressed] = await ephemeralListener.wait();
     if (buttonPressed !== submitId) {
-        await ctx.editReply({ embeds: [new MessageEmbed({ description: "Warning not submitted" })], components: [] });
+        await ctx.editReply({ embeds: [new Embed({ description: "Warning not submitted" })], components: [] });
         return;
     }
 
@@ -99,11 +95,11 @@ command.setHandler(async (ctx) => {
     try {
         const dm = await member.createDM();
         confirmationEmbed.setTitle("You have received a warning");
-        confirmationEmbed.setAuthor(member.displayName, member.user.displayAvatarURL());
-        confirmationEmbed.setFooter(
-            `Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
-            member.user.displayAvatarURL()
-        );
+        confirmationEmbed.setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
+        confirmationEmbed.setFooter({
+            text: `Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
+            iconURL: member.user.displayAvatarURL()
+        });
         await dm.send({ embeds: [confirmationEmbed] });
     } catch (e) {
         await ctx.followUp({
@@ -124,8 +120,8 @@ async function autoJailCheck(ctx: typeof command["ContextType"], member: GuildMe
     console.log(`Recent warns: ${recentWarns}`);
 
     if (recentWarns < 3) {
-        const embed = new MessageEmbed();
-        embed.setColor("#FF0000");
+        const embed = new Embed();
+        embed.setColor(0xff0000);
         embed.setDescription(
             `${Math.max(0, 3 - recentWarns)} more warning${
                 recentWarns === 1 ? "" : "s"

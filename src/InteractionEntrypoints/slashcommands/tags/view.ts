@@ -1,11 +1,18 @@
-import { MessageEmbed } from "discord.js";
+import { ApplicationCommandOptionType, Embed } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "View tags created by someone",
-    options: [{ name: "user", description: "The user to view tags from", required: false, type: "USER" }]
+    options: [
+        {
+            name: "user",
+            description: "The user to view tags from",
+            required: false,
+            type: ApplicationCommandOptionType.User
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -18,11 +25,11 @@ command.setHandler(async (ctx) => {
 
     if (!tags || tags.length === 0) throw new CommandError("This person does not have any tags");
 
-    const embed = new MessageEmbed() //
-        .setAuthor(`${member.displayName}'s tags`, member.user.displayAvatarURL());
+    const embed = new Embed() //
+        .setAuthor({ name: `${member.displayName}'s tags`, iconURL: member.user.displayAvatarURL() });
 
     for (const tag of tags) {
-        embed.addField(`${tag.name} [${tag.uses}]`, tag.text);
+        embed.addFields({ name: `${tag.name} [${tag.uses}]`, value: tag.text });
     }
 
     await ctx.editReply({ embeds: [embed] });

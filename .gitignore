@@ -1,6 +1,8 @@
 node_modules
-dist
+/dist
 discord.sqlite*
+
+.discord
 
 .env
 FUTURE_README.md

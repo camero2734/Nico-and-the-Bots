@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { Embed, ApplicationCommandOptionType, Colors } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
 
 interface Ping {
@@ -37,16 +37,18 @@ command.setHandler(async (ctx) => {
         }
     }
 
-    previousPings[0].time
+    previousPings[0].time;
 
     const average = Math.floor(pingSum / pingCount);
 
-    const embed = new MessageEmbed()
-        .setColor("RANDOM")
+    const embed = new Embed()
+        .setColor(Colors.Gold)
         .setTitle(`Pinged ${currentPing}ms`)
-        .addField("Heartbeat", `${Math.floor(ctx.client.ws.ping)}ms`)
-        .addField("Average ping", `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}`);
-    await ctx.editReply({ embeds: [embed.toJSON()] });
+        .addFields(
+            { name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` },
+            { name: "Average ping", value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}` }
+        );
+    await ctx.editReply({ embeds: [embed] });
 });
 
 export default command;

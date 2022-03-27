@@ -92,6 +92,8 @@
         "sqlite": "^4.0.23",
         "sqlite3": "^5.0.2",
         "string-progressbar": "^1.0.4",
+        "tiktok-scraper": "https://github.com/drawrowfly/tiktok-scraper.git",
+        "tiktok-scraper-ts": "^1.2.4",
         "ts-essentials": "^8.1.0",
         "ts-mixer": "^6.0.0",
         "ts-node": "^10.5.0",

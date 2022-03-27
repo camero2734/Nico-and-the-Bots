@@ -72,7 +72,7 @@ client.on("ready", async () => {
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
-    startTopfeed();
+    // startTopfeed();
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;

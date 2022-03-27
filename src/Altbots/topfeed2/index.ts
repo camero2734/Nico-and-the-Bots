@@ -5,6 +5,7 @@ import { channelIDs, roles } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";
 import { TopfeedService } from "./service";
 import { TopfeedSource } from "./source";
+import { TiktokSource } from "./sources/tiktok";
 import { TwitterSource } from "./sources/twitter";
 
 const TylerInfo = <const>{
@@ -13,8 +14,15 @@ const TylerInfo = <const>{
     roleId: roles.topfeed.selectable.tyler
 };
 
+const BandInfo = <const>{
+    displayName: "twenty one pilots",
+    channelId: channelIDs.topfeed.band,
+    roleId: roles.topfeed.selectable.band
+};
+
 const sources: TopfeedSource[] = [
-    new TwitterSource({ ...TylerInfo, handle: "tylerrjoseph" })
+    // new TwitterSource({ ...TylerInfo, handle: "tylerrjoseph" }),
+    new TiktokSource({ ...BandInfo, username: "twentyonepilots" })
     // new InstagramSource({ ...TylerInfo, username: "tylerrjoseph" }),
     // new TiktokSource({ ...TylerInfo, username: "tylerrjoseph" }),
     // new WebsiteSource({
@@ -26,5 +34,6 @@ const sources: TopfeedSource[] = [
 ];
 
 export function startTopfeed() {
+    console.log("starting");
     new TopfeedService(sources, guild).run();
 }

@@ -5,15 +5,18 @@ import { TopfeedSource } from "./source";
 export class TopfeedService {
     constructor(public sources: TopfeedSource[], private guild: Guild) {}
     async run() {
-        if (Math.random() < 2) return;
         console.log("---------------------------");
         console.log("----- TOPFEED RUNNING -----");
         console.log("---------------------------");
         for (const source of this.sources) {
             const { posts } = await source.run();
-            const channel = await this.guild.channels.fetch(channelIDs.bottest);
+            const channel = await this.guild.channels.fetch("859592952108285992");
 
-            if (!channel?.isText()) continue;
+            console.log(channel?.isTextBased(), /CHAN_TEXT/);
+
+            if (!channel?.isTextBased()) continue;
+
+            console.log(posts, /POSTS/);
 
             for (const post of posts) {
                 const [topMsg, ...threadedMsgs] = post.messages;

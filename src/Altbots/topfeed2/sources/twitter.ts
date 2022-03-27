@@ -60,9 +60,10 @@ export class TwitterSource extends TopfeedSource {
             : author.username;
 
         const inReplyTo = includes.userById(tweet.in_reply_to_user_id as string);
+        const repliedToSelf = inReplyTo?.username === this.handle;
 
         const title = (() => {
-            if (inReplyTo) return `${this.handle} replied to ${inReplyTo.username}`;
+            if (inReplyTo && !repliedToSelf) return `${this.handle} replied to ${inReplyTo.username}`;
             if (isRetweet) return `${this.handle} retweeted ${tweeterName}'s Tweet`;
             return `${this.handle} tweeted`;
         })();

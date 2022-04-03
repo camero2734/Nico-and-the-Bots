@@ -1,7 +1,0 @@
-secrets.ts
-node_modules
-dist
-discord.sqlite*
-/**/verified-quiz/quiz.ts
-.env
-FUTURE_README.md

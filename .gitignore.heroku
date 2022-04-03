@@ -1,5 +1,0 @@
-node_modules
-dist
-discord.sqlite*
-.env
-FUTURE_README.md

@@ -6,3 +6,5 @@ discord.sqlite*
 
 .env
 FUTURE_README.md
+
+src/Helpers/verified-quiz/quiz.ts

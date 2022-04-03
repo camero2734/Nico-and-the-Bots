@@ -1,0 +1,25 @@
+services:
+  nico:
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    volumes:
+      - .:/code:delegated
+    entrypoint: [ "/code/.docker/entrypoint.sh" ]
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: "redis://redis:6379"
+    env_file: .env
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+volumes:
+  redis:
+    driver: local

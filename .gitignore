@@ -8,3 +8,4 @@ discord.sqlite*
 FUTURE_README.md
 
 src/Helpers/verified-quiz/quiz.ts
+artifacts

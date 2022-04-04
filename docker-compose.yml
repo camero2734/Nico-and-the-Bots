@@ -3,24 +3,37 @@ services:
   nico:
     tty: true
     stdin_open: true
-    build:
-      context: .
-      dockerfile: .docker/Dockerfile
-    volumes:
-      - .:/code:delegated
+    image: node:lts-gallium
     entrypoint: [ "/code/.docker/entrypoint.sh" ]
+    restart: always
     depends_on:
       - redis
+      - db
+    env_file: .env
     environment:
       REDIS_URL: "redis://redis:6379"
+      DB_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+
+  db:
+    image: postgres:14.2-bullseye
+    restart: always
+    labels:
+      kompose.volume.size: 20Gi
+    ports:
+      - 5432:5432
+    volumes:
+      - dbdata:/dbdata
     env_file: .env
 
   redis:
     image: redis
+    restart: always
+    labels:
+      kompose.volume.size: 5Gi
     ports:
       - 6379:6379
     volumes:
-      - redis:/data
+      - redisdata:/redisdata
 volumes:
-  redis:
-    driver: local
+  redisdata:
+  dbdata:

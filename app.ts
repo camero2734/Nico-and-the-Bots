@@ -56,7 +56,7 @@ extendPrototypes();
 
 client.login(secrets.bots.nico);
 
-console.log("Script started");
+console.log("Script started", process.env.DB_URL);
 
 const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;

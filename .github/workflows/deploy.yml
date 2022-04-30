@@ -20,15 +20,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ministryofjustice/setup-git-crypt@main
-
-      - name: Write git-crypt key to file
+      - name: Install git-crypt
         run: |
-          echo "${{ secrets.GIT_CRYPT_KEY }}" >> .git-crypt-key
+          apt install git-crypt
 
       - name: Unlock encrypted files
         run: |
-          github-bin/git-crypt unlock ./.git-crypt-key
+          git-crypt unlock <(echo ${{ secrets.GIT_CRYPT_KEY }} | base64 --decode)
 
       - name: Check hash
         run: |

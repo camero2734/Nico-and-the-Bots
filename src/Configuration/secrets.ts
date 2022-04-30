@@ -32,7 +32,7 @@ const secrets = {
             youtube: env.get("YOUTUBE_API_KEY").required().asString(),
             sheets: {
                 client_email: env.get("GOOGLE_SHEETS_ACCOUNT").required().asString(),
-                private_key: env.get("GOOGLE_SHEETS_PRIVATE_KEY").required().asString()
+                private_key: env.get("GOOGLE_SHEETS_PRIVATE_KEY").required().asString().replace(/\\n/gm, '\n')
             }
         },
         tiktok: {

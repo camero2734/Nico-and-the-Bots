@@ -24,7 +24,6 @@ RUN git-crypt unlock gc.key
 RUN rm gc.key
 
 # NPM packages
-RUN yarn install --verbose
-RUN yarn build
+RUN yarn install
 
 ENTRYPOINT ["sleep", "infinity"]

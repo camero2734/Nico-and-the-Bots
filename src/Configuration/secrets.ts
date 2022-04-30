@@ -37,9 +37,14 @@ const secrets = {
         },
         tiktok: {
             sid_tt: env.get("TIKTOK_SESSION_LIST").required().asString()
+        },
+        minio: {
+            accessKey: env.get("MINIO_KEY").asString(),
+            secretKey: env.get("MINIO_SECRET").asString()
         }
     },
-    randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString()
+    randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString(),
+
 };
 
 export default secrets;

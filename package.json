@@ -15,7 +15,8 @@
         "postinstall": "patch-package",
         "docker:build": "dotenv-run-script docker:_build",
         "docker:_build": "docker build --no-cache --build-arg CRYPT64=$CRYPT64 -t camer0/nico .",
-        "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')"
+        "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",
+        "tasks:fetch-db": "ts-node tasks/fetch-db.ts"
     },
     "engines": {
         "node": ">= 16.6.0"
@@ -37,6 +38,7 @@
         "@types/google-spreadsheet": "^3.1.5",
         "@types/ioredis": "^4.28.8",
         "@types/mime-types": "^2.1.0",
+        "@types/minio": "^7.0.13",
         "@types/node-fetch": "2.5.12",
         "@types/pako": "^1.0.1",
         "@types/ramda": "^0.27.41",
@@ -74,6 +76,7 @@
         "lodash": "^4.17.21",
         "lodash.snakecase": "^4.1.1",
         "mime-types": "^2.1.31",
+        "minio": "^7.0.28",
         "moize": "^6.1.0",
         "nanoid": "3.2.0",
         "node-fetch": "^2.6.7",

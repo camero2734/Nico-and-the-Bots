@@ -22,7 +22,7 @@ jobs:
 
       - name: Install git-crypt
         run: |
-          apt install git-crypt
+          sudo apt install git-crypt
 
       - name: Unlock encrypted files
         run: |

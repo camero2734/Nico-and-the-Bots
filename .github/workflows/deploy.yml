@@ -26,7 +26,7 @@ jobs:
 
       - name: Unlock encrypted files
         run: |
-          echo ${{ secrets.GIT_CRYPT_KEY }} > gc.key
+          echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d >> gc.key
           git-crypt unlock gc.key
           rm gc.key
 

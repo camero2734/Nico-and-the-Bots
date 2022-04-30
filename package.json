@@ -9,9 +9,11 @@
         "start": "ts-node app.ts",
         "update": "npm-check -u",
         "deploy": "fish ./deploy.fish",
+        "build": "rimraf dist && swc app.ts -d dist && swc src -d dist/src",
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
-        "postinstall": "patch-package"
+        "postinstall": "patch-package",
+        "docker:build": "docker build -t camer0/nico ."
     },
     "engines": {
         "node": ">= 16.6.0"
@@ -22,8 +24,9 @@
         "@discordjs/collection": "^0.6.0-dev.1644235500.b936103",
         "@discordjs/rest": "^0.4.0-dev.1646395403.6f7a366",
         "@prisma/client": "3.9.1",
-        "@swc/core": "^1.2.137",
-        "@swc/helpers": "^0.3.2",
+        "@swc/cli": "^0.1.57",
+        "@swc/core": "^1.2.173",
+        "@swc/helpers": "^0.3.8",
         "@types/async": "^3.2.7",
         "@types/diff": "^5.0.0",
         "@types/express": "^4.17.11",
@@ -56,8 +59,6 @@
         "emittery": "^0.9.2",
         "emoji-regex": "10.0.0",
         "env-var": "^7.1.1",
-        "esbuild": "^0.14.20",
-        "esbuild-node-tsc": "1.8.2",
         "eslint": "^7.26.0",
         "file-type": "^16.5.0",
         "fuse.js": "6.5.3",
@@ -87,6 +88,7 @@
         "ramda": "^0.27.1",
         "regenerator-runtime": "^0.13.9",
         "remove": "^0.1.5",
+        "rimraf": "^3.0.2",
         "rollbar": "^2.24.0",
         "seed-random": "^2.2.0",
         "source-map-support": "^0.5.19",

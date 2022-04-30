@@ -3,7 +3,12 @@ services:
   nico:
     tty: true
     stdin_open: true
-    image: node:lts-gallium
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    # volumes:
+    #   - .:/code
+    #   - node_modules:/code/node_modules
     entrypoint: [ "/code/.docker/entrypoint.sh" ]
     restart: always
     depends_on:

@@ -3,6 +3,7 @@ node_modules
 discord.sqlite*
 
 .discord
+db.dump
 
 .env
 FUTURE_README.md

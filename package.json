@@ -13,7 +13,8 @@
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
         "postinstall": "patch-package",
-        "docker:build": "docker build -t camer0/nico ."
+        "docker:build": "docker build -t camer0/nico .",
+        "dokku:env": "dokku config:set --no-restart nico $(sed '/^$/d' .env | tr '\\n' ' ')"
     },
     "engines": {
         "node": ">= 16.6.0"
@@ -96,7 +97,6 @@
         "sqlite": "^4.0.23",
         "sqlite3": "^5.0.2",
         "string-progressbar": "^1.0.4",
-        "tiktok-scraper": "https://github.com/drawrowfly/tiktok-scraper.git",
         "tiktok-scraper-ts": "^1.2.4",
         "ts-essentials": "^8.1.0",
         "ts-mixer": "^6.0.0",

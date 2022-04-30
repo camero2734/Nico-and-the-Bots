@@ -15,12 +15,12 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - uses: ministryofjustice/setup-git-crypt@main
-
       - name: Check out code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - uses: ministryofjustice/setup-git-crypt@main
 
       - name: Write git-crypt key to file
         run: |

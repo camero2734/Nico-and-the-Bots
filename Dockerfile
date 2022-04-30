@@ -16,6 +16,9 @@ RUN apt update
 RUN apt install -y git-crypt
 
 # Unlock git-crypt
+RUN git init
+RUN git add -A
+RUN git -c user.name='A' -c user.email='A@mail.co' commit -am "Dummy commit"
 RUN echo $CRYPT64 | base64 -d >> gc.key
 RUN git-crypt unlock gc.key
 RUN rm gc.key

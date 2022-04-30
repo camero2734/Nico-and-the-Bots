@@ -12,4 +12,4 @@ RUN yarn install
 
 RUN yarn build
 
-ENTRYPOINT [ "node" ]
+ENTRYPOINT ["sleep", "infinity"]

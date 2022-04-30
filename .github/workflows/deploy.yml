@@ -24,7 +24,7 @@ jobs:
 
       - name: Write git-crypt key to file
         run: |
-          echo ${{ secrets.GIT_CRYPT_KEY }} > .git-crypt-key
+          echo "${{ secrets.GIT_CRYPT_KEY }}" >> .git-crypt-key
 
       - name: Unlock encrypted files
         run: |

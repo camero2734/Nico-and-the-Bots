@@ -13,7 +13,8 @@
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
         "postinstall": "patch-package",
-        "docker:build": "docker build --no-cache -t camer0/nico .",
+        "docker:build": "dotenv-run-script docker:_build",
+        "docker:_build": "docker build --no-cache --build-arg CRYPT64=$CRYPT64 -t camer0/nico .",
         "dokku:env": "dokku config:set --no-restart nico $(sed '/^$/d' .env | tr '\\n' ' ')"
     },
     "engines": {
@@ -114,6 +115,7 @@
         "zod": "^3.11.6"
     },
     "devDependencies": {
+        "dotenv-run-script": "^0.2.0",
         "nodemon": "^2.0.12"
     }
 }

@@ -20,21 +20,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install git-crypt
-        run: |
-          sudo apt install -y git-crypt
-
-      - name: Unlock encrypted files
-        run: |
-          echo ${{ secrets.GIT_CRYPT_KEY }} | base64 -d >> gc.key
-          git-crypt unlock gc.key
-          rm gc.key
-
-      - name: Check hash
-        run: |
-          cat ./src/Helpers/verified-quiz/quiz.ts | md5sum
-
-
       - name: Push to dokku
         uses: dokku/github-action@master
         with:

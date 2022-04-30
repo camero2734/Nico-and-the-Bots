@@ -15,15 +15,24 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
+      - uses: ministryofjustice/setup-git-crypt@main
+
       - name: Check out code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
+      - name: Write git-crypt key to file
+        run: |
+          echo ${{ secrets.GIT_CRYPT_KEY }} > .git-crypt-key
+
       - name: Unlock encrypted files
-        uses: sliteteam/github-action-git-crypt-unlock@1.2.0
-        env:
-          GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+        run: |
+          github-bin/git-crypt unlock ./.git-crypt-key
+
+      - name: Check hash
+        run: |
+          cat ./src/Helpers/verified-quiz/quiz.ts | md5sum
 
 
       - name: Push to dokku

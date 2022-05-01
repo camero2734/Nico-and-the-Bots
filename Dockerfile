@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:experimental
 FROM node:lts-gallium
 
 USER root

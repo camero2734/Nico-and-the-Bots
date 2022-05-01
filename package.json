@@ -1,7 +1,7 @@
 {
     "name": "nico-next",
     "version": "1.0.0",
-    "description": "Main bot for Discord Clique",
+    "description": "Main bot for Discord Clique server",
     "main": "app.ts",
     "scripts": {
         "dev": "nodemon",

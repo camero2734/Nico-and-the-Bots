@@ -12,7 +12,7 @@ RUN apt install -y git-crypt postgresql-client-14 pv
 
 # NPM packages
 COPY yarn.lock package.json ./
-RUN yarn install
+RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install --frozen-lockfile --pure-lockfile
 
 # Copy all source files
 COPY .gitignore .gitattributes ./

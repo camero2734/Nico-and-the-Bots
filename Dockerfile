@@ -9,6 +9,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt update
 
 RUN apt install -y git-crypt postgresql-client-14 pv
+RUN npm i -g pm2
 
 # NPM packages
 COPY yarn.lock package.json ./
@@ -34,4 +35,4 @@ COPY . .
 ARG UPDATE_DB
 ENV UPDATE_DB=$UPDATE_DB
 
-ENTRYPOINT ["sleep", "infinity"]
+CMD ["npx", "pm2-runtime", "ecosystem.config.js"]

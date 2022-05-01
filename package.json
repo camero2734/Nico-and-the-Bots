@@ -87,6 +87,7 @@
         "pageres": "^6.3.1",
         "parse-duration": "^0.4.4",
         "patch-package": "^6.4.7",
+        "pm2": "^5.2.0",
         "postinstall-postinstall": "^2.1.0",
         "prettier": "2.5.1",
         "prisma": "3.9.1",

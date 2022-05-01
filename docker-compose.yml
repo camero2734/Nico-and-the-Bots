@@ -29,7 +29,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - dbdata:/dbdata
+      - ./dbdata:/var/lib/postgresql
     env_file: .env
 
   redis:

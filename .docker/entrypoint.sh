@@ -12,7 +12,7 @@ npx prisma migrate deploy
 npx prisma generate
 
 if [ "$NODE_ENV" == "development" ]; then
-    yarn dev
+    pm2-runtime ecosystem.config.js --only nico-dev
 else
-    yarn start
+    pm2-runtime ecosystem.config.js --only nico
 fi

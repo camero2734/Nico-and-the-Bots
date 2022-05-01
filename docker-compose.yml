@@ -3,12 +3,13 @@ services:
   nico:
     tty: true
     stdin_open: true
+    container_name: nico
     build:
       context: .
-      dockerfile: .docker/Dockerfile
-    # volumes:
-    #   - .:/code
-    #   - node_modules:/code/node_modules
+      dockerfile: Dockerfile
+      args:
+        CRYPT64:
+        UPDATE_DB:
     entrypoint: [ "/code/.docker/entrypoint.sh" ]
     restart: always
     depends_on:
@@ -18,12 +19,11 @@ services:
     environment:
       REDIS_URL: "redis://redis:6379"
       DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-
+      NODE_ENV: "development"
   db:
-    image: postgres:14.2-bullseye
+    image: postgres:14.1
     restart: always
-    labels:
-      kompose.volume.size: 20Gi
+    container_name: nicodb
     ports:
       - 5432:5432
     volumes:
@@ -32,9 +32,8 @@ services:
 
   redis:
     image: redis
+    container_name: nicoredis
     restart: always
-    labels:
-      kompose.volume.size: 5Gi
     ports:
       - 6379:6379
     volumes:

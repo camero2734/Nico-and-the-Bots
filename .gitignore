@@ -8,4 +8,4 @@ db.dump
 .env
 FUTURE_README.md
 
-backup.temp.db
+*.backup.tgz

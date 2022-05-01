@@ -3,7 +3,9 @@ import secrets from "../src/Configuration/secrets";
 import fs, { promises as fsp } from "fs";
 import util from 'util';
 import { exec as _exec } from "child_process";
+import _glob from "glob";
 const exec = util.promisify(_exec);
+const glob = util.promisify(_glob);
 import streamUtil from "stream";
 
 const BUCKET_NAME = "db-backups";
@@ -82,14 +84,24 @@ async function ensureBackupsExpire() {
 }
 
 async function main() {
-    const fileName = "backup.temp.db";
-
     ensureBackupsExpire();
 
-    await fsp.unlink(fileName).catch();
-
     const latestBackup = await getLatestBackup();
-    await downloadBackup(latestBackup, fileName);
+    const fileName = `${latestBackup.name}.backup.tgz`;
+
+    try {
+        await fsp.access(fileName);
+        console.log("Latest backup already downloaded");
+    } catch (e) {
+        // Delete any old backups
+        const files = await glob("*.backup.tgz");
+
+        for (const file of files) {
+            await fsp.unlink(file);
+        }
+
+        await downloadBackup(latestBackup, fileName);
+    }
 }
 
 main();

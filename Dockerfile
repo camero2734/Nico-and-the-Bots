@@ -36,4 +36,4 @@ COPY . .
 ARG UPDATE_DB
 ENV UPDATE_DB=$UPDATE_DB
 
-CMD ["npx", "pm2-runtime", "ecosystem.config.js"]
+CMD [ "bash", ".docker/entrypoint.sh" ]

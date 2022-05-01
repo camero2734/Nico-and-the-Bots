@@ -9,3 +9,5 @@ db.dump
 FUTURE_README.md
 
 *.backup.tgz
+
+gc.key

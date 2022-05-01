@@ -16,21 +16,14 @@ RUN npm i -g pm2
 COPY yarn.lock package.json ./
 RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install --frozen-lockfile --pure-lockfile
 
-# Copy all source files
-COPY .gitignore .gitattributes ./
-COPY src/ src/
+# Copy all files
+COPY . .
 
 # Unlock git-crypt
-RUN git init
-RUN git add src/
-RUN git -c user.name='A' -c user.email='A@mail.co' commit -am "Dummy commit"
 ARG CRYPT64
 RUN echo $CRYPT64 | base64 -d >> gc.key
 RUN git-crypt unlock gc.key
 RUN rm gc.key
-
-# Copy remaining files
-COPY . .
 
 # Whether or not to pull the production DB
 ARG UPDATE_DB

@@ -5,7 +5,7 @@
 import {
     ApplicationCommandChoicesData,
     ApplicationCommandData,
-    ApplicationCommandOptionChoice,
+    ApplicationCommandOptionChoiceData,
     ApplicationCommandOptionData,
     ApplicationCommandOptionType,
     AutocompleteInteraction,
@@ -33,43 +33,42 @@ type SnowflakeTypes =
     | ApplicationCommandOptionType.Mentionable
     | ApplicationCommandOptionType.Role;
 // prettier-ignore
-type ToPrimitiveType<OType> = 
-      OType extends SnowflakeTypes
-          ? Snowflake
-      : OType extends ApplicationCommandOptionType.Boolean
-          ? boolean
-      : OType extends ApplicationCommandOptionType.Integer | ApplicationCommandOptionType.Number
-          ? number
-      : OType extends ApplicationCommandOptionType.String
-          ? string
-      : unknown;
+type ToPrimitiveType<OType> =
+    OType extends SnowflakeTypes
+    ? Snowflake
+    : OType extends ApplicationCommandOptionType.Boolean
+    ? boolean
+    : OType extends ApplicationCommandOptionType.Integer | ApplicationCommandOptionType.Number
+    ? number
+    : OType extends ApplicationCommandOptionType.String
+    ? string
+    : unknown;
 
 type AsArray<T extends DeepReadonly<CommandOptions[number]>> = [T["name"], T["type"], T["required"], T["choices"]];
 
 // Ensures that the choices array matches the specified type
-type ChoicesUnion<T extends DeepReadonly<ApplicationCommandOptionChoice[]>, P> = T[number]["value"] extends P
+type ChoicesUnion<T extends DeepReadonly<ApplicationCommandOptionChoiceData[]>, P> = T[number]["value"] extends P
     ? T[number]["value"]
     : never;
 
 // prettier-ignore
 type ToObject<T extends DeepReadonly<CommandOptions[number]>> = AsArray<T> extends readonly [
-      infer Key,
-      infer Value,
-      infer Required,
-      infer Choices
-  ]
-      ? Key extends PropertyKey
-          ? {
-                [P in Key]: (Choices extends DeepReadonly<ApplicationCommandOptionChoice[]> // If choices provided...
-                        ? ChoicesUnion<Choices, ToPrimitiveType<Value>> // Return those choices
-                        : ToPrimitiveType<Value> // Otherwise return basic type
-                ) | (Required extends true ? never : undefined) // If it's not required, it can also be undefined
-            }
-          : never
-      : never;
+    infer Key,
+    infer Value,
+    infer Required,
+    infer Choices
+]
+    ? Key extends PropertyKey
+    ? {
+        [P in Key]: (Choices extends DeepReadonly<ApplicationCommandOptionChoiceData[]> // If choices provided...
+            ? ChoicesUnion<Choices, ToPrimitiveType<Value>> // Return those choices
+            : ToPrimitiveType<Value> // Otherwise return basic type
+        ) | (Required extends true ? never : undefined) // If it's not required, it can also be undefined
+    }
+    : never
+    : never;
 
 type ToObjectsArray<T extends CommandOptions> = {
-    // @ts-expect-error: Cannot index, but it still works
     [I in keyof T]: ToObject<T[I]>;
 };
 

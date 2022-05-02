@@ -1,5 +1,6 @@
 import { registerFont } from "canvas";
 import * as Discord from "discord.js";
+import http from "http";
 import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
@@ -12,11 +13,11 @@ import AutoReact from "./src/Helpers/auto-react";
 import { getConcertChannelManager } from "./src/Helpers/concert-channels";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
+import "./src/Helpers/message-updates/_queue";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";
 import {
-    ApplicationData,
     ContextMenus,
     InteractionHandlers,
     ReactionHandlers,
@@ -25,11 +26,8 @@ import {
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
-import "./src/Helpers/message-updates/_queue";
 import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
-import http from "http";
 
-import { startTopfeed } from "./src/Altbots/topfeed2";
 
 const client = new Discord.Client({
     intents: [

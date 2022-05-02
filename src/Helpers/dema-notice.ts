@@ -1,5 +1,5 @@
 import { BishopType, ViolationType } from "@prisma/client";
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
 import { GuildMember, Attachment, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
@@ -119,7 +119,7 @@ export async function sendViolationNotice(
         allowedMentions: canSee ? { parse: [] } : {}
     });
     for (let i = 0; i < 5; i++) {
-        const description = transmissionEmbed.description as string;
+        const description = transmissionEmbed.data.description as string;
         transmissionEmbed.setDescription(description.trim() + F.randomizeLetters(".      " as string, 0.1));
         await F.wait(1000);
         await m.edit({ embeds: [transmissionEmbed] });

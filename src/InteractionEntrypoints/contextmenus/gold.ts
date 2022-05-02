@@ -85,7 +85,7 @@ async function handleGold(
     if (previousGold) throw new CommandError("You already gave this message gold!");
 
     const goldBaseEmbed = isAdditionalGold
-        ? msg.embeds[0]
+        ? EmbedBuilder.from(msg.embeds[0])
         : new EmbedBuilder()
             .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
             .setColor(0xfce300)
@@ -99,7 +99,7 @@ async function handleGold(
         if (url) goldBaseEmbed.setImage(url);
     }
 
-    let askEmbed = new EmbedBuilder(goldBaseEmbed).addFields({ name: "\u200b", value: "**Would you like to give gold to this message?**" }); // prettier-ignore
+    let askEmbed = EmbedBuilder.from(goldBaseEmbed).addFields({ name: "\u200b", value: "**Would you like to give gold to this message?**" }); // prettier-ignore
     if (isAdditionalGold) {
         askEmbed = new EmbedBuilder()
             .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
@@ -155,8 +155,8 @@ async function handleGold(
         new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl)
     );
 
-    const goldEmbed = new EmbedBuilder(goldBaseEmbed);
-    const idx = goldEmbed.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
+    const goldEmbed = EmbedBuilder.from(goldBaseEmbed);
+    const idx = goldEmbed.data.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
     if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
     if (numGolds < NUM_GOLDS_FOR_CERTIFICATION) {

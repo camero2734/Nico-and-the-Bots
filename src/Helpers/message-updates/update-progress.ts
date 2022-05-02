@@ -62,13 +62,13 @@ const update = async (msg: Message) => {
     const [progress, isDone] = generateProgressBar();
 
     if (!isDone) {
-        const embed = msg.embeds[0];
+        const embed = EmbedBuilder.from(msg.embeds[0]);
         embed.setDescription(progress);
         standardizeEmbed(embed);
 
         await msg.edit({ embeds: [embed] });
     } else {
-        const embed = msg.embeds[0];
+        const embed = EmbedBuilder.from(msg.embeds[0]);
         embed.setDescription(progress);
         standardizeEmbed(embed);
         embed.setFields();

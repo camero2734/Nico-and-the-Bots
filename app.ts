@@ -54,7 +54,7 @@ extendPrototypes();
 
 client.login(secrets.bots.nico);
 
-console.log("Script started");
+console.log("Logging in...");
 
 const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
@@ -70,6 +70,7 @@ client.on("ready", async () => {
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
+
     // startTopfeed();
 
     // Send started message

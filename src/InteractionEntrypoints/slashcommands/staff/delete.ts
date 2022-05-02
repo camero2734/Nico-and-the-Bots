@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
         numDeleted += fetched.size;
     }
 
-    const embed = new Embed({ description: `Deleted ${numDeleted} out of the requested ${amount} messages` });
+    const embed = new EmbedBuilder({ description: `Deleted ${numDeleted} out of the requested ${amount} messages` });
     await ctx.send({ embeds: [embed] });
 });
 

@@ -1,10 +1,10 @@
 import {
-    ActionRow,
+    ActionRowBuilder,
     ApplicationCommandOptionType,
-    ButtonComponent,
+    ButtonBuilder,
     ButtonStyle,
-    Embed,
-    MessageAttachment,
+    EmbedBuilder,
+    Attachment,
     TextChannel
 } from "discord.js";
 import FileType from "file-type";
@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
 
     const fileName = `${title.split(" ").join("-")}.${fileType.ext}`;
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(0xe3b3d8)
         .setTitle(`"${title}"`)
@@ -92,8 +92,8 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
     );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -101,7 +101,7 @@ command.setHandler(async (ctx) => {
     const [buttonPressed] = await timedListener.wait();
     if (buttonPressed !== yesId) {
         await ctx.editReply({
-            embeds: [new Embed({ description: "Submission cancelled." })],
+            embeds: [new EmbedBuilder({ description: "Submission cancelled." })],
             components: []
         });
         return;
@@ -117,7 +117,7 @@ command.setHandler(async (ctx) => {
     embed.setDescription("");
     embed.setFields();
 
-    const attachment = new MessageAttachment(buffer, fileName);
+    const attachment = new Attachment(buffer, fileName);
 
     if (fileType.mime.startsWith("image")) {
         embed.setImage(`attachment://${fileName}`);
@@ -126,8 +126,8 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
+    const newActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
     );
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });

@@ -1,13 +1,13 @@
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonStyle,
     ComponentType,
-    Embed,
-    MessageAttachment,
+    EmbedBuilder,
+    Attachment,
     MessageOptions,
-    SelectMenuComponent,
-    SelectMenuOption,
+    SelectMenuBuilder,
+    SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
 import { roles } from "../../Configuration/config";
@@ -31,19 +31,19 @@ const ctxMenu = new MessageContextMenu("🚩 Report message");
 ctxMenu.setHandler(async (ctx, msg) => {
     await ctx.deferReply({ ephemeral: true });
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("Report message")
         .setDescription(
             "If you want to report this message to the server staff, please choose the reason in the dropdown below.\n\nIf this was an accident, you may safely ignore this message"
         );
 
-    const selectMenu = new SelectMenuComponent()
+    const selectMenu = new SelectMenuBuilder()
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
         .addOptions(
-            ...Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOption({ label: value, value: key }))
+            Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }))
         );
 
-    const actionRow = new ActionRow().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -94,9 +94,10 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         const btn = actionRow.components.find((c) => c.customId?.startsWith(NULL_CUSTOM_ID_PREFIX));
         if (btn?.type !== ComponentType.Button) throw new Error("The button disappeared");
 
-        btn.setLabel(NUM_PEOPLE_TEXT(priorReports.length + 1));
+        // @ts-ignore
+        btn.label = NUM_PEOPLE_TEXT(priorReports.length + 1);
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setDescription("A new report was added for this message")
             .addFields({ name: "Reason", value: reasonText })
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
@@ -114,27 +115,27 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         await staffMsg.edit({ components: [actionRow] });
         await staffMsg.reply({ embeds: [embed] });
     } else {
-        const staffEmbed = new Embed()
+        const staffEmbed = new EmbedBuilder()
             .setAuthor({ name: msgMember.displayName, iconURL: msgMember.displayAvatarURL() })
             .setTitle("Message Reported")
             .setDescription(msg.content)
             .addFields({ name: "Reason", value: ReportReasons[selectedReason] })
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
-        const actionRow = new ActionRow().setComponents(
-            new ButtonComponent()
+        const actionRow = new ActionRowBuilder().setComponents(
+            new ButtonBuilder()
                 .setLabel(NUM_PEOPLE_TEXT(1))
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(true)
                 .setCustomId(NULL_CUSTOM_ID()),
-            new ButtonComponent().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url)
+            new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url)
         );
 
         const msgOpts: MessageOptions = { embeds: [staffEmbed], components: [actionRow] };
 
         const image = msg.attachments.filter((a) => !!a.contentType?.startsWith("image")).first();
         if (image) {
-            const attachment = new MessageAttachment(image.url, "file.png");
+            const attachment = new Attachment(image.url, "file.png");
             if (selectedReason === "NSFW_SLURS") attachment.setSpoiler(true);
             msgOpts.files = [attachment];
             staffEmbed.setImage("attachment://file.png");
@@ -156,7 +157,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
     }
 
     await ctx.editReply({
-        embeds: [new Embed({ description: "Your report has been submitted." })],
+        embeds: [new EmbedBuilder({ description: "Your report has been submitted." })],
         components: []
     });
 });

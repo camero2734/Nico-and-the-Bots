@@ -1,14 +1,14 @@
 import { addDays } from "date-fns";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonStyle,
     Colors,
-    Embed,
+    EmbedBuilder,
     Guild,
-    MessageAttachment,
-    SelectMenuComponent,
-    SelectMenuOption,
+    Attachment,
+    SelectMenuBuilder,
+    SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
@@ -68,15 +68,15 @@ command.setHandler(async (ctx) => {
 
     const link = genApplicationLink(applicationId);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.displayAvatarURL() })
         .setDescription(
             "Click the button below to open the application. It should be pre-filled with your **Application ID**, which is a one-time code. This code is only valid for you, and only once."
         )
         .addFields({ name: "Application ID", value: applicationId });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application")
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application")
     );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -96,7 +96,7 @@ export async function sendToStaff(
         const member = await guild.members.fetch(application.userId);
         if (!member) throw new Error("No member found");
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setAuthor({ name: `${member.displayName}'s application`, iconURL: member.displayAvatarURL() })
             .setFooter({ text: applicationId });
 
@@ -104,16 +104,16 @@ export async function sendToStaff(
             embed.addFields({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
         }
 
-        const actionRow = new ActionRow().setComponents(
-            new SelectMenuComponent()
+        const actionRow = new ActionRowBuilder().setComponents(
+            new SelectMenuBuilder()
                 .addOptions(
-                    ...[
-                        new SelectMenuOption({
+                    [
+                        new SelectMenuOptionBuilder({
                             label: "Accept",
                             value: ActionTypes.Accept.toString(),
                             emoji: { id: emojiIDs.upvote }
                         }),
-                        new SelectMenuOption({
+                        new SelectMenuOptionBuilder({
                             label: "Deny",
                             value: ActionTypes.Deny.toString(),
                             emoji: { id: emojiIDs.downvote }
@@ -124,7 +124,7 @@ export async function sendToStaff(
         );
 
         const scoreCard = await generateScoreCard(member);
-        const attachment = new MessageAttachment(scoreCard, "score.png");
+        const attachment = new Attachment(scoreCard, "score.png");
 
         const m = await fbApplicationChannel.send({
             embeds: [embed],
@@ -146,7 +146,7 @@ export async function sendToStaff(
             });
             const totalWarnings = await prisma.warning.count({ where: { warnedUserId: member.id } });
 
-            const warningsEmbed = new Embed()
+            const warningsEmbed = new EmbedBuilder()
                 .setTitle(`${member.displayName}'s most recent warnings`)
                 .setFooter({ text: `${totalWarnings} total warning(s)` });
             if (userWarnings.length > 0) {
@@ -163,7 +163,7 @@ export async function sendToStaff(
             // Send message to member
             await F.sendMessageToUser(member, {
                 embeds: [
-                    new Embed({
+                    new EmbedBuilder({
                         description: `Your FB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`
                     })
                 ]
@@ -194,13 +194,13 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
     const member = await ctx.guild.members.fetch(application.userId);
     if (!member) throw new CommandError("This member appears to have left the server");
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
         .setFooter({ text: applicationId });
 
-    if (!embed.author) return; // Just to make typescript happy
+    if (!embed.data.author) return; // Just to make typescript happy
 
-    const msgEmbed = ctx.message.embeds[0];
+    const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
 
     const action = ctx.isSelectMenu() ? +ctx.values[0] : +args.type;
     if (action === ActionTypes.Accept) {
@@ -210,7 +210,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         });
         await member.roles.add(roles.deatheaters);
 
-        embed.author.name = "Firebreathers Application Approved";
+        embed.data.author.name = "Firebreathers Application Approved";
         embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
 
         await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
@@ -222,12 +222,12 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
 
         const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
 
-        embed.author.name = "Firebreathers Application Denied";
+        embed.data.author.name = "Firebreathers Application Denied";
         embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
         await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
     } else throw new Error("Invalid action type");
 
-    const doneByEmbed = new Embed()
+    const doneByEmbed = new EmbedBuilder()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.displayAvatarURL() })
         .setDescription(
             `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`

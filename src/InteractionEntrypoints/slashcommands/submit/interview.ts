@@ -1,5 +1,5 @@
 import { parse } from "date-fns";
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
 import * as ytdl from "youtube-dl";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
     if (existingInterview) throw new CommandError("This interview has already been submitted");
 
     // Fetch info
-    const embed = new Embed().setDescription("Fetching video info...").setColor(0x111111);
+    const embed = new EmbedBuilder().setDescription("Fetching video info...").setColor(0x111111);
     await ctx.send({ embeds: [embed] });
 
     const info: Record<string, string> = await new Promise((resolve) =>
@@ -67,8 +67,8 @@ command.setHandler(async (ctx) => {
         data: { url, submittedByUserId: ctx.user.id }
     });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setLabel("Approve")
             .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
             .setStyle(ButtonStyle.Success)
@@ -76,12 +76,12 @@ command.setHandler(async (ctx) => {
 
     await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 
-    const finalEmbed = new Embed().setColor(0x111111).setDescription("Sent video to staff for approval!");
+    const finalEmbed = new EmbedBuilder().setColor(0x111111).setDescription("Sent video to staff for approval!");
     await ctx.send({ embeds: [finalEmbed] });
 });
 
 const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId"], async (ctx, args) => {
-    const embed = ctx.message.embeds[0];
+    const embed = EmbedBuilder.from(ctx.message.embeds[0]);
     embed.setColor(0x00ff00);
 
     await ctx.editReply({ components: [], embeds: [embed] });
@@ -101,7 +101,7 @@ const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId
 //     await msg.reactions.removeAll();
 
 //     // Do something
-//     const newEmbed = new Embed(msg.embeds[0]);
+//     const newEmbed = new EmbedBuilder(msg.embeds[0]);
 //     newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
 //     msg.edit({ embeds: [newEmbed] });
 

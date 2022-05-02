@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, Colors, Embed, TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, Colors, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
         throw new CommandError("You cannot ban a staff member or bot.");
     }
 
-    const bannedEmbed = new Embed()
+    const bannedEmbed = new EmbedBuilder()
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription("You have been banned from the twenty one pilots Discord server")
         .addFields({ name: "Reason", value: reason || "None provided" })
@@ -53,12 +53,12 @@ command.setHandler(async (ctx) => {
 
     await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
     await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
-    await ctx.send({ embeds: [new Embed({ description: `${member.toString()} was banned.` }).toJSON()] });
+    await ctx.send({ embeds: [new EmbedBuilder({ description: `${member.toString()} was banned.` }).toJSON()] });
 
     sendToBanLog(ctx, bannedEmbed);
 });
 
-async function sendToBanLog(ctx: typeof command.ContextType, bannedEmbed: Embed) {
+async function sendToBanLog(ctx: typeof command.ContextType, bannedEmbed: EmbedBuilder) {
     const banLogChannel = (await ctx.guild.channels.fetch(channelIDs.banlog)) as TextChannel;
     await banLogChannel.send({ embeds: [bannedEmbed] });
 }

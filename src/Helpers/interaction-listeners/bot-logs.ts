@@ -1,4 +1,4 @@
-import { Embed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { createInteractionListener } from "../../Structures/ListenerInteraction";
 
 const [name, interaction, genCustomId] = createInteractionListener("botLog", <const>[], async (ctx, args) => {
@@ -11,7 +11,7 @@ const [name, interaction, genCustomId] = createInteractionListener("botLog", <co
     });
 
     await thread.send({
-        embeds: [new Embed({ description: `${ctx.member} requested more information about this item` })]
+        embeds: [new EmbedBuilder({ description: `${ctx.member} requested more information about this item` })]
     });
 });
 

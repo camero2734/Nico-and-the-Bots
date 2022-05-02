@@ -11,7 +11,7 @@ import { ReactionListener } from "./ListenerReaction";
 export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,
     HandlerArgs extends any[] = []
-> {
+    > {
     public interactionListeners = new Collection<string, InteractionListener>();
     public reactionListeners = new Collection<string, ReactionListener>();
 

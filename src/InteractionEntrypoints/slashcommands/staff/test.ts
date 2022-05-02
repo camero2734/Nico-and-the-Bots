@@ -1,4 +1,4 @@
-import { ActionRow, Modal, TextInputComponent } from "@discordjs/builders";
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { TextInputStyle } from "discord-api-types/payloads/v9";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -15,14 +15,14 @@ const MODAL_FIELDS = <const>{
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    const modal = new Modal().setTitle("My Awesome Form").setCustomId(genModalId({}));
+    const modal = new ModalBuilder().setTitle("My Awesome Form").setCustomId(genModalId({}));
 
-    const inputComponent = new TextInputComponent()
+    const inputComponent = new TextInputBuilder()
         .setCustomId(`${MODAL_FIELDS.TV_FIELD}`)
         .setLabel("Say something")
         .setStyle(TextInputStyle.Short);
 
-    modal.setComponents(new ActionRow<TextInputComponent>().addComponents(inputComponent));
+    modal.setComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(inputComponent));
 
     ctx.showModal(modal);
 });

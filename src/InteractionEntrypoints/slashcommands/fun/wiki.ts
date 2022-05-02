@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import WikiJS from "wikijs";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
 
     if (!condensedSummary || !url || !title) throw new CommandError("Unable to find page info");
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: title, iconURL: wikipediaLogo, url: url })
         .setColor(0xaaacae)
         .setDescription(condensedSummary);

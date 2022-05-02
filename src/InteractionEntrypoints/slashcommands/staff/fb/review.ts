@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -19,7 +19,7 @@ command.setHandler(async (ctx) => {
 
     const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
 
-    const embed = new Embed().setAuthor({
+    const embed = new EmbedBuilder().setAuthor({
         name: "Firebreather Application Review Queue",
         iconURL: fbRole?.iconURL() || undefined
     });

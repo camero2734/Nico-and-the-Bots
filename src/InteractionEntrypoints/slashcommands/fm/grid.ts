@@ -1,6 +1,6 @@
 import { createCanvas, Image, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType, Colors } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType, Colors } from "discord.js";
 import fetch from "node-fetch";
 import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -91,7 +91,7 @@ command.setHandler(async (ctx) => {
     }
 
     const lastFMIcon = "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png";
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: username, iconURL: lastFMIcon, url: `https://www.last.fm/user/${username}` })
         .setImage("attachment://chart.png")
         .setColor(Colors.Red)

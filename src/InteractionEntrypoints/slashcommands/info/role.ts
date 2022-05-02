@@ -1,4 +1,4 @@
-import { Embed, Snowflake, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, Snowflake, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -21,7 +21,7 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     const roles = Object.values(ctx.opts).filter((r): r is Snowflake => !!r);
 
-    const embeds: Embed[] = [];
+    const embeds: EmbedBuilder[] = [];
 
     await ctx.guild.members.fetch();
 
@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
         const role = await ctx.channel.guild.roles.fetch(roleID);
         if (!role) continue;
 
-        const embed = new Embed();
+        const embed = new EmbedBuilder();
         embed.setTitle(role.name);
         embed.setColor(role.color);
         embed.addFields({ name: "Hex", value: role.hexColor });

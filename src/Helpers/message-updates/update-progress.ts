@@ -1,5 +1,5 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { Message, Embed, MessageOptions, Colors } from "discord.js";
+import { Message, EmbedBuilder, MessageOptions, Colors } from "discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -31,7 +31,7 @@ const generateProgressBar = (): [string, boolean] => {
     return [`${startEmoji}${progress}${endEmoji}\u200b`, elapsedTime > totalTime];
 };
 
-const standardizeEmbed = (embed: Embed): void => {
+const standardizeEmbed = (embed: EmbedBuilder): void => {
     embed.setFields();
     embed
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
@@ -50,7 +50,7 @@ const standardizeEmbed = (embed: Embed): void => {
 const initialMessage = async (): Promise<MessageOptions> => {
     const [progress] = generateProgressBar();
 
-    const embed = new Embed().setDescription(progress);
+    const embed = new EmbedBuilder().setDescription(progress);
     standardizeEmbed(embed);
 
     return {
@@ -62,13 +62,13 @@ const update = async (msg: Message) => {
     const [progress, isDone] = generateProgressBar();
 
     if (!isDone) {
-        const embed = msg.embeds[0];
+        const embed = EmbedBuilder.from(msg.embeds[0]);
         embed.setDescription(progress);
         standardizeEmbed(embed);
 
         await msg.edit({ embeds: [embed] });
     } else {
-        const embed = msg.embeds[0];
+        const embed = EmbedBuilder.from(msg.embeds[0]);
         embed.setDescription(progress);
         standardizeEmbed(embed);
         embed.setFields();

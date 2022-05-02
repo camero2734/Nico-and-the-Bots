@@ -10,7 +10,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt update
 
 RUN apt install -y git-crypt postgresql-client-14 pv
-RUN npm i -g pm2
+RUN npm i -g pm2 is-ci husky gen-esm-wrapper typescript@latest rimraf npm-run-all
 
 # NPM packages
 COPY yarn.lock package.json ./
@@ -21,9 +21,10 @@ COPY . .
 
 # Unlock git-crypt
 ARG CRYPT64
-RUN ls .git || echo "not found"
 RUN echo $CRYPT64 | base64 -d >> gc.key
+RUN git -c user.name='A' -c user.email='a@a.co' stash 
 RUN git-crypt unlock gc.key
+RUN git -c user.name='A' -c user.email='a@a.co' stash pop
 RUN rm gc.key
 
 # Whether or not to pull the production DB

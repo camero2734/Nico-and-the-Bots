@@ -1,7 +1,7 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedSource } from "../source";
 import { IVideo, TTScraper } from "tiktok-scraper-ts";
 import { MessageOptions } from "discord.js";
-import { Embed } from "@discordjs/builders";
+import { EmbedBuilder } from "@discordjs/builders";
 import secrets from "../../../Configuration/secrets";
 
 interface ITiktokSourceInput extends ITopfeedSourceInput {
@@ -35,7 +35,7 @@ export class TiktokSource extends TopfeedSource {
     private async generatePost(post: IVideo): Promise<ITopfeedPost> {
         const title = `New Tiktok Post from ${this.displayName}`;
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setDescription(post.description || "*No caption*")
             .setImage(post.cover || null)
             .setColor(0xfe2c55)

@@ -1,4 +1,4 @@
-import { ActionRow, Embed, Guild, Role, SelectMenuComponent, SelectMenuOption } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuBuilder, SelectMenuComponent, SelectMenuOptionBuilder } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
@@ -16,11 +16,11 @@ command.setHandler(async (ctx) => {
     const concertsByCountry = getConcertsByCountry(ctx.guild);
 
     const countries = Object.keys(concertsByCountry).map((k) => ({ name: k, count: concertsByCountry[k].length }));
-    const countrySelectMenu = new SelectMenuComponent()
+    const countrySelectMenu = new SelectMenuBuilder()
         .addOptions(
-            ...countries.map(
+            countries.map(
                 (c) =>
-                    new SelectMenuOption({
+                    new SelectMenuOptionBuilder({
                         label: F.titleCase(c.name.split("-").join(" ")),
                         value: c.name,
                         description: `${c.count} concert${F.plural(c.count)}`
@@ -29,16 +29,16 @@ command.setHandler(async (ctx) => {
         )
         .setPlaceholder("Select a country")
         .setCustomId(genSelectCountryId({}));
-    const temporaryConcertSelectMenu = new SelectMenuComponent()
-        .addOptions(new SelectMenuOption({ label: "Dummy option", value: "Dummy value", description: "Dummy" }))
+    const temporaryConcertSelectMenu = new SelectMenuBuilder()
+        .addOptions([new SelectMenuOptionBuilder({ label: "Dummy option", value: "Dummy value", description: "Dummy" })])
         .setPlaceholder("❌ Select a country first")
         .setDisabled(true)
         .setCustomId("selectConcert");
 
-    const countryActionRow = new ActionRow().setComponents(countrySelectMenu);
-    const concertActionRow = new ActionRow().setComponents(temporaryConcertSelectMenu);
+    const countryActionRow = new ActionRowBuilder().setComponents(countrySelectMenu);
+    const concertActionRow = new ActionRowBuilder().setComponents(temporaryConcertSelectMenu);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("🧙 Concert Selection Wizard")
         .setDescription(
             "Please select your country below, and then the concert(s) you wish to attend. Selecting a concert that you already have will remove it."
@@ -50,7 +50,8 @@ command.setHandler(async (ctx) => {
 const genSelectCountryId = command.addInteractionListener("selectCountry", <const>[], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
 
-    const [countryActionRow, concertActionRow] = ctx.message.components;
+    const [countryActionRowCom, concertActionRowCom] = ctx.message.components;
+
 
     const concertsByCountry = getConcertsByCountry(ctx.guild);
     const country = ctx.values[0];
@@ -58,11 +59,11 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
 
     if (!concerts) throw new Error("Invalid country");
 
-    const concertSelectMenu = new SelectMenuComponent()
+    const concertSelectMenu = new SelectMenuBuilder()
         .addOptions(
-            ...concerts.map(
+            concerts.map(
                 (c) =>
-                    new SelectMenuOption({
+                    new SelectMenuOptionBuilder({
                         label: c.name,
                         value: c.concert.id,
                         description: c.concert.venue.location
@@ -73,16 +74,18 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
         .setMaxValues(concerts.length)
         .setCustomId(genSelectConcertId({ country }));
 
-    console.log(concertActionRow);
-
-    concertActionRow.components.splice(0, 1);
-    concertActionRow.addComponents(concertSelectMenu);
+    const concertActionRow = new ActionRowBuilder()
+        .setComponents(concertSelectMenu);
 
     // Update placeholder of first select menu to reflect country choice
     const placeholder = `${F.titleCase(country.split("-").join(" "))} selected`;
-    (countryActionRow.components[0] as SelectMenuComponent).setPlaceholder(placeholder);
 
-    await ctx.update({ components: ctx.message.components });
+    const countrySelect = concertActionRowCom.components[0] as SelectMenuComponent
+    const countryActionRow = new ActionRowBuilder().setComponents(
+        SelectMenuBuilder.from({ ...countrySelect.data, placeholder })
+    );
+
+    await ctx.update({ components: [countryActionRow, concertActionRow] });
 });
 
 const genSelectConcertId = command.addInteractionListener("selectConcert", <const>["country"], async (ctx, args) => {
@@ -110,7 +113,7 @@ const genSelectConcertId = command.addInteractionListener("selectConcert", <cons
 
     const description = [gave, removed].filter((s) => s).join("\n\n");
 
-    const embed = new Embed().setTitle("🧙 Concert Selection Wizard").setDescription(description);
+    const embed = new EmbedBuilder().setTitle("🧙 Concert Selection Wizard").setDescription(description);
 
     await ctx.update({ embeds: [embed], components: [] });
 });

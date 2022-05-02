@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { userIDs } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -48,7 +48,7 @@ command.setHandler(async (ctx) => {
     const member = await ctx.guild.members.fetch(user);
     if (!member) throw new CommandError("Couldn't find that member");
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setColor(member.displayColor)
         .setTitle("Edit successful");

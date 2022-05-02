@@ -1,5 +1,5 @@
 import { channelIDs } from "../../../Configuration/config";
-import { Embed, TextChannel, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, TextChannel, ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
@@ -23,7 +23,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const { title, details } = ctx.opts;
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: `Suggestion from ${ctx.member.displayName}`, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(ctx.member.displayColor)
         .setTitle(title)
@@ -33,7 +33,7 @@ command.setHandler(async (ctx) => {
 
     await suggestChan.send({ embeds: [embed] });
 
-    const responseEmbed = new Embed({ description: "Your suggestion has been submitted!" });
+    const responseEmbed = new EmbedBuilder({ description: "Your suggestion has been submitted!" });
     await ctx.send({ embeds: [responseEmbed] });
 });
 

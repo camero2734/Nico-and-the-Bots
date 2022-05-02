@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
 
     const response = responses[Math.floor(Math.random() * responses.length)];
 
-    const embed = new Embed();
+    const embed = new EmbedBuilder();
 
     await F.wait(2000);
 

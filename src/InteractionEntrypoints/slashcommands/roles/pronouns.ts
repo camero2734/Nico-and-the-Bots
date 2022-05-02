@@ -1,4 +1,4 @@
-import { ActionRow, Embed, SelectMenuComponent, SelectMenuOption, Snowflake } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -10,21 +10,21 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-    const selectMenu = new SelectMenuComponent()
+    const selectMenu = new SelectMenuBuilder()
         .setCustomId(genSelectId({}))
         .setMaxValues(Object.keys(roles.pronouns).length)
         .setPlaceholder("Select your pronoun role(s) from the list")
         .addOptions(
-            ...Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOption({ label: name, value: id }))
+            Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOptionBuilder({ label: name, value: id }))
         );
 
-    const selectEmbed = new Embed()
+    const selectEmbed = new EmbedBuilder()
         .setTitle("Select your pronoun role(s)")
         .setDescription(
             `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
         );
 
-    const actionRow = new ActionRow().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });
@@ -44,7 +44,7 @@ const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[
     // Give the pronoun roles mentioned
     for (const r of rolesSelected) await ctx.member.roles.add(r);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.user.displayAvatarURL() })
         .setDescription(`Your pronoun roles have been updated!`);
 

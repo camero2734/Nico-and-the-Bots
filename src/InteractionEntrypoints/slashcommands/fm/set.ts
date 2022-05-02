@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Colors, Embed } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder } from "discord.js";
 import fetch from "node-fetch";
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
@@ -25,7 +25,7 @@ command.setHandler(async (ctx) => {
     const fmUsername = ctx.opts.username;
     if (!fmUsername) {
         // prettier-ignore
-        const instructions =  
+        const instructions =
             `**To set up your fm account:**
 
             \`1.\` Go to <https://www.last.fm/> and set up your fm account.
@@ -37,9 +37,9 @@ command.setHandler(async (ctx) => {
             /fm set nico
             \`\`\`
 
-            \`4.\` The \`/fm now\` command should now work properly and display what you are currently listening to!`.replace(/^ +/gm,"");
+            \`4.\` The \`/fm now\` command should now work properly and display what you are currently listening to!`.replace(/^ +/gm, "");
         await ctx.send({
-            embeds: [new Embed({ description: instructions, color: Colors.Red })]
+            embeds: [new EmbedBuilder({ description: instructions, color: Colors.Red })]
         });
         return;
     }
@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
     const lastTrack = await getMostRecentTrack(ctx.opts.username);
     const avatar = ctx.user.displayAvatarURL();
 
-    let trackEmbed = new Embed()
+    let trackEmbed = new EmbedBuilder()
         .setAuthor({ name: fmUsername, iconURL: avatar, url: `https://www.last.fm/user/${fmUsername}` })
         .setTitle(`You have not scrobbled any songs yet. Is this your profile?`)
         .setDescription(
@@ -65,7 +65,7 @@ command.setHandler(async (ctx) => {
         .setFooter({ text: "Respond with yes or no" });
 
     if (lastTrack?.name) {
-        trackEmbed = new Embed()
+        trackEmbed = new EmbedBuilder()
             .setAuthor({ name: fmUsername, iconURL: avatar, url: `https://www.last.fm/user/${fmUsername}` })
             .setTitle("This is your most recently scrobbled song. Does this look correct?")
             .addFields({ name: "Track", value: lastTrack.name, inline: true })
@@ -79,9 +79,9 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
-        new ButtonComponent().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
+        new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
     );
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });
@@ -89,7 +89,7 @@ command.setHandler(async (ctx) => {
     const [buttonPressed] = await timedListener.wait();
 
     if (buttonPressed !== yesId) {
-        const failEmbed = new Embed({ description: "Setting FM username cancelled." });
+        const failEmbed = new EmbedBuilder({ description: "Setting FM username cancelled." });
         await ctx.editReply({ embeds: [failEmbed], components: [] });
         return;
     }
@@ -101,7 +101,7 @@ command.setHandler(async (ctx) => {
     });
 
     await ctx.send({
-        embeds: [new Embed({ description: `Succesfully updated your FM username to \`${fmUsername}\`` })],
+        embeds: [new EmbedBuilder({ description: `Succesfully updated your FM username to \`${fmUsername}\`` })],
         components: []
     });
 

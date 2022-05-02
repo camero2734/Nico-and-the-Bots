@@ -14,7 +14,7 @@ class FileReact implements BaseReactType {
         public reactWith: EmojiIdentifierResolvable[],
         public typeCheck: (extension: string, mime: string) => boolean,
         public checkRawURLs = false
-    ) {}
+    ) { }
     public static MimeCheck(mimes: string[]) {
         return (extension: string, mime: string): boolean => {
             return mimes.some((uMime) => mime.startsWith(uMime.toLowerCase()));
@@ -28,7 +28,7 @@ class FileReact implements BaseReactType {
 
     appliesTo(msg: Message): boolean {
         const files: { url?: string | undefined }[] = [...msg.attachments.values()];
-        if (this.checkRawURLs) files.push(...msg.embeds); // If a url is used, then it gets embedded (usually)
+        if (this.checkRawURLs) files.push(...msg.embeds.map(e => e.data)); // If a url is used, then it gets embedded (usually)
         return files.some((f) => f.url && this.checkFile(f.url));
     }
 
@@ -45,7 +45,7 @@ class FileReact implements BaseReactType {
 
 class MessageReact implements BaseReactType {
     reactTo: "Message";
-    constructor(public reactWith: EmojiIdentifierResolvable[], public roles: Snowflake[] = []) {}
+    constructor(public reactWith: EmojiIdentifierResolvable[], public roles: Snowflake[] = []) { }
     appliesTo(msg: Message): boolean {
         if (this.roles.length === 0) return true;
         return this.roles.some((r) => msg.member?.roles.cache.has(r));
@@ -56,7 +56,7 @@ type AnyReact = FileReact | MessageReact;
 
 class ChannelReactions {
     reacts: AnyReact[] = [];
-    constructor(public channel: Snowflake, public includeThreads = false) {}
+    constructor(public channel: Snowflake, public includeThreads = false) { }
     addReactions(reacts: AnyReact[]): this {
         this.reacts.push(...reacts);
         return this;

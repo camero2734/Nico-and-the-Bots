@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -100,7 +100,7 @@ command.setHandler(async (ctx) => {
 
     console.log(thumbnail);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
         .addFields({ name: "Track", value: trackField, inline: true })
@@ -114,11 +114,11 @@ command.setHandler(async (ctx) => {
             url: `https://www.last.fm/user/${username}`
         });
 
-    const starActionRow = new ActionRow();
+    const starActionRow = new ActionRowBuilder();
 
     // Add star button if own FM
     if (selfFM) {
-        const starButton = new ButtonComponent()
+        const starButton = new ButtonBuilder()
             .setLabel("0")
             .setStyle(ButtonStyle.Secondary)
             .setEmoji({ name: "⭐" })
@@ -132,7 +132,7 @@ command.setHandler(async (ctx) => {
     }).catch(() => null);
     const trackUrl = spotifyResults?.body.tracks?.items?.[0]?.external_urls.spotify;
     if (trackUrl) {
-        const spotifyButton = new ButtonComponent()
+        const spotifyButton = new ButtonBuilder()
             .setEmoji({ id: emojiIDs.spotify })
             .setLabel("Listen")
             .setStyle(ButtonStyle.Link)
@@ -142,7 +142,7 @@ command.setHandler(async (ctx) => {
 
     const geniusResult = await GeniusClient.getSong([trackName, artistName].join(" "));
     if (geniusResult) {
-        const geniusButton = new ButtonComponent()
+        const geniusButton = new ButtonBuilder()
             .setEmoji({ id: emojiIDs.genius })
             .setLabel("Lyrics")
             .setStyle(ButtonStyle.Link)

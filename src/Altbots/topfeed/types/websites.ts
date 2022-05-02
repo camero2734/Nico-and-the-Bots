@@ -1,12 +1,12 @@
 import crypto from "crypto";
 import * as Diff from "diff";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonStyle,
-    Embed,
+    EmbedBuilder,
     Message,
-    MessageAttachment,
+    Attachment,
     MessageOptions,
     Snowflake
 } from "discord.js";
@@ -110,7 +110,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .join(", ");
         const file = obj.VISUAL?._data.image || undefined;
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setAuthor({
                 name: `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
                 iconURL: this.client.user?.displayAvatarURL(),
@@ -119,21 +119,21 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDescription(desc)
             .setFooter({ text: `${hashes}` });
 
-        const actionRow = new ActionRow().setComponents(
-            new ButtonComponent().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
+        const actionRow = new ActionRowBuilder().setComponents(
+            new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
         );
 
         if (file) {
-            const att = new MessageAttachment(file, "file.png");
+            const att = new Attachment(file, "file.png");
             embed.setImage("attachment://file.png");
             return [[{ embeds: [embed], files: [att], components: [actionRow] }]];
         } else return [[{ embeds: [embed], components: [actionRow] }]];
     }
 
     override async afterCheck(msg: Message): Promise<void> {
-        const actionRow = msg.components[0];
+        const actionRow = ActionRowBuilder.from(msg.components[0]);
 
-        const newButton = new ButtonComponent()
+        const newButton = new ButtonBuilder()
             .setStyle(ButtonStyle.Link)
             .setURL("https://google.com")
             .setDisabled(true)
@@ -145,10 +145,10 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const savedUrl = await this.#archivePage(this.url);
 
-        actionRow.components.splice(actionRow.components.length - 1, 1);
+        actionRow["components"].splice(actionRow["components"].length - 1, 1);
         if (savedUrl) {
             actionRow.addComponents(
-                new ButtonComponent().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
+                new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
             );
         }
         await msg.edit({ components: msg.components });

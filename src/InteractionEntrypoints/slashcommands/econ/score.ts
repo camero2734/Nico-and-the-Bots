@@ -1,7 +1,7 @@
 import { createCanvas, loadImage } from "canvas";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, Snowflake, ApplicationCommandOptionType, Embed, MessageAttachment } from "discord.js";
+import { GuildMember, Snowflake, ApplicationCommandOptionType, EmbedBuilder, Attachment } from "discord.js";
 import { badgeLoader, LevelCalculator } from "../../../Helpers";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { prisma, queries } from "../../../Helpers/prisma-init";
@@ -31,7 +31,7 @@ command.setHandler(async (ctx) => {
     const buffer = await generateScoreCard(member);
     await ctx.editReply({
         embeds: [],
-        files: [new MessageAttachment(buffer, "score.png")]
+        files: [new Attachment(buffer, "score.png")]
     });
 });
 

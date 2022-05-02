@@ -1,6 +1,6 @@
 import { BishopType, ViolationType } from "@prisma/client";
-import { createCanvas, loadImage } from "canvas";
-import { GuildMember, MessageAttachment, Embed, TextChannel } from "discord.js";
+import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
+import { GuildMember, Attachment, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -112,14 +112,14 @@ export async function sendViolationNotice(
     // Allow user to see channel
     await chan.permissionOverwrites.create(member.id, { ViewChannel: true });
 
-    const transmissionEmbed = new Embed().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
+    const transmissionEmbed = new EmbedBuilder().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
     const m = await chan.send({
         content: `${member}`,
         embeds: [transmissionEmbed],
         allowedMentions: canSee ? { parse: [] } : {}
     });
     for (let i = 0; i < 5; i++) {
-        const description = transmissionEmbed.description as string;
+        const description = transmissionEmbed.data.description as string;
         transmissionEmbed.setDescription(description.trim() + F.randomizeLetters(".      " as string, 0.1));
         await F.wait(1000);
         await m.edit({ embeds: [transmissionEmbed] });
@@ -132,7 +132,7 @@ export async function sendViolationNotice(
         embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")],
         allowedMentions: canSee ? { parse: [] } : {}
     });
-    await chan.send({files: [new MessageAttachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)]}); // prettier-ignore
+    await chan.send({ files: [new Attachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)] }); // prettier-ignore
 }
 
 function formatInfractionNumber(infractionNo: number) {

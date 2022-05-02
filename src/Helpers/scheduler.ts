@@ -19,7 +19,7 @@ import {
     Collection,
     Guild,
     GuildMember,
-    Embed,
+    EmbedBuilder,
     MessageOptions,
     Snowflake,
     TextChannel,
@@ -107,7 +107,7 @@ async function checkMutes(guild: Guild): Promise<void> {
             await member.roles.remove(roles.muted);
             await member.roles.add(roles.banditos);
 
-            const embed = new Embed({ description: "Your mute has ended." });
+            const embed = new EmbedBuilder({ description: "Your mute has ended." });
             tryToDM(member, { embeds: [embed] });
         } catch (e) {
             console.log(e, mute.mutedUserId, /UNABLE_TO_UNMUTE/);
@@ -129,7 +129,7 @@ async function checkReminders(guild: Guild): Promise<void> {
             const member = await guild.members.fetch(rem.userId as Snowflake);
 
             const dm = await member.createDM();
-            const embed = new Embed().setTitle("Your Reminder").setDescription(rem.text).setTimestamp(rem.createdAt);
+            const embed = new EmbedBuilder().setTitle("Your Reminder").setDescription(rem.text).setTimestamp(rem.createdAt);
 
             await dm.send({ embeds: [embed] });
         } catch (e) {

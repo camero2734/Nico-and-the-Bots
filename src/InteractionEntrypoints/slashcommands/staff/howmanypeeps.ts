@@ -1,5 +1,5 @@
 import { subHours } from "date-fns";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
 
     const count = await prisma.user.count({ where: { joinedAt: { gte: after } } });
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle(`In the last ${hours} hours...`)
         .setDescription(`**${count}** user${F.plural(count)} joined`);
 

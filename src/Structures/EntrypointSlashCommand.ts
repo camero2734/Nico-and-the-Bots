@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { APIMessageComponentEmoji } from "discord-api-types/v9";
+import { APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
     ApplicationCommandOptionData,
     AutocompleteInteraction,
@@ -9,7 +9,7 @@ import {
     Guild,
     GuildMember,
     Message,
-    ButtonComponent,
+    ButtonBuilder,
     MessageOptions,
     Snowflake,
     TextChannel,
@@ -19,7 +19,9 @@ import {
     ApplicationCommandOptionType,
     ButtonStyle,
     ComponentType,
-    ActionRow
+    ActionRowBuilder,
+    ButtonComponent,
+    MessagePayload
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
@@ -74,7 +76,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         const ctx = interaction as SlashCommandInteraction<T>;
         ctx.send = async (payload) => {
             if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
-            else return ctx.reply(payload as InteractionReplyOptions);
+            else return ctx.reply(payload as unknown as MessagePayload) as unknown as Promise<Message<boolean>>;
         };
         ctx.opts =
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
@@ -168,10 +170,11 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 return;
             }
 
-            const getMessageButtonWithEmoji = (name: string): ButtonComponent | undefined => {
-                return actionRow.components.find(
+            const getMessageButtonWithEmoji = (name: string): ButtonBuilder | undefined => {
+                const btn = actionRow.components.find(
                     (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name)
                 ) as ButtonComponent;
+                return ButtonBuilder.from(btn);
             };
             const upvoteButton = getMessageButtonWithEmoji("upvote");
             const downvoteButton = getMessageButtonWithEmoji("downvote");
@@ -202,13 +205,13 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 }
             });
 
-            return new ActionRow().setComponents(
-                new ButtonComponent()
+            return new ActionRowBuilder().setComponents(
+                new ButtonBuilder()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "1", pollID: `${poll.id}` }))
                     .setEmoji({ id: emojiIDs.upvote }),
-                new ButtonComponent()
+                new ButtonBuilder()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))

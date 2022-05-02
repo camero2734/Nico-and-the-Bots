@@ -1,16 +1,16 @@
 import { DailyBox, User } from "@prisma/client";
 import { format } from "date-fns";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonStyle,
-    Embed,
+    EmbedBuilder,
     GuildMember,
     Message,
     MessageComponentInteraction,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuInteraction,
-    SelectMenuOption
+    SelectMenuOptionBuilder
 } from "discord.js";
 import fs from "fs";
 import { channelIDs, roles } from "../../../Configuration/config";
@@ -37,21 +37,20 @@ command.setHandler(async (ctx) => {
     const wrapXML = (xml: string) => `\`\`\`xml\n${xml}\n\`\`\``;
 
     // prettier-ignore
-    const description = wrapXML([ 
-            `<SYSTEM> Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
-            "<SYSTEM> B4ND170S connected from 153.98.64.214. Connection unstable.",
-            "<B4ND170S> We have &eft suppl&es%^round DEMA. Yo> must evade them;.. You cannot get?caught."
-        ].join("\n\n")
+    const description = wrapXML([
+        `<SYSTEM> Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
+        "<SYSTEM> B4ND170S connected from 153.98.64.214. Connection unstable.",
+        "<B4ND170S> We have &eft suppl&es%^round DEMA. Yo> must evade them;.. You cannot get?caught."
+    ].join("\n\n")
     );
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
         .addFields({
             name: "**Tokens**",
-            value: `You have ${tokens} token${
-                tokens === 1 ? "" : "s"
-            } available. A token is used when searching a district.`
+            value: `You have ${tokens} token${tokens === 1 ? "" : "s"
+                } available. A token is used when searching a district.`
         })
         .addFields({ name: "**CONSOLE**", value: description })
         .setColor(0xfce300)
@@ -62,7 +61,7 @@ command.setHandler(async (ctx) => {
 
     const options = districts.map(
         (d, idx) =>
-            new SelectMenuOption({
+            new SelectMenuOptionBuilder({
                 label: `DST. ${d.bishop.toUpperCase()}`,
                 description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
                 value: `${idx}`,
@@ -70,15 +69,15 @@ command.setHandler(async (ctx) => {
             })
     );
 
-    const menu = new SelectMenuComponent()
-        .addOptions(...options)
+    const menu = new SelectMenuBuilder()
+        .addOptions(options)
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new ActionRow().setComponents(menu);
+    const actionRow = new ActionRowBuilder().setComponents(menu);
 
-    const buttonActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
+    const buttonActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
     );
 
     await ctx.editReply({
@@ -105,7 +104,7 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
     if (!dbUser.dailyBox || !tokens) {
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setDescription("You don't have any tokens! Use the `/econ daily` command to get some.")
             .setThumbnail("attachment://file.gif");
         await ctx.editReply({
@@ -134,7 +133,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
@@ -187,7 +186,7 @@ async function memberCaught(
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setColor(0xea523b)
         .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
         .setAuthor({ name: district.bishop, iconURL: emojiURL })
@@ -214,9 +213,8 @@ async function memberWon(
     dbUserWithBox: User & { dailyBox: DailyBox }
 ) {
     const prize = district.pickPrize();
-    const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${
-        dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
-    } remaining`;
+    const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
+        } remaining`;
     const member = ctx.member as GuildMember;
 
     let prizeDescription = `You now have ${dbUserWithBox.credits} credits.`;
@@ -253,7 +251,7 @@ async function memberWon(
 
     const prizeName = getPrizeName(prize);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
@@ -275,7 +273,7 @@ async function memberWon(
 
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
     const reply = (await interaction.fetchReply()) as Message;
-    const originalEmbed = reply.embeds[0];
+    const originalEmbed = EmbedBuilder.from(reply.embeds[0]);
     originalEmbed.setFields();
     originalEmbed
         .setDescription(description)

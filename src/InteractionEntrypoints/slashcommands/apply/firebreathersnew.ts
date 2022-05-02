@@ -1,4 +1,4 @@
-import { ActionRow, ButtonComponent, Embed, Modal, TextInputComponent } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
     Colors,
@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
 });
 
 async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions & MessageEditOptions> {
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("Your Firebreathers Application")
         .setDescription(
             `Please fill out all parts below. You may go back and review your answers at any time before submitting.\
@@ -96,19 +96,19 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
         let sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
         if (!sectionFinished) allFinished = false;
 
-        return new ButtonComponent()
+        return new ButtonBuilder()
             .setLabel(label)
             .setCustomId(genOpenModalId({ idx: idx.toString() }))
             .setStyle(sectionFinished ? ButtonStyle.Secondary : ButtonStyle.Primary);
     });
 
-    const submitButton = new ButtonComponent()
+    const submitButton = new ButtonBuilder()
         .setLabel("Submit")
         .setStyle(ButtonStyle.Success)
         .setCustomId(genSubmitApplicationId({}))
         .setDisabled(!allFinished);
 
-    const actionRow = new ActionRow<ButtonComponent>().setComponents(...buttons, submitButton);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(...buttons, submitButton);
 
     return { components: [actionRow], embeds: [embed], ephemeral: true };
 }
@@ -121,12 +121,12 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
 
     const prevAnswers = await getPreviousAnswers(ctx.user.id);
 
-    const modal = new Modal()
+    const modal = new ModalBuilder()
         .setTitle("Firebreathers Application")
         .setCustomId(genSubmitModalId({ name: ctx.component.label }));
 
     const textFields = Object.entries(formPart).map(([id, question]) => {
-        return new TextInputComponent()
+        return new TextInputBuilder()
             .setCustomId(id)
             .setLabel(question.question)
             .setPlaceholder(question.placeholder)
@@ -134,7 +134,7 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
             .setValue(prevAnswers[id]);
     });
 
-    const wrappedTextFields = textFields.map((x) => new ActionRow<TextInputComponent>().addComponents(x));
+    const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputBuilder>().addComponents(x));
 
     modal.setComponents(...wrappedTextFields);
 
@@ -169,11 +169,11 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>
         }
     });
 
-    return ctx.update(await MainMenuPayload(ctx.user.id));
+    ctx.update(await MainMenuPayload(ctx.user.id));
 });
 
 const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("FB Application Submitted!")
         .setDescription(
             "Thank you for submitting your application for the Firebreathers role. Staff members will review your application and make a decision as soon as possible.\n\nIn the mean time, I encourage you to listen to Clear."

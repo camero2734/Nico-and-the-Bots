@@ -1,5 +1,5 @@
 import { startOfDay } from "date-fns";
-import { DiscordAPIError, Message, Embed, MessageReference, Snowflake, TextChannel } from "discord.js";
+import { DiscordAPIError, Message, EmbedBuilder, MessageReference, Snowflake, TextChannel } from "discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 
@@ -125,7 +125,7 @@ async function onEarnPoint(msg: Message, dbUser: User): Promise<Parameters<typeo
             where: { userId_type: { userId: dbUser.id, type: "LevelCredits" } }
         }));
 
-        const lvlEmbed = new Embed({ description: `LEVEL UP: You are now level ${userLevel}!` });
+        const lvlEmbed = new EmbedBuilder({ description: `LEVEL UP: You are now level ${userLevel}!` });
 
         if (hasPerk) {
             const randomReward = Math.floor(Math.random() * 1500) + 201;

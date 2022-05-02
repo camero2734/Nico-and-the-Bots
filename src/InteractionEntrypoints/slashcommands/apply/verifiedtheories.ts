@@ -1,9 +1,9 @@
 import {
-    ActionRow,
+    ActionRowBuilder,
     MessageActionRowComponent,
-    ButtonComponent,
+    ButtonBuilder,
     ButtonStyle,
-    Embed,
+    EmbedBuilder,
     GuildMember,
     Message,
     TextChannel
@@ -47,7 +47,7 @@ command.setHandler(async (ctx) => {
     }
 
     // Ensure they're ready to take the quiz
-    const initialEmbed = new Embed()
+    const initialEmbed = new EmbedBuilder()
         .setTitle("Verified Theories Quiz")
         .setDescription(
             [
@@ -72,19 +72,19 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
     const [beginId, cancelId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
-        new ButtonComponent().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
+        new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
     );
 
     await dmMessage.edit({ components: [actionRow] });
 
-    const dmActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
+    const dmActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
     );
 
     await ctx.send({
-        embeds: [new Embed().setDescription("The quiz was DM'd to you!").toJSON()],
+        embeds: [new EmbedBuilder().setDescription("The quiz was DM'd to you!").toJSON()],
         components: [dmActionRow]
     });
 
@@ -94,7 +94,7 @@ command.setHandler(async (ctx) => {
 
     if (buttonPressed !== beginId) {
         await dmMessage.edit({
-            embeds: [new Embed().setDescription("Okay, you may restart the quiz at any time.")],
+            embeds: [new EmbedBuilder().setDescription("Okay, you may restart the quiz at any time.")],
             components: []
         });
         return;
@@ -125,7 +125,9 @@ const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, a
     await ctx.deferUpdate();
 
     const actionRow = ctx.message.components[0];
-    actionRow.components.forEach((c) => c.setDisabled?.(true));
+    actionRow.components.map(c => {
+        return { ...c.data, disabled: true };
+    })
 
     await ctx.editReply({ components: [actionRow] }); // Remove buttons to prevent multiple presses
 
@@ -164,7 +166,7 @@ async function generateEmbedAndButtons(
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
     member: GuildMember
-): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
+): Promise<[EmbedBuilder, ActionRowBuilder<MessageActionRowComponent>[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
@@ -172,7 +174,7 @@ async function generateEmbedAndButtons(
     if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, member);
 
     const newQuestion = questionList[newIndex];
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: `Question ${newIndex + 1} / ${numQs}` })
         .setTitle("Verified Theories Quiz")
         .setDescription(newQuestion.question)
@@ -181,7 +183,7 @@ async function generateEmbedAndButtons(
     // Update variables and encode into buttons' customIDs
     const components = F.shuffle(
         newQuestion.answers.map((answer, idx) => {
-            return new ButtonComponent()
+            return new ButtonBuilder()
                 .setLabel(answer)
                 .setStyle(ButtonStyle.Primary)
                 .setCustomId(
@@ -195,7 +197,7 @@ async function generateEmbedAndButtons(
         })
     );
 
-    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRow().setComponents(...cs));
+    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRowBuilder().setComponents(...cs));
 
     return [embed, actionRows];
 }
@@ -204,11 +206,11 @@ async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     member: GuildMember
-): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
+): Promise<[EmbedBuilder, ActionRowBuilder<MessageActionRowComponent>[]]> {
     const answers = answerEncode.answerIndices;
 
     // Send to staff channel
-    const staffEmbed = new Embed().setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
+    const staffEmbed = new EmbedBuilder().setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
 
     let incorrect = 0;
     for (const q of questionList) {
@@ -242,14 +244,13 @@ async function sendFinalEmbed(
     }
 
     // Send embed to normal user
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle(`${correct}/${questionList.length} correct`)
         .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
-            `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
-                passed
-                    ? `You can now access <#${channelIDs.verifiedtheories}>`
-                    : `You may apply again in ${hours} hours.`
+            `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
+                ? `You can now access <#${channelIDs.verifiedtheories}>`
+                : `You may apply again in ${hours} hours.`
             }`
         );
 

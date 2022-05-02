@@ -1,4 +1,4 @@
-import { ActionRow, ButtonComponent, EmbedBuilder, Modal, TextInputComponent } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Modal, TextInputComponent } from "@discordjs/builders";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
     Colors,
@@ -96,19 +96,19 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
         let sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
         if (!sectionFinished) allFinished = false;
 
-        return new ButtonComponent()
+        return new ButtonBuilder()
             .setLabel(label)
             .setCustomId(genOpenModalId({ idx: idx.toString() }))
             .setStyle(sectionFinished ? ButtonStyle.Secondary : ButtonStyle.Primary);
     });
 
-    const submitButton = new ButtonComponent()
+    const submitButton = new ButtonBuilder()
         .setLabel("Submit")
         .setStyle(ButtonStyle.Success)
         .setCustomId(genSubmitApplicationId({}))
         .setDisabled(!allFinished);
 
-    const actionRow = new ActionRow<ButtonComponent>().setComponents(...buttons, submitButton);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(...buttons, submitButton);
 
     return { components: [actionRow], embeds: [embed], ephemeral: true };
 }
@@ -134,7 +134,7 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
             .setValue(prevAnswers[id]);
     });
 
-    const wrappedTextFields = textFields.map((x) => new ActionRow<TextInputComponent>().addComponents(x));
+    const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputComponent>().addComponents(x));
 
     modal.setComponents(...wrappedTextFields);
 

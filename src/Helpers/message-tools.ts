@@ -1,5 +1,5 @@
 import {
-    ActionRow,
+    ActionRowBuilder,
     MessageActionRowComponent,
     Collection,
     EmbedBuilder,
@@ -38,8 +38,8 @@ export const MessageTools = {
     allocateButtonsIntoRows(
         buttons: MessageActionRowComponent[],
         options?: IAllocateButtonsOptions
-    ): ActionRow<MessageActionRowComponent>[] {
-        const components = [] as ActionRow<MessageActionRowComponent>[];
+    ): ActionRowBuilder<MessageActionRowComponent>[] {
+        const components = [] as ActionRowBuilder<MessageActionRowComponent>[];
 
         const maxButtonsPerRow = options?.maxButtonsPerRow ?? constants.ACTION_ROW_MAX_ITEMS;
 
@@ -47,7 +47,7 @@ export const MessageTools = {
 
         for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
             const slicedButtons = buttons.slice(i, i + maxButtonsPerRow);
-            const actionRow = new ActionRow().setComponents(...slicedButtons);
+            const actionRow = new ActionRowBuilder().setComponents(...slicedButtons);
             components.push(actionRow);
         }
 

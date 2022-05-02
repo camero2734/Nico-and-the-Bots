@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Colors, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder } from "discord.js";
 import fetch from "node-fetch";
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
@@ -79,9 +79,9 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
-        new ButtonComponent().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
+        new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
     );
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });

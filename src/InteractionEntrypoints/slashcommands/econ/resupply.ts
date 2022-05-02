@@ -1,8 +1,8 @@
 import { DailyBox, User } from "@prisma/client";
 import { format } from "date-fns";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
     GuildMember,
@@ -74,10 +74,10 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new ActionRow().setComponents(menu);
+    const actionRow = new ActionRowBuilder().setComponents(menu);
 
-    const buttonActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
+    const buttonActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
     );
 
     await ctx.editReply({

@@ -1,4 +1,4 @@
-import { Client, ButtonComponent, EmbedBuilder, TextChannel, ActionRow, ButtonStyle } from "discord.js";
+import { Client, ButtonBuilder, EmbedBuilder, TextChannel, ActionRowBuilder, ButtonStyle } from "discord.js";
 import secrets from "../Configuration/secrets";
 import { channelIDs, guildID } from "../Configuration/config";
 import { GenBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
@@ -72,8 +72,8 @@ export class KeonsBot {
                 text: "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited."
             });
 
-        const actionRow = new ActionRow().setComponents(
-            new ButtonComponent() //
+        const actionRow = new ActionRowBuilder().setComponents(
+            new ButtonBuilder() //
                 .setStyle(ButtonStyle.Primary)
                 .setLabel("Color Roles")
                 .setCustomId(GenBtnId({}))

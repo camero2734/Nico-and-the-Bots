@@ -1,7 +1,7 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedError, TopfeedSource } from "../source";
 import { TweetV2, TwitterApi, TwitterApiReadOnly, TwitterV2IncludesHelper } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
-import { ActionRow, ButtonComponent, ButtonStyle, Colors, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
 import { emojiIDs } from "../../../Configuration/config";
 
 interface ITwitterSourceInput extends ITopfeedSourceInput {
@@ -93,13 +93,13 @@ export class TwitterSource extends TopfeedSource {
                 .setColor(Colors.Blue)
         );
 
-        const tweetButton = new ButtonComponent()
+        const tweetButton = new ButtonBuilder()
             .setStyle(ButtonStyle.Link)
             .setLabel("View Tweet")
             .setURL(url)
             .setEmoji({ id: emojiIDs.twitter });
 
-        firstMessage.components = [new ActionRow().setComponents(tweetButton)];
+        firstMessage.components = [new ActionRowBuilder().setComponents(tweetButton)];
 
         const restMessages = imageUrls
             .splice(1)

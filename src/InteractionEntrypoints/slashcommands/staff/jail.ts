@@ -1,7 +1,7 @@
 import {
-    ActionRow,
+    ActionRowBuilder,
     ApplicationCommandOptionType,
-    ButtonComponent,
+    ButtonBuilder,
     ButtonStyle,
     ChannelType,
     ComponentType,
@@ -122,8 +122,8 @@ command.setHandler(async (ctx) => {
 
     jailEmbed.addFields({ name: "Jailed", value: F.discordTimestamp(new Date(), "relative") });
 
-    const jailActionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const jailActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setStyle(ButtonStyle.Secondary)
             .setLabel("Unmute Users")
             .setCustomId(
@@ -133,7 +133,7 @@ command.setHandler(async (ctx) => {
                     actionType: ActionTypes.UNMUTE_ALL.toString()
                 })
             ),
-        new ButtonComponent()
+        new ButtonBuilder()
             .setStyle(ButtonStyle.Danger)
             .setLabel("Close channel")
             .setCustomId(
@@ -155,8 +155,8 @@ command.setHandler(async (ctx) => {
         .setTitle(`${members.length} user${members.length === 1 ? "" : "s"} jailed`)
         .addFields({ name: "Users", value: mentions.join("\n") });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Link).setLabel("View channel").setURL(m.url)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View channel").setURL(m.url)
     );
     await ctx.send({ embeds: [commandEmbed], components: [actionRow] });
 });
@@ -263,8 +263,8 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const timedListener = new TimedInteractionListener(m, <const>["cancelId"]);
     const [cancelId] = timedListener.customIDs;
 
-    const cancelActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("Cancel").setCustomId(cancelId).setStyle(ButtonStyle.Danger)
+    const cancelActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("Cancel").setCustomId(cancelId).setStyle(ButtonStyle.Danger)
     );
 
     await m.edit({ components: [cancelActionRow] });

@@ -1,7 +1,7 @@
 import { createCanvas, loadImage } from "canvas";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     Client,
     EmbedBuilder,
     GuildMember,
@@ -119,8 +119,8 @@ export class SacarverBot {
         }
 
         // Functions
-        const actionRow = new ActionRow().setComponents(
-            new ButtonComponent({
+        const actionRow = new ActionRowBuilder().setComponents(
+            new ButtonBuilder({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",
                 customId: ANNOUNCEMENTS_ID,

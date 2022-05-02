@@ -1,7 +1,7 @@
 import {
-    ActionRow,
+    ActionRowBuilder,
     ApplicationCommandOptionType,
-    ButtonComponent,
+    ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
     Attachment,
@@ -92,8 +92,8 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
     );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -126,8 +126,8 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
+    const newActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
     );
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });

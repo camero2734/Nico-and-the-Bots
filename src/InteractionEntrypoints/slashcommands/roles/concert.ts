@@ -1,4 +1,4 @@
-import { ActionRow, EmbedBuilder, Guild, Role, SelectMenuComponent, SelectMenuOption } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuComponent, SelectMenuOption } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
@@ -35,8 +35,8 @@ command.setHandler(async (ctx) => {
         .setDisabled(true)
         .setCustomId("selectConcert");
 
-    const countryActionRow = new ActionRow().setComponents(countrySelectMenu);
-    const concertActionRow = new ActionRow().setComponents(temporaryConcertSelectMenu);
+    const countryActionRow = new ActionRowBuilder().setComponents(countrySelectMenu);
+    const concertActionRow = new ActionRowBuilder().setComponents(temporaryConcertSelectMenu);
 
     const embed = new EmbedBuilder()
         .setTitle("🧙 Concert Selection Wizard")

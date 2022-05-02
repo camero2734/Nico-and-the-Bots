@@ -1,4 +1,4 @@
-import { ActionRow, EmbedBuilder, SelectMenuComponent, SelectMenuOption, Snowflake } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, SelectMenuComponent, SelectMenuOption, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
             `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
         );
 
-    const actionRow = new ActionRow().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRow, ButtonComponent, ButtonStyle, EmbedBuilder, GuildMember, WebhookEditMessageOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, WebhookEditMessageOptions } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -51,13 +51,13 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
 
-    const actionRow = new ActionRow().setComponents(
+    const actionRow = new ActionRowBuilder().setComponents(
         ...category.data.roles.map((role) => {
             const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
             const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
             const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-            return new ButtonComponent()
+            return new ButtonBuilder()
                 .setDisabled(cantAfford)
                 .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
                 .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
@@ -69,7 +69,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     );
 
     actionRow.addComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({}))
+        new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({}))
     );
 
     const components = MessageTools.allocateButtonsIntoRows(actionRow.components);
@@ -126,12 +126,12 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         }
 
         const roleComponents = MessageTools.allocateButtonsIntoRows([
-            new ButtonComponent()
+            new ButtonBuilder()
                 .setStyle(ButtonStyle.Success)
                 .setLabel("Purchase")
                 .setCustomId(genItemId({ action: `${ActionTypes.Purchase}`, itemId: args.itemId })),
 
-            new ButtonComponent()
+            new ButtonBuilder()
                 .setStyle(ButtonStyle.Danger)
                 .setLabel("Go back")
                 .setCustomId(genSubmenuId({ categoryId: category.id }))
@@ -204,10 +204,10 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
         )
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
-    const menuActionRow = new ActionRow().setComponents(
+    const menuActionRow = new ActionRowBuilder().setComponents(
         ...Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
-            return new ButtonComponent()
+            return new ButtonBuilder()
                 .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
                 .setLabel(
                     unlocked

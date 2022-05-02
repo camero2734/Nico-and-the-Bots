@@ -1,4 +1,4 @@
-import { ActionRow, ButtonComponent, ButtonStyle, EmbedBuilder, Message, TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 
 // word1:word2:word3... encoded in base64 to avoid having slurs in plaintext
@@ -36,8 +36,8 @@ const filter = async (msg: Message): Promise<boolean> => {
         .setDescription(msg.content)
         .addFields({ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("View context").setStyle(ButtonStyle.Link).setURL(msg.url)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("View context").setStyle(ButtonStyle.Link).setURL(msg.url)
     );
 
     await slurLog.send({ embeds: [staffEmbed], components: [actionRow] });

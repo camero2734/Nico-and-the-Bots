@@ -1,7 +1,7 @@
 import { addDays } from "date-fns";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonStyle,
     Colors,
     EmbedBuilder,
@@ -75,8 +75,8 @@ command.setHandler(async (ctx) => {
         )
         .addFields({ name: "Application ID", value: applicationId });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application")
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application")
     );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -104,7 +104,7 @@ export async function sendToStaff(
             embed.addFields({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
         }
 
-        const actionRow = new ActionRow().setComponents(
+        const actionRow = new ActionRowBuilder().setComponents(
             new SelectMenuComponent()
                 .addOptions(
                     ...[

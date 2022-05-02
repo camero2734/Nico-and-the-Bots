@@ -1,4 +1,4 @@
-import { ActionRow, Modal, TextInputComponent } from "@discordjs/builders";
+import { ActionRowBuilder, Modal, TextInputComponent } from "@discordjs/builders";
 import { TextInputStyle } from "discord-api-types/payloads/v9";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -22,7 +22,7 @@ command.setHandler(async (ctx) => {
         .setLabel("Say something")
         .setStyle(TextInputStyle.Short);
 
-    modal.setComponents(new ActionRow<TextInputComponent>().addComponents(inputComponent));
+    modal.setComponents(new ActionRowBuilder<TextInputComponent>().addComponents(inputComponent));
 
     ctx.showModal(modal);
 });

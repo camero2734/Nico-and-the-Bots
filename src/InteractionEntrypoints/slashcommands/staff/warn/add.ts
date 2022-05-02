@@ -1,6 +1,6 @@
 import { WarningType } from "@prisma/client";
 import { subYears } from "date-fns";
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder, GuildMember } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
@@ -58,8 +58,8 @@ command.setHandler(async (ctx) => {
     const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
     const [submitId] = ephemeralListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId)
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId)
     );
 
     await ctx.send({ embeds: [confirmationEmbed.toJSON()], components: [actionRow] });

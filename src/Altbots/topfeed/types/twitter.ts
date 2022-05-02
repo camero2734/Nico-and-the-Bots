@@ -1,5 +1,5 @@
 import async from "async";
-import { ActionRow, ButtonComponent, ButtonStyle, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
 import TwitterApi, { MediaVideoInfoV1 } from "twitter-api-v2";
 import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";
@@ -99,8 +99,8 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            const actionRow = new ActionRow().setComponents(
-                new ButtonComponent().setLabel("View Tweet").setStyle(ButtonStyle.Link).setURL(url)
+            const actionRow = new ActionRowBuilder().setComponents(
+                new ButtonBuilder().setLabel("View Tweet").setStyle(ButtonStyle.Link).setURL(url)
             );
 
             const msgs: MessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];

@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -39,15 +39,15 @@ command.setHandler(async (ctx) => {
     const roleObj = await ctx.channel.guild.roles.fetch(role);
     if (!roleObj) throw new CommandError("Invalid role given");
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setStyle(ButtonStyle.Success)
             .setLabel(`Get the ${roleObj.name} role`)
             .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }))
             .setEmoji({
                 name: "😎"
             }),
-        new ButtonComponent()
+        new ButtonBuilder()
             .setStyle(ButtonStyle.Danger)
             .setLabel(`Remove the ${roleObj.name} role`)
             .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }))

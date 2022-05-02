@@ -1,8 +1,9 @@
 import crypto from "crypto";
 import * as Diff from "diff";
 import {
-    ActionRow,
-    ButtonComponent,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
     Message,
@@ -119,8 +120,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDescription(desc)
             .setFooter({ text: `${hashes}` });
 
-        const actionRow = new ActionRow().setComponents(
-            new ButtonComponent().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
+        const actionRow = new ActionRowBuilder().setComponents(
+            new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
         );
 
         if (file) {
@@ -133,7 +134,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     override async afterCheck(msg: Message): Promise<void> {
         const actionRow = msg.components[0];
 
-        const newButton = new ButtonComponent()
+        const newButton = new ButtonBuilder()
             .setStyle(ButtonStyle.Link)
             .setURL("https://google.com")
             .setDisabled(true)
@@ -148,7 +149,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         actionRow.components.splice(actionRow.components.length - 1, 1);
         if (savedUrl) {
             actionRow.addComponents(
-                new ButtonComponent().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
+                new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
             );
         }
         await msg.edit({ components: msg.components });

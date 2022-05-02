@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { addDays } from "date-fns";
 import {
-    ActionRow,
+    ActionRowBuilder,
     Colors,
     EmbedBuilder,
     Guild,
@@ -118,7 +118,7 @@ export async function sendToStaff(
             embed.addFields({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
         }
 
-        const actionRow = new ActionRow().setComponents(
+        const actionRow = new ActionRowBuilder().setComponents(
             new SelectMenuComponent()
                 .addOptions(
                     ...[

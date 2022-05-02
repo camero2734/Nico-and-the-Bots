@@ -1,7 +1,7 @@
 import { Poll, Vote } from "@prisma/client";
 import { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v9";
 import {
-    ActionRow,
+    ActionRowBuilder,
     ApplicationCommandOptionType,
     ComponentType,
     EmbedBuilder,
@@ -111,7 +111,7 @@ command.setHandler(async (ctx) => {
         selectMenu.addOptions(new SelectMenuOption({ label: option.text.substring(0, 100), emoji, value: `${i}` }));
     }
 
-    const actionRow = new ActionRow().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {

@@ -2,9 +2,9 @@ import { RandomDrop } from ".prisma/client";
 import async from "async";
 import { addMilliseconds, differenceInMilliseconds, endOfDay, startOfDay } from "date-fns";
 import {
-    ActionRow,
+    ActionRowBuilder,
     MessageActionRowComponent,
-    ButtonComponent,
+    ButtonBuilder,
     ButtonStyle,
     Emoji,
     Guild,
@@ -98,11 +98,11 @@ export type Guess = { member: GuildMember; idx: number };
 export async function generateActionRows(
     guesses: Guess[],
     drop: RandomDrop
-): Promise<ActionRow<MessageActionRowComponent>[]> {
+): Promise<ActionRowBuilder<MessageActionRowComponent>[]> {
     const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
 
-    const buttons: ButtonComponent[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
-        const button = new ButtonComponent()
+    const buttons: ButtonBuilder[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
+        const button = new ButtonBuilder()
             .setStyle(ButtonStyle.Primary)
             .setCustomId(
                 GenBtnId({

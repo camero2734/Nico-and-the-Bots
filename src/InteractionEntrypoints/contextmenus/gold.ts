@@ -1,6 +1,6 @@
 import { addDays } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v9";
-import { ActionRow, ButtonComponent, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -33,8 +33,8 @@ ctxMenu.setHandler(async (ctx, msg) => {
         }
 
         const embed = new EmbedBuilder().setDescription(MESSAGE_ALREADY_GOLD);
-        const actionRow = new ActionRow().setComponents(
-            new ButtonComponent()
+        const actionRow = new ActionRowBuilder().setComponents(
+            new ButtonBuilder()
                 .setLabel("View post")
                 .setStyle(ButtonStyle.Link)
                 .setURL(givenGold.houseOfGoldMessageUrl)
@@ -110,13 +110,13 @@ async function handleGold(
     const timedListener = new TimedInteractionListener(ctx, <const>["goldCtxYes", "goldCtxNo"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setLabel(`Yes (${cost} credits)`)
             .setEmoji({ id: emojiIDs.gold })
             .setStyle(ButtonStyle.Primary)
             .setCustomId(yesId),
-        new ButtonComponent().setLabel("No").setStyle(ButtonStyle.Secondary).setCustomId(noId)
+        new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Secondary).setCustomId(noId)
     );
 
     await ctx.editReply({
@@ -140,8 +140,8 @@ async function handleGold(
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0); // prettier-ignore
 
-    const goldActionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const goldActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setLabel(`${numGolds} Gold${F.plural(numGolds)}`)
             .setEmoji({ id: emojiIDs.gold })
             .setStyle(ButtonStyle.Primary)
@@ -152,7 +152,7 @@ async function handleGold(
                     originalChannelId
                 })
             ),
-        new ButtonComponent().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl)
+        new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl)
     );
 
     const goldEmbed = new EmbedBuilder(goldBaseEmbed);
@@ -199,8 +199,8 @@ async function handleGold(
 
     const replyEmbed = new EmbedBuilder().setDescription("Gold successfully given");
 
-    const replyActionRow = new ActionRow().setComponents(
-        new ButtonComponent().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url)
+    const replyActionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url)
     );
 
     ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });

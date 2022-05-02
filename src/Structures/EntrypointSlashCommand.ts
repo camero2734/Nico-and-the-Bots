@@ -9,7 +9,7 @@ import {
     Guild,
     GuildMember,
     Message,
-    ButtonComponent,
+    ButtonBuilder,
     MessageOptions,
     Snowflake,
     TextChannel,
@@ -19,7 +19,7 @@ import {
     ApplicationCommandOptionType,
     ButtonStyle,
     ComponentType,
-    ActionRow
+    ActionRowBuilder
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
@@ -168,10 +168,10 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 return;
             }
 
-            const getMessageButtonWithEmoji = (name: string): ButtonComponent | undefined => {
+            const getMessageButtonWithEmoji = (name: string): ButtonBuilder | undefined => {
                 return actionRow.components.find(
                     (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name)
-                ) as ButtonComponent;
+                ) as ButtonBuilder;
             };
             const upvoteButton = getMessageButtonWithEmoji("upvote");
             const downvoteButton = getMessageButtonWithEmoji("downvote");
@@ -202,13 +202,13 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 }
             });
 
-            return new ActionRow().setComponents(
-                new ButtonComponent()
+            return new ActionRowBuilder().setComponents(
+                new ButtonBuilder()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "1", pollID: `${poll.id}` }))
                     .setEmoji({ id: emojiIDs.upvote }),
-                new ButtonComponent()
+                new ButtonBuilder()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))

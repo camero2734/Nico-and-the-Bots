@@ -1,5 +1,5 @@
 import {
-    ActionRow,
+    ActionRowBuilder,
     ApplicationCommandOptionType,
     EmbedBuilder,
     EmojiIdentifierResolvable,
@@ -65,7 +65,7 @@ command.setHandler(async (ctx) => {
         .setMaxValues(options.length)
         .setCustomId(genChoiceId({}));
 
-    const actionRow = new ActionRow().setComponents(menu);
+    const actionRow = new ActionRowBuilder().setComponents(menu);
 
     const embed = new EmbedBuilder().setDescription(
         "Select your topfeed roles below. You will receive a ping when the channel receives an update."

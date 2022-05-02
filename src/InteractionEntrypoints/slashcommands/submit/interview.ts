@@ -1,5 +1,5 @@
 import { parse } from "date-fns";
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
 import * as ytdl from "youtube-dl";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -67,8 +67,8 @@ command.setHandler(async (ctx) => {
         data: { url, submittedByUserId: ctx.user.id }
     });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setLabel("Approve")
             .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
             .setStyle(ButtonStyle.Success)

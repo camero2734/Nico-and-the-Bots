@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -48,8 +48,8 @@ command.setHandler(async (ctx) => {
         .setDescription(ctx.opts.text)
         .setFooter({ text: "Select yes or no" });
 
-    const actionRow = new ActionRow().setComponents(
-        new ButtonComponent()
+    const actionRow = new ActionRowBuilder().setComponents(
+        new ButtonBuilder()
             .setLabel("Yes")
             .setStyle(ButtonStyle.Success)
             .setCustomId(generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` }))

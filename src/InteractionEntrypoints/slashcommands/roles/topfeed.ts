@@ -5,7 +5,7 @@ import {
     EmojiIdentifierResolvable,
     GuildMember,
     SelectMenuComponent,
-    SelectMenuOption,
+    SelectMenuOptionBuilder,
     Snowflake
 } from "discord.js";
 import { roles } from "../../../Configuration/config";
@@ -52,7 +52,7 @@ command.setHandler(async (ctx) => {
         .addOptions(
             ...options.map(
                 ([roleName, roleID]) =>
-                    new SelectMenuOption({
+                    new SelectMenuOptionBuilder({
                         label: roleName,
                         description: `Enable notifications for ${roleName}`,
                         value: roleID,

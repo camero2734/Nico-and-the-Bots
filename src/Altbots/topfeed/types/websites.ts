@@ -3,7 +3,6 @@ import * as Diff from "diff";
 import {
     ActionRowBuilder,
     ButtonBuilder,
-    ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
     Message,
@@ -132,7 +131,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     }
 
     override async afterCheck(msg: Message): Promise<void> {
-        const actionRow = msg.components[0];
+        const actionRow = ActionRowBuilder.from(msg.components[0]);
 
         const newButton = new ButtonBuilder()
             .setStyle(ButtonStyle.Link)
@@ -146,7 +145,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const savedUrl = await this.#archivePage(this.url);
 
-        actionRow.components.splice(actionRow.components.length - 1, 1);
+        actionRow["components"].splice(actionRow["components"].length - 1, 1);
         if (savedUrl) {
             actionRow.addComponents(
                 new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")

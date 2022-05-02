@@ -7,7 +7,7 @@ import {
     Attachment,
     MessageOptions,
     SelectMenuComponent,
-    SelectMenuOption,
+    SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
 import { roles } from "../../Configuration/config";
@@ -40,7 +40,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     const selectMenu = new SelectMenuComponent()
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
         .addOptions(
-            ...Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOption({ label: value, value: key }))
+            ...Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }))
         );
 
     const actionRow = new ActionRowBuilder().setComponents(selectMenu);

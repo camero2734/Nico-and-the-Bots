@@ -8,7 +8,7 @@ import {
     Guild,
     Attachment,
     SelectMenuComponent,
-    SelectMenuOption,
+    SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
@@ -108,12 +108,12 @@ export async function sendToStaff(
             new SelectMenuComponent()
                 .addOptions(
                     ...[
-                        new SelectMenuOption({
+                        new SelectMenuOptionBuilder({
                             label: "Accept",
                             value: ActionTypes.Accept.toString(),
                             emoji: { id: emojiIDs.upvote }
                         }),
-                        new SelectMenuOption({
+                        new SelectMenuOptionBuilder({
                             label: "Deny",
                             value: ActionTypes.Deny.toString(),
                             emoji: { id: emojiIDs.downvote }

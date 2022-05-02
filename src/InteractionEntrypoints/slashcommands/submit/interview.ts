@@ -81,7 +81,7 @@ command.setHandler(async (ctx) => {
 });
 
 const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId"], async (ctx, args) => {
-    const embed = ctx.message.embeds[0];
+    const embed = EmbedBuilder.from(ctx.message.embeds[0]);
     embed.setColor(0x00ff00);
 
     await ctx.editReply({ components: [], embeds: [embed] });

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Modal, TextInputComponent } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
     Colors,
@@ -121,12 +121,12 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
 
     const prevAnswers = await getPreviousAnswers(ctx.user.id);
 
-    const modal = new Modal()
+    const modal = new ModalBuilder()
         .setTitle("Firebreathers Application")
         .setCustomId(genSubmitModalId({ name: ctx.component.label }));
 
     const textFields = Object.entries(formPart).map(([id, question]) => {
-        return new TextInputComponent()
+        return new TextInputBuilder()
             .setCustomId(id)
             .setLabel(question.question)
             .setPlaceholder(question.placeholder)
@@ -134,7 +134,7 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
             .setValue(prevAnswers[id]);
     });
 
-    const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputComponent>().addComponents(x));
+    const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputBuilder>().addComponents(x));
 
     modal.setComponents(...wrappedTextFields);
 

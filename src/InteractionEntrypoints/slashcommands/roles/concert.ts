@@ -1,4 +1,4 @@
-import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuComponent, SelectMenuOption } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuComponent, SelectMenuOptionBuilder } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
@@ -20,7 +20,7 @@ command.setHandler(async (ctx) => {
         .addOptions(
             ...countries.map(
                 (c) =>
-                    new SelectMenuOption({
+                    new SelectMenuOptionBuilder({
                         label: F.titleCase(c.name.split("-").join(" ")),
                         value: c.name,
                         description: `${c.count} concert${F.plural(c.count)}`
@@ -30,7 +30,7 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select a country")
         .setCustomId(genSelectCountryId({}));
     const temporaryConcertSelectMenu = new SelectMenuComponent()
-        .addOptions(new SelectMenuOption({ label: "Dummy option", value: "Dummy value", description: "Dummy" }))
+        .addOptions(new SelectMenuOptionBuilder({ label: "Dummy option", value: "Dummy value", description: "Dummy" }))
         .setPlaceholder("❌ Select a country first")
         .setDisabled(true)
         .setCustomId("selectConcert");
@@ -62,7 +62,7 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
         .addOptions(
             ...concerts.map(
                 (c) =>
-                    new SelectMenuOption({
+                    new SelectMenuOptionBuilder({
                         label: c.name,
                         value: c.concert.id,
                         description: c.concert.venue.location

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, EmbedBuilder, SelectMenuComponent, SelectMenuOption, Snowflake } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, SelectMenuComponent, SelectMenuOptionBuilder, Snowflake } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -15,7 +15,7 @@ command.setHandler(async (ctx) => {
         .setMaxValues(Object.keys(roles.pronouns).length)
         .setPlaceholder("Select your pronoun role(s) from the list")
         .addOptions(
-            ...Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOption({ label: name, value: id }))
+            ...Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOptionBuilder({ label: name, value: id }))
         );
 
     const selectEmbed = new EmbedBuilder()

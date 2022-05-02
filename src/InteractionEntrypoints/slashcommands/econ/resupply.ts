@@ -10,7 +10,7 @@ import {
     MessageComponentInteraction,
     SelectMenuComponent,
     SelectMenuInteraction,
-    SelectMenuOption
+    SelectMenuOptionBuilder
 } from "discord.js";
 import fs from "fs";
 import { channelIDs, roles } from "../../../Configuration/config";
@@ -61,7 +61,7 @@ command.setHandler(async (ctx) => {
 
     const options = districts.map(
         (d, idx) =>
-            new SelectMenuOption({
+            new SelectMenuOptionBuilder({
                 label: `DST. ${d.bishop.toUpperCase()}`,
                 description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
                 value: `${idx}`,

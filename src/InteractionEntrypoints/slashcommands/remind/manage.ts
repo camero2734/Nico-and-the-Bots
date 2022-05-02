@@ -6,7 +6,7 @@ import {
     EmbedBuilder,
     GuildMember,
     SelectMenuComponent,
-    SelectMenuOption
+    SelectMenuOptionBuilder
 } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -56,7 +56,7 @@ async function generateReminderList(
 
         const label = r.text.substring(0, 25);
         const description = formatReminderDate(r.sendAt).substring(0, 50);
-        selectMenu.addOptions(new SelectMenuOption({ label, description, emoji: { id: emoji?.id }, value: `${r.id}` }));
+        selectMenu.addOptions(new SelectMenuOptionBuilder({ label, description, emoji: { id: emoji?.id }, value: `${r.id}` }));
     }
 
     const actionRow = new ActionRowBuilder().setComponents(selectMenu);

@@ -8,7 +8,7 @@ import {
     GuildEmoji,
     Message,
     SelectMenuComponent,
-    SelectMenuOption
+    SelectMenuOptionBuilder
 } from "discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
@@ -108,7 +108,7 @@ command.setHandler(async (ctx) => {
     for (let i = 0; i < parsedOptions.length; i++) {
         const option = parsedOptions[i];
         const emoji = option.emoji as APIMessageComponentEmoji;
-        selectMenu.addOptions(new SelectMenuOption({ label: option.text.substring(0, 100), emoji, value: `${i}` }));
+        selectMenu.addOptions(new SelectMenuOptionBuilder({ label: option.text.substring(0, 100), emoji, value: `${i}` }));
     }
 
     const actionRow = new ActionRowBuilder().setComponents(selectMenu);

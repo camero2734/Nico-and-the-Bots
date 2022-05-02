@@ -21,6 +21,7 @@ COPY . .
 
 # Unlock git-crypt
 ARG CRYPT64
+RUN ls .git || echo "not found"
 RUN echo $CRYPT64 | base64 -d >> gc.key
 RUN git-crypt unlock gc.key
 RUN rm gc.key

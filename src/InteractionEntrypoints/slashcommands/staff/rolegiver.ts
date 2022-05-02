@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
             })
     );
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("Role Giver™️") //
         .setDescription(`By clicking the buttons below, you can get/remove the ${roleObj.name} role.`)
         .addFields({ name: "Description", value: text })
@@ -84,7 +84,7 @@ const genActionId = command.addInteractionListener("reactForRole", <const>["role
 
     await ctx.followUp({
         embeds: [
-            new Embed({
+            new EmbedBuilder({
                 description: `The ${role} role was successfully ${action === ActionTypes.Give ? "added" : "removed"}`
             })
         ],

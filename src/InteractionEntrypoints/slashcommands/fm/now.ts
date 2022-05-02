@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder } from "discord.js";
 import fetch from "node-fetch";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -100,7 +100,7 @@ command.setHandler(async (ctx) => {
 
     console.log(thumbnail);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
         .addFields({ name: "Track", value: trackField, inline: true })

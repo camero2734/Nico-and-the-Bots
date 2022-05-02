@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType, Colors } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType, Colors } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
 
 interface Ping {
@@ -41,7 +41,7 @@ command.setHandler(async (ctx) => {
 
     const average = Math.floor(pingSum / pingCount);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setColor(Colors.Gold)
         .setTitle(`Pinged ${currentPing}ms`)
         .addFields(

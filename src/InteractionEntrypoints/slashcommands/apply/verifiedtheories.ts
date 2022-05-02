@@ -3,7 +3,7 @@ import {
     MessageActionRowComponent,
     ButtonComponent,
     ButtonStyle,
-    Embed,
+    EmbedBuilder,
     GuildMember,
     Message,
     TextChannel
@@ -47,7 +47,7 @@ command.setHandler(async (ctx) => {
     }
 
     // Ensure they're ready to take the quiz
-    const initialEmbed = new Embed()
+    const initialEmbed = new EmbedBuilder()
         .setTitle("Verified Theories Quiz")
         .setDescription(
             [
@@ -84,7 +84,7 @@ command.setHandler(async (ctx) => {
     );
 
     await ctx.send({
-        embeds: [new Embed().setDescription("The quiz was DM'd to you!").toJSON()],
+        embeds: [new EmbedBuilder().setDescription("The quiz was DM'd to you!").toJSON()],
         components: [dmActionRow]
     });
 
@@ -94,7 +94,7 @@ command.setHandler(async (ctx) => {
 
     if (buttonPressed !== beginId) {
         await dmMessage.edit({
-            embeds: [new Embed().setDescription("Okay, you may restart the quiz at any time.")],
+            embeds: [new EmbedBuilder().setDescription("Okay, you may restart the quiz at any time.")],
             components: []
         });
         return;
@@ -164,7 +164,7 @@ async function generateEmbedAndButtons(
     answerEncode: PreviousAnswersEncoder,
     questionIDs: string,
     member: GuildMember
-): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
+): Promise<[EmbedBuilder, ActionRow<MessageActionRowComponent>[]]> {
     // Generate embed
     const newIndex = currentIndex + 1;
     const numQs = questionList.length;
@@ -172,7 +172,7 @@ async function generateEmbedAndButtons(
     if (newIndex === numQs) return sendFinalEmbed(questionList, answerEncode, member);
 
     const newQuestion = questionList[newIndex];
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: `Question ${newIndex + 1} / ${numQs}` })
         .setTitle("Verified Theories Quiz")
         .setDescription(newQuestion.question)
@@ -204,11 +204,11 @@ async function sendFinalEmbed(
     questionList: Question[],
     answerEncode: PreviousAnswersEncoder,
     member: GuildMember
-): Promise<[Embed, ActionRow<MessageActionRowComponent>[]]> {
+): Promise<[EmbedBuilder, ActionRow<MessageActionRowComponent>[]]> {
     const answers = answerEncode.answerIndices;
 
     // Send to staff channel
-    const staffEmbed = new Embed().setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
+    const staffEmbed = new EmbedBuilder().setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() });
 
     let incorrect = 0;
     for (const q of questionList) {
@@ -242,14 +242,13 @@ async function sendFinalEmbed(
     }
 
     // Send embed to normal user
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle(`${correct}/${questionList.length} correct`)
         .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
-            `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
-                passed
-                    ? `You can now access <#${channelIDs.verifiedtheories}>`
-                    : `You may apply again in ${hours} hours.`
+            `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
+                ? `You can now access <#${channelIDs.verifiedtheories}>`
+                : `You may apply again in ${hours} hours.`
             }`
         );
 

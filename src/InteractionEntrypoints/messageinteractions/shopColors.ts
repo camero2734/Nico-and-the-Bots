@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRow, ButtonComponent, ButtonStyle, Embed, GuildMember, WebhookEditMessageOptions } from "discord.js";
+import { ActionRow, ButtonComponent, ButtonStyle, EmbedBuilder, GuildMember, WebhookEditMessageOptions } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -39,14 +39,14 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
 
-    const embed = new Embed()
-                .setAuthor({name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png"})
-                .setTitle(name)
-                .setColor(0xD07A21)
-                .setDescription(`*${category.description}*\n`)
-                .addFields({ name: "Credits", value: `${category.data.credits}` })
-                .addFields({ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" })
-                .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
+    const embed = new EmbedBuilder()
+        .setAuthor({ name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png" })
+        .setTitle(name)
+        .setColor(0xD07A21)
+        .setDescription(`*${category.description}*\n`)
+        .addFields({ name: "Credits", value: `${category.data.credits}` })
+        .addFields({ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" })
+        .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
@@ -102,7 +102,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         ? F.randomizeLetters("thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_", 0.1) // prettier-ignore
         : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: title, iconURL: shopImage })
         .setTitle(role.name)
         .setColor(role.color)
@@ -192,8 +192,8 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
 
     const dbUser = await queries.findOrCreateUser(member.id);
 
-    const MenuEmbed = new Embed()
-        .setAuthor({name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png"})
+    const MenuEmbed = new EmbedBuilder()
+        .setAuthor({ name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png" })
         .setColor(0xD07A21)
         .setDescription(
             [

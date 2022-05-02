@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "canvas";
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
     cctx.rotate(-Math.PI / 15.0);
     cctx.drawImage(img, 0, 0, 174 * scale, 147 * scale);
 
-    const embed = new Embed().setImage("attachment://clown.png");
+    const embed = new EmbedBuilder().setImage("attachment://clown.png");
 
     await ctx.send({ embeds: [embed], files: [{ name: "clown.png", attachment: canvas.toBuffer() }] });
 });

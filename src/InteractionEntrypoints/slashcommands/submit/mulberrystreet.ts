@@ -3,8 +3,8 @@ import {
     ApplicationCommandOptionType,
     ButtonComponent,
     ButtonStyle,
-    Embed,
-    MessageAttachment,
+    EmbedBuilder,
+    Attachment,
     TextChannel
 } from "discord.js";
 import FileType from "file-type";
@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
 
     const fileName = `${title.split(" ").join("-")}.${fileType.ext}`;
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(0xe3b3d8)
         .setTitle(`"${title}"`)
@@ -101,7 +101,7 @@ command.setHandler(async (ctx) => {
     const [buttonPressed] = await timedListener.wait();
     if (buttonPressed !== yesId) {
         await ctx.editReply({
-            embeds: [new Embed({ description: "Submission cancelled." })],
+            embeds: [new EmbedBuilder({ description: "Submission cancelled." })],
             components: []
         });
         return;
@@ -117,7 +117,7 @@ command.setHandler(async (ctx) => {
     embed.setDescription("");
     embed.setFields();
 
-    const attachment = new MessageAttachment(buffer, fileName);
+    const attachment = new Attachment(buffer, fileName);
 
     if (fileType.mime.startsWith("image")) {
         embed.setImage(`attachment://${fileName}`);

@@ -1,6 +1,6 @@
 import { WarningType } from "@prisma/client";
 import { subYears } from "date-fns";
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, GuildMember } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder, GuildMember } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
@@ -48,7 +48,7 @@ command.setHandler(async (ctx) => {
     if (!ruleBroken) throw new CommandError(`Invalid rule given. Please choose one of:\n- ${rules.join("\n- ")}`);
     if (severity < 1 || severity > 10) throw new CommandError("Invalid severity. Must be between 1 and 10.");
 
-    const confirmationEmbed = new Embed()
+    const confirmationEmbed = new EmbedBuilder()
         .setTitle("Would you like to submit this warning?")
         .addFields({ name: "User", value: `<@${user}>` })
         .addFields({ name: "Explanation", value: explanation })
@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
 
     const [buttonPressed] = await ephemeralListener.wait();
     if (buttonPressed !== submitId) {
-        await ctx.editReply({ embeds: [new Embed({ description: "Warning not submitted" })], components: [] });
+        await ctx.editReply({ embeds: [new EmbedBuilder({ description: "Warning not submitted" })], components: [] });
         return;
     }
 
@@ -120,11 +120,10 @@ async function autoJailCheck(ctx: typeof command["ContextType"], member: GuildMe
     console.log(`Recent warns: ${recentWarns}`);
 
     if (recentWarns < 3) {
-        const embed = new Embed();
+        const embed = new EmbedBuilder();
         embed.setColor(0xff0000);
         embed.setDescription(
-            `${Math.max(0, 3 - recentWarns)} more warning${
-                recentWarns === 1 ? "" : "s"
+            `${Math.max(0, 3 - recentWarns)} more warning${recentWarns === 1 ? "" : "s"
             } until this user is auto-jailed.`
         );
         return await ctx.followUp({ embeds: [embed], ephemeral: true });

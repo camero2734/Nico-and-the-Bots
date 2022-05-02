@@ -2,19 +2,19 @@
 	"Command file": {
 		"prefix": "ncmd",
 		"body": [
-		  "import { CommandOptionType } from \"slash-create\";",
-		  "import { CommandOptions, CommandRunner } from \"configuration/definitions\";",
-		  "import { Embed } from \"discord.js\";",
-		  "",
-		  "export const Options: CommandOptions = {",
-		  "    description: \"$1\",",
-		  "    options: [{ name: \"$2\", description: \"$3\", required: false, type: CommandOptionType.$4 }],",
-		  "};",
-		  "",
-		  "export const Executor: CommandRunner = async (ctx) => {",
-		  "    $0",
-		  "};"
+			"import { CommandOptionType } from \"slash-create\";",
+			"import { CommandOptions, CommandRunner } from \"configuration/definitions\";",
+			"import { EmbedBuilder } from \"discord.js\";",
+			"",
+			"export const Options: CommandOptions = {",
+			"    description: \"$1\",",
+			"    options: [{ name: \"$2\", description: \"$3\", required: false, type: CommandOptionType.$4 }],",
+			"};",
+			"",
+			"export const Executor: CommandRunner = async (ctx) => {",
+			"    $0",
+			"};"
 		],
 		"description": "Creates a command file for the bot"
-	  }
+	}
 }

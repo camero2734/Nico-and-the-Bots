@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -29,7 +29,7 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     const { title, theory, imageurl } = ctx.opts;
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.user.displayAvatarURL() })
         .setColor(ctx.member.displayColor)
         .setTitle(title)
@@ -46,7 +46,7 @@ command.setHandler(async (ctx) => {
 
     const m = await theoryChan.send({ embeds: [embed], components: [actionRow] });
 
-    const responseEmbed = new Embed({ description: "Your theory has been submitted!" });
+    const responseEmbed = new EmbedBuilder({ description: "Your theory has been submitted!" });
     const responseActionRow = new ActionRow().setComponents(
         new ButtonComponent().setStyle(ButtonStyle.Link).setURL(m.url).setLabel("View post")
     );

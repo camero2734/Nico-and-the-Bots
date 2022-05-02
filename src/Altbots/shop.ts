@@ -1,4 +1,4 @@
-import { Client, ButtonComponent, Embed, TextChannel, ActionRow, ButtonStyle } from "discord.js";
+import { Client, ButtonComponent, EmbedBuilder, TextChannel, ActionRow, ButtonStyle } from "discord.js";
 import secrets from "../Configuration/secrets";
 import { channelIDs, guildID } from "../Configuration/config";
 import { GenBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
@@ -41,7 +41,7 @@ export class KeonsBot {
 
         await chan.bulkDelete(100); // Delete all messages
 
-        const welcomeEmbed = new Embed()
+        const welcomeEmbed = new EmbedBuilder()
             .setAuthor({ name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png" })
             .setTitle("Welcome!")
             .setColor(0xd07a21)

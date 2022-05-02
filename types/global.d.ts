@@ -7,7 +7,7 @@ declare global {
 }
 
 declare module "discord.js" {
-    interface Embed {
+    interface EmbedBuilder {
         toJSON(): Record<string, unknown>;
     }
 }

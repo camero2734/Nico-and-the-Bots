@@ -2,7 +2,7 @@ import { createCanvas, loadImage } from "canvas";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { addDays, differenceInDays } from "date-fns";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -15,7 +15,7 @@ const command = new SlashCommand(<const>{
 const albumRoles = roles.albums;
 command.setHandler(async (ctx) => {
     await ctx.reply({
-        embeds: [new Embed({ description: "Connecting to Daily Electronic Message Archive...", color: 0xff0000 })]
+        embeds: [new EmbedBuilder({ description: "Connecting to Daily Electronic Message Archive...", color: 0xff0000 })]
     });
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
@@ -163,7 +163,7 @@ command.setHandler(async (ctx) => {
     ];
 
     const randomFact = F.randomValueInArray(facts);
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setColor(0xff0000)
         .setTitle(`${ctx.member.displayName}'s Daily`)
         .setFooter({ text: "Have an idea for another server tip? Submit it with /submit suggestion" })

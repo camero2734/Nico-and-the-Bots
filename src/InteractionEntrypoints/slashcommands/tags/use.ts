@@ -1,5 +1,5 @@
 import { CommandError } from "../../../Configuration/definitions";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
@@ -52,7 +52,7 @@ command.setHandler(async (ctx) => {
     });
 
     if (ctx.opts.info) {
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setTitle(tag.name)
             .setDescription(tag.text)
             .setColor(tagAuthor.displayColor)
@@ -68,7 +68,7 @@ command.setHandler(async (ctx) => {
 async function sendSuggestionList(ctx: typeof command.ContextType): Promise<void> {
     const tags = await prisma.tag.findMany({ orderBy: { uses: "desc" }, take: 5 });
 
-    const embed = new Embed().setTitle("That tag doesn't exist. Here are some of the most popular tags you can try.");
+    const embed = new EmbedBuilder().setTitle("That tag doesn't exist. Here are some of the most popular tags you can try.");
 
     for (const tag of tags) {
         embed.addFields({ name: tag.name, value: `Uses: ${tag.uses}` });

@@ -74,11 +74,11 @@ client.on("ready", async () => {
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
-    await botChan.send({ embeds: [new Discord.Embed({ description: "Bot is running" })] });
+    await botChan.send({ embeds: [new Discord.EmbedBuilder({ description: "Bot is running" })] });
     await guild.members.fetch();
 
     await botChan.send({
-        embeds: [new Discord.Embed({ description: `Fetched all ${guild.members.cache.size} members` })]
+        embeds: [new Discord.EmbedBuilder({ description: `Fetched all ${guild.members.cache.size} members` })]
     });
 });
 
@@ -97,7 +97,7 @@ client.on("messageUpdate", async (oldMsg, newMsg) => {
 client.on("guildMemberUpdate", async (oldMem, newMem) => {
     if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
         const fbAnnouncementChannel = await newMem.guild.channels.fetch(channelIDs.fairlyannouncements) as Discord.TextChannel; // prettier-ignore
-        const embed = new Discord.Embed()
+        const embed = new Discord.EmbedBuilder()
             .setAuthor({ name: newMem.displayName, iconURL: newMem.displayAvatarURL() })
             .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
             .setFooter({ text: "PROPERTY OF DRAGON'S DEN INC.™️", iconURL: newMem.client.user?.displayAvatarURL() });

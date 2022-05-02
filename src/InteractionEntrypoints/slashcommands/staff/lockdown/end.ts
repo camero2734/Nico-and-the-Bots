@@ -1,6 +1,6 @@
 import { APIOverwrite } from "discord-api-types/v9";
 import {
-    Embed,
+    EmbedBuilder,
     OverwriteData,
     OverwriteResolvable,
     PermissionOverwrites,
@@ -36,7 +36,7 @@ command.setHandler(async (ctx) => {
     // Disable talking permissions for non-staff
     await ctx.send({ content: "`Lockdown successfully ended`" });
 
-    const lockEndEmbed = new Embed()
+    const lockEndEmbed = new EmbedBuilder()
         .setTitle("Lockdown ended")
         .setDescription("The lockdown in this channel has ended. Normal channel permissions have been restored.");
 

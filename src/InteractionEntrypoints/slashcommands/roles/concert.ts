@@ -1,4 +1,4 @@
-import { ActionRow, Embed, Guild, Role, SelectMenuComponent, SelectMenuOption } from "discord.js";
+import { ActionRow, EmbedBuilder, Guild, Role, SelectMenuComponent, SelectMenuOption } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
     const countryActionRow = new ActionRow().setComponents(countrySelectMenu);
     const concertActionRow = new ActionRow().setComponents(temporaryConcertSelectMenu);
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("🧙 Concert Selection Wizard")
         .setDescription(
             "Please select your country below, and then the concert(s) you wish to attend. Selecting a concert that you already have will remove it."
@@ -110,7 +110,7 @@ const genSelectConcertId = command.addInteractionListener("selectConcert", <cons
 
     const description = [gave, removed].filter((s) => s).join("\n\n");
 
-    const embed = new Embed().setTitle("🧙 Concert Selection Wizard").setDescription(description);
+    const embed = new EmbedBuilder().setTitle("🧙 Concert Selection Wizard").setDescription(description);
 
     await ctx.update({ embeds: [embed], components: [] });
 });

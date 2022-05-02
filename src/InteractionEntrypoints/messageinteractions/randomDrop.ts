@@ -5,7 +5,7 @@
  */
 
 import { RandomDrop } from ".prisma/client";
-import { Colors, Embed, TextChannel } from "discord.js";
+import { Colors, EmbedBuilder, TextChannel } from "discord.js";
 import { NicoClient } from "../../../app";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -34,7 +34,7 @@ async function runDrop(prize: DropPrize, channel: TextChannel): Promise<void> {
     const winningIndices = F.sample(F.indexArray(NUM_BUTTONS), prize.quantity);
     const maxGuessesPerUser = 2;
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: `Nico tripped over ${randomNoun}`, iconURL: NicoClient.user?.displayAvatarURL() })
         .setColor(Colors.Red)
         .addFields({

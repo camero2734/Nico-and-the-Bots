@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
         data: { finished: true }
     });
 
-    const embed = new Embed().setDescription(`${member} has been unmuted!`);
+    const embed = new EmbedBuilder().setDescription(`${member} has been unmuted!`);
     await ctx.send({ embeds: [embed] });
 });
 

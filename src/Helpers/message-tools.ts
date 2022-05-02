@@ -2,7 +2,7 @@ import {
     ActionRow,
     MessageActionRowComponent,
     Collection,
-    Embed,
+    EmbedBuilder,
     GuildMember,
     Message,
     MessageOptions,
@@ -11,8 +11,8 @@ import {
 } from "discord.js";
 import { constants } from "../Configuration/config";
 
-export function strEmbed(strings: TemplateStringsArray, color?: number): Embed {
-    const baseEmbed = new Embed().setDescription(strings.join(""));
+export function strEmbed(strings: TemplateStringsArray, color?: number): EmbedBuilder {
+    const baseEmbed = new EmbedBuilder().setDescription(strings.join(""));
     if (color) baseEmbed.setColor(color);
     return baseEmbed;
 }

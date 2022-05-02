@@ -1,5 +1,5 @@
 import async from "async";
-import { ActionRow, ButtonComponent, ButtonStyle, Embed, MessageAttachment, MessageOptions } from "discord.js";
+import { ActionRow, ButtonComponent, ButtonStyle, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
 import TwitterApi, { MediaVideoInfoV1 } from "twitter-api-v2";
 import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";
@@ -55,9 +55,9 @@ export class TwitterWatcher extends Watcher<TweetType> {
             const images = videoURL
                 ? [videoURL]
                 : (tweet.attachments?.media_keys || [])
-                      .map((mk) => includes.media?.find((m) => m.media_key === mk))
-                      .map((m) => m?.url || m?.preview_image_url || "")
-                      .filter((m) => m);
+                    .map((mk) => includes.media?.find((m) => m.media_key === mk))
+                    .map((m) => m?.url || m?.preview_image_url || "")
+                    .filter((m) => m);
 
             const date = new Date(tweet.created_at || Date.now());
 
@@ -92,7 +92,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 title = `@${this.handle} ${tweetType} @${tweeterUsername}`;
             }
 
-            const mainEmbed = new Embed()
+            const mainEmbed = new EmbedBuilder()
                 .setAuthor({ name: title, iconURL: TWITTER_IMG, url: url }) // prettier-ignore
                 .setThumbnail(tweeterImage || TWITTER_IMG)
                 .setColor(0x55adee)
@@ -115,8 +115,8 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 for (let i = start; i < images.length; i++) {
                     const image = images[i];
 
-                    const embed = new Embed().setTitle(`${i + 1}/${images.length}`);
-                    const att = new MessageAttachment(image);
+                    const embed = new EmbedBuilder().setTitle(`${i + 1}/${images.length}`);
+                    const att = new Attachment(image);
 
                     const isVideo = image.includes(".mp4");
                     if (isVideo) {

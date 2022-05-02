@@ -3,7 +3,7 @@ import {
     MessageActionRowComponent,
     ButtonComponent,
     ButtonStyle,
-    Embed,
+    EmbedBuilder,
     GuildMember,
     SelectMenuComponent,
     SelectMenuOption
@@ -35,14 +35,14 @@ command.setHandler(async (ctx) => {
 // Main list
 async function generateReminderList(
     member: GuildMember
-): Promise<[Embed] | [Embed, ActionRow<MessageActionRowComponent>]> {
+): Promise<[EmbedBuilder] | [EmbedBuilder, ActionRow<MessageActionRowComponent>]> {
     const reminders = await prisma.reminder.findMany({
         where: { userId: member.id },
         orderBy: { sendAt: "asc" }
     });
 
     if (reminders.length < 1) {
-        return [new Embed({ description: "You don't have any reminders! Create one using `/remind new`" })];
+        return [new EmbedBuilder({ description: "You don't have any reminders! Create one using `/remind new`" })];
     }
 
     const selectMenu = new SelectMenuComponent()
@@ -60,7 +60,7 @@ async function generateReminderList(
     }
 
     const actionRow = new ActionRow().setComponents(selectMenu);
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("Your reminders")
         .setDescription(
             "You may view your reminders in the list below. Selecting one will open a new menu with more information, as well as the ability to delete the reminder."
@@ -94,7 +94,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
         // Delete reminder
         await prisma.reminder.delete({ where: { id } });
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setTitle("Deleted reminder")
             .setDescription("Your reminder has been deleted.")
             .addFields({ name: "Text", value: reminder.text });
@@ -115,7 +115,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
         const reminderBody = reminder.text.substring(250);
         const reminderTitle = reminderBody === "" ? reminder.text : `${reminder.text.substring(0, 250)}...`;
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setTitle(reminderTitle)
             .addFields({ name: "Sending", value: `${sendTS} (${sendTSRelative})` })
             .addFields({ name: "Created", value: madeTS });

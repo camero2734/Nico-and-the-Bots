@@ -4,9 +4,9 @@ import {
     ActionRow,
     ButtonComponent,
     ButtonStyle,
-    Embed,
+    EmbedBuilder,
     Message,
-    MessageAttachment,
+    Attachment,
     MessageOptions,
     Snowflake
 } from "discord.js";
@@ -110,7 +110,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .join(", ");
         const file = obj.VISUAL?._data.image || undefined;
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setAuthor({
                 name: `${this.displayName} updated! [${R.keys(obj).join(" ")} change]`,
                 iconURL: this.client.user?.displayAvatarURL(),
@@ -124,7 +124,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         );
 
         if (file) {
-            const att = new MessageAttachment(file, "file.png");
+            const att = new Attachment(file, "file.png");
             embed.setImage("attachment://file.png");
             return [[{ embeds: [embed], files: [att], components: [actionRow] }]];
         } else return [[{ embeds: [embed], components: [actionRow] }]];

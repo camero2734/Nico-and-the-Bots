@@ -1,4 +1,4 @@
-import { Embed, MessageOptions } from "discord.js";
+import { EmbedBuilder, MessageOptions } from "discord.js";
 import { IgApiClient, UserFeedResponseItemsItem } from "instagram-private-api";
 import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";
@@ -62,7 +62,7 @@ export class InstaWatcher extends Watcher<InstaType> {
 
             const msgs: MessageOptions[] = [];
 
-            const mainEmbed = new Embed()
+            const mainEmbed = new EmbedBuilder()
                 .setAuthor({
                     name: `@${this.handle} posted on Instagram`,
                     iconURL: "https://i.imgur.com/a5YxpVK.png",
@@ -74,7 +74,7 @@ export class InstaWatcher extends Watcher<InstaType> {
                 .setTimestamp(date);
 
             const additionalEmbeds = images.slice(1).map((image, idx) => {
-                return new Embed().setTitle(`${idx + 2}/${images.length}`).setImage(image);
+                return new EmbedBuilder().setTitle(`${idx + 2}/${images.length}`).setImage(image);
             });
             return [{ embeds: [mainEmbed, ...additionalEmbeds] }];
         });

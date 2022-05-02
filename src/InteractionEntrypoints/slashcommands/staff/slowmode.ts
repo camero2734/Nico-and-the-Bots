@@ -1,4 +1,4 @@
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -21,7 +21,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.channel.setRateLimitPerUser(ctx.opts.time);
 
-    const embed = new Embed().setAuthor({
+    const embed = new EmbedBuilder().setAuthor({
         name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
         iconURL: ctx.client.user?.displayAvatarURL()
     });

@@ -1,6 +1,6 @@
 import { CommandError } from "../../../Configuration/definitions";
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
-import { Embed, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import parseDuration from "parse-duration";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
@@ -63,13 +63,13 @@ command.setHandler(async (ctx) => {
 
     const inMinutes = millisecondsToMinutes(durationMs);
     const timestamp = F.discordTimestamp(endsAt, "shortDateTime");
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setDescription(`${member} has been timed out for ${timeStr} (${inMinutes} minutes)`)
         .addFields({ name: "Ends at", value: timestamp });
     await ctx.send({ embeds: [embed] });
 
     // Message timed out member
-    const dmEmbed = new Embed()
+    const dmEmbed = new EmbedBuilder()
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription(
             `You have been muted until ${timestamp}. You can always message the server moderators if you feel there has been a mistake.`

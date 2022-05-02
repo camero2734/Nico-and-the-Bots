@@ -1,6 +1,6 @@
 import { addDays } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v9";
-import { ActionRow, ButtonComponent, Embed, Message, Snowflake, TextChannel } from "discord.js";
+import { ActionRow, ButtonComponent, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -32,7 +32,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
             );
         }
 
-        const embed = new Embed().setDescription(MESSAGE_ALREADY_GOLD);
+        const embed = new EmbedBuilder().setDescription(MESSAGE_ALREADY_GOLD);
         const actionRow = new ActionRow().setComponents(
             new ButtonComponent()
                 .setLabel("View post")
@@ -86,22 +86,22 @@ async function handleGold(
 
     const goldBaseEmbed = isAdditionalGold
         ? msg.embeds[0]
-        : new Embed()
-              .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
-              .setColor(0xfce300)
-              .addFields({ name: "Channel", value: `${msg.channel}`, inline: true })
-              .addFields({ name: "Posted", value: F.discordTimestamp(new Date(), "shortDateTime"), inline: true })
-              .addFields({ name: "Message", value: msg.content || "*No content*" })
-              .setFooter({ text: `Given by ${ctx.member.displayName}.`, iconURL: ctx.user.displayAvatarURL() });
+        : new EmbedBuilder()
+            .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
+            .setColor(0xfce300)
+            .addFields({ name: "Channel", value: `${msg.channel}`, inline: true })
+            .addFields({ name: "Posted", value: F.discordTimestamp(new Date(), "shortDateTime"), inline: true })
+            .addFields({ name: "Message", value: msg.content || "*No content*" })
+            .setFooter({ text: `Given by ${ctx.member.displayName}.`, iconURL: ctx.user.displayAvatarURL() });
 
     if (!isAdditionalGold && msg.attachments.size > 0) {
         const url = msg.attachments.first()?.url;
         if (url) goldBaseEmbed.setImage(url);
     }
 
-    let askEmbed = new Embed(goldBaseEmbed).addFields({ name: "\u200b", value: "**Would you like to give gold to this message?**" }); // prettier-ignore
+    let askEmbed = new EmbedBuilder(goldBaseEmbed).addFields({ name: "\u200b", value: "**Would you like to give gold to this message?**" }); // prettier-ignore
     if (isAdditionalGold) {
-        askEmbed = new Embed()
+        askEmbed = new EmbedBuilder()
             .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
             .setColor(0xfce300)
             .setDescription("Would you like to add another gold to this message?");
@@ -155,7 +155,7 @@ async function handleGold(
         new ButtonComponent().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl)
     );
 
-    const goldEmbed = new Embed(goldBaseEmbed);
+    const goldEmbed = new EmbedBuilder(goldBaseEmbed);
     const idx = goldEmbed.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
     if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
@@ -195,9 +195,9 @@ async function handleGold(
         });
 
         return m;
-    }, {timeout: 15000, maxWait: 15000}); // prettier-ignore
+    }, { timeout: 15000, maxWait: 15000 }); // prettier-ignore
 
-    const replyEmbed = new Embed().setDescription("Gold successfully given");
+    const replyEmbed = new EmbedBuilder().setDescription("Gold successfully given");
 
     const replyActionRow = new ActionRow().setComponents(
         new ButtonComponent().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url)

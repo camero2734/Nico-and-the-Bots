@@ -1,4 +1,4 @@
-import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, Embed } from "discord.js";
+import { ActionRow, ApplicationCommandOptionType, ButtonComponent, ButtonStyle, EmbedBuilder } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
             data: { text: ctx.opts.text }
         });
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setTitle(`Your tag \`${ctx.opts.name}\` was successfully edited`)
             .setDescription(ctx.opts.text);
         await ctx.send({ embeds: [embed.toJSON()] });
@@ -43,7 +43,7 @@ command.setHandler(async (ctx) => {
         data: { value: ctx.opts.text }
     });
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle(`Create tag \`${ctx.opts.name}\`? [${TAG_COST} credits]`)
         .setDescription(ctx.opts.text)
         .setFooter({ text: "Select yes or no" });
@@ -75,7 +75,7 @@ const generateYesID = command.addInteractionListener("tcYes", <const>["name", "t
         prisma.temporaryText.delete({ where: { id } })
     ]);
 
-    const doneEmbed = new Embed()
+    const doneEmbed = new EmbedBuilder()
         .setTitle(`Tag created: \`${args.name}\``)
         .setDescription(text)
         .addFields({ name: "Usage", value: `Use this tag with the command \`/tags use ${createdTag.name}\`` });

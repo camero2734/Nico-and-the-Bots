@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRow, ButtonComponent, ButtonStyle, Embed, TextChannel } from "discord.js";
+import { ActionRow, ButtonComponent, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
@@ -20,7 +20,7 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
     const msg = await staffChan.send({ embeds: [embed], components: [actionRow] });
     const thread = await msg.startThread({ name: args.title, autoArchiveDuration: 60 });
 
-    const threadEmbed = new Embed()
+    const threadEmbed = new EmbedBuilder()
         .setTitle(args.title)
         .setAuthor({ name: `${ctx.member.displayName} requested discussion`, iconURL: ctx.user.displayAvatarURL() })
         .setDescription("Feel free to discuss this incident in this thread");
@@ -38,11 +38,11 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
     const commandName = entrypoint.identifier;
     const args = opts
         ? Object.entries(opts)
-              .map(([key, val]) => `\`${key}\`: ${val}`)
-              .join(", ")
+            .map(([key, val]) => `\`${key}\`: ${val}`)
+            .join(", ")
         : "*None*";
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
         .setTitle(`${commandName} used`)
         .addFields({ name: "Args", value: args })

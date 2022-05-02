@@ -1,4 +1,4 @@
-import { ActionRow, ButtonComponent, Embed, Modal, TextInputComponent } from "@discordjs/builders";
+import { ActionRow, ButtonComponent, EmbedBuilder, Modal, TextInputComponent } from "@discordjs/builders";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
     Colors,
@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
 });
 
 async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions & MessageEditOptions> {
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("Your Firebreathers Application")
         .setDescription(
             `Please fill out all parts below. You may go back and review your answers at any time before submitting.\
@@ -173,7 +173,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>
 });
 
 const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("FB Application Submitted!")
         .setDescription(
             "Thank you for submitting your application for the Firebreathers role. Staff members will review your application and make a decision as soon as possible.\n\nIn the mean time, I encourage you to listen to Clear."

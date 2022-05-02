@@ -1,7 +1,7 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedError, TopfeedSource } from "../source";
 import { TweetV2, TwitterApi, TwitterApiReadOnly, TwitterV2IncludesHelper } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
-import { ActionRow, ButtonComponent, ButtonStyle, Colors, Embed, MessageAttachment, MessageOptions } from "discord.js";
+import { ActionRow, ButtonComponent, ButtonStyle, Colors, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
 import { emojiIDs } from "../../../Configuration/config";
 
 interface ITwitterSourceInput extends ITopfeedSourceInput {
@@ -86,7 +86,7 @@ export class TwitterSource extends TopfeedSource {
 
     generateMessages(title: string, description: string, url: string, imageUrls: string[]): MessageOptions[] {
         const firstMessage = this.embedToMsg(
-            new Embed() //
+            new EmbedBuilder() //
                 .setTitle(title)
                 .setDescription(description)
                 .setImage(imageUrls[0])
@@ -104,7 +104,7 @@ export class TwitterSource extends TopfeedSource {
         const restMessages = imageUrls
             .splice(1)
             .map((img, idx) => {
-                return new Embed()
+                return new EmbedBuilder()
                     .setTitle(`${idx + 2} / ${imageUrls.length}`)
                     .setColor(Colors.Blue)
                     .setImage(img);

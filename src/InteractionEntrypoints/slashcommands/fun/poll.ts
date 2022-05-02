@@ -4,7 +4,7 @@ import {
     ActionRow,
     ApplicationCommandOptionType,
     ComponentType,
-    Embed,
+    EmbedBuilder,
     GuildEmoji,
     Message,
     SelectMenuComponent,
@@ -95,7 +95,7 @@ command.setHandler(async (ctx) => {
         include: { votes: true }
     });
 
-    const embed = new Embed().setAuthor({ name: title, iconURL: ctx.user.displayAvatarURL() });
+    const embed = new EmbedBuilder().setAuthor({ name: title, iconURL: ctx.user.displayAvatarURL() });
 
     embed.setFields(...generateStatsDescription(poll, parsedOptions));
 
@@ -124,7 +124,7 @@ command.setHandler(async (ctx) => {
         });
         await thread.send({
             embeds: [
-                new Embed({
+                new EmbedBuilder({
                     description: "Welcome to the discussion for the poll!"
                 })
             ]
@@ -191,7 +191,7 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         .map((opt, idx) => ({ opt, count: votes[idx] }))
         .sort((opt1, opt2) => opt2.count - opt1.count);
 
-    const tempEmbed = new Embed();
+    const tempEmbed = new EmbedBuilder();
 
     const toEmoji = (id: string) => `<:name:${id}>`;
     const startEmoji = toEmoji(emojiIDs.poll.start);

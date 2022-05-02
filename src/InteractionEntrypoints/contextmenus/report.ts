@@ -3,8 +3,8 @@ import {
     ButtonComponent,
     ButtonStyle,
     ComponentType,
-    Embed,
-    MessageAttachment,
+    EmbedBuilder,
+    Attachment,
     MessageOptions,
     SelectMenuComponent,
     SelectMenuOption,
@@ -31,7 +31,7 @@ const ctxMenu = new MessageContextMenu("🚩 Report message");
 ctxMenu.setHandler(async (ctx, msg) => {
     await ctx.deferReply({ ephemeral: true });
 
-    const embed = new Embed()
+    const embed = new EmbedBuilder()
         .setTitle("Report message")
         .setDescription(
             "If you want to report this message to the server staff, please choose the reason in the dropdown below.\n\nIf this was an accident, you may safely ignore this message"
@@ -96,7 +96,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
 
         btn.setLabel(NUM_PEOPLE_TEXT(priorReports.length + 1));
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setDescription("A new report was added for this message")
             .addFields({ name: "Reason", value: reasonText })
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
@@ -114,7 +114,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         await staffMsg.edit({ components: [actionRow] });
         await staffMsg.reply({ embeds: [embed] });
     } else {
-        const staffEmbed = new Embed()
+        const staffEmbed = new EmbedBuilder()
             .setAuthor({ name: msgMember.displayName, iconURL: msgMember.displayAvatarURL() })
             .setTitle("Message Reported")
             .setDescription(msg.content)
@@ -134,7 +134,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
 
         const image = msg.attachments.filter((a) => !!a.contentType?.startsWith("image")).first();
         if (image) {
-            const attachment = new MessageAttachment(image.url, "file.png");
+            const attachment = new Attachment(image.url, "file.png");
             if (selectedReason === "NSFW_SLURS") attachment.setSpoiler(true);
             msgOpts.files = [attachment];
             staffEmbed.setImage("attachment://file.png");
@@ -156,7 +156,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
     }
 
     await ctx.editReply({
-        embeds: [new Embed({ description: "Your report has been submitted." })],
+        embeds: [new EmbedBuilder({ description: "Your report has been submitted." })],
         components: []
     });
 });

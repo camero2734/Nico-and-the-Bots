@@ -1,7 +1,7 @@
 import {
     ActionRow,
     ApplicationCommandOptionType,
-    Embed,
+    EmbedBuilder,
     EmojiIdentifierResolvable,
     GuildMember,
     SelectMenuComponent,
@@ -44,7 +44,7 @@ command.setHandler(async (ctx) => {
             await ctx.member.roles.remove(role);
         }
         await ctx.member.roles.remove(roles.topfeed.divider);
-        return ctx.send({ embeds: [new Embed().setDescription("All your roles have been removed.").toJSON()] });
+        return ctx.send({ embeds: [new EmbedBuilder().setDescription("All your roles have been removed.").toJSON()] });
     }
 
     const options = Object.entries(roles.topfeed.selectable);
@@ -67,7 +67,7 @@ command.setHandler(async (ctx) => {
 
     const actionRow = new ActionRow().setComponents(menu);
 
-    const embed = new Embed().setDescription(
+    const embed = new EmbedBuilder().setDescription(
         "Select your topfeed roles below. You will receive a ping when the channel receives an update."
     );
 
@@ -100,7 +100,7 @@ const genChoiceId = command.addInteractionListener("topfeedChoose", [], async (c
     const text = `You now have the following topfeed roles:\n${selected.map((s) => `<@&${s}>`).join(" ")}`;
 
     ctx.deferred = true;
-    await ctx.editReply({ embeds: [new Embed().setDescription(text)], components: [] });
+    await ctx.editReply({ embeds: [new EmbedBuilder().setDescription(text)], components: [] });
 });
 
 export default command;

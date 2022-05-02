@@ -3,9 +3,9 @@ import {
     ActionRow,
     ButtonComponent,
     Client,
-    Embed,
+    EmbedBuilder,
     GuildMember,
-    MessageAttachment,
+    Attachment,
     MessageComponentInteraction,
     PartialGuildMember,
     Snowflake,
@@ -105,7 +105,7 @@ export class SacarverBot {
             }
         ];
 
-        const embed = new Embed()
+        const embed = new EmbedBuilder()
             .setTitle("Welcome to the twenty one pilots Discord server!")
             .setAuthor({ name: member.displayName, iconURL: member.user.displayAvatarURL() })
             .setDescription(
@@ -144,7 +144,7 @@ export class SacarverBot {
 
         await interaction.reply({
             embeds: [
-                new Embed({
+                new EmbedBuilder({
                     description: `You now have the announcements role! You can remove this at any time by using the \`/roles announcements\` command in <#${channelIDs.commands}>`
                 })
             ],
@@ -153,7 +153,7 @@ export class SacarverBot {
         });
     }
 
-    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<MessageAttachment> {
+    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<Attachment> {
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
 
@@ -195,7 +195,7 @@ export class SacarverBot {
         ctx.textAlign = "center";
         ctx.fillText(`#${memberNum}`, 155, 0);
 
-        const attachment = new MessageAttachment(canvas.toBuffer(), "welcome.png");
+        const attachment = new Attachment(canvas.toBuffer(), "welcome.png");
         return attachment;
     }
 

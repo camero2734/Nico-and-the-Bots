@@ -20,11 +20,11 @@ RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn ins
 COPY . .
 
 # Unlock git-crypt
-# ARG CRYPT64
-# RUN ls .git || echo "not found"
-# RUN echo $CRYPT64 | base64 -d >> gc.key
-# RUN git-crypt unlock gc.key
-# RUN rm gc.key
+ARG CRYPT64
+RUN ls .git || echo "not found"
+RUN echo $CRYPT64 | base64 -d >> gc.key
+RUN git-crypt unlock gc.key
+RUN rm gc.key
 
 # Whether or not to pull the production DB
 ARG UPDATE_DB

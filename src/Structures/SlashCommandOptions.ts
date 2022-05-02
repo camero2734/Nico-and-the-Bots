@@ -69,6 +69,7 @@ type ToObject<T extends DeepReadonly<CommandOptions[number]>> = AsArray<T> exten
     : never;
 
 type ToObjectsArray<T extends CommandOptions> = {
+    // @ts-ignore
     [I in keyof T]: ToObject<T[I]>;
 };
 

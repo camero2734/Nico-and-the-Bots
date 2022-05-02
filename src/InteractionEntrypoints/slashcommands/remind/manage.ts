@@ -5,7 +5,7 @@ import {
     ButtonStyle,
     EmbedBuilder,
     GuildMember,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuOptionBuilder
 } from "discord.js";
 import F from "../../../Helpers/funcs";
@@ -45,7 +45,7 @@ async function generateReminderList(
         return [new EmbedBuilder({ description: "You don't have any reminders! Create one using `/remind new`" })];
     }
 
-    const selectMenu = new SelectMenuComponent()
+    const selectMenu = new SelectMenuBuilder()
         .setCustomId(genActionId({ reminderId: "void", actionType: ActionTypes.SelectReminder.toString() }))
         .setPlaceholder("Select a reminder for more information");
 
@@ -56,7 +56,7 @@ async function generateReminderList(
 
         const label = r.text.substring(0, 25);
         const description = formatReminderDate(r.sendAt).substring(0, 50);
-        selectMenu.addOptions(new SelectMenuOptionBuilder({ label, description, emoji: { id: emoji?.id }, value: `${r.id}` }));
+        selectMenu.addOptions([new SelectMenuOptionBuilder({ label, description, emoji: { id: emoji?.id }, value: `${r.id}` })]);
     }
 
     const actionRow = new ActionRowBuilder().setComponents(selectMenu);

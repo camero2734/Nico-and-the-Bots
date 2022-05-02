@@ -12,7 +12,8 @@ import {
     MessageComponentInteraction,
     OverwriteData,
     Snowflake,
-    TextChannel
+    TextChannel,
+    ButtonComponent
 } from "discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
@@ -206,14 +207,17 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
     // Change button to mute
     const msg = ctx.message;
     const [actionRow] = msg.components;
-    const button = actionRow.components.find((btn) => btn.customId === ctx.customId);
-    if (button?.type !== ComponentType.Button) return;
 
-    button
-        .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.REMUTE_ALL.toString() }))
-        .setLabel("Remute Users");
+    const newComponents = actionRow.components.map(c => {
+        if (c.type !== ComponentType.Button && c.customId !== ctx.customId) return c;
 
-    await msg.edit({ components: msg.components });
+        return ButtonBuilder.from(c as ButtonComponent)
+            .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.REMUTE_ALL.toString() }))
+            .setLabel("Remute Users");
+    });
+
+
+    await msg.edit({ components: [new ActionRowBuilder().setComponents(newComponents)] });
 }
 
 async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs): Promise<void> {
@@ -228,14 +232,17 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
     // Change button to unmute
     const msg = ctx.message;
     const [actionRow] = msg.components;
-    const button = actionRow.components.find((btn) => btn.customId === ctx.customId);
-    if (button?.type !== ComponentType.Button) return;
 
-    button
-        .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.UNMUTE_ALL.toString() }))
-        .setLabel("Unmute Users");
+    const newComponents = actionRow.components.map(c => {
+        if (c.type !== ComponentType.Button && c.customId !== ctx.customId) return c;
 
-    await msg.edit({ components: msg.components });
+        return ButtonBuilder.from(c as ButtonComponent)
+            .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.UNMUTE_ALL.toString() }))
+            .setLabel("Unmute Users")
+    });
+
+
+    await msg.edit({ components: [new ActionRowBuilder().setComponents(newComponents)] });
 }
 
 async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs): Promise<void> {

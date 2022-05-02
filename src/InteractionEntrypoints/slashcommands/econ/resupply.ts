@@ -8,7 +8,7 @@ import {
     GuildMember,
     Message,
     MessageComponentInteraction,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuInteraction,
     SelectMenuOptionBuilder
 } from "discord.js";
@@ -69,8 +69,8 @@ command.setHandler(async (ctx) => {
             })
     );
 
-    const menu = new SelectMenuComponent()
-        .addOptions(...options)
+    const menu = new SelectMenuBuilder()
+        .addOptions(options)
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 

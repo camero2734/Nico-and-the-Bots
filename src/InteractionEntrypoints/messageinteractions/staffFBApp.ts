@@ -6,7 +6,7 @@ import {
     EmbedBuilder,
     Guild,
     Attachment,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
@@ -119,9 +119,9 @@ export async function sendToStaff(
         }
 
         const actionRow = new ActionRowBuilder().setComponents(
-            new SelectMenuComponent()
+            new SelectMenuBuilder()
                 .addOptions(
-                    ...[
+                    [
                         new SelectMenuOptionBuilder({
                             label: "Accept",
                             value: ActionTypes.Accept.toString(),

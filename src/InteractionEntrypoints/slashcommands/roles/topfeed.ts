@@ -4,7 +4,7 @@ import {
     EmbedBuilder,
     EmojiIdentifierResolvable,
     GuildMember,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuOptionBuilder,
     Snowflake
 } from "discord.js";
@@ -48,9 +48,9 @@ command.setHandler(async (ctx) => {
     }
 
     const options = Object.entries(roles.topfeed.selectable);
-    const menu = new SelectMenuComponent()
+    const menu = new SelectMenuBuilder()
         .addOptions(
-            ...options.map(
+            options.map(
                 ([roleName, roleID]) =>
                     new SelectMenuOptionBuilder({
                         label: roleName,

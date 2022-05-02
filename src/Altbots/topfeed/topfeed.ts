@@ -1,6 +1,6 @@
 import consola from "consola";
 import { minutesToMilliseconds } from "date-fns";
-import { Client, Guild, TextChannel } from "discord.js";
+import { Client, EmbedBuilder, Guild, TextChannel } from "discord.js";
 import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
@@ -109,11 +109,13 @@ class TopfeedBot {
                 // First msg is sent to channel, rest are threaded
                 const [mainMsg, ...threadedMsgs] = post;
 
+                const embed = mainMsg.embeds?.[0] && EmbedBuilder.from(mainMsg.embeds?.[0]);
+
                 const partialTitle =
-                    `${mainMsg.embeds?.[0]?.description?.substring(0, 20)}...` || `${watchersType} post`;
+                    `${embed?.data?.description?.substring(0, 20)}...` || `${watchersType} post`;
                 const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
 
-                const threadStarter = await chan.send({...mainMsg, content: `<@&${watcher.pingedRole}>\n${mainMsg.content ?? ""}`}); // prettier-ignore
+                const threadStarter = await chan.send({ ...mainMsg, content: `<@&${watcher.pingedRole}>\n${mainMsg.content ?? ""}` }); // prettier-ignore
                 if (threadedMsgs.length < 1) {
                     watcher.afterCheck(threadStarter);
                     continue;

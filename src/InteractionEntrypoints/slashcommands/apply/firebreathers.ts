@@ -7,7 +7,7 @@ import {
     EmbedBuilder,
     Guild,
     Attachment,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
@@ -105,9 +105,9 @@ export async function sendToStaff(
         }
 
         const actionRow = new ActionRowBuilder().setComponents(
-            new SelectMenuComponent()
+            new SelectMenuBuilder()
                 .addOptions(
-                    ...[
+                    [
                         new SelectMenuOptionBuilder({
                             label: "Accept",
                             value: ActionTypes.Accept.toString(),
@@ -198,9 +198,9 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
         .setFooter({ text: applicationId });
 
-    if (!embed.author) return; // Just to make typescript happy
+    if (!embed.data.author) return; // Just to make typescript happy
 
-    const msgEmbed = ctx.message.embeds[0];
+    const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
 
     const action = ctx.isSelectMenu() ? +ctx.values[0] : +args.type;
     if (action === ActionTypes.Accept) {
@@ -210,7 +210,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
         });
         await member.roles.add(roles.deatheaters);
 
-        embed.author.name = "Firebreathers Application Approved";
+        embed.data.author.name = "Firebreathers Application Approved";
         embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
 
         await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
@@ -222,7 +222,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
 
         const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
 
-        embed.author.name = "Firebreathers Application Denied";
+        embed.data.author.name = "Firebreathers Application Denied";
         embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
         await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
     } else throw new Error("Invalid action type");

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuComponent, SelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuBuilder, SelectMenuOptionBuilder } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
@@ -16,9 +16,9 @@ command.setHandler(async (ctx) => {
     const concertsByCountry = getConcertsByCountry(ctx.guild);
 
     const countries = Object.keys(concertsByCountry).map((k) => ({ name: k, count: concertsByCountry[k].length }));
-    const countrySelectMenu = new SelectMenuComponent()
+    const countrySelectMenu = new SelectMenuBuilder()
         .addOptions(
-            ...countries.map(
+            countries.map(
                 (c) =>
                     new SelectMenuOptionBuilder({
                         label: F.titleCase(c.name.split("-").join(" ")),
@@ -29,8 +29,8 @@ command.setHandler(async (ctx) => {
         )
         .setPlaceholder("Select a country")
         .setCustomId(genSelectCountryId({}));
-    const temporaryConcertSelectMenu = new SelectMenuComponent()
-        .addOptions(new SelectMenuOptionBuilder({ label: "Dummy option", value: "Dummy value", description: "Dummy" }))
+    const temporaryConcertSelectMenu = new SelectMenuBuilder()
+        .addOptions([new SelectMenuOptionBuilder({ label: "Dummy option", value: "Dummy value", description: "Dummy" })])
         .setPlaceholder("❌ Select a country first")
         .setDisabled(true)
         .setCustomId("selectConcert");
@@ -58,9 +58,9 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
 
     if (!concerts) throw new Error("Invalid country");
 
-    const concertSelectMenu = new SelectMenuComponent()
+    const concertSelectMenu = new SelectMenuBuilder()
         .addOptions(
-            ...concerts.map(
+            concerts.map(
                 (c) =>
                     new SelectMenuOptionBuilder({
                         label: c.name,
@@ -80,7 +80,7 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
 
     // Update placeholder of first select menu to reflect country choice
     const placeholder = `${F.titleCase(country.split("-").join(" "))} selected`;
-    (countryActionRow.components[0] as SelectMenuComponent).setPlaceholder(placeholder);
+    (countryActionRow.components[0] as SelectMenuBuilder).setPlaceholder(placeholder);
 
     await ctx.update({ components: ctx.message.components });
 });

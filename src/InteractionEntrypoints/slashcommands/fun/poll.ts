@@ -7,7 +7,7 @@ import {
     EmbedBuilder,
     GuildEmoji,
     Message,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuOptionBuilder
 } from "discord.js";
 import EmojiReg from "emoji-regex";
@@ -99,7 +99,7 @@ command.setHandler(async (ctx) => {
 
     embed.setFields(...generateStatsDescription(poll, parsedOptions));
 
-    const selectMenu = new SelectMenuComponent()
+    const selectMenu = new SelectMenuBuilder()
         .setCustomId(genPollResId({ pollId: poll.id.toString() }))
         .setMinValues((min_choices as number) || 1)
         .setMaxValues((max_choices as number) || 1)
@@ -108,7 +108,7 @@ command.setHandler(async (ctx) => {
     for (let i = 0; i < parsedOptions.length; i++) {
         const option = parsedOptions[i];
         const emoji = option.emoji as APIMessageComponentEmoji;
-        selectMenu.addOptions(new SelectMenuOptionBuilder({ label: option.text.substring(0, 100), emoji, value: `${i}` }));
+        selectMenu.addOptions([new SelectMenuOptionBuilder({ label: option.text.substring(0, 100), emoji, value: `${i}` })]);
     }
 
     const actionRow = new ActionRowBuilder().setComponents(selectMenu);

@@ -19,7 +19,9 @@ import {
     ApplicationCommandOptionType,
     ButtonStyle,
     ComponentType,
-    ActionRowBuilder
+    ActionRowBuilder,
+    ButtonComponent,
+    MessagePayload
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
@@ -74,7 +76,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         const ctx = interaction as SlashCommandInteraction<T>;
         ctx.send = async (payload) => {
             if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
-            else return ctx.reply(payload as InteractionReplyOptions);
+            else return ctx.reply(payload as unknown as MessagePayload) as unknown as Promise<Message<boolean>>;
         };
         ctx.opts =
             opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
@@ -169,9 +171,10 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
             }
 
             const getMessageButtonWithEmoji = (name: string): ButtonBuilder | undefined => {
-                return actionRow.components.find(
+                const btn = actionRow.components.find(
                     (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name)
-                ) as ButtonBuilder;
+                ) as ButtonComponent;
+                return ButtonBuilder.from(btn);
             };
             const upvoteButton = getMessageButtonWithEmoji("upvote");
             const downvoteButton = getMessageButtonWithEmoji("downvote");

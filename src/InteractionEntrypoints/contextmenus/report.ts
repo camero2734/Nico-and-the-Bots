@@ -6,7 +6,7 @@ import {
     EmbedBuilder,
     Attachment,
     MessageOptions,
-    SelectMenuComponent,
+    SelectMenuBuilder,
     SelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
@@ -37,10 +37,10 @@ ctxMenu.setHandler(async (ctx, msg) => {
             "If you want to report this message to the server staff, please choose the reason in the dropdown below.\n\nIf this was an accident, you may safely ignore this message"
         );
 
-    const selectMenu = new SelectMenuComponent()
+    const selectMenu = new SelectMenuBuilder()
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
         .addOptions(
-            ...Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }))
+            Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }))
         );
 
     const actionRow = new ActionRowBuilder().setComponents(selectMenu);
@@ -94,7 +94,8 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
         const btn = actionRow.components.find((c) => c.customId?.startsWith(NULL_CUSTOM_ID_PREFIX));
         if (btn?.type !== ComponentType.Button) throw new Error("The button disappeared");
 
-        btn.setLabel(NUM_PEOPLE_TEXT(priorReports.length + 1));
+        // @ts-ignore
+        btn.label = NUM_PEOPLE_TEXT(priorReports.length + 1);
 
         const embed = new EmbedBuilder()
             .setDescription("A new report was added for this message")

@@ -7,7 +7,8 @@ import {
     Message,
     MessageOptions,
     Snowflake,
-    TextChannel
+    TextChannel,
+    ComponentBuilder
 } from "discord.js";
 import { constants } from "../Configuration/config";
 
@@ -36,7 +37,7 @@ export const MessageTools = {
 
     /** Takes an array of buttons and places them into an array of Action Row components */
     allocateButtonsIntoRows(
-        buttons: MessageActionRowComponent[],
+        buttons: (MessageActionRowComponent | ComponentBuilder)[],
         options?: IAllocateButtonsOptions
     ): ActionRowBuilder<MessageActionRowComponent>[] {
         const components = [] as ActionRowBuilder<MessageActionRowComponent>[];

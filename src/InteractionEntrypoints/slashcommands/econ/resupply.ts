@@ -273,7 +273,7 @@ async function memberWon(
 
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
     const reply = (await interaction.fetchReply()) as Message;
-    const originalEmbed = reply.embeds[0];
+    const originalEmbed = EmbedBuilder.from(reply.embeds[0]);
     originalEmbed.setFields();
     originalEmbed
         .setDescription(description)

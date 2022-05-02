@@ -169,7 +169,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>
         }
     });
 
-    return ctx.update(await MainMenuPayload(ctx.user.id));
+    ctx.update(await MainMenuPayload(ctx.user.id));
 });
 
 const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {

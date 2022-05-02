@@ -125,7 +125,9 @@ const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, a
     await ctx.deferUpdate();
 
     const actionRow = ctx.message.components[0];
-    actionRow.components.forEach((c) => c.setDisabled?.(true));
+    actionRow.components.map(c => {
+        return { ...c.data, disabled: true };
+    })
 
     await ctx.editReply({ components: [actionRow] }); // Remove buttons to prevent multiple presses
 

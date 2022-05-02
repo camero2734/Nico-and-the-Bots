@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, WebhookEditMessageOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, MessageComponent, WebhookEditMessageOptions } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -72,8 +72,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({}))
     );
 
-    const components = MessageTools.allocateButtonsIntoRows(actionRow.components);
-    console.log(components[0].components[0]);
+    const components = MessageTools.allocateButtonsIntoRows((actionRow.data as any)["components"] as MessageComponent[]);
 
     ctx.editReply({ embeds: [embed], components });
 });
@@ -174,7 +173,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
             //
         } finally {
             embed.setFields();
-            embed.setDescription(`${embed.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`) // prettier-ignore
+            embed.setDescription(`${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`) // prettier-ignore
             ctx.update({ embeds: [embed], components: [] });
         }
 

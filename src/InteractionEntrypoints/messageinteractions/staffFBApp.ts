@@ -43,9 +43,9 @@ export const GenBtnId = msgInt.addInteractionListener(
             .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
             .setFooter({ text: applicationId });
 
-        if (!embed.author) return; // Just to make typescript happy
+        if (!embed.data.author) return; // Just to make typescript happy
 
-        const msgEmbed = ctx.message.embeds[0];
+        const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
 
         const action = ctx.isSelectMenu() ? +ctx.values[0] : +args.type;
         if (action === ActionTypes.Accept) {
@@ -55,7 +55,7 @@ export const GenBtnId = msgInt.addInteractionListener(
             });
             await member.roles.add(roles.deatheaters);
 
-            embed.author.name = "Firebreathers Application Approved";
+            embed.data.author.name = "Firebreathers Application Approved";
             embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
 
             await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
@@ -70,7 +70,7 @@ export const GenBtnId = msgInt.addInteractionListener(
                 "relative"
             );
 
-            embed.author.name = "Firebreathers Application Denied";
+            embed.data.author.name = "Firebreathers Application Denied";
             embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
             await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
         } else throw new Error("Invalid action type");

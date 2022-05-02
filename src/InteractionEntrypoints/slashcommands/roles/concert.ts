@@ -1,4 +1,4 @@
-import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuBuilder, SelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, Guild, Role, SelectMenuBuilder, SelectMenuComponent, SelectMenuOptionBuilder } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import { getConcertChannelManager } from "../../../Helpers/concert-channels";
@@ -50,7 +50,8 @@ command.setHandler(async (ctx) => {
 const genSelectCountryId = command.addInteractionListener("selectCountry", <const>[], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
 
-    const [countryActionRow, concertActionRow] = ctx.message.components;
+    const [countryActionRowCom, concertActionRowCom] = ctx.message.components;
+
 
     const concertsByCountry = getConcertsByCountry(ctx.guild);
     const country = ctx.values[0];
@@ -73,16 +74,18 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
         .setMaxValues(concerts.length)
         .setCustomId(genSelectConcertId({ country }));
 
-    console.log(concertActionRow);
-
-    concertActionRow.components.splice(0, 1);
-    concertActionRow.addComponents(concertSelectMenu);
+    const concertActionRow = new ActionRowBuilder()
+        .setComponents(concertSelectMenu);
 
     // Update placeholder of first select menu to reflect country choice
     const placeholder = `${F.titleCase(country.split("-").join(" "))} selected`;
-    (countryActionRow.components[0] as SelectMenuBuilder).setPlaceholder(placeholder);
 
-    await ctx.update({ components: ctx.message.components });
+    const countrySelect = concertActionRowCom.components[0] as SelectMenuComponent
+    const countryActionRow = new ActionRowBuilder().setComponents(
+        SelectMenuBuilder.from({ ...countrySelect.data, placeholder })
+    );
+
+    await ctx.update({ components: [countryActionRow, concertActionRow] });
 });
 
 const genSelectConcertId = command.addInteractionListener("selectConcert", <const>["country"], async (ctx, args) => {

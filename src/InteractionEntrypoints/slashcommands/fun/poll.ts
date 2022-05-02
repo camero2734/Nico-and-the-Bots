@@ -169,7 +169,7 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
         }
     }
 
-    const embed = ctx.message.embeds[0];
+    const embed = EmbedBuilder.from(ctx.message.embeds[0]);
     embed.setFields(...generateStatsDescription(poll, parsedOptions));
 
     await ctx.update({ embeds: [embed] });
@@ -211,7 +211,7 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         });
     });
 
-    return tempEmbed.fields || [];
+    return tempEmbed.data.fields || [];
 }
 
 export default command;

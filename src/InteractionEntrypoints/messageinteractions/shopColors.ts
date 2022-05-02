@@ -51,28 +51,25 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
     const cantAfford = dbUser.credits < category.data.credits;
     const missingCredits = category.data.credits - dbUser.credits;
 
-    const actionRow = new ActionRowBuilder().setComponents(
-        ...category.data.roles.map((role) => {
-            const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-            const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
-            const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
+    const rawComponents = category.data.roles.map((role) => {
+        const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
+        const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
+        const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-            return new ButtonBuilder()
-                .setDisabled(cantAfford)
-                .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
-                .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
-                .setCustomId(
-                    !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID()
-                )
-                .setEmoji({ name: contraband ? "🩸" : undefined });
-        })
-    );
+        return new ButtonBuilder()
+            .setDisabled(cantAfford)
+            .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
+            .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
+            .setCustomId(
+                !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID()
+            )
+            .setEmoji({ name: contraband ? "🩸" : undefined });
+    });
 
-    actionRow.addComponents(
+    const components = MessageTools.allocateButtonsIntoRows([
+        ...rawComponents,
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({}))
-    );
-
-    const components = MessageTools.allocateButtonsIntoRows((actionRow.data as any)["components"] as MessageComponent[]);
+    ]);
 
     ctx.editReply({ embeds: [embed], components });
 });

@@ -10,7 +10,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt update
 
 RUN apt install -y git-crypt postgresql-client-14 pv
-RUN npm i -g pm2 is-ci husky
+RUN npm i -g pm2 is-ci husky gen-esm-wrapper typescript@latest rimraf npm-run-all
 
 # NPM packages
 COPY yarn.lock package.json ./

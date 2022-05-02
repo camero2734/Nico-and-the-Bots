@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { APIMessageComponentEmoji } from "discord-api-types/v9";
+import { APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
     ApplicationCommandOptionData,
     AutocompleteInteraction,

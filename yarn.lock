@@ -2328,9 +2328,9 @@ discord-api-types@^0.31.1:
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.31.2.tgz#8d131e25340bd695815af3bb77128a6993c1b516"
   integrity sha512-gpzXTvFVg7AjKVVJFH0oJGC0q0tO34iJGSHZNz9u3aqLxlD6LfxEs9wWVVikJqn9gra940oUTaPFizCkRDcEiA==
 
-discord-api-types@suneettipirneni/discord-api-types#feat/permissions-v2:
+"discord-api-types@https://gitpkg.now.sh/suneettipirneni/discord-api-types?feat/permissions-v2&scripts.postinstall=%26%26%20tsc%20--skipLibCheck%20%26%26%20run-p%20esm%3A*":
   version "0.32.0"
-  resolved "https://codeload.github.com/suneettipirneni/discord-api-types/tar.gz/a4cfd3d060b03fde0d518c0e316447c00734d8be"
+  resolved "https://gitpkg.now.sh/suneettipirneni/discord-api-types?feat/permissions-v2&scripts.postinstall=%26%26%20tsc%20--skipLibCheck%20%26%26%20run-p%20esm%3A*#4cf26708c61412784d8ef480124723dc01a58481"
 
 "discord.js@https://gitpkg.now.sh/ckohen/discord.js/packages/discord.js?perms-v2":
   version "14.0.0-dev"

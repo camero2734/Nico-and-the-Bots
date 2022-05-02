@@ -1,5 +1,5 @@
 import { addDays } from "date-fns";
-import { ButtonStyle } from "discord-api-types/v9";
+import { ButtonStyle } from "discord-api-types/v10";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";

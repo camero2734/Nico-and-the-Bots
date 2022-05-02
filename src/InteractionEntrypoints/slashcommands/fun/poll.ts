@@ -1,5 +1,5 @@
 import { Poll, Vote } from "@prisma/client";
-import { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v9";
+import { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
     ActionRowBuilder,
     ApplicationCommandOptionType,

@@ -30,5 +30,4 @@ COPY . .
 ARG UPDATE_DB
 ENV UPDATE_DB=$UPDATE_DB
 
-CMD [ "sleep", "100000" ]
-# CMD [ "bash", ".docker/entrypoint.sh" ]
+CMD [ "bash", ".docker/entrypoint.sh" ]

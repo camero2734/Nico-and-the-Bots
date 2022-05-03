@@ -14,7 +14,8 @@ RUN npm i -g pm2 is-ci husky gen-esm-wrapper typescript@latest rimraf npm-run-al
 
 # NPM packages
 COPY yarn.lock package.json ./
-RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install --frozen-lockfile --pure-lockfile
+RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn install --frozen-lockfile --pure-lockfile
 
 # Copy all files
 COPY . .

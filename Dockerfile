@@ -14,7 +14,8 @@ RUN npm i -g pm2 is-ci husky gen-esm-wrapper typescript@latest rimraf npm-run-al
 
 # NPM packages
 COPY yarn.lock package.json ./
-RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install --frozen-lockfile --pure-lockfile
+RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
+    yarn install --frozen-lockfile --pure-lockfile
 
 # Copy all files
 COPY . .
@@ -22,9 +23,9 @@ COPY . .
 # Unlock git-crypt
 ARG CRYPT64
 RUN echo $CRYPT64 | base64 -d >> gc.key
-RUN git -c user.name='A' -c user.email='a@a.co' stash 
+RUN git -c user.name='A' -c user.email='a@a.co' stash || echo "Couldn't stash"
 RUN git-crypt unlock gc.key
-RUN git -c user.name='A' -c user.email='a@a.co' stash pop
+RUN git -c user.name='A' -c user.email='a@a.co' stash pop || echo "Couldn't stash"
 RUN rm gc.key
 
 # Whether or not to pull the production DB

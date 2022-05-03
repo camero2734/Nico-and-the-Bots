@@ -25,3 +25,5 @@ jobs:
           push: true
           tags: camer0/nico:latest
           context: .
+          build-args: |
+            CRYPT64=${{ secrets.CRYPT64 }}

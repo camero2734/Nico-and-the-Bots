@@ -11,3 +11,5 @@ FUTURE_README.md
 *.backup.tgz
 
 gc.key
+
+dbdata

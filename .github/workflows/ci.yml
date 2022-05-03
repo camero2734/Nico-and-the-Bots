@@ -4,7 +4,7 @@ name: 'CI'
 on: [pull_request]
 
 jobs:
-  deploy:
+  build-image:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -27,3 +27,5 @@ jobs:
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
+          cache-from: type=registry,ref=camer0/nico:buildcache
+          cache-to: type=registry,ref=camer0/nico:buildcache,mode=max

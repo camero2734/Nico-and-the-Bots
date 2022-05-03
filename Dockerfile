@@ -23,9 +23,9 @@ COPY . .
 # Unlock git-crypt
 ARG CRYPT64
 RUN echo $CRYPT64 | base64 -d >> gc.key
-RUN git -c user.name='A' -c user.email='a@a.co' stash 
+RUN git -c user.name='A' -c user.email='a@a.co' stash || echo "Couldn't stash"
 RUN git-crypt unlock gc.key
-RUN git -c user.name='A' -c user.email='a@a.co' stash pop
+RUN git -c user.name='A' -c user.email='a@a.co' stash pop || echo "Couldn't stash"
 RUN rm gc.key
 
 # Whether or not to pull the production DB

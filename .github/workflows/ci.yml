@@ -21,9 +21,7 @@ jobs:
 
       - name: Create identifier for PR
         run: |
-          echo ${{ github.ref }}
           echo ${{ github.head_ref }}
-          echo ${{ github.ref_name }}
           echo "TAG=$(echo ${{ github.ref }} | sha1sum | cut -c -10)" >> $GITHUB_ENV
 
       - name: Build and push image

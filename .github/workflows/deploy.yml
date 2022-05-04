@@ -21,6 +21,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Get identifier for PR
         run: |
           echo "TAG=$(echo ${{ github.ref_name }} | sha1sum | cut -c -10)" >> $GITHUB_ENV

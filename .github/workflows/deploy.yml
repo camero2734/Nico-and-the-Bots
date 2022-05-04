@@ -21,10 +21,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Test
+      - name: Get identifier for PR
         run: |
-          echo ${{ github.ref_name }}
-          echo "TAG=$(echo ${{ github.ref }} | sha1sum | cut -c -10)"
+          echo "TAG=$(echo ${{ github.ref_name }} | sha1sum | cut -c -10)" >> $GITHUB_ENV
+
+      - name: Rename tag to :latest and remove
+        run: |
+          docker buildx imagetools create camer0/nico:${{ env.TAG }} --tag camer0/nico:latest
+          curl -i -X DELETE \
+            -H "Accept: application/json" \
+            -H "Authorization: JWT ${{ secrets.DOCKERHUB_TOKEN }}" \
+            https://hub.docker.com/v2/repositories/camer0/nico/tags/${{ env.TAG }}/
 
       # - name: Push to dokku
       #   uses: dokku/github-action@master

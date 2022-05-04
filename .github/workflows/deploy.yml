@@ -39,7 +39,7 @@ jobs:
           docker buildx imagetools create camer0/nico:${{ env.TAG }} --tag camer0/nico:latest
 
           TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d \
-            '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_TOKEN }}"}' \
+            '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_PASSWORD }}"}' \
             https://hub.docker.com/v2/users/login/ | jq -r .token)
 
           curl -i -X DELETE \

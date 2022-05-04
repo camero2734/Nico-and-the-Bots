@@ -21,8 +21,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Push to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: ${{ secrets.DOKKU_SSH_URL }}
-          ssh_private_key: ${{ secrets.DOKKU_SSH_PK}}
+      - name: Test
+        run: |
+          echo "TAG=$(echo ${{ github.ref }} | sha1sum | cut -c -10)"
+
+      # - name: Push to dokku
+      #   uses: dokku/github-action@master
+      #   with:
+      #     git_remote_url: ${{ secrets.DOKKU_SSH_URL }}
+      #     ssh_private_key: ${{ secrets.DOKKU_SSH_PK}}

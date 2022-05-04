@@ -23,9 +23,10 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: camer0/nico:latest
+          tags: camer0/nico:${{ env.GITHUB_REF }}
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=max
+          file: .docker/image.dockerfile

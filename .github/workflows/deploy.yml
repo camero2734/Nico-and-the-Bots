@@ -23,6 +23,7 @@ jobs:
 
       - name: Test
         run: |
+          echo ${{ github.ref }}
           echo "TAG=$(echo ${{ github.ref }} | sha1sum | cut -c -10)"
 
       # - name: Push to dokku

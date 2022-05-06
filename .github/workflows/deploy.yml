@@ -39,7 +39,7 @@ jobs:
         run: |
           docker buildx imagetools create camer0/nico:${{ env.TAG }} --tag camer0/nico:latest
         env: 
-          TAG: "pr_${{ steps.findPr.outputs.pr }}"
+          TAG: "pr-${{ steps.findPr.outputs.pr }}"
 
       - name: Push to Dokku
         uses: dokku/github-action@master
@@ -61,4 +61,4 @@ jobs:
             -H "Authorization: JWT $TOKEN" \
             https://hub.docker.com/v2/repositories/camer0/nico/tags/${{ env.TAG }}/
         env: 
-          TAG: "pr_${{ steps.findPr.outputs.pr }}"
+          TAG: "pr-${{ steps.findPr.outputs.pr }}"

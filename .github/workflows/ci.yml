@@ -36,4 +36,4 @@ jobs:
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=max
           file: .docker/image.dockerfile
         env: 
-          TAG: "pr_${{ steps.findPr.outputs.pr }}"
+          TAG: "pr-${{ steps.findPr.outputs.pr }}"

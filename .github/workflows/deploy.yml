@@ -30,14 +30,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Get identifier for PR
-        run: |
-          echo ${{ github.ref_name }}
-          echo "TAG=$(echo ${{ github.ref_name }} | sha1sum | cut -c -10)" >> $GITHUB_ENV
+      - uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: all
 
       - name: Rename tag to :latest in Docker Hub
         run: |
           docker buildx imagetools create camer0/nico:${{ env.TAG }} --tag camer0/nico:latest
+        env: 
+          TAG: "pr_${{ steps.findPr.outputs.pr }}"
 
       - name: Push to Dokku
         uses: dokku/github-action@master
@@ -57,3 +59,5 @@ jobs:
             -H "Accept: application/json" \
             -H "Authorization: JWT $TOKEN" \
             https://hub.docker.com/v2/repositories/camer0/nico/tags/${{ env.TAG }}/
+        env: 
+          TAG: "pr_${{ steps.findPr.outputs.pr }}"

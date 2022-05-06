@@ -19,9 +19,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Create identifier for PR
-        run: |
-          echo "TAG=$(echo ${{ github.head_ref }} | sha1sum | cut -c -10)" >> $GITHUB_ENV
+      - uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: all
 
       - name: Build and push image
         uses: docker/build-push-action@v2
@@ -34,3 +35,5 @@ jobs:
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=max
           file: .docker/image.dockerfile
+        env: 
+          TAG: "pr_${{ steps.findPr.outputs.pr }}"

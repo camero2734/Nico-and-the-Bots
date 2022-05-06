@@ -1,9 +1,6 @@
-# Wait 5 seconds before running checks
-WAIT=5
-# Attempt checks 100 times
+WAIT=1
 ATTEMPTS=100
-# Wait 3 minutes before giving up
-TIMEOUT=180
+TIMEOUT=20
 
 
-http://localhost:4242   OK
+:4242   OK

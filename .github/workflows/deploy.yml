@@ -46,6 +46,7 @@ jobs:
         with:
           git_remote_url: ${{ secrets.DOKKU_SSH_URL }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PK}}
+          git_push_flags: '--force'
 
       - name: Remove PR tag from Docker Hub
         run: |

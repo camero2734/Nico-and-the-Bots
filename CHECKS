@@ -3,4 +3,4 @@ ATTEMPTS=100
 TIMEOUT=20
 
 
-:4242   OK
+localhost:4242/   OK

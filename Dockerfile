@@ -1,4 +1,3 @@
-# syntax = docker/dockerfile:experimental
 FROM camer0/nico:latest
 
 USER root

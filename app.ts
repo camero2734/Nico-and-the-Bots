@@ -64,6 +64,8 @@ client.on("ready", async () => {
 
     guild = await client.guilds.fetch({ force: true, guild: guildID });
 
+    startHTTPServer();
+
     await entrypointsReady;
     InteractionEntrypoint.registerAllCommands(guild);
 
@@ -197,5 +199,12 @@ async function setup() {
 
 export const NicoClient = client;
 
-const server = http.createServer();
-server.listen(4242, "127.0.0.1");
+// Let Dokku know that we've started
+function startHTTPServer() {
+    const server = http.createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.write('OK');
+        res.end();
+    });
+    server.listen(4242, "127.0.0.1");
+}

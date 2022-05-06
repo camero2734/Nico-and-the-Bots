@@ -19,13 +19,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Create identifier for PR
+        run: |
+          echo "TAG=$(echo ${{ github.head_ref }} | sha1sum | cut -c -10)" >> $GITHUB_ENV
+
       - name: Build and push image
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: camer0/nico:latest
+          tags: camer0/nico:${{ env.TAG }}
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=max
+          file: .docker/image.dockerfile

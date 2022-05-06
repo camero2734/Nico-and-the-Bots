@@ -196,6 +196,3 @@ async function setup() {
 }
 
 export const NicoClient = client;
-
-const server = http.createServer();
-server.listen(4242, "127.0.0.1");

@@ -29,11 +29,11 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setTitle(member.displayName)
         .setThumbnail(member.user.displayAvatarURL())
-        .addFields({ name: "Account created on", value: `${member.user.createdAt}` })
-        .addFields({ name: "Originally joined on", value: `${dbUser.joinedAt}` })
-        .addFields({ name: "Last joined on", value: `${member.joinedAt || new Date()}` })
-        .addFields({ name: "Golds", value: `${golds}`, inline: true })
-        .addFields({ name: "Daily count", value: `${dbUser.dailyBox?.dailyCount || 0}` })
+        .addFields([{ name: "Account created on", value: `${member.user.createdAt}` }])
+        .addFields([{ name: "Originally joined on", value: `${dbUser.joinedAt}` }])
+        .addFields([{ name: "Last joined on", value: `${member.joinedAt || new Date()}` }])
+        .addFields([{ name: "Golds", value: `${golds}`, inline: true }])
+        .addFields([{ name: "Daily count", value: `${dbUser.dailyBox?.dailyCount || 0}` }])
         .setFooter({
             text: `${ordinal(joinedNum)} member | Use the /submit joindate command if your join date is incorrect`
         });

@@ -11,7 +11,6 @@ import {
     Snowflake
 } from "discord.js";
 import https from "https";
-import { imageHash } from "image-hash";
 import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
@@ -19,7 +18,6 @@ import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
-import PageRes from "pageres";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
@@ -119,9 +117,9 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDescription(desc)
             .setFooter({ text: `${hashes}` });
 
-        const actionRow = new ActionRowBuilder().setComponents(
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
             new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(this.displayedURL).setLabel("Live site")
-        );
+        ]);
 
         if (file) {
             const att = new Attachment(file, "file.png");
@@ -139,7 +137,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             .setDisabled(true)
             .setLabel("Fetching archive...");
 
-        actionRow.addComponents(newButton);
+        actionRow.addComponents([newButton]);
 
         await msg.edit({ components: msg.components });
 
@@ -147,9 +145,9 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         actionRow["components"].splice(actionRow["components"].length - 1, 1);
         if (savedUrl) {
-            actionRow.addComponents(
+            actionRow.addComponents([
                 new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(savedUrl).setLabel("Web Archive")
-            );
+            ]);
         }
         await msg.edit({ components: msg.components });
     }

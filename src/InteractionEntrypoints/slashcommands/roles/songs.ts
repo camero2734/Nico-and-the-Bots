@@ -33,10 +33,10 @@ command.setHandler(async (ctx) => {
         const embed = new EmbedBuilder()
             .setTitle("Your Song Roles")
             .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
-            .addFields({
+            .addFields([{
                 name: "How do I choose one?",
                 value: `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles song <@&${roleIDs[0]}>`
-            });
+            }]);
 
         return ctx.send({ embeds: [embed] });
     }

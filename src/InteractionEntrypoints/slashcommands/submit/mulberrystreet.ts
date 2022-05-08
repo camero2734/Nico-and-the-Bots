@@ -86,14 +86,14 @@ command.setHandler(async (ctx) => {
         .setDescription(
             `Would you like to submit this to <#${channelIDs.mulberrystreet}>? If not, you can safely dismiss this message.`
         )
-        .addFields({ name: "URL", value: url })
+        .addFields([{ name: "URL", value: url }])
         .setFooter({ text: "Courtesy of Mulberry Street Creations™", iconURL: "https://i.imgur.com/fkninOC.png" });
 
     const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
     const [yesId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowBuilder().setComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+        [new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId)]
     );
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
@@ -115,7 +115,7 @@ command.setHandler(async (ctx) => {
     const doneEmbed = embed;
 
     embed.setDescription("");
-    embed.setFields();
+    embed.setFields([]);
 
     const attachment = new Attachment(buffer, fileName);
 
@@ -126,8 +126,8 @@ command.setHandler(async (ctx) => {
     const m = await chan.send({ embeds: [embed], files: [attachment] });
     m.react("💙");
 
-    const newActionRow = new ActionRowBuilder().setComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)
+    const newActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+        [new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url)]
     );
 
     await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });

@@ -9,7 +9,8 @@ import {
     Emoji,
     Guild,
     GuildMember,
-    Snowflake
+    Snowflake,
+    MessageActionRowComponentBuilder
 } from "discord.js";
 import { guild } from "../../../app";
 import { dropEmojiGuildId, roles } from "../../Configuration/config";
@@ -98,7 +99,7 @@ export type Guess = { member: GuildMember; idx: number };
 export async function generateActionRows(
     guesses: Guess[],
     drop: RandomDrop
-): Promise<ActionRowBuilder<MessageActionRowComponent>[]> {
+): Promise<ActionRowBuilder<MessageActionRowComponentBuilder>[]> {
     const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
 
     const buttons: ButtonBuilder[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {

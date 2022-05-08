@@ -1,6 +1,5 @@
 import {
     ActionRowBuilder,
-    MessageActionRowComponent,
     Collection,
     EmbedBuilder,
     GuildMember,
@@ -8,7 +7,9 @@ import {
     MessageOptions,
     Snowflake,
     TextChannel,
-    ComponentBuilder
+    ButtonBuilder,
+    MessageActionRowComponentBuilder,
+    ButtonComponent
 } from "discord.js";
 import { constants } from "../Configuration/config";
 
@@ -37,18 +38,18 @@ export const MessageTools = {
 
     /** Takes an array of buttons and places them into an array of Action Row components */
     allocateButtonsIntoRows(
-        buttons: (MessageActionRowComponent | ComponentBuilder)[],
+        buttons: (ButtonComponent | ButtonBuilder)[],
         options?: IAllocateButtonsOptions
-    ): ActionRowBuilder<MessageActionRowComponent>[] {
-        const components = [] as ActionRowBuilder<MessageActionRowComponent>[];
+    ): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
+        const components = [] as ActionRowBuilder<MessageActionRowComponentBuilder>[];
 
         const maxButtonsPerRow = options?.maxButtonsPerRow ?? constants.ACTION_ROW_MAX_ITEMS;
 
         if (buttons.length > maxButtonsPerRow * constants.MAX_ACTION_ROWS) throw new Error("Too many buttons");
 
         for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
-            const slicedButtons = buttons.slice(i, i + maxButtonsPerRow);
-            const actionRow = new ActionRowBuilder().setComponents(...slicedButtons);
+            const slicedButtons = buttons.slice(i, i + maxButtonsPerRow).map(b => ButtonBuilder.from(b));
+            const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(slicedButtons);
             components.push(actionRow);
         }
 

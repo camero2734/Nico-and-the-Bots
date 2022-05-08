@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
             `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`
         );
 
-    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });

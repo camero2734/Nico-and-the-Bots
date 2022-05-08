@@ -52,7 +52,7 @@ command.setHandler(async (ctx) => {
             value: `You have ${tokens} token${tokens === 1 ? "" : "s"
                 } available. A token is used when searching a district.`
         })
-        .addFields({ name: "**CONSOLE**", value: description })
+        .addFields([{ name: "**CONSOLE**", value: description }])
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
         .setFooter({
@@ -61,12 +61,11 @@ command.setHandler(async (ctx) => {
 
     const options = districts.map(
         (d, idx) =>
-            new SelectMenuOptionBuilder({
-                label: `DST. ${d.bishop.toUpperCase()}`,
-                description: `Search ${d.bishop}'s district. ${d.difficulty}.`,
-                value: `${idx}`,
-                emoji: { id: d.emoji }
-            })
+            new SelectMenuOptionBuilder()
+                .setLabel(`DST. ${d.bishop.toUpperCase()}`)
+                .setDescription(`Search ${d.bishop}'s district. ${d.difficulty}.`)
+                .setValue(idx.toString())
+                .setEmoji({ id: d.emoji })
     );
 
     const menu = new SelectMenuBuilder()
@@ -74,9 +73,9 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new ActionRowBuilder().setComponents(menu);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(menu);
 
-    const buttonActionRow = new ActionRowBuilder().setComponents(
+    const buttonActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
     );
 
@@ -170,7 +169,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     }
 
     for (const [item, description] of Object.entries(ItemDescriptions)) {
-        embed.addFields({ name: `What is a ${item.toLowerCase()}?`, value: description, inline: true });
+        embed.addFields([{ name: `What is a ${item.toLowerCase()}?`, value: description, inline: true }]);
     }
 
     await ctx.editReply({ embeds: [embed], components: [] });

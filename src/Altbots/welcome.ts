@@ -113,13 +113,13 @@ export class SacarverBot {
             )
             .setImage("attachment://welcome.png");
 
-        embed.addFields({ name: "\u200b", value: "\u200b" });
+        embed.addFields([{ name: "\u200b", value: "\u200b" }]);
         for (const { emoji, title, text } of noteworthyChannels) {
-            embed.addFields({ name: `${emoji} ${title}`, value: text });
+            embed.addFields([{ name: `${emoji} ${title}`, value: text }]);
         }
 
         // Functions
-        const actionRow = new ActionRowBuilder().setComponents(
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
             new ButtonBuilder({
                 style: "PRIMARY",
                 label: "Sign up for #announcements",

@@ -44,8 +44,8 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
         .setTitle(name)
         .setColor(0xD07A21)
         .setDescription(`*${category.description}*\n`)
-        .addFields({ name: "Credits", value: `${category.data.credits}` })
-        .addFields({ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" })
+        .addFields([{ name: "Credits", value: `${category.data.credits}` }])
+        .addFields([{ name: "\u200b", value: category.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }])
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const cantAfford = dbUser.credits < category.data.credits;
@@ -107,7 +107,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
     if (actionType === ActionTypes.View) {
         embed
             .setDescription(`Would you like to purchase this item?`)
-            .addFields({ name: "Cost", value: `${category.data.credits}`, inline: true })
+            .addFields([{ name: "Cost", value: `${category.data.credits}`, inline: true }])
             .addFields({
                 name: "Your credits",
                 value: `${dbUser.credits} → ${dbUser.credits - category.data.credits}`,
@@ -200,7 +200,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
         )
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
-    const menuActionRow = new ActionRowBuilder().setComponents(
+    const menuActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         ...Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
             return new ButtonBuilder()
@@ -216,7 +216,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
     );
 
     for (const [name, item] of Object.entries(categories)) {
-        MenuEmbed.addFields({ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" });
+        MenuEmbed.addFields([{ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
     }
 
     return { embeds: [MenuEmbed], components: [menuActionRow] };

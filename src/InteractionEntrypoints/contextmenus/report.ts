@@ -43,7 +43,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
             Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }))
         );
 
-    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(selectMenu);
 
     await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -99,7 +99,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
 
         const embed = new EmbedBuilder()
             .setDescription("A new report was added for this message")
-            .addFields({ name: "Reason", value: reasonText })
+            .addFields([{ name: "Reason", value: reasonText }])
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
         await prisma.userMessageReport.create({
@@ -119,10 +119,10 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
             .setAuthor({ name: msgMember.displayName, iconURL: msgMember.displayAvatarURL() })
             .setTitle("Message Reported")
             .setDescription(msg.content)
-            .addFields({ name: "Reason", value: ReportReasons[selectedReason] })
+            .addFields([{ name: "Reason", value: ReportReasons[selectedReason] }])
             .setFooter({ text: `Reported by ${ctx.member.displayName}`, iconURL: ctx.member.displayAvatarURL() });
 
-        const actionRow = new ActionRowBuilder().setComponents(
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
             new ButtonBuilder()
                 .setLabel(NUM_PEOPLE_TEXT(1))
                 .setStyle(ButtonStyle.Primary)

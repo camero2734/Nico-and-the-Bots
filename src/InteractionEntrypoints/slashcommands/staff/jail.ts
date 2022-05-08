@@ -114,16 +114,16 @@ command.setHandler(async (ctx) => {
         .setDescription(
             "You have been added to jail, which means your conduct has fallen below what is expected of this server.\n\n**Please wait for a staff member.**"
         ) // prettier-ignore
-        .addFields({
+        .addFields([{
             name: "Note for staff",
             value: "All users are muted by default. You can `/staff unmute` them individually or press the Unmute Users button below."
-        });
+        }]);
 
-    if (explanation) jailEmbed.addFields({ name: "Initial explanation", value: explanation });
+    if (explanation) jailEmbed.addFields([{ name: "Initial explanation", value: explanation }]);
 
-    jailEmbed.addFields({ name: "Jailed", value: F.discordTimestamp(new Date(), "relative") });
+    jailEmbed.addFields([{ name: "Jailed", value: F.discordTimestamp(new Date(), "relative") }]);
 
-    const jailActionRow = new ActionRowBuilder().setComponents(
+    const jailActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setStyle(ButtonStyle.Secondary)
             .setLabel("Unmute Users")
@@ -143,7 +143,7 @@ command.setHandler(async (ctx) => {
                     actionType: ActionTypes.CLOSE_JAIL.toString()
                 })
             )
-    );
+    ]);
 
     const m = await jailChan.send({
         content: `${mentions.join(" ")}`,
@@ -154,11 +154,11 @@ command.setHandler(async (ctx) => {
     const commandEmbed = new EmbedBuilder()
         .setAuthor({ name: members[0].displayName, iconURL: members[0].user.displayAvatarURL() })
         .setTitle(`${members.length} user${members.length === 1 ? "" : "s"} jailed`)
-        .addFields({ name: "Users", value: mentions.join("\n") });
+        .addFields([{ name: "Users", value: mentions.join("\n") }]);
 
-    const actionRow = new ActionRowBuilder().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View channel").setURL(m.url)
-    );
+    ]);
     await ctx.send({ embeds: [commandEmbed], components: [actionRow] });
 });
 
@@ -217,7 +217,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
     });
 
 
-    await msg.edit({ components: [new ActionRowBuilder().setComponents(newComponents)] });
+    await msg.edit({ components: [new ActionRowBuilder<ButtonBuilder>().setComponents(newComponents)] });
 }
 
 async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs): Promise<void> {
@@ -242,7 +242,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
     });
 
 
-    await msg.edit({ components: [new ActionRowBuilder().setComponents(newComponents)] });
+    await msg.edit({ components: [new ActionRowBuilder<ButtonBuilder>().setComponents(newComponents)] });
 }
 
 async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs): Promise<void> {
@@ -263,14 +263,14 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const warningEmbed = new EmbedBuilder()
         .setDescription("This channel is currently being archived. Once that is done, the channel will be deleted. You may cancel this by pressing the cancel button within the next 2 minutes.")
         .setColor(0xFF0000)
-        .addFields({ name: "Closed by", value: `${args.staffMember}` });
+        .addFields([{ name: "Closed by", value: `${args.staffMember}` }]);
 
     const m = await chan.send({ embeds: [warningEmbed] });
 
     const timedListener = new TimedInteractionListener(m, <const>["cancelId"]);
     const [cancelId] = timedListener.customIDs;
 
-    const cancelActionRow = new ActionRowBuilder().setComponents(
+    const cancelActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setLabel("Cancel").setCustomId(cancelId).setStyle(ButtonStyle.Danger)
     );
 
@@ -346,8 +346,8 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
 
     const embed = new EmbedBuilder()
         .setTitle("Jail Channel Backup")
-        .addFields({ name: "Users", value: args.jailedMembers.map((m) => m.toString()).join("\n") })
-        .addFields({ name: "Date", value: new Date().toString() });
+        .addFields([{ name: "Users", value: args.jailedMembers.map((m) => m.toString()).join("\n") }])
+        .addFields([{ name: "Date", value: new Date().toString() }]);
 
     const backupChannel = ctx.guild.channels.cache.get(channelIDs.jaillog) as TextChannel;
     await backupChannel.send({ embeds: [embed], files: [attachment] });

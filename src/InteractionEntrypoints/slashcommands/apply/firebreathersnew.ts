@@ -93,7 +93,7 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
 
     let allFinished = true;
     const buttons = Object.keys(FORM).map((label, idx) => {
-        let sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
+        const sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
         if (!sectionFinished) allFinished = false;
 
         return new ButtonBuilder()
@@ -108,7 +108,7 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
         .setCustomId(genSubmitApplicationId({}))
         .setDisabled(!allFinished);
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(...buttons, submitButton);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([...buttons, submitButton]);
 
     return { components: [actionRow], embeds: [embed], ephemeral: true };
 }
@@ -134,9 +134,9 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
             .setValue(prevAnswers[id]);
     });
 
-    const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputBuilder>().addComponents(x));
+    const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputBuilder>().addComponents([x]));
 
-    modal.setComponents(...wrappedTextFields);
+    modal.setComponents(wrappedTextFields);
 
     ctx.showModal(modal);
 });
@@ -149,7 +149,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>
 
     const newData: Record<string, string> = {};
 
-    for (let id of Object.keys(formPart)) {
+    for (const id of Object.keys(formPart)) {
         const value = ctx.fields.getTextInputValue(id);
         newData[id] = value;
     }

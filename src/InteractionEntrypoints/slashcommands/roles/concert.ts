@@ -35,8 +35,8 @@ command.setHandler(async (ctx) => {
         .setDisabled(true)
         .setCustomId("selectConcert");
 
-    const countryActionRow = new ActionRowBuilder().setComponents(countrySelectMenu);
-    const concertActionRow = new ActionRowBuilder().setComponents(temporaryConcertSelectMenu);
+    const countryActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(countrySelectMenu);
+    const concertActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(temporaryConcertSelectMenu);
 
     const embed = new EmbedBuilder()
         .setTitle("🧙 Concert Selection Wizard")
@@ -74,14 +74,14 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
         .setMaxValues(concerts.length)
         .setCustomId(genSelectConcertId({ country }));
 
-    const concertActionRow = new ActionRowBuilder()
+    const concertActionRow = new ActionRowBuilder<ButtonBuilder>()
         .setComponents(concertSelectMenu);
 
     // Update placeholder of first select menu to reflect country choice
     const placeholder = `${F.titleCase(country.split("-").join(" "))} selected`;
 
     const countrySelect = concertActionRowCom.components[0] as SelectMenuComponent
-    const countryActionRow = new ActionRowBuilder().setComponents(
+    const countryActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         SelectMenuBuilder.from({ ...countrySelect.data, placeholder })
     );
 

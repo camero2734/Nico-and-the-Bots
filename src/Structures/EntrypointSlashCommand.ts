@@ -205,7 +205,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                 }
             });
 
-            return new ActionRowBuilder().setComponents(
+            return new ActionRowBuilder<ButtonBuilder>().setComponents([
                 new ButtonBuilder()
                     .setStyle(ButtonStyle.Secondary)
                     .setLabel("0")
@@ -216,7 +216,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     .setLabel("0")
                     .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))
                     .setEmoji({ id: emojiIDs.downvote })
-            );
+            ]);
         };
 
         return createActionRow;

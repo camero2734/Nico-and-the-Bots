@@ -103,9 +103,9 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
-        .addFields({ name: "Track", value: trackField, inline: true })
-        .addFields({ name: "Album", value: albumField, inline: true })
-        .addFields({ name: "Artist", value: artistField, inline: true })
+        .addFields([{ name: "Track", value: trackField, inline: true }])
+        .addFields([{ name: "Album", value: albumField, inline: true }])
+        .addFields([{ name: "Artist", value: artistField, inline: true }])
         .setThumbnail(thumbnail)
         .setFooter({ text: track.date })
         .setAuthor({
@@ -114,7 +114,7 @@ command.setHandler(async (ctx) => {
             url: `https://www.last.fm/user/${username}`
         });
 
-    const starActionRow = new ActionRowBuilder();
+    const starActionRow = new ActionRowBuilder<ButtonBuilder>();
 
     // Add star button if own FM
     if (selfFM) {

@@ -22,7 +22,7 @@ const filter = async (msg: Message): Promise<boolean> => {
         .setDescription(
             "Please refrain from using slurs. Your message was forwarded to the staff team and will be reviewed."
         )
-        .addFields({ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` })
+        .addFields([{ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` }])
         .setFooter({ text: "If this was a false alarm, you have nothing to worry about." });
 
     await msg.reply({ embeds: [embed] });
@@ -34,9 +34,9 @@ const filter = async (msg: Message): Promise<boolean> => {
         .setColor(0xff0000)
         .setTitle("Slur detected")
         .setDescription(msg.content)
-        .addFields({ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` });
+        .addFields([{ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` }]);
 
-    const actionRow = new ActionRowBuilder().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setLabel("View context").setStyle(ButtonStyle.Link).setURL(msg.url)
     );
 

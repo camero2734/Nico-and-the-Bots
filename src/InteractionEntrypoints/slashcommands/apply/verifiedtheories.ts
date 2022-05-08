@@ -72,14 +72,14 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
     const [beginId, cancelId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowBuilder().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
         new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
     );
 
     await dmMessage.edit({ components: [actionRow] });
 
-    const dmActionRow = new ActionRowBuilder().setComponents(
+    const dmActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
     );
 
@@ -197,7 +197,7 @@ async function generateEmbedAndButtons(
         })
     );
 
-    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRowBuilder().setComponents(...cs));
+    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRowBuilder<ButtonBuilder>().setComponents(...cs));
 
     return [embed, actionRows];
 }

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "discord.js";
 import { TextInputStyle } from "discord-api-types/payloads/v9";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -21,8 +21,8 @@ command.setHandler(async (ctx) => {
         .setCustomId(`${MODAL_FIELDS.TV_FIELD}`)
         .setLabel("Say something")
         .setStyle(TextInputStyle.Short);
-
-    modal.setComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(inputComponent));
+    
+    modal.setComponents([new ActionRowBuilder<TextInputBuilder>().addComponents([inputComponent])]);
 
     ctx.showModal(modal);
 });

@@ -68,10 +68,10 @@ command.setHandler(async (ctx) => {
         trackEmbed = new EmbedBuilder()
             .setAuthor({ name: fmUsername, iconURL: avatar, url: `https://www.last.fm/user/${fmUsername}` })
             .setTitle("This is your most recently scrobbled song. Does this look correct?")
-            .addFields({ name: "Track", value: lastTrack.name, inline: true })
-            .addFields({ name: "Artist", value: lastTrack.artist, inline: true })
-            .addFields({ name: "Album", value: lastTrack.album, inline: true })
-            .addFields({ name: "Time", value: lastTrack.date, inline: true })
+            .addFields([{ name: "Track", value: lastTrack.name, inline: true }])
+            .addFields([{ name: "Artist", value: lastTrack.artist, inline: true }])
+            .addFields([{ name: "Album", value: lastTrack.album, inline: true }])
+            .addFields([{ name: "Time", value: lastTrack.date, inline: true }])
             .setThumbnail(lastTrack.image)
             .setFooter({ text: "Press one of the buttons below to respond" });
     }
@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowBuilder().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
         new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
     );

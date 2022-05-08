@@ -72,11 +72,11 @@ export class KeonsBot {
                 text: "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited."
             });
 
-        const actionRow = new ActionRowBuilder().setComponents(
-            new ButtonBuilder() //
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+            [new ButtonBuilder() //
                 .setStyle(ButtonStyle.Primary)
                 .setLabel("Color Roles")
-                .setCustomId(GenBtnId({}))
+                .setCustomId(GenBtnId({}))]
         );
 
         await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });

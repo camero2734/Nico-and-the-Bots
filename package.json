@@ -26,6 +26,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@discordjs/builders": "https://gitpkg.now.sh/discordjs/discord.js/packages/builders?feat/application-commands-v2-for-builders",
         "@discordjs/collection": "^0.6.0-dev.1644235500.b936103",
         "@discordjs/rest": "^0.4.0-dev.1646395403.6f7a366",
         "@prisma/client": "3.9.1",

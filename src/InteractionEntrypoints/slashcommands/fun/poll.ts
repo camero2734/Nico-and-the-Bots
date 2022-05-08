@@ -111,7 +111,7 @@ command.setHandler(async (ctx) => {
         selectMenu.addOptions([new SelectMenuOptionBuilder({ label: option.text.substring(0, 100), emoji, value: `${i}` })]);
     }
 
-    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(selectMenu);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {

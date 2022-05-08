@@ -56,7 +56,7 @@ command.setHandler(async (ctx) => {
                         description: `Enable notifications for ${roleName}`,
                         value: roleID,
                         emoji: { id: emojiMap[roleID] }
-                    })
+                    }).toJSON()
             )
         )
         .setPlaceholder("Select the topfeed role(s) you want")

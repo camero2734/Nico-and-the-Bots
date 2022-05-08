@@ -65,7 +65,7 @@ command.setHandler(async (ctx) => {
                 .setLabel(`DST. ${d.bishop.toUpperCase()}`)
                 .setDescription(`Search ${d.bishop}'s district. ${d.difficulty}.`)
                 .setValue(idx.toString())
-                .setEmoji({ id: d.emoji })
+                .setEmoji({ id: d.emoji }).toJSON()
     );
 
     const menu = new SelectMenuBuilder()

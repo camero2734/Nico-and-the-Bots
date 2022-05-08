@@ -40,7 +40,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     const selectMenu = new SelectMenuBuilder()
         .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
         .addOptions(
-            Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }))
+            Object.entries(ReportReasons).map(([key, value]) => new SelectMenuOptionBuilder({ label: value, value: key }).toJSON())
         );
 
     const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);

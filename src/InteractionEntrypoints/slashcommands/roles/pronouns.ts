@@ -15,7 +15,7 @@ command.setHandler(async (ctx) => {
         .setMaxValues(Object.keys(roles.pronouns).length)
         .setPlaceholder("Select your pronoun role(s) from the list")
         .addOptions(
-            Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOptionBuilder({ label: name, value: id }))
+            Object.entries(roles.pronouns).map(([name, id]) => new SelectMenuOptionBuilder({ label: name, value: id }).toJSON())
         );
 
     const selectEmbed = new EmbedBuilder()

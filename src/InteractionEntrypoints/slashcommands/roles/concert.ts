@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
                         label: F.titleCase(c.name.split("-").join(" ")),
                         value: c.name,
                         description: `${c.count} concert${F.plural(c.count)}`
-                    })
+                    }).toJSON()
             )
         )
         .setPlaceholder("Select a country")
@@ -67,7 +67,7 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
                         label: c.name,
                         value: c.concert.id,
                         description: c.concert.venue.location
-                    })
+                    }).toJSON()
             )
         )
         .setPlaceholder("Select some concert(s)")

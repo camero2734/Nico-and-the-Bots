@@ -132,7 +132,7 @@ export async function sendToStaff(
                             value: ActionTypes.Deny.toString(),
                             emoji: { id: emojiIDs.downvote }
                         })
-                    ]
+                    ].map(o => o.toJSON())
                 )
                 .setCustomId(GenBtnId({ applicationId, type: "" }))
         ]);

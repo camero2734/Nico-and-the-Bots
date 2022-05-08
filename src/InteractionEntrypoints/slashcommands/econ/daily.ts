@@ -173,10 +173,10 @@ command.setHandler(async (ctx) => {
         .setImage("attachment://daily.png");
 
     if (isWeeklyBonus) {
-        embed.addFields({
+        embed.addFields([{
             name: "Weekly daily bonus!",
             value: "You've done `/econ daily` 7 days in a row, so you've earned 2000 extra credits!"
-        });
+        }]);
     }
 
     await ctx.editReply({

@@ -36,9 +36,9 @@ const filter = async (msg: Message): Promise<boolean> => {
         .setDescription(msg.content)
         .addFields([{ name: "Word detected", value: `\`${slur.replace(/[aeiou]/g, "*")}\`` }]);
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setLabel("View context").setStyle(ButtonStyle.Link).setURL(msg.url)
-    );
+    ]);
 
     await slurLog.send({ embeds: [staffEmbed], components: [actionRow] });
 

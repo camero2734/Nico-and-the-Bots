@@ -37,10 +37,10 @@ async function runDrop(prize: DropPrize, channel: TextChannel): Promise<void> {
     const embed = new EmbedBuilder()
         .setAuthor({ name: `Nico tripped over ${randomNoun}`, iconURL: NicoClient.user?.displayAvatarURL() })
         .setColor(Colors.Red)
-        .addFields({
+        .addFields([{
             name: `He dropped ${dropName}`,
             value: `${theFirstUsers} to claim this prize will win ${prizeName}`
-        })
+        }])
         .setFooter({ text: `Each user may guess ${maxGuessesPerUser} time${F.plural(maxGuessesPerUser)}` });
 
     const drop = await prisma.randomDrop.create({ data: { prize, maxGuessesPerUser, winningIndices } });

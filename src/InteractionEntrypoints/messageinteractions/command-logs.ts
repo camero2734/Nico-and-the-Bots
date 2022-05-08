@@ -14,9 +14,9 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
 
     const staffChan = (await ctx.guild.channels.fetch(channelIDs.staff)) as TextChannel;
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View original").setURL(ctx.message.url)
-    );
+    ]);
     const msg = await staffChan.send({ embeds: [embed], components: [actionRow] });
     const thread = await msg.startThread({ name: args.title, autoArchiveDuration: 60 });
 
@@ -50,12 +50,12 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
 
     const staffCommandLogChan = (await member.guild.channels.fetch(channelIDs.logs.staffCommands)) as TextChannel;
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setStyle(ButtonStyle.Primary)
             .setLabel("Discuss in #staff")
             .setCustomId(GenStaffDiscussId({ title: `${commandName} used by ${member.displayName}` }))
-    );
+    ]);
 
     await staffCommandLogChan.send({ embeds: [embed], components: [actionRow] });
 });

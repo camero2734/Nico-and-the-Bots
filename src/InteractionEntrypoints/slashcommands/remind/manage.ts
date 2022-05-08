@@ -1,6 +1,5 @@
 import {
     ActionRowBuilder,
-    MessageActionRowComponent,
     ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
@@ -123,7 +122,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
 
         if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
-        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
             new ButtonBuilder()
                 .setLabel("Back to List")
                 .setStyle(ButtonStyle.Primary)
@@ -142,7 +141,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
                         actionType: ActionTypes.DeleteReminder.toString()
                     })
                 )
-        );
+        ]);
 
         await ctx.editReply({ components: [actionRow], embeds: [embed] });
     }

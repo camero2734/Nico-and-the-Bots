@@ -35,8 +35,8 @@ command.setHandler(async (ctx) => {
         .setDisabled(true)
         .setCustomId("selectConcert");
 
-    const countryActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(countrySelectMenu);
-    const concertActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(temporaryConcertSelectMenu);
+    const countryActionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([countrySelectMenu]);
+    const concertActionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([temporaryConcertSelectMenu]);
 
     const embed = new EmbedBuilder()
         .setTitle("🧙 Concert Selection Wizard")
@@ -74,16 +74,16 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
         .setMaxValues(concerts.length)
         .setCustomId(genSelectConcertId({ country }));
 
-    const concertActionRow = new ActionRowBuilder<ButtonBuilder>()
-        .setComponents(concertSelectMenu);
+    const concertActionRow = new ActionRowBuilder<SelectMenuBuilder>()
+        .setComponents([concertSelectMenu]);
 
     // Update placeholder of first select menu to reflect country choice
     const placeholder = `${F.titleCase(country.split("-").join(" "))} selected`;
 
     const countrySelect = concertActionRowCom.components[0] as SelectMenuComponent
-    const countryActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const countryActionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([
         SelectMenuBuilder.from({ ...countrySelect.data, placeholder })
-    );
+    ]);
 
     await ctx.update({ components: [countryActionRow, concertActionRow] });
 });

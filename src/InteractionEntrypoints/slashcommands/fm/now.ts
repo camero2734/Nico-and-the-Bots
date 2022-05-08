@@ -123,7 +123,7 @@ command.setHandler(async (ctx) => {
             .setStyle(ButtonStyle.Secondary)
             .setEmoji({ name: "⭐" })
             .setCustomId(genStarId({ fmStarId: "" }));
-        starActionRow.addComponents(starButton);
+        starActionRow.addComponents([starButton]);
     }
 
     // Get Spotify and Genius links
@@ -137,7 +137,7 @@ command.setHandler(async (ctx) => {
             .setLabel("Listen")
             .setStyle(ButtonStyle.Link)
             .setURL(trackUrl);
-        starActionRow.addComponents(spotifyButton);
+        starActionRow.addComponents([spotifyButton]);
     }
 
     const geniusResult = await GeniusClient.getSong([trackName, artistName].join(" "));
@@ -147,7 +147,7 @@ command.setHandler(async (ctx) => {
             .setLabel("Lyrics")
             .setStyle(ButtonStyle.Link)
             .setURL(geniusResult.result.url);
-        starActionRow.addComponents(geniusButton);
+        starActionRow.addComponents([geniusButton]);
     }
 
     await ctx.editReply({ embeds: [embed], components: [starActionRow] });

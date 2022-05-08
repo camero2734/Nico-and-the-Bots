@@ -39,17 +39,22 @@ command.setHandler(async (ctx) => {
 
         const embed = new EmbedBuilder()
             .setTitle("Your inventory")
-            .addFields({
-                name: "📑 Bounties",
-                value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
-                inline: true
-            })
-            .addFields({
-                name: "<:jumpsuit:860724950070984735> Jumpsuits",
-                value: `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
-                inline: true
-            })
-            .addFields([{ name: "Current bounty value", value: `${BOUNTY_NUM_CREDITS} credits` }])
+            .addFields([
+                {
+                    name: "📑 Bounties",
+                    value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
+                    inline: true
+                }, 
+                {
+                    name: "<:jumpsuit:860724950070984735> Jumpsuits",
+                    value: `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
+                    inline: true
+                },
+                { 
+                    name: "Current bounty value", 
+                    value: `${BOUNTY_NUM_CREDITS} credits` 
+                }
+            ])
             .setFooter({
                 text: "You can use a bounty by mentioning the user in the command. You will recieve the bounty amount if successful. A jumpsuit is automatically used to protect you from being caught when a bounty is enacted against you."
             });

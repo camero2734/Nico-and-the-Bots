@@ -1,18 +1,13 @@
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "discord.js";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
     Colors,
-    CommandInteraction,
-    Interaction,
     InteractionReplyOptions,
-    MessageComponentInteraction,
     MessageEditOptions,
-    MessagePayload
 } from "discord.js";
 import { nanoid } from "nanoid";
 import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID } from "../../../Configuration/definitions";
-import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { sendToStaff } from "../../messageinteractions/staffFBApp";

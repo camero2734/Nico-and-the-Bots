@@ -108,17 +108,17 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         embed
             .setDescription(`Would you like to purchase this item?`)
             .addFields([{ name: "Cost", value: `${category.data.credits}`, inline: true }])
-            .addFields({
+            .addFields([{
                 name: "Your credits",
                 value: `${dbUser.credits} → ${dbUser.credits - category.data.credits}`,
                 inline: true
-            });
+            }]);
 
         if (contraband) {
-            embed.addFields({
+            embed.addFields([{
                 name: "WARNING",
                 value: "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave."
-            });
+            }]);
         }
 
         const roleComponents = MessageTools.allocateButtonsIntoRows([
@@ -157,10 +157,10 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
             .setDescription(
                 `Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`
             ) // prettier-ignore
-            .addFields({
+            .addFields([{
                 name: `How do I "equip" this role?`,
                 value: "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want)."
-            });
+            }]);
         let sent = false;
         try {
             const dm = await ctx.member.createDM();
@@ -169,7 +169,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         } catch (e) {
             //
         } finally {
-            embed.setFields();
+            embed.setFields([]);
             embed.setDescription(`${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`) // prettier-ignore
             ctx.update({ embeds: [embed], components: [] });
         }
@@ -201,7 +201,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMe
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
     const menuActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-        ...Object.entries(categories).map(([label, item], idx) => {
+        Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
             return new ButtonBuilder()
                 .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)

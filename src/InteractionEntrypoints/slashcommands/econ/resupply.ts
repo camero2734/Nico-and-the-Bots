@@ -47,11 +47,11 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
-        .addFields({
+        .addFields([{
             name: "**Tokens**",
             value: `You have ${tokens} token${tokens === 1 ? "" : "s"
                 } available. A token is used when searching a district.`
-        })
+        }])
         .addFields([{ name: "**CONSOLE**", value: description }])
         .setColor(0xfce300)
         .setThumbnail("attachment://file.gif")
@@ -73,11 +73,11 @@ command.setHandler(async (ctx) => {
         .setPlaceholder("Select a district to search")
         .setCustomId(genSelectId({}));
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(menu);
+    const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([menu]);
 
-    const buttonActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const buttonActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
-    );
+    ]);
 
     await ctx.editReply({
         embeds: [embed.toJSON()],
@@ -162,10 +162,10 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
 
         const catchRate = District.convPercent(District.catchPercent(i));
 
-        embed.addFields({
+        embed.addFields([{
             name: `${emoji} ${bishop}`,
             value: `**Catch Rate:** \`${catchRate}\` \n\n${prizeStr}\n\u200b`
-        });
+        }]);
     }
 
     for (const [item, description] of Object.entries(ItemDescriptions)) {
@@ -273,13 +273,13 @@ async function memberWon(
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
     const reply = (await interaction.fetchReply()) as Message;
     const originalEmbed = EmbedBuilder.from(reply.embeds[0]);
-    originalEmbed.setFields();
+    originalEmbed.setFields([]);
     originalEmbed
         .setDescription(description)
-        .addFields({
+        .addFields([{
             name: "**WARNING**",
             value: "DEMAtronix™ is not responsible for messages sent through this encrypted channel. The Sacred Municipality of Dema forbids any treasonous communication and will prosecute to the fullest extent of the law."
-        })
+        }])
         .setFooter({
             text: "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
         })

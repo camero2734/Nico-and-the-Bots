@@ -13,7 +13,11 @@ import {
     OverwriteData,
     Snowflake,
     TextChannel,
-    ButtonComponent
+    ButtonComponent,
+    SelectMenuComponent,
+    MessageActionRowComponentBuilder,
+    SelectMenuBuilder,
+    MessageComponentBuilder
 } from "discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
@@ -209,7 +213,8 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
     const [actionRow] = msg.components;
 
     const newComponents = actionRow.components.map(c => {
-        if (c.type !== ComponentType.Button && c.customId !== ctx.customId) return c;
+        if (c.type === ComponentType.SelectMenu) return SelectMenuBuilder.from(c);
+        if (c.type !== ComponentType.Button) return c;
 
         return ButtonBuilder.from(c as ButtonComponent)
             .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.REMUTE_ALL.toString() }))
@@ -217,7 +222,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
     });
 
 
-    await msg.edit({ components: [new ActionRowBuilder<ButtonBuilder>().setComponents(newComponents)] });
+    await msg.edit({ components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)] });
 }
 
 async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs): Promise<void> {
@@ -234,7 +239,8 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const [actionRow] = msg.components;
 
     const newComponents = actionRow.components.map(c => {
-        if (c.type !== ComponentType.Button && c.customId !== ctx.customId) return c;
+        if (c.type === ComponentType.SelectMenu) return SelectMenuBuilder.from(c);
+        if (c.type !== ComponentType.Button) return c;
 
         return ButtonBuilder.from(c as ButtonComponent)
             .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.UNMUTE_ALL.toString() }))
@@ -242,7 +248,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
     });
 
 
-    await msg.edit({ components: [new ActionRowBuilder<ButtonBuilder>().setComponents(newComponents)] });
+    await msg.edit({ components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)] });
 }
 
 async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs): Promise<void> {
@@ -270,9 +276,9 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const timedListener = new TimedInteractionListener(m, <const>["cancelId"]);
     const [cancelId] = timedListener.customIDs;
 
-    const cancelActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const cancelActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setLabel("Cancel").setCustomId(cancelId).setStyle(ButtonStyle.Danger)
-    );
+    ]);
 
     await m.edit({ components: [cancelActionRow] });
 

@@ -79,10 +79,10 @@ command.setHandler(async (ctx) => {
     const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
         new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId)
-    );
+    ]);
 
     await ctx.send({ embeds: [trackEmbed], components: [actionRow] });
 

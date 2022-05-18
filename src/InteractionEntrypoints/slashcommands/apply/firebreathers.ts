@@ -134,7 +134,7 @@ export async function sendToStaff(
         try {
             const thread = await m.startThread({
                 name: `${member.displayName} application discussion (${applicationId})`,
-                autoArchiveDuration: "MAX"
+                autoArchiveDuration: 10080
             });
 
             await thread.send({ content: `${member}`, files: [attachment] });

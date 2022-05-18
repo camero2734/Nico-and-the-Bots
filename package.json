@@ -51,7 +51,7 @@
         "@types/youtube-dl": "^3.0.0",
         "@typescript-eslint/eslint-plugin": "^4.8.1",
         "@typescript-eslint/parser": "^4.8.1",
-        "async": "^3.2.1",
+        "async": "^3.2.2",
         "bigint-conversion": "2.2.1",
         "bullmq": "1.68.4",
         "canvas": "^2.9.0",

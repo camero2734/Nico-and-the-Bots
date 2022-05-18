@@ -1,0 +1,39 @@
+
+name: 'CI'
+
+on: [pull_request]
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: all
+
+      - name: Build and push image
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: camer0/nico:${{ env.TAG }}
+          context: .
+          build-args: |
+            CRYPT64=${{ secrets.CRYPT64 }}
+          cache-from: type=registry,ref=camer0/nico:buildcache
+          cache-to: type=registry,ref=camer0/nico:buildcache,mode=max
+          file: .docker/image.dockerfile
+        env: 
+          TAG: "pr-${{ steps.findPr.outputs.pr }}"

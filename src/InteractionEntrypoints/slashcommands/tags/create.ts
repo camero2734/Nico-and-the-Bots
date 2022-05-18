@@ -48,12 +48,12 @@ command.setHandler(async (ctx) => {
         .setDescription(ctx.opts.text)
         .setFooter({ text: "Select yes or no" });
 
-    const actionRow = new ActionRowBuilder().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setLabel("Yes")
             .setStyle(ButtonStyle.Success)
             .setCustomId(generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` }))
-    );
+    ]);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });
@@ -78,7 +78,7 @@ const generateYesID = command.addInteractionListener("tcYes", <const>["name", "t
     const doneEmbed = new EmbedBuilder()
         .setTitle(`Tag created: \`${args.name}\``)
         .setDescription(text)
-        .addFields({ name: "Usage", value: `Use this tag with the command \`/tags use ${createdTag.name}\`` });
+        .addFields([{ name: "Usage", value: `Use this tag with the command \`/tags use ${createdTag.name}\`` }]);
 
     await ctx.editReply({ embeds: [doneEmbed], components: [] });
 });

@@ -2,7 +2,6 @@ import {
     ActionRowBuilder,
     ApplicationCommandOptionType,
     EmbedBuilder,
-    EmojiIdentifierResolvable,
     GuildMember,
     SelectMenuBuilder,
     SelectMenuOptionBuilder,
@@ -57,7 +56,7 @@ command.setHandler(async (ctx) => {
                         description: `Enable notifications for ${roleName}`,
                         value: roleID,
                         emoji: { id: emojiMap[roleID] }
-                    })
+                    }).toJSON()
             )
         )
         .setPlaceholder("Select the topfeed role(s) you want")
@@ -65,7 +64,7 @@ command.setHandler(async (ctx) => {
         .setMaxValues(options.length)
         .setCustomId(genChoiceId({}));
 
-    const actionRow = new ActionRowBuilder().setComponents(menu);
+    const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([menu]);
 
     const embed = new EmbedBuilder().setDescription(
         "Select your topfeed roles below. You will receive a ping when the channel receives an update."

@@ -33,12 +33,12 @@ ctxMenu.setHandler(async (ctx, msg) => {
         }
 
         const embed = new EmbedBuilder().setDescription(MESSAGE_ALREADY_GOLD);
-        const actionRow = new ActionRowBuilder().setComponents(
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
             new ButtonBuilder()
                 .setLabel("View post")
                 .setStyle(ButtonStyle.Link)
                 .setURL(givenGold.houseOfGoldMessageUrl)
-        );
+        ]);
 
         return ctx.editReply({ embeds: [embed], components: [actionRow] });
     }
@@ -89,9 +89,9 @@ async function handleGold(
         : new EmbedBuilder()
             .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
             .setColor(0xfce300)
-            .addFields({ name: "Channel", value: `${msg.channel}`, inline: true })
-            .addFields({ name: "Posted", value: F.discordTimestamp(new Date(), "shortDateTime"), inline: true })
-            .addFields({ name: "Message", value: msg.content || "*No content*" })
+            .addFields([{ name: "Channel", value: `${msg.channel}`, inline: true }])
+            .addFields([{ name: "Posted", value: F.discordTimestamp(new Date(), "shortDateTime"), inline: true }])
+            .addFields([{ name: "Message", value: msg.content || "*No content*" }])
             .setFooter({ text: `Given by ${ctx.member.displayName}.`, iconURL: ctx.user.displayAvatarURL() });
 
     if (!isAdditionalGold && msg.attachments.size > 0) {
@@ -99,7 +99,7 @@ async function handleGold(
         if (url) goldBaseEmbed.setImage(url);
     }
 
-    let askEmbed = EmbedBuilder.from(goldBaseEmbed).addFields({ name: "\u200b", value: "**Would you like to give gold to this message?**" }); // prettier-ignore
+    let askEmbed = EmbedBuilder.from(goldBaseEmbed).addFields([{ name: "\u200b", value: "**Would you like to give gold to this message?**" }]); // prettier-ignore
     if (isAdditionalGold) {
         askEmbed = new EmbedBuilder()
             .setAuthor({ name: originalMember.displayName, iconURL: originalMember.user.displayAvatarURL() })
@@ -110,14 +110,14 @@ async function handleGold(
     const timedListener = new TimedInteractionListener(ctx, <const>["goldCtxYes", "goldCtxNo"]);
     const [yesId, noId] = timedListener.customIDs;
 
-    const actionRow = new ActionRowBuilder().setComponents(
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setLabel(`Yes (${cost} credits)`)
             .setEmoji({ id: emojiIDs.gold })
             .setStyle(ButtonStyle.Primary)
             .setCustomId(yesId),
         new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Secondary).setCustomId(noId)
-    );
+    ]);
 
     await ctx.editReply({
         embeds: [askEmbed],
@@ -140,7 +140,7 @@ async function handleGold(
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0); // prettier-ignore
 
-    const goldActionRow = new ActionRowBuilder().setComponents(
+    const goldActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setLabel(`${numGolds} Gold${F.plural(numGolds)}`)
             .setEmoji({ id: emojiIDs.gold })
@@ -153,7 +153,7 @@ async function handleGold(
                 })
             ),
         new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl)
-    );
+    ]);
 
     const goldEmbed = EmbedBuilder.from(goldBaseEmbed);
     const idx = goldEmbed.data.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
@@ -163,13 +163,13 @@ async function handleGold(
         const remain = NUM_GOLDS_FOR_CERTIFICATION - numGolds;
         const date = isAdditionalGold ? msg.createdAt : new Date();
 
-        goldEmbed.addFields({
+        goldEmbed.addFields([{
             name: "⚠️ Not certified!",
             value: `This post needs ${remain} more gold${F.plural(remain)}, or it will be deleted ${F.discordTimestamp(
                 addDays(date, NUM_DAYS_FOR_CERTIFICATION),
                 "relative"
             )}`
-        });
+        }]);
     }
 
     const goldMessage = await prisma.$transaction(async (tx) => {
@@ -199,9 +199,9 @@ async function handleGold(
 
     const replyEmbed = new EmbedBuilder().setDescription("Gold successfully given");
 
-    const replyActionRow = new ActionRowBuilder().setComponents(
+    const replyActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url)
-    );
+    ]);
 
     ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });
 }

@@ -4,7 +4,7 @@ import radix64Setup from "radix-64";
 import * as R from "ramda";
 import * as crypto from "crypto";
 import { channelIDs } from "../Configuration/config";
-
+import { CanvasRenderingContext2D } from "canvas";
 /**
  * Just some commonly used short functions
  */

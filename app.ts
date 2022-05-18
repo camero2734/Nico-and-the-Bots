@@ -91,7 +91,7 @@ client.on("messageCreate", async (msg: Discord.Message) => {
     updateUserScore(msg); // Add to score
 });
 
-client.on("messageUpdate", async (oldMsg, newMsg) => {
+client.on("messageUpdate", async (_oldMsg, newMsg) => {
     await SlurFilter(await newMsg.fetch());
 });
 
@@ -197,6 +197,3 @@ async function setup() {
 }
 
 export const NicoClient = client;
-
-const server = http.createServer();
-server.listen(4242, "127.0.0.1");

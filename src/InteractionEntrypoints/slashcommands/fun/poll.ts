@@ -97,7 +97,7 @@ command.setHandler(async (ctx) => {
 
     const embed = new EmbedBuilder().setAuthor({ name: title, iconURL: ctx.user.displayAvatarURL() });
 
-    embed.setFields(...generateStatsDescription(poll, parsedOptions));
+    embed.setFields([...generateStatsDescription(poll, parsedOptions)]);
 
     const selectMenu = new SelectMenuBuilder()
         .setCustomId(genPollResId({ pollId: poll.id.toString() }))
@@ -108,10 +108,13 @@ command.setHandler(async (ctx) => {
     for (let i = 0; i < parsedOptions.length; i++) {
         const option = parsedOptions[i];
         const emoji = option.emoji as APIMessageComponentEmoji;
-        selectMenu.addOptions([new SelectMenuOptionBuilder({ label: option.text.substring(0, 100), emoji, value: `${i}` })]);
+        selectMenu.addOptions([
+            new SelectMenuOptionBuilder({ label: option.text.substring(0, 100), emoji, value: `${i}` })
+                .toJSON()
+        ]);
     }
 
-    const actionRow = new ActionRowBuilder().setComponents(selectMenu);
+    const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);
 
     await ctx.send({ embeds: [embed], components: [actionRow] });
     if (shouldCreateThread) {
@@ -170,7 +173,7 @@ const genPollResId = command.addInteractionListener("pollresponse", <const>["pol
     }
 
     const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-    embed.setFields(...generateStatsDescription(poll, parsedOptions));
+    embed.setFields(generateStatsDescription(poll, parsedOptions));
 
     await ctx.update({ embeds: [embed] });
 });
@@ -205,10 +208,10 @@ function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOpti
         const basePercent = (100 * count) / totalVotes;
         const percent = (isFinite(basePercent) ? basePercent : 0).toPrecision(3);
 
-        tempEmbed.addFields({
+        tempEmbed.addFields([{
             name: `${emoji}${opt.text}`.trim(),
             value: `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`
-        });
+        }]);
     });
 
     return tempEmbed.data.fields || [];

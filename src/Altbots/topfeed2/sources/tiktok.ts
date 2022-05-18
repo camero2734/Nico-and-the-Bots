@@ -1,7 +1,7 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedSource } from "../source";
 import { IVideo, TTScraper } from "tiktok-scraper-ts";
 import { MessageOptions } from "discord.js";
-import { EmbedBuilder } from "@discordjs/builders";
+import { EmbedBuilder } from "discord.js";
 import secrets from "../../../Configuration/secrets";
 
 interface ITiktokSourceInput extends ITopfeedSourceInput {

@@ -99,9 +99,9 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 .setDescription(tweetText)
                 .setTimestamp(date);
 
-            const actionRow = new ActionRowBuilder().setComponents(
+            const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
                 new ButtonBuilder().setLabel("View Tweet").setStyle(ButtonStyle.Link).setURL(url)
-            );
+            ]);
 
             const msgs: MessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];
 

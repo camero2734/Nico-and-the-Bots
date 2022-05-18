@@ -87,7 +87,7 @@ export const GenBtnId = msgInt.addInteractionListener(
         if (thread) {
             await thread.setArchived(true, "Decision was made, thread no longer necessary");
 
-            doneByEmbed.addFields({ name: "Thread", value: `${thread}` });
+            doneByEmbed.addFields([{ name: "Thread", value: `${thread}` }]);
         }
 
         await ctx.followUp({ embeds: [doneByEmbed] });
@@ -115,10 +115,10 @@ export async function sendToStaff(
             .setFooter({ text: applicationId });
 
         for (const [name, value] of Object.entries(data)) {
-            embed.addFields({ name: name, value: value?.substring(0, 1000) || "*Nothing*" });
+            embed.addFields([{ name: name, value: value?.substring(0, 1000) || "*Nothing*" }]);
         }
 
-        const actionRow = new ActionRowBuilder().setComponents(
+        const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([
             new SelectMenuBuilder()
                 .addOptions(
                     [
@@ -132,10 +132,10 @@ export async function sendToStaff(
                             value: ActionTypes.Deny.toString(),
                             emoji: { id: emojiIDs.downvote }
                         })
-                    ]
+                    ].map(o => o.toJSON())
                 )
                 .setCustomId(GenBtnId({ applicationId, type: "" }))
-        );
+        ]);
 
         const scoreCard = await generateScoreCard(member);
         const attachment = new Attachment(scoreCard, "score.png");
@@ -148,7 +148,7 @@ export async function sendToStaff(
         try {
             const thread = await m.startThread({
                 name: `${member.displayName} application discussion (${applicationId})`,
-                autoArchiveDuration: "MAX"
+                autoArchiveDuration: 10080
             });
 
             await thread.send({ content: `${member}`, files: [attachment] });
@@ -166,7 +166,7 @@ export async function sendToStaff(
             if (userWarnings.length > 0) {
                 for (const warn of userWarnings) {
                     // prettier-ignore
-                    warningsEmbed.addFields({ name: `${warn.reason.substring(0, 200)} [${warn.severity}]`, value: F.discordTimestamp(warn.createdAt, "relative") })
+                    warningsEmbed.addFields([{ name: `${warn.reason.substring(0, 200)} [${warn.severity}]`, value: F.discordTimestamp(warn.createdAt, "relative") }])
                 }
             } else {
                 warningsEmbed.setDescription("*This user has no warnings*");

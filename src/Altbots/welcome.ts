@@ -9,7 +9,8 @@ import {
     MessageComponentInteraction,
     PartialGuildMember,
     Snowflake,
-    TextChannel
+    TextChannel,
+    ButtonStyle
 } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
@@ -18,7 +19,7 @@ import { queries } from "../Helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
 
-const emoji = (name: string, id: Snowflake | null = null): any => ({
+const emoji = (name: string, id: Snowflake | null = null) => ({
     emoji: { name, id: id as Snowflake }
 });
 
@@ -113,20 +114,20 @@ export class SacarverBot {
             )
             .setImage("attachment://welcome.png");
 
-        embed.addFields({ name: "\u200b", value: "\u200b" });
+        embed.addFields([{ name: "\u200b", value: "\u200b" }]);
         for (const { emoji, title, text } of noteworthyChannels) {
-            embed.addFields({ name: `${emoji} ${title}`, value: text });
+            embed.addFields([{ name: `${emoji} ${title}`, value: text }]);
         }
 
         // Functions
-        const actionRow = new ActionRowBuilder().setComponents(
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
             new ButtonBuilder({
-                style: "PRIMARY",
+                style: ButtonStyle.Primary,
                 label: "Sign up for #announcements",
                 customId: ANNOUNCEMENTS_ID,
                 ...emoji("📢")
             })
-        );
+        ]);
 
         await welcomeChan.send({
             content: member.toString(),

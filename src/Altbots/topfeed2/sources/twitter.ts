@@ -99,7 +99,7 @@ export class TwitterSource extends TopfeedSource {
             .setURL(url)
             .setEmoji({ id: emojiIDs.twitter });
 
-        firstMessage.components = [new ActionRowBuilder().setComponents(tweetButton)];
+        firstMessage.components = [new ActionRowBuilder<ButtonBuilder>().setComponents([tweetButton])];
 
         const restMessages = imageUrls
             .splice(1)

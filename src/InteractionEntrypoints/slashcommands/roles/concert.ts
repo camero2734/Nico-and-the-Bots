@@ -19,18 +19,23 @@ command.setHandler(async (ctx) => {
     const countrySelectMenu = new SelectMenuBuilder()
         .addOptions(
             countries.map(
-                (c) =>
-                    new SelectMenuOptionBuilder({
-                        label: F.titleCase(c.name.split("-").join(" ")),
-                        value: c.name,
-                        description: `${c.count} concert${F.plural(c.count)}`
-                    }).toJSON()
+                (c) => new SelectMenuOptionBuilder()
+                    .setLabel(F.titleCase(c.name.split("-").join(" ")))
+                    .setValue(c.name)
+                    .setDescription(`${c.count} concert${F.plural(c.count)}`)
+                    .toJSON()
             )
         )
         .setPlaceholder("Select a country")
         .setCustomId(genSelectCountryId({}));
     const temporaryConcertSelectMenu = new SelectMenuBuilder()
-        .addOptions([new SelectMenuOptionBuilder({ label: "Dummy option", value: "Dummy value", description: "Dummy" })])
+        .addOptions([
+            new SelectMenuOptionBuilder()
+                .setLabel("Dummy option")
+                .setValue("Dummy value")
+                .setDescription("Dummy")
+                .toJSON()
+        ])
         .setPlaceholder("❌ Select a country first")
         .setDisabled(true)
         .setCustomId("selectConcert");
@@ -62,12 +67,11 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
     const concertSelectMenu = new SelectMenuBuilder()
         .addOptions(
             concerts.map(
-                (c) =>
-                    new SelectMenuOptionBuilder({
-                        label: c.name,
-                        value: c.concert.id,
-                        description: c.concert.venue.location
-                    }).toJSON()
+                (c) => new SelectMenuOptionBuilder()
+                    .setLabel(c.name)
+                    .setValue(c.concert.id)
+                    .setDescription(c.concert.venue.location)
+                    .toJSON()
             )
         )
         .setPlaceholder("Select some concert(s)")

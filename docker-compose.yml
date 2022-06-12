@@ -6,7 +6,7 @@ services:
     container_name: nico
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: .docker/image.dockerfile
       args:
         CRYPT64:
         UPDATE_DB:

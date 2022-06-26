@@ -11,7 +11,7 @@ import { ReactionListener } from "./ListenerReaction";
 export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,
     HandlerArgs extends any[] = []
-    > {
+> {
     public interactionListeners = new Collection<string, InteractionListener>();
     public reactionListeners = new Collection<string, ReactionListener>();
 
@@ -61,7 +61,7 @@ export abstract class InteractionEntrypoint<
             const member = ctx.member as GuildMember;
             if (!member) throw new Error(`No member`);
 
-            const allowedAnywhere = ["tags"];
+            const allowedAnywhere = ["tags", "fm"];
 
             if (ctx.isCommand()) {
                 if (!member.roles.cache.has(roles.staff)) {

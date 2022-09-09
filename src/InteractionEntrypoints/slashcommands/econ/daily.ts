@@ -148,7 +148,7 @@ command.setHandler(async (ctx) => {
     })();
 
     const facts = [
-        "If you're going to a concert, there are concert channels! Use the `/concert` command to find yours.",
+        "If you're going to a concert, there are concert channels! Use the `/roles concert` command to find yours.",
         `You can buy color roles from <#${channelIDs.shop}>! To view and equip your color roles, use the \`/roles colors\` command.`,
         "The `/tags create` command can be used to add a snippet of text that you can later make the bot send with the `/tags use` command!",
         `You can submit an interview to <#${channelIDs.interviews}> with the \`/submit interview\` command.`,

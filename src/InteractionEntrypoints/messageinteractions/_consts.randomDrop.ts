@@ -102,7 +102,7 @@ export async function generateActionRows(
 ): Promise<ActionRowBuilder<MessageActionRowComponentBuilder>[]> {
     const emojiGuild = guesses.length > 0 ? await guesses[0].member.client.guilds.fetch(dropEmojiGuildId) : undefined;
 
-    const buttons: ButtonBuilder[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx) => {
+    const buttons: ButtonBuilder[] = await async.mapLimit(F.indexArray(NUM_BUTTONS), 3, async (idx: number) => {
         const button = new ButtonBuilder()
             .setStyle(ButtonStyle.Primary)
             .setCustomId(

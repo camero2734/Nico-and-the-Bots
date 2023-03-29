@@ -177,7 +177,7 @@ export class SacarverBot {
         ctx.shadowOffsetY = 4;
 
         const name = member.displayName.normalize("NFKC");
-        const fontSize = F.canvasFitText(ctx, name, "Futura", { maxWidth: 600, maxFontSize: 64 });
+        const fontSize = F.canvasFitText(ctx, canvas, name, "Futura", { maxWidth: 600, maxFontSize: 64 });
         ctx.font = `${fontSize}px Futura`;
         ctx.fillText(name, 300, 0);
 

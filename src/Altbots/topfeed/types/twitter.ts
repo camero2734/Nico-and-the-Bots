@@ -1,6 +1,6 @@
 import async from "async";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
-import TwitterApi, { MediaVideoInfoV1 } from "twitter-api-v2";
+import TwitterApi, { MediaVideoInfoV1, TweetV2 } from "twitter-api-v2";
 import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
@@ -40,7 +40,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
             max_results: 5
         });
 
-        const checkedTweets: Checked<TweetType>[] = await async.mapSeries(tweets.slice(0, 1), async (tweet) => {
+        const checkedTweets: Checked<TweetType>[] = await async.mapSeries(tweets.slice(0, 1), async (tweet: TweetV2) => {
             const referencedTweet = tweet.referenced_tweets?.[0];
             const tweetType = referencedTweet?.type ? F.titleCase(referencedTweet.type) : "Tweeted";
 

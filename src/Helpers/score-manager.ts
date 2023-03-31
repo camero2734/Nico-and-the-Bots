@@ -6,7 +6,6 @@ import { User } from "@prisma/client";
 import { Queue, Worker } from "bullmq";
 import { NicoClient } from "../../app";
 import IORedis from "ioredis";
-import { rollbar } from "./logging/rollbar";
 
 const QUEUE_NAME = "ScoreUpdate";
 
@@ -52,7 +51,7 @@ new Worker(
             await updateUserScoreWorker(msg);
         } catch (e) {
             if (e instanceof DiscordAPIError) return;
-            else if (e instanceof Error) rollbar.error(e);
+            console.log(e);
         }
     },
     redisOpts

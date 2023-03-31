@@ -1,6 +1,5 @@
 import { CommandInteraction, DMChannel, Interaction, EmbedBuilder, TextChannel } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
-import { rollbar } from "../Helpers/logging/rollbar";
 
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };
@@ -23,8 +22,6 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
         });
     } else {
         console.log(`Unknown error:`, e);
-        if (e instanceof Error) rollbar.error(e);
-        else rollbar.error(`${e}`);
         const embed = new EmbedBuilder()
             .setTitle("An unknown error occurred!")
             .setFooter({ text: "DEMA internet machine really broke" });

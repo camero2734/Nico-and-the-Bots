@@ -33,15 +33,13 @@ import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 import F from "./funcs";
-import { rollbar } from "./logging/rollbar";
 import { prisma } from "./prisma-init";
 
 const safeCheck = async (p: Promise<unknown>) => {
     try {
         await p;
     } catch (e) {
-        if (e instanceof Error) rollbar.error(e);
-        else rollbar.error(`Error: ${e}`);
+        console.log(e);
     }
 };
 

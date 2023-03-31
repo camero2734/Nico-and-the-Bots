@@ -4,7 +4,6 @@ import { Collection, Message, MessageOptions, Snowflake, TextChannel } from "dis
 import IORedis from "ioredis";
 import { NicoClient } from "../../../app";
 import { guildID } from "../../Configuration/config";
-import { rollbar } from "../logging/rollbar";
 import { prisma } from "../prisma-init";
 import { UpdateProgress } from "./update-progress";
 
@@ -58,8 +57,7 @@ new Worker(
             const msg = await findOrCreateMessage(job.name, messageUpdate);
             await messageUpdate.update(msg);
         } catch (e) {
-            if (e instanceof Error) rollbar.error(e);
-            else rollbar.error(`Queue error: ${e}`);
+            console.log(e);
         }
     },
     redisOpts

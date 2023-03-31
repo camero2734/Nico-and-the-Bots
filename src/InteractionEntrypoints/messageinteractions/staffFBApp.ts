@@ -13,7 +13,6 @@ import {
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
-import { rollbar } from "../../Helpers/logging/rollbar";
 import { prisma } from "../../Helpers/prisma-init";
 import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
 import { generateScoreCard } from "../slashcommands/econ/score";
@@ -193,8 +192,7 @@ export async function sendToStaff(
 
         return m.url;
     } catch (e) {
-        if (e instanceof Error) rollbar.log(e);
-        else rollbar.log(`${e}`);
+        console.log(e);
     }
 }
 

@@ -16,7 +16,6 @@ import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
-import { rollbar } from "../../../Helpers/logging/rollbar";
 import { Checked, Watcher } from "./base";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
@@ -218,13 +217,12 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             const header = res.headers.get("X-Cache-Key"); // Something like httpsweb.archive.org/web/20210718183444/http://dmaorg.info/found/15398642_14/clancy.htmlUS
             if (!header) throw new Error("Header not present");
 
-            const match = header.match(/https(?<url>web\.archive\.org\/web\/\d+?\/.*?)US/) || [];
-            const url = match.groups?.url;
+            const match = header.match(/https(?<url>web\.archive\.org\/web\/\d+?\/.*?)US/);
+            const url = match?.groups?.url;
 
             return url ? `https://${url}` : null;
         } catch (e) {
-            if (e instanceof Error) rollbar.error(e);
-            else rollbar.error(new Error(`${e}`));
+            console.log(e);
             return null;
         }
     }

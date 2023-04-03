@@ -179,5 +179,5 @@ class TopfeedBot {
 }
 
 // Singleton 😤
-const topfeedBot = new TopfeedBot();
-export default topfeedBot;
+// const topfeedBot = new TopfeedBot();
+// export default topfeedBot;

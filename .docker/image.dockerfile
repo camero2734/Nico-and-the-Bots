@@ -32,6 +32,4 @@ RUN rm gc_temp.key
 ARG UPDATE_DB
 ENV UPDATE_DB=$UPDATE_DB
 
-RUN apt install -y libstdc++6 gcc g++ make
-
 CMD [ "bash", ".docker/entrypoint.sh" ]

@@ -37,7 +37,7 @@ export class KeonsBot {
         await this.ready; // Ensure the bot is ready before trying to set up the shop
 
         const guild = await this.client.guilds.fetch(guildID);
-        const chan = guild.channels.cache.get(channelIDs.shop) as TextChannel;
+        const chan = await guild.channels.fetch(channelIDs.shop) as TextChannel;
 
         await chan.bulkDelete(100); // Delete all messages
 

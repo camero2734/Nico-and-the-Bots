@@ -1,45 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
+    ActionRowBuilder,
     ApplicationCommandOptionData,
-    AutocompleteInteraction,
+    ApplicationCommandOptionType,
+    ApplicationCommandType,
+    BaseMessageOptions,
+    ButtonBuilder,
+    ButtonComponent,
+    ButtonStyle,
     ChatInputApplicationCommandData,
     Collection,
-    CommandInteraction,
+    CommandInteractionOptionResolver,
+    ComponentType,
     Guild,
     GuildMember,
+    Interaction,
     Message,
-    ButtonBuilder,
-    MessageOptions,
+    MessagePayload,
     Snowflake,
     TextChannel,
-    CommandInteractionOptionResolver,
-    ApplicationCommandType,
-    InteractionReplyOptions,
-    ApplicationCommandOptionType,
-    ButtonStyle,
-    ComponentType,
-    ActionRowBuilder,
-    ButtonComponent,
-    MessagePayload
+    ChatInputCommandInteraction
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
 import F from "../Helpers/funcs";
 import { prisma } from "../Helpers/prisma-init";
-import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { EntrypointEvents } from "./Events";
 import { AutocompleteListener, AutocompleteNameOption } from "./ListenerAutocomplete";
-import { CommandOptions, extractOptsFromInteraction, OptsType, SlashCommandData } from "./SlashCommandOptions";
+import { CommandOptions, OptsType, SlashCommandData, extractOptsFromInteraction } from "./SlashCommandOptions";
+import { ApplicationData, SlashCommands } from "./data";
 
-type SlashCommandInteraction<T extends CommandOptions = []> = CommandInteraction & {
+type SlashCommandInteraction<T extends CommandOptions = []> = ChatInputCommandInteraction & {
     opts: OptsType<SlashCommandData<T>>;
     member: GuildMember;
     channel: TextChannel;
     guild: Guild;
     guildId: Snowflake;
-    send(payload: MessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
+    send(payload: BaseMessageOptions & { ephemeral?: boolean }): Promise<Message | void>;
 };
 type SlashCommandHandler<T extends CommandOptions = []> = (ctx: SlashCommandInteraction<T>) => Promise<unknown>;
 
@@ -72,14 +70,17 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         this.autocompleteListeners.set(name, handler);
     }
 
-    async _run(interaction: CommandInteraction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
+    async _run(interaction: Interaction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
         const ctx = interaction as SlashCommandInteraction<T>;
+
+        if (!ctx.isCommand()) return;
+
         ctx.send = async (payload) => {
             if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
             else return ctx.reply(payload as unknown as MessagePayload) as unknown as Promise<Message<boolean>>;
         };
         ctx.opts =
-            opts || (extractOptsFromInteraction(interaction as CommandInteraction) as OptsType<SlashCommandData<T>>);
+            opts || (extractOptsFromInteraction(interaction as Interaction) as OptsType<SlashCommandData<T>>);
 
         await this.handler(ctx);
         EntrypointEvents.emit("slashCommandFinished", { entrypoint: this, ctx });
@@ -118,12 +119,14 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
                     options: [],
                     type: ApplicationCommandOptionType.SubcommandGroup
                 };
-                if (!foundSubcommandGroup) command.options?.push(subcommandGroup);
+                const options = command.options as ApplicationCommandOptionData[];
+                if (!foundSubcommandGroup) options?.push(subcommandGroup);
             } else if (step === "SUBCOMMAND") {
                 const parent = (subcommandGroup || command) as ChatInputApplicationCommandData;
                 if (parent.options?.some((o) => o.name === value)) continue;
 
-                parent.options?.push({
+                const options = parent.options as ApplicationCommandOptionData[];
+                options?.push({
                     description: "Not provided",
                     ...(isLast ? commandData : {}),
                     name: value,
@@ -222,7 +225,9 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
         return createActionRow;
     }
 
-    static getIdentifierFromInteraction(interaction: CommandInteraction | AutocompleteInteraction): string {
+    static getIdentifierFromInteraction(interaction: Interaction): string {
+        if (!('options' in interaction)) return '';
+
         const optionResolver = interaction.options as CommandInteractionOptionResolver;
         const subcommandGroup = optionResolver.getSubcommandGroup(false);
         const subcommand = optionResolver.getSubcommand(false);

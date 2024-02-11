@@ -4,7 +4,7 @@ import {
     ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
-    Attachment,
+    AttachmentBuilder,
     TextChannel
 } from "discord.js";
 import FileType from "file-type";
@@ -117,7 +117,7 @@ command.setHandler(async (ctx) => {
     embed.setDescription("");
     embed.setFields([]);
 
-    const attachment = new Attachment(buffer, fileName);
+    const attachment = new AttachmentBuilder(buffer, { name: fileName });
 
     if (fileType.mime.startsWith("image")) {
         embed.setImage(`attachment://${fileName}`);

@@ -51,7 +51,7 @@ export class KeonsBot {
             .addFields([
                 {
                     name: "Quick Start",
-                    value: "To access the color role shop, use the **slash command** `/shop colors` in this channel. This will open up a shop menu that only you can see!"
+                    value: "To access the color role shop, press the `Color Roles` button below. This will open up a shop menu that only you can see!"
                 },
                 {
                     name: "What are credits?",
@@ -66,8 +66,8 @@ export class KeonsBot {
                     value: "The Firebreathers role is awarded to users who have contributed to our community, usually by being active. You may apply at any time by using the `/roles firebreathers` command, but we generally recommend to wait until you've been here for at least a few months."
                 },
                 {
-                name: "I have a suggestion for a new shop item",
-                value: "We at Good Day Dema® Discord Shop love to hear customer feedback! Simply use the `/suggest` command to suggest a new shop item, and make sure to tell us why you think it would be cool."
+                    name: "I have a suggestion for a new shop item",
+                    value: "We at Good Day Dema® Discord Shop love to hear customer feedback! Simply use the `/suggest` command to suggest a new shop item, and make sure to tell us why you think it would be cool."
                 }
             ])
             .setFooter({

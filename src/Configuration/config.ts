@@ -70,7 +70,7 @@ export const channelIDs = <const>{
     dmaorg: "534882770619465731",
     tourcategory: "600868166612287500",
     lvlcnrn: "721047257029279844",
-    demacouncil: "849323629388627978",
+    demacouncilThread: "1206359513272291400",
     mulberrystreet: "759830064518266880",
     verifiedapplications: "470428222237179905",
     tourhelp: "857258422293757972",
@@ -98,6 +98,7 @@ export const categoryIDs = <const>{
 
 export const userIDs = <const>{
     me: "221465443297263618",
+    myAlt: "335912315494989825",
     bots: {
         keons: "470412382456381471",
         sacarver: "470691679712706570",

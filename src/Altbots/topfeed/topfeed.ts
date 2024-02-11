@@ -19,7 +19,7 @@ class TopfeedBot {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     websites: SiteWatcher<any>[] = [];
     instagrams: InstaWatcher[] = [];
-    twitters: TwitterWatcher[] = [];
+    // twitters: TwitterWatcher[] = [];
     youtubes: YoutubeWatcher[] = [];
     constructor() {
         this.client = new Client({
@@ -72,11 +72,11 @@ class TopfeedBot {
             new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler)
         ];
 
-        this.twitters = [
-            new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
-            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler),
-            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh)
-        ];
+        // this.twitters = [
+        //     new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
+        //     new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler),
+        //     new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh)
+        // ];
 
         this.youtubes = [
             new YoutubeWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
@@ -154,7 +154,7 @@ class TopfeedBot {
         const methods: Record<JobType, () => void> = {
             YOUTUBE: () => this.#checkGroup(this.youtubes),
             INSTAGRAM: () => this.#checkGroup(this.instagrams),
-            TWITTER: () => this.#checkGroup(this.twitters),
+            // TWITTER: () => this.#checkGroup(this.twitters),
             WEBSITES: () => this.#checkGroup(this.websites)
         };
         if (methods[jobType]) methods[jobType]();
@@ -166,7 +166,7 @@ class TopfeedBot {
         const numMinutes: Record<JobType, number> = {
             YOUTUBE: 5,
             INSTAGRAM: 15,
-            TWITTER: 2,
+            // TWITTER: 2,
             WEBSITES: 0.1
         };
 
@@ -179,5 +179,5 @@ class TopfeedBot {
 }
 
 // Singleton 😤
-// const topfeedBot = new TopfeedBot();
-// export default topfeedBot;
+const topfeedBot = new TopfeedBot();
+export default topfeedBot;

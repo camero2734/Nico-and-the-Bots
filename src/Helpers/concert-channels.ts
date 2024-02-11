@@ -131,6 +131,7 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
+            if (!this.concertCategory) return false;
             const channelsCollection = this.concertCategory.children.cache as Collection<string, GuildChannel>;
             channelsCollection.delete(channelIDs.tourhelp);
             const channels = [...channelsCollection.values()];
@@ -195,7 +196,8 @@ class ConcertChannelManager {
         // prettier-ignore
         const topic = `${dates} | Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel! Feel free to discuss the concert, tickets, share pictures, etc. This channel will be deleted 3 days after the concert ends.`
 
-        const channel = await this.guild.channels.create(toAdd.channelName, {
+        const channel = await this.guild.channels.create({
+            name: toAdd.channelName,
             permissionOverwrites,
             type: ChannelType.GuildText,
             topic

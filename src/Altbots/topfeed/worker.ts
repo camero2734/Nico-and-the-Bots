@@ -1,12 +1,12 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { minutesToMilliseconds } from "date-fns";
 import IORedis from "ioredis";
-// import topfeedBot from "./topfeed";
+import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
 
-export type JobType = "TWITTER" | "YOUTUBE" | "INSTAGRAM" | "WEBSITES";
+export type JobType = "YOUTUBE" | "INSTAGRAM" | "WEBSITES" // | "TWITTER";
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 
@@ -25,7 +25,7 @@ export const worker = new Worker(
     QUEUE_NAME,
     async (job) => {
         const name = job.name as JobType;
-        // await topfeedBot.checkGroup(name);
+        await topfeedBot.checkGroup(name);
     },
     redisOpts
 );

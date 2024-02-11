@@ -1,9 +1,8 @@
 import { Guild } from "discord.js";
-import { channelIDs } from "../../Configuration/config";
 import { TopfeedSource } from "./source";
 
 export class TopfeedService {
-    constructor(public sources: TopfeedSource[], private guild: Guild) {}
+    constructor(public sources: TopfeedSource[], private guild: Guild) { }
     async run() {
         console.log("---------------------------");
         console.log("----- TOPFEED RUNNING -----");

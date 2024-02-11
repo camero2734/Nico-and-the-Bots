@@ -3,8 +3,11 @@ import {
     ApplicationCommandType,
     ContextMenuCommandInteraction,
     GuildMember,
+    Interaction,
     Message,
-    TextChannel
+    MessageContextMenuCommandInteraction,
+    TextChannel,
+    UserContextMenuCommandInteraction
 } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, ContextMenus } from "./data";
@@ -16,24 +19,26 @@ type TargetTypes = {
 };
 
 export type ContextMenuHandler<T extends keyof TargetTypes> = (
-    ctx: CtxMenuInteraction,
+    ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction,
     target: TargetTypes[T]
 ) => Promise<unknown>;
 
-type CtxMenuInteraction = ContextMenuCommandInteraction & { member: GuildMember; channel: TextChannel };
+type CtxMenuInteraction = (MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) & { member: GuildMember; channel: TextChannel };
 
 export abstract class ContextMenu<T extends keyof TargetTypes> extends InteractionEntrypoint<ContextMenuHandler<T>> {
     public commandData: ApplicationCommandData;
 
-    static GenericContextType: CtxMenuInteraction;
+    static GenericContextType: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction;
 
     constructor(public name: string, type: T) {
         super();
         this.commandData = { type, name };
     }
-    protected abstract getTarget(ctx: CtxMenuInteraction): TargetTypes[T];
+    protected abstract getTarget(ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction): TargetTypes[T];
 
-    async _run(ctx: CtxMenuInteraction): Promise<void> {
+    async _run(ctx: Interaction): Promise<void> {
+        if (!ctx.isContextMenuCommand()) throw new CommandError("Not a context menu");
+
         const target = this.getTarget(ctx);
         await this.handler(ctx, target);
     }
@@ -51,7 +56,7 @@ export class UserContextMenu extends ContextMenu<ApplicationCommandType.User> {
         super(name, ApplicationCommandType.User);
     }
 
-    getTarget(ctx: CtxMenuInteraction) {
+    getTarget(ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) {
         const member = ctx.options.getMember("user");
         if (!member) throw new CommandError("Failed to get member");
         return member as GuildMember;
@@ -63,7 +68,7 @@ export class MessageContextMenu extends ContextMenu<ApplicationCommandType.Messa
         super(name, ApplicationCommandType.Message);
     }
 
-    getTarget(ctx: CtxMenuInteraction) {
+    getTarget(ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) {
         const msg = ctx.options.getMessage("message", false);
         if (!msg) throw new CommandError("Failed to get message");
         return msg as Message;

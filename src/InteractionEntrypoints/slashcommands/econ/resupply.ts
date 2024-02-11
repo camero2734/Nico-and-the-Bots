@@ -14,12 +14,11 @@ import {
 } from "discord.js";
 import fs from "fs";
 import { channelIDs, roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
+import { District, ItemDescriptions, PrizeType, districts, getPrizeName } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
@@ -128,6 +127,8 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
 });
 
 const genButtonId = command.addInteractionListener("banditosBishopsButton", [], async (ctx) => {
+    if (!ctx.isButton()) return;
+
     await ctx.deferUpdate();
     await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);
@@ -190,7 +191,7 @@ async function memberCaught(
         .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
         .setAuthor({ name: district.bishop, iconURL: emojiURL })
         .setDescription(
-            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
+            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.`
         )
         .setFooter({ text: `You win nothing. ${tokensRemaining}`, iconURL: "attachment://file.gif" });
 

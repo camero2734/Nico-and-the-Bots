@@ -164,7 +164,8 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>
         }
     });
 
-    ctx.update(await MainMenuPayload(ctx.user.id));
+    const msg = await ctx.fetchReply();
+    await msg.edit(await MainMenuPayload(ctx.user.id));
 });
 
 const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {
@@ -175,7 +176,8 @@ const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], a
         )
         .setColor(Colors.DarkGreen);
 
-    await ctx.update({ embeds: [embed], components: [] });
+    const msg = await ctx.fetchReply();
+    await msg.edit({ embeds: [embed], components: [] });
 
     const { applicationId, responseData } = (await getCurrentApplication(ctx.user.id)) || {};
     if (!applicationId || !responseData) return;

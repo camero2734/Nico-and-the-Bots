@@ -2,7 +2,6 @@
 import { glob as g } from "glob";
 import path from "path";
 import { promisify } from "util";
-import { ApplicationData } from "../Structures/data";
 import { InteractionEntrypoint } from "../Structures/EntrypointBase";
 import { ContextMenu } from "../Structures/EntrypointContextMenu";
 import { MessageInteraction } from "../Structures/EntrypointMessageInteraction";

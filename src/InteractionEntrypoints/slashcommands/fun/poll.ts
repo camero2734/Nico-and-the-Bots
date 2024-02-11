@@ -62,7 +62,7 @@ command.setHandler(async (ctx) => {
 
     if (!option1 || !option2) throw new Error("First two options should be required");
 
-    const options: string[] = [option1, option2, ...Object.values(optDict).filter((a) => a)].map((o) => o.trim());
+    const options: string[] = [option1, option2, ...Object.values(optDict).filter((a): a is string | number => a !== undefined)].map((o) => o?.toString().trim());
 
     const discordEmojiRegex = /<a{0,1}:(?<name>.*?):(?<id>\d+)>/;
 

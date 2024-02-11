@@ -1,12 +1,8 @@
-import { secondsToMilliseconds } from "date-fns";
-import { EmbedBuilder, MessageOptions } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
-import { prisma } from "../../Helpers/prisma-init";
 import { TopfeedService } from "./service";
 import { TopfeedSource } from "./source";
 import { TiktokSource } from "./sources/tiktok";
-import { TwitterSource } from "./sources/twitter";
 
 const TylerInfo = <const>{
     displayName: "Tyler Joseph",

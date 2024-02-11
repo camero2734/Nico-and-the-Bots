@@ -20,7 +20,7 @@ import {
     Guild,
     GuildMember,
     EmbedBuilder,
-    MessageOptions,
+    BaseMessageOptions,
     Snowflake,
     TextChannel,
     VoiceChannel,
@@ -83,7 +83,7 @@ export default async function (client: Client): Promise<void> {
     every60Seconds();
 }
 
-async function tryToDM(member: GuildMember, msg: MessageOptions): Promise<void> {
+async function tryToDM(member: GuildMember, msg: BaseMessageOptions): Promise<void> {
     try {
         const dm = await member.createDM();
         await dm.send(msg);
@@ -172,7 +172,7 @@ async function checkVCRoles(guild: Guild): Promise<void> {
     const allChannels = await guild.channels.fetch();
     const allMembers = guild.members.cache;
 
-    const voiceChannels = allChannels.filter((c): c is VoiceChannel => c.type === ChannelType.GuildVoice);
+    const voiceChannels = allChannels.filter((c): c is VoiceChannel => c?.type === ChannelType.GuildVoice);
 
     const membersInVc = new Collection<Snowflake, GuildMember>();
 

@@ -24,13 +24,14 @@ command.setHandler(async (ctx) => {
 
     await ctx.deferReply({ ephemeral: true });
 
-    let id = "";
+    let id: string | undefined = "";
     if (rawUrl.indexOf("youtube.com/watch?v=") !== -1) {
         id = (/(?<=watch\?v=).*?(?=$|&|\?)/.exec(rawUrl) || [])[0];
     } else if (rawUrl.indexOf("youtu.be/") !== -1) {
         id = (/(?<=youtu\.be\/).*?(?=$|&|\?)/.exec(rawUrl) || [])[0];
     }
     if (!id) throw new CommandError("Invalid URL.");
+
     const url = `https://youtube.com/watch?v=${id}`;
 
     const existingInterview = await prisma.submittedInterview.findUnique({
@@ -43,7 +44,7 @@ command.setHandler(async (ctx) => {
     await ctx.send({ embeds: [embed] });
 
     const info: Record<string, string> = await new Promise((resolve) =>
-        ytdl.getInfo(id, (_error, output) => resolve(output as unknown as Record<string, string>))
+        ytdl.getInfo(id!, (_error, output) => resolve(output as unknown as Record<string, string>))
     );
 
     const { channel, view_count, fulltitle, thumbnail, upload_date, description } = info;

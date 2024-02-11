@@ -1,5 +1,5 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { Message, EmbedBuilder, MessageOptions, Colors } from "discord.js";
+import { Message, EmbedBuilder, BaseMessageOptions, Colors } from "discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -47,7 +47,7 @@ const standardizeEmbed = (embed: EmbedBuilder): void => {
         });
 };
 
-const initialMessage = async (): Promise<MessageOptions> => {
+const initialMessage = async (): Promise<BaseMessageOptions> => {
     const [progress] = generateProgressBar();
 
     const embed = new EmbedBuilder().setDescription(progress);

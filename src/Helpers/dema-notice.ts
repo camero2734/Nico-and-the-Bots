@@ -1,6 +1,6 @@
 import { BishopType, ViolationType } from "@prisma/client";
 import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
-import { GuildMember, Attachment, EmbedBuilder, TextChannel } from "discord.js";
+import { GuildMember, AttachmentBuilder, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -52,8 +52,12 @@ export async function sendViolationNotice(
 ): Promise<void> {
     const { violation, issuingBishop } = options;
 
-    const chan = member.guild.channels.cache.get(channelIDs.demacouncil) as TextChannel;
+    const chan = member.guild.channels.cache.get(channelIDs.shop) as TextChannel;
     if (!chan) return;
+
+    const thread = await chan.threads.fetch(channelIDs.demacouncilThread);
+    if (!thread) return;
+    if (!thread.joined) await thread.join();
 
     const bishop = issuingBishop || F.randomValueInArray(Object.values(BishopType));
 
@@ -77,7 +81,7 @@ export async function sendViolationNotice(
 
     // Draw IDENTIFIED AS ___________ BY DEMA COUNCIL
     cctx.fillStyle = "white";
-    cctx.font = "900 80px Lucida Console";
+    cctx.font = "900 80px FiraCode";
     cctx.textAlign = "center";
 
     const compressBy = 0.95;
@@ -85,14 +89,14 @@ export async function sendViolationNotice(
     cctx.fillText(name, 900, 282, originalWidth * compressBy);
 
     // Draw main text body
-    cctx.font = "45px Arial Narrow";
+    cctx.font = "45px FiraCode";
     cctx.textAlign = "left";
     const mx = 163;
     const body = `You are in violation with the laws set forth by DMA ORG and The Sacred Municipality of Dema. You were found ${found}. Further actions will be taken to ensure these violations will not occur again`;
     fillParagraph(cctx, `NOTICE: ${body}.\n\nWe have people on the way. We want you home safe.`, mx, 540, width - 2 * mx); // prettier-ignore
 
     // Infraction No.
-    cctx.font = "50px Arial Narrow";
+    cctx.font = "50px FiraCode";
     cctx.textAlign = "center";
     cctx.translate(900, 990);
     cctx.fillText(`Infraction No. ${formatInfractionNumber(infractionNo)}`, 0, 0);
@@ -101,22 +105,14 @@ export async function sendViolationNotice(
     cctx.translate(0, 75);
     cctx.fillText(reason, 0, 0);
 
-    // Issued by
+    // Issued to
     cctx.translate(0, 75);
-    cctx.fillText(`Issued by ${bishop}`, 0, 0);
-
-    // Determine if user can see channel already
-    const userPerms = chan.permissionsFor(member.id);
-    const canSee = userPerms?.has("ViewChannel") || false;
-
-    // Allow user to see channel
-    await chan.permissionOverwrites.create(member.id, { ViewChannel: true });
+    cctx.fillText(`Issued to @${member.displayName}`, 0, 0);
 
     const transmissionEmbed = new EmbedBuilder().setDescription("RECEIVING TRANSMISSION FROM DEMA COUNCIL...");
-    const m = await chan.send({
+    const m = await thread.send({
         content: `${member}`,
         embeds: [transmissionEmbed],
-        allowedMentions: canSee ? { parse: [] } : {}
     });
     for (let i = 0; i < 5; i++) {
         const description = transmissionEmbed.data.description as string;
@@ -127,12 +123,12 @@ export async function sendViolationNotice(
 
     await F.wait(1000);
 
-    await m.edit({
-        content: `${member}`,
-        embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")],
-        allowedMentions: canSee ? { parse: [] } : {}
-    });
-    await chan.send({ files: [new Attachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)] }); // prettier-ignore
+
+    const fileName = `infraction_${infractionNo}.png`;
+    transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")
+    transmissionEmbed.setImage(`attachment://${fileName}`);
+    transmissionEmbed.setColor("Red");
+    await m.edit({ content: `${member}`, embeds: [transmissionEmbed], files: [new AttachmentBuilder(canvas.toBuffer(), { name: fileName })] }); // prettier-ignore
 }
 
 function formatInfractionNumber(infractionNo: number) {

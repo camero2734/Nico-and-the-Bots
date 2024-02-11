@@ -25,9 +25,10 @@ export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async
 
 // Main Menu
 const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
+    await ctx.deferUpdate();
+
     const initialMsg = await generateMainMenuEmbed(ctx.member);
-    const msg = await ctx.fetchReply();
-    await msg.edit(initialMsg);
+    await ctx.editReply(initialMsg);
 });
 
 // Category submenu
@@ -57,14 +58,16 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
         const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
         const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-        return new ButtonBuilder()
+        const builder = new ButtonBuilder()
             .setDisabled(cantAfford)
             .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
+            .setDisabled(cantAfford || ownsRole)
             .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
             .setCustomId(
                 !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID()
             )
-            .setEmoji({ name: contraband ? "🩸" : undefined });
+        if (contraband) builder.setEmoji({ name: "🩸" });
+        return builder;
     });
 
     const components = MessageTools.allocateButtonsIntoRows([
@@ -72,7 +75,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
         new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({}))
     ]);
 
-    ctx.editReply({ embeds: [embed], components });
+    await ctx.editReply({ embeds: [embed], components });
 });
 
 // Viewing a specific item
@@ -85,6 +88,8 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
     const role = category?.data.roles.find((r) => r.id === args.itemId);
 
     if (!categoryName || !category || !role) return;
+
+    await ctx.deferUpdate();
 
     // Ensure user doesn't have role already
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
@@ -134,8 +139,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
                 .setCustomId(genSubmenuId({ categoryId: category.id }))
         ]);
 
-        const msg = await ctx.fetchReply();
-        await msg.edit({ embeds: [embed], components: roleComponents });
+        await ctx.editReply({ embeds: [embed], components: roleComponents });
     } else if (actionType === ActionTypes.Purchase) {
         // Purchase
         if (!category.data.purchasable(role.id, ctx.member, dbUser))
@@ -174,8 +178,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
             embed.setFields([]);
             embed.setDescription(`${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`) // prettier-ignore
 
-            const msg = await ctx.fetchReply();
-            await msg.edit({ embeds: [embed], components: [] });
+            await ctx.editReply({ embeds: [embed], components: [] });
         }
 
         if (contraband) {
@@ -207,15 +210,20 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     const menuActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
-            return new ButtonBuilder()
+            const builder = new ButtonBuilder()
                 .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
                 .setLabel(
                     unlocked
                         ? `${idx + 1}. ${label}`
                         : `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`
                 )
-                .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID())
-                .setEmoji({ name: unlocked ? undefined : "🔒" });
+                .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID());
+            if (!unlocked) {
+                builder.setDisabled(true);
+                builder.setEmoji({ name: "🔒" });
+            }
+
+            return builder;
         })
     );
 

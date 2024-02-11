@@ -131,6 +131,7 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
+            if (!this.concertCategory) return false;
             const channelsCollection = this.concertCategory.children.cache as Collection<string, GuildChannel>;
             channelsCollection.delete(channelIDs.tourhelp);
             const channels = [...channelsCollection.values()];

@@ -6,7 +6,7 @@ import topfeedBot from "./topfeed";
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
 
-export type JobType = "TWITTER" | "YOUTUBE" | "INSTAGRAM" | "WEBSITES";
+export type JobType = "YOUTUBE" | "INSTAGRAM" | "WEBSITES" // | "TWITTER";
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 

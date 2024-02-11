@@ -99,7 +99,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
             obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED._data.lastModified}` : undefined
         ]
             .filter((d) => d !== undefined)
-            .join("\n");
+            .join("\n") || "No changes (?)";
 
         const hashes = Object.values(obj)
             .filter((r) => r._data.isNew)

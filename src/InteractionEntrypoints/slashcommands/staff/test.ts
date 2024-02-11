@@ -2,6 +2,8 @@ import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "
 import { TextInputStyle } from "discord-api-types/payloads/v9";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { ViolationType } from "@prisma/client";
 
 const command = new SlashCommand(<const>{
     description: "Test command",
@@ -15,8 +17,12 @@ const MODAL_FIELDS = <const>{
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    const embed = new EmbedBuilder().setDescription("i don't remember discord.js at all lol");
-    await ctx.send({ embeds: [embed] });
+    // const embed = new EmbedBuilder().setDescription("i don't remember discord.js at all lol");
+    // await ctx.send({ embeds: [embed] });
+
+    const member = await ctx.guild.members.fetch(userIDs.myAlt);
+
+    await sendViolationNotice(member, { violation: ViolationType.ConspiracyAndTreason, issuingBishop: "Nico" });
 
     // const modal = new ModalBuilder().setTitle("My Awesome Form").setCustomId(genModalId({}));
 

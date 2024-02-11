@@ -191,7 +191,7 @@ async function memberCaught(
         .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
         .setAuthor({ name: district.bishop, iconURL: emojiURL })
         .setDescription(
-            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The <#${channelIDs.demacouncil}> has published a violation notice.`
+            `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.`
         )
         .setFooter({ text: `You win nothing. ${tokensRemaining}`, iconURL: "attachment://file.gif" });
 

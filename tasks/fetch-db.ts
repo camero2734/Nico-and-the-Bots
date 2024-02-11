@@ -35,7 +35,7 @@ async function getLatestBackup(): Promise<Minio.BucketItem> {
 }
 
 async function downloadBackup(item: Minio.BucketItem, fileName: string): Promise<void> {
-    const stream = await minioClient.getObject(BUCKET_NAME, item.name);
+    const stream = await minioClient.getObject(BUCKET_NAME, item.name!);
     let totalBytes = 0;
     let i = 0;
 

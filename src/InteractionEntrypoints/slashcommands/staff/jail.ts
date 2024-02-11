@@ -1,23 +1,30 @@
 import {
     ActionRowBuilder,
     ApplicationCommandOptionType,
+    AttachmentBuilder,
     ButtonBuilder,
+    ButtonComponent,
     ButtonStyle,
     ChannelType,
     ComponentType,
     EmbedBuilder,
     GuildMember,
     GuildMemberRoleManager,
-    Attachment,
+    MessageActionRowComponentBuilder,
     MessageComponentInteraction,
     OverwriteData,
+    StringSelectMenuBuilder,
     Snowflake,
     TextChannel,
-    ButtonComponent,
-    SelectMenuComponent,
-    MessageActionRowComponentBuilder,
-    SelectMenuBuilder,
-    MessageComponentBuilder
+    AnyComponentBuilder,
+    UserSelectMenuComponent,
+    RoleSelectMenuComponent,
+    MentionableSelectMenuComponent,
+    ChannelSelectMenuComponent,
+    UserSelectMenuBuilder,
+    RoleSelectMenuBuilder,
+    MentionableSelectMenuBuilder,
+    ChannelSelectMenuBuilder
 } from "discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
@@ -105,7 +112,8 @@ command.setHandler(async (ctx) => {
     }
 
     // Create channel
-    const jailChan = await ctx.member.guild.channels.create(`jail-${names}`, {
+    const jailChan = await ctx.member.guild.channels.create({
+        name: `jail-${names}`,
         type: ChannelType.GuildText,
         permissionOverwrites
     });
@@ -213,7 +221,11 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
     const [actionRow] = msg.components;
 
     const newComponents = actionRow.components.map(c => {
-        if (c.type === ComponentType.SelectMenu) return SelectMenuBuilder.from(c);
+        if (c.type === ComponentType.StringSelect) return StringSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.UserSelect) return UserSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.RoleSelect) return RoleSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.MentionableSelect) return MentionableSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.ChannelSelect) return ChannelSelectMenuBuilder.from(c);
         if (c.type !== ComponentType.Button) return c;
 
         return ButtonBuilder.from(c as ButtonComponent)
@@ -239,14 +251,17 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const [actionRow] = msg.components;
 
     const newComponents = actionRow.components.map(c => {
-        if (c.type === ComponentType.SelectMenu) return SelectMenuBuilder.from(c);
+        if (c.type === ComponentType.StringSelect) return StringSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.UserSelect) return UserSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.RoleSelect) return RoleSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.MentionableSelect) return MentionableSelectMenuBuilder.from(c);
+        if (c.type === ComponentType.ChannelSelect) return ChannelSelectMenuBuilder.from(c);
         if (c.type !== ComponentType.Button) return c;
 
         return ButtonBuilder.from(c as ButtonComponent)
             .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.UNMUTE_ALL.toString() }))
             .setLabel("Unmute Users")
-    });
-
+    })
 
     await msg.edit({ components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)] });
 }
@@ -331,7 +346,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
         html += `<div>\n${mhtml}\n</div><br>\n`;
     }
 
-    const attachment = new Attachment(Buffer.from(html), `${chan.name}.html`);
+    const attachment = new AttachmentBuilder(Buffer.from(html), { name: `${chan.name}.html` });
 
     if (cancelled) return; // Don't send anything
 

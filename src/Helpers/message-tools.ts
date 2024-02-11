@@ -4,7 +4,7 @@ import {
     EmbedBuilder,
     GuildMember,
     Message,
-    MessageOptions,
+    BaseMessageOptions,
     Snowflake,
     TextChannel,
     ButtonBuilder,
@@ -75,7 +75,7 @@ export const MessageTools = {
         return allMessages;
     },
 
-    async safeDM(member: GuildMember, msg: MessageOptions): Promise<boolean> {
+    async safeDM(member: GuildMember, msg: BaseMessageOptions): Promise<boolean> {
         try {
             const dm = await member.createDM();
             await dm.send(msg);

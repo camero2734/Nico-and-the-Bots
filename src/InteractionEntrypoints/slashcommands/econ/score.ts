@@ -1,10 +1,10 @@
 import { createCanvas, loadImage } from "canvas";
+import { ApplicationCommandOptionType, AttachmentBuilder, GuildMember, Snowflake } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, Snowflake, ApplicationCommandOptionType, EmbedBuilder, Attachment } from "discord.js";
-import { badgeLoader, LevelCalculator } from "../../../Helpers";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { LevelCalculator, badgeLoader } from "../../../Helpers";
 import { prisma, queries } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "View your score card",
@@ -31,7 +31,7 @@ command.setHandler(async (ctx) => {
     const buffer = await generateScoreCard(member);
     await ctx.editReply({
         embeds: [],
-        files: [new Attachment(buffer, "score.png")]
+        files: [new AttachmentBuilder(buffer, { name: "score.png" })]
     });
 });
 

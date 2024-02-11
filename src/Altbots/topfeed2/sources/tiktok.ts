@@ -1,6 +1,6 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedSource } from "../source";
 import { IVideo, TTScraper } from "tiktok-scraper-ts";
-import { MessageOptions } from "discord.js";
+import { BaseMessageOptions } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import secrets from "../../../Configuration/secrets";
 
@@ -41,11 +41,11 @@ export class TiktokSource extends TopfeedSource {
             .setColor(0xfe2c55)
             .setTitle(title);
 
-        const embedMessage: MessageOptions = {
+        const embedMessage: BaseMessageOptions = {
             embeds: [embed]
         };
 
-        const threadedMessage: MessageOptions = {
+        const threadedMessage: BaseMessageOptions = {
             content: post.downloadURL
         };
 

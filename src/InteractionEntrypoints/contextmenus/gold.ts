@@ -68,12 +68,15 @@ async function handleGold(
     originalChannelId: Snowflake,
     originalUserId?: Snowflake
 ) {
-    if (!msg.member) return;
+    if (!msg.member || !ctx.member?.user) return;
 
     const isAdditionalGold = !!originalUserId;
     const cost = isAdditionalGold ? ADDITIONAL_GOLD_COST : GOLD_COST;
 
-    const originalMember = isAdditionalGold ? await ctx.member.guild.members.fetch(originalUserId) : msg.member;
+    const ctxMember = await ctx.guild?.members.fetch(ctx.member.user.id);
+    if (!ctxMember) throw new Error("Could not find member");
+
+    const originalMember = isAdditionalGold ? await ctxMember.guild?.members.fetch(originalUserId) : msg.member;
     const originalMessageUrl = `https://discord.com/channels/${ctx.guild?.id}/${originalChannelId}/${originalMessageId}`;
 
     // Check that the user can give gold
@@ -92,7 +95,7 @@ async function handleGold(
             .addFields([{ name: "Channel", value: `${msg.channel}`, inline: true }])
             .addFields([{ name: "Posted", value: F.discordTimestamp(new Date(), "shortDateTime"), inline: true }])
             .addFields([{ name: "Message", value: msg.content || "*No content*" }])
-            .setFooter({ text: `Given by ${ctx.member.displayName}.`, iconURL: ctx.user.displayAvatarURL() });
+            .setFooter({ text: `Given by ${ctxMember.displayName}.`, iconURL: ctx.user.displayAvatarURL() });
 
     if (!isAdditionalGold && msg.attachments.size > 0) {
         const url = msg.attachments.first()?.url;

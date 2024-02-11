@@ -1,5 +1,5 @@
 import * as bigintConversion from "bigint-conversion";
-import { Guild, GuildMember, Message, MessageOptions, Snowflake, TextChannel } from "discord.js";
+import { Guild, GuildMember, Message, BaseMessageOptions, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import * as crypto from "crypto";
@@ -120,9 +120,9 @@ const F = {
     parseMessageUrl(url: string): { guildId: string; channelId: string; messageId: string } | undefined {
         const regex = /channels\/(?<guildId>\d*)\/(?<channelId>\d*)\/(?<messageId>\d*)/;
 
-        const matches = url.match(regex) || [];
+        const matches = url.match(regex);
 
-        const { guildId, channelId, messageId } = matches.groups || {};
+        const { guildId, channelId, messageId } = matches?.groups || {};
         if (!guildId || !channelId || !messageId) return;
 
         return { guildId, channelId, messageId };
@@ -163,7 +163,7 @@ const F = {
         return count + (maxLength - minLength);
     },
     // Tries to DM user, defaults to pinging in #commands
-    async sendMessageToUser(member: GuildMember, msgOpts: MessageOptions) {
+    async sendMessageToUser(member: GuildMember, msgOpts: BaseMessageOptions) {
         try {
             const dm = await member.createDM();
             await dm.send(msgOpts);

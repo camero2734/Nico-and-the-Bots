@@ -1,5 +1,5 @@
 import async from "async";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import TwitterApi, { MediaVideoInfoV1, TweetV2 } from "twitter-api-v2";
 import VideoUrl from "video-url-link";
 import secrets from "../../../Configuration/secrets";
@@ -82,7 +82,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
         return [...checkedTweets];
     }
 
-    async generateMessages(checkedItems: Checked<TweetType>[]): Promise<MessageOptions[][]> {
+    async generateMessages(checkedItems: Checked<TweetType>[]): Promise<BaseMessageOptions[][]> {
         const TWITTER_IMG = "https://assets.stickpng.com/images/580b57fcd9996e24bc43c53e.png";
         return checkedItems.map((item) => {
             const { images, date, url, tweetType, tweetText, tweeterUsername, tweeterImage } = item._data;
@@ -103,7 +103,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
                 new ButtonBuilder().setLabel("View Tweet").setStyle(ButtonStyle.Link).setURL(url)
             ]);
 
-            const msgs: MessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];
+            const msgs: BaseMessageOptions[] = [{ embeds: [mainEmbed], components: [actionRow] }];
 
             if (images.length > 0) {
                 const firstIsVideo = images[0].includes(".mp4");
@@ -116,7 +116,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
                     const image = images[i];
 
                     const embed = new EmbedBuilder().setTitle(`${i + 1}/${images.length}`);
-                    const att = new Attachment(image);
+                    const att = new AttachmentBuilder(image);
 
                     const isVideo = image.includes(".mp4");
                     if (isVideo) {

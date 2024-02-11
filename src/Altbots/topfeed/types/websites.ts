@@ -6,8 +6,8 @@ import {
     ButtonStyle,
     EmbedBuilder,
     Message,
-    Attachment,
-    MessageOptions,
+    AttachmentBuilder,
+    BaseMessageOptions,
     Snowflake
 } from "discord.js";
 import https from "https";
@@ -87,7 +87,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         }));
     }
 
-    async generateMessages(checkedItems: Checked<CheckReturn>[]): Promise<MessageOptions[][]> {
+    async generateMessages(checkedItems: Checked<CheckReturn>[]): Promise<BaseMessageOptions[][]> {
         if (checkedItems.length < 1) return [];
 
         const obj = Object.fromEntries(
@@ -121,7 +121,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         ]);
 
         if (file) {
-            const att = new Attachment(file, "file.png");
+            const att = new AttachmentBuilder(file, { name: "file.png" });
             embed.setImage("attachment://file.png");
             return [[{ embeds: [embed], files: [att], components: [actionRow] }]];
         } else return [[{ embeds: [embed], components: [actionRow] }]];

@@ -18,7 +18,7 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     const userID = ctx.opts.user || ctx.user.id;
-    if (!ctx.channel?.isText()) return;
+    if (!ctx.channel?.isTextBased()) return;
     const member = await ctx.channel.guild.members.fetch(userID);
     if (!member) throw new CommandError("Unable to find member");
     // Fetch some info

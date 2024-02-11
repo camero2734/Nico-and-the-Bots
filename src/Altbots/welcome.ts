@@ -5,7 +5,7 @@ import {
     Client,
     EmbedBuilder,
     GuildMember,
-    Attachment,
+    AttachmentBuilder,
     MessageComponentInteraction,
     PartialGuildMember,
     Snowflake,
@@ -154,7 +154,7 @@ export class SacarverBot {
         });
     }
 
-    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<Attachment> {
+    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<AttachmentBuilder> {
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
 
@@ -196,8 +196,7 @@ export class SacarverBot {
         ctx.textAlign = "center";
         ctx.fillText(`#${memberNum}`, 155, 0);
 
-        const attachment = new Attachment(canvas.toBuffer(), "welcome.png");
-        return attachment;
+        return new AttachmentBuilder(canvas.toBuffer(), { name: "welcome.png" });
     }
 
     async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {

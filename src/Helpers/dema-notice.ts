@@ -1,6 +1,6 @@
 import { BishopType, ViolationType } from "@prisma/client";
 import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
-import { GuildMember, Attachment, EmbedBuilder, TextChannel } from "discord.js";
+import { GuildMember, AttachmentBuilder, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -132,7 +132,7 @@ export async function sendViolationNotice(
         embeds: [transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")],
         allowedMentions: canSee ? { parse: [] } : {}
     });
-    await chan.send({ files: [new Attachment(canvas.toBuffer(), `infraction_${infractionNo}.png`)] }); // prettier-ignore
+    await chan.send({ files: [new AttachmentBuilder(canvas.toBuffer(), { name: `infraction_${infractionNo}.png` })] }); // prettier-ignore
 }
 
 function formatInfractionNumber(infractionNo: number) {

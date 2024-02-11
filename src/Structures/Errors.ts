@@ -1,4 +1,4 @@
-import { CommandInteraction, DMChannel, Interaction, EmbedBuilder, TextChannel } from "discord.js";
+import { CommandInteraction, DMChannel, EmbedBuilder, Interaction, TextChannel } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
 
 export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {

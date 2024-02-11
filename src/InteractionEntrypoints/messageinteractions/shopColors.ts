@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, MessageComponent, WebhookEditMessageOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, MessageComponent, InteractionEditReplyOptions } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -26,7 +26,8 @@ export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async
 // Main Menu
 const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
     const initialMsg = await generateMainMenuEmbed(ctx.member);
-    await ctx.update(initialMsg);
+    const msg = await ctx.fetchReply();
+    await msg.edit(initialMsg);
 });
 
 // Category submenu
@@ -133,7 +134,8 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
                 .setCustomId(genSubmenuId({ categoryId: category.id }))
         ]);
 
-        await ctx.update({ embeds: [embed], components: roleComponents });
+        const msg = await ctx.fetchReply();
+        await msg.edit({ embeds: [embed], components: roleComponents });
     } else if (actionType === ActionTypes.Purchase) {
         // Purchase
         if (!category.data.purchasable(role.id, ctx.member, dbUser))
@@ -171,7 +173,9 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
         } finally {
             embed.setFields([]);
             embed.setDescription(`${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`) // prettier-ignore
-            ctx.update({ embeds: [embed], components: [] });
+
+            const msg = await ctx.fetchReply();
+            await msg.edit({ embeds: [embed], components: [] });
         }
 
         if (contraband) {
@@ -183,7 +187,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId
     }
 });
 
-async function generateMainMenuEmbed(member: GuildMember): Promise<WebhookEditMessageOptions> {
+async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEditReplyOptions> {
     const categories = getColorRoleCategories(member.guild.roles);
 
     const dbUser = await queries.findOrCreateUser(member.id);

@@ -1,5 +1,5 @@
 import { secondsToMilliseconds } from "date-fns";
-import { EmbedBuilder, MessageOptions } from "discord.js";
+import { EmbedBuilder, BaseMessageOptions } from "discord.js";
 import { prisma } from "../../Helpers/prisma-init";
 
 export class TopfeedError extends Error { }
@@ -7,7 +7,7 @@ export class TopfeedError extends Error { }
 export interface ITopfeedPost {
     name: string;
     id: string;
-    messages: MessageOptions[];
+    messages: BaseMessageOptions[];
 }
 
 export interface ITopfeedSourceInput {
@@ -50,7 +50,7 @@ export abstract class TopfeedSource implements Required<ITopfeedSourceInput> {
         return new Set(postIds.filter((id) => !existingIds.has(id)));
     }
 
-    embedToMsg(embed: EmbedBuilder): MessageOptions {
+    embedToMsg(embed: EmbedBuilder): BaseMessageOptions {
         return { embeds: [embed] };
     }
 

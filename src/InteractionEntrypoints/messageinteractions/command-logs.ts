@@ -9,7 +9,9 @@ const msgInt = new MessageInteraction();
 
 const args = <const>["title"];
 const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", args, async (ctx, args) => {
-    await ctx.update({ components: [] });
+    const reply = await ctx.fetchReply();
+    await reply.edit({ components: [] });
+
     const embed = ctx.message.embeds[0];
 
     const staffChan = (await ctx.guild.channels.fetch(channelIDs.staff)) as TextChannel;

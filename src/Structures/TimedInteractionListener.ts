@@ -15,7 +15,7 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
         names: IDs
     ) {
         this.customIDs = names.map((n) => {
-            const hash = F.hash(names.join(",") + ctx.id + ctx.member?.id).slice(0, 10);
+            const hash = F.hash(names.join(",") + ctx.id + ctx.member?.user.id).slice(0, 10);
             return `eph&${n}${hash}`;
         }) as any;
     }
@@ -28,7 +28,8 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
                 const timeout = setTimeout(() => resolve([]), timeOutMs);
 
                 const filter: CollectorFilter<[MessageComponentInteraction]> = (interaction) => interaction.customId === customID && inFilter(interaction); // prettier-ignore
-                const collector = this.ctx.channel.createMessageComponentCollector({ filter });
+                const collector = this.ctx.channel?.createMessageComponentCollector({ filter });
+                if (!collector) return resolve([]);
 
                 collector.on("collect", async (ctx) => {
                     clearTimeout(timeout);

@@ -1,7 +1,7 @@
 import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedError, TopfeedSource } from "../source";
 import { TweetV2, TwitterApi, TwitterApiReadOnly, TwitterV2IncludesHelper } from "twitter-api-v2";
 import secrets from "../../../Configuration/secrets";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder, Attachment, MessageOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder, Attachment, BaseMessageOptions } from "discord.js";
 import { emojiIDs } from "../../../Configuration/config";
 
 interface ITwitterSourceInput extends ITopfeedSourceInput {
@@ -54,7 +54,7 @@ export class TwitterSource extends TopfeedSource {
         const author = includes.userById(tweet.author_id as string);
         if (!author) throw new TopfeedError("Unable to find author");
 
-        const isRetweet = (tweet.referenced_tweets?.[0].type === "retweeted" || 0) > 0;
+        const isRetweet = tweet.referenced_tweets?.[0].type === "retweeted";
         const tweeterName = isRetweet
             ? await this.#getUserNameFromTweet(tweet.referenced_tweets?.[0].id)
             : author.username;
@@ -84,7 +84,7 @@ export class TwitterSource extends TopfeedSource {
         };
     }
 
-    generateMessages(title: string, description: string, url: string, imageUrls: string[]): MessageOptions[] {
+    generateMessages(title: string, description: string, url: string, imageUrls: string[]): BaseMessageOptions[] {
         const firstMessage = this.embedToMsg(
             new EmbedBuilder() //
                 .setTitle(title)

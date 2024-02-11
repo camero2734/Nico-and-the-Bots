@@ -3,14 +3,13 @@ import async from "async";
 import { addMilliseconds, differenceInMilliseconds, endOfDay, startOfDay } from "date-fns";
 import {
     ActionRowBuilder,
-    MessageActionRowComponent,
     ButtonBuilder,
     ButtonStyle,
     Emoji,
     Guild,
     GuildMember,
-    Snowflake,
-    MessageActionRowComponentBuilder
+    MessageActionRowComponentBuilder,
+    Snowflake
 } from "discord.js";
 import { guild } from "../../../app";
 import { dropEmojiGuildId, roles } from "../../Configuration/config";
@@ -88,7 +87,10 @@ async function getEmoji(member: GuildMember, guild: Guild): Promise<Emoji | unde
         const emoji = emojis.find((e) => e.name === EMOJI_NAME);
         if (emoji) return emoji;
 
-        return await guild.emojis.create(member.displayAvatarURL(), EMOJI_NAME);
+        return await guild.emojis.create({
+            attachment: member.displayAvatarURL(),
+            name: EMOJI_NAME
+        });
     } catch (e) {
         return undefined;
     }

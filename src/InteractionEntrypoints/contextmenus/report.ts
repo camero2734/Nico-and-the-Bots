@@ -1,11 +1,11 @@
 import {
     ActionRowBuilder,
+    AttachmentBuilder,
+    BaseMessageOptions,
     ButtonBuilder,
     ButtonStyle,
     ComponentType,
     EmbedBuilder,
-    Attachment,
-    MessageOptions,
     SelectMenuBuilder,
     SelectMenuOptionBuilder,
     TextChannel
@@ -131,11 +131,11 @@ const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId
             new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url)
         ]);
 
-        const msgOpts: MessageOptions = { embeds: [staffEmbed], components: [actionRow] };
+        const msgOpts: BaseMessageOptions = { embeds: [staffEmbed], components: [actionRow] };
 
         const image = msg.attachments.filter((a) => !!a.contentType?.startsWith("image")).first();
         if (image) {
-            const attachment = new Attachment(image.url, "file.png");
+            const attachment = new AttachmentBuilder(image.url, { name: "file.png" });
             if (selectedReason === "NSFW_SLURS") attachment.setSpoiler(true);
             msgOpts.files = [attachment];
             staffEmbed.setImage("attachment://file.png");

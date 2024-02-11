@@ -14,12 +14,11 @@ import {
 } from "discord.js";
 import fs from "fs";
 import { channelIDs, roles } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
+import { District, ItemDescriptions, PrizeType, districts, getPrizeName } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
@@ -128,6 +127,8 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
 });
 
 const genButtonId = command.addInteractionListener("banditosBishopsButton", [], async (ctx) => {
+    if (!ctx.isButton()) return;
+
     await ctx.deferUpdate();
     await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
     await F.wait(1500);

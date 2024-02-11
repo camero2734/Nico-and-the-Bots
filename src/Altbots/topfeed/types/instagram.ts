@@ -1,4 +1,4 @@
-import { EmbedBuilder, MessageOptions } from "discord.js";
+import { EmbedBuilder, BaseMessageOptions } from "discord.js";
 import { IgApiClient, UserFeedResponseItemsItem } from "instagram-private-api";
 import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";
@@ -56,11 +56,11 @@ export class InstaWatcher extends Watcher<InstaType> {
         });
     }
 
-    async generateMessages(checkedItems: Checked<InstaType>[]): Promise<MessageOptions[][]> {
+    async generateMessages(checkedItems: Checked<InstaType>[]): Promise<BaseMessageOptions[][]> {
         return checkedItems.map((item) => {
             const { url, caption, images, date } = item._data;
 
-            const msgs: MessageOptions[] = [];
+            const msgs: BaseMessageOptions[] = [];
 
             const mainEmbed = new EmbedBuilder()
                 .setAuthor({

@@ -2,11 +2,11 @@
 import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
-import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import { EntrypointEvents } from "./Events";
-import { createInteractionListener, InteractionListener, ListenerCustomIdGenerator } from "./ListenerInteraction";
+import { InteractionListener, ListenerCustomIdGenerator, createInteractionListener } from "./ListenerInteraction";
 import { ReactionListener } from "./ListenerReaction";
+import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 
 export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,

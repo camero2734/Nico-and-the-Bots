@@ -6,7 +6,7 @@ import {
     Colors,
     EmbedBuilder,
     Guild,
-    Attachment,
+    AttachmentBuilder,
     SelectMenuBuilder,
     SelectMenuOptionBuilder,
     TextChannel
@@ -123,7 +123,7 @@ export async function sendToStaff(
         ]);
 
         const scoreCard = await generateScoreCard(member);
-        const attachment = new Attachment(scoreCard, "score.png");
+        const attachment = new AttachmentBuilder(scoreCard, { name: "score.png" });
 
         const m = await fbApplicationChannel.send({
             embeds: [embed],
@@ -183,7 +183,8 @@ export async function sendToStaff(
 }
 
 const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async (ctx, args) => {
-    await ctx.update({ components: [] });
+    const reply = await ctx.fetchReply();
+    await reply.edit({ components: [] });
 
     const applicationId = args.applicationId;
     const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });

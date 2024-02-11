@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Guild, GuildMember, Message, MessageComponentInteraction, Snowflake, TextChannel } from "discord.js";
+import { Guild, GuildMember, Message, MessageComponentInteraction, ModalSubmitInteraction, Snowflake, TextChannel } from "discord.js";
 import F from "../Helpers/funcs";
 
 type RequiredDiscordValues = {
@@ -9,7 +9,7 @@ type RequiredDiscordValues = {
     guildId: Snowflake;
 };
 
-export type ListenerInteraction = MessageComponentInteraction & RequiredDiscordValues & { message: Message };
+export type ListenerInteraction = (MessageComponentInteraction | ModalSubmitInteraction) & RequiredDiscordValues & { message: Message };
 
 export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
     ctx: ListenerInteraction,
@@ -20,7 +20,7 @@ export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
  * Encodes/decodes key-value pairs into the customID field
  */
 export class CustomIDPattern<T extends Readonly<string[]>> {
-    constructor(public args: T, public delimiter = ":") {}
+    constructor(public args: T, public delimiter = ":") { }
     toDict(input: string): { [K in T[number]]: string } {
         const [_name, ...parts] = input.split(this.delimiter);
         const dict = {} as { [K in T[number]]: string };

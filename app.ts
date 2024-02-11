@@ -2,8 +2,8 @@ import { registerFont } from "canvas";
 import * as Discord from "discord.js";
 import http from "http";
 import "source-map-support/register";
-// import { KeonsBot } from "./src/Altbots/shop";
-// import topfeedBot from "./src/Altbots/topfeed/topfeed";
+import { KeonsBot } from "./src/Altbots/shop";
+import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
@@ -47,7 +47,7 @@ const client = new Discord.Client({
     ],
     partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message]
 });
-// const keonsBot = new KeonsBot();
+const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
 extendPrototypes();
@@ -68,7 +68,7 @@ client.on("ready", async () => {
     InteractionEntrypoint.registerAllCommands(guild);
 
     sacarverBot.beginWelcomingMembers();
-    // keonsBot.setupShop();
+    keonsBot.setupShop();
     setup();
 
     // startTopfeed();
@@ -187,7 +187,7 @@ async function setup() {
     registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
 
     Scheduler(client);
-    // topfeedBot.registerChecks();
+    topfeedBot.registerChecks();
     logEntrypointEvents();
 
     // Concert channels

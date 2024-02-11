@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder, ApplicationCommandOptionType, RoleSelectMenuBuilder, ActionRowBuilder } from "discord.js";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -6,51 +6,60 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Chooses a color role purchased from the shop",
-    options: [
-        {
-            name: "role",
-            description: "The role you wish to equip/unequip",
-            type: ApplicationCommandOptionType.Role,
-            required: false
-        }
-    ]
+    options: []
 });
 
 command.setHandler(async (ctx) => {
-    const role = ctx.opts.role;
-
     const userRoles = await prisma.colorRole.findMany({
         where: { userId: ctx.user.id }
     });
 
     const roleIDs = userRoles.map((r) => r.roleId.toSnowflake());
 
+    const actionRow = new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents([
+        new RoleSelectMenuBuilder()
+            .setCustomId(roleSelectedId({ originalUserId: ctx.user.id }))
+            .setMaxValues(1)
+    ]);
+
     if (!roleIDs || roleIDs.length === 0) {
         throw new CommandError(`You don't have any color roles! Visit <#${channelIDs.shop}> to learn how to get them.`);
     }
 
-    if (!role) {
-        const embed = new EmbedBuilder()
-            .setTitle("Your Color Roles")
-            .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
-            .addFields([{
-                name: "How do I choose one?",
-                value: `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles colors <@&${roleIDs[0]}>`
-            }]);
+    const embed = new EmbedBuilder()
+        .setTitle("Your Color Roles")
+        .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
+        .addFields([{
+            name: "How do I choose one?",
+            value: `To equip one of the roles you own, search for it in the input bar below`
+        }]);
 
-        return ctx.send({ embeds: [embed] });
-    }
+    return ctx.send({ embeds: [embed], components: [actionRow] });
+});
 
-    // User has valid roles and requested one
+const roleSelectedId = command.addInteractionListener("roleSelected", <const>["originalUserId"], async (ctx, args) => {
+    if (!ctx.isRoleSelectMenu()) return;
+    if (args.originalUserId !== ctx.user.id) return;
+
+    await ctx.deferUpdate();
+
+    const role = ctx.roles.first();
+    if (!role) return;
+
+    const roleIds = (await prisma.colorRole.findMany({
+        where: { userId: ctx.user.id },
+        select: { roleId: true }
+    })).map((r) => r.roleId);
+
 
     // Not a valid role
-    if (!roleIDs.includes(role)) {
+    if (!roleIds.includes(role.id)) {
         throw new CommandError(`You don't own this color role (or it is not a color role)`);
     }
 
     // All good - remove any current color roles and add the requested one
     const currentlyEquippedRoles = [...ctx.member.roles.cache.values()]
-        .filter((r) => roleIDs.includes(r.id))
+        .filter((r) => roleIds.includes(r.id))
         .map((r) => r.id);
 
     // Remove all color roles
@@ -59,15 +68,19 @@ command.setHandler(async (ctx) => {
     }
 
     // If they requested a role they already had, leave them with no color roles
-    if (currentlyEquippedRoles.includes(role)) {
+    if (currentlyEquippedRoles.includes(role.id)) {
         const embed = new EmbedBuilder().setTitle("Success!").setDescription("Removed your color role");
-        return ctx.send({ embeds: [embed] });
+        await ctx.editReply({ embeds: [embed], components: [] });
+        return;
     }
 
     // Otherwise add the role they requested
-    await ctx.member.roles.add(role);
-    const embed = new EmbedBuilder().setTitle("Success!").setDescription(`You now have the <@&${role}> color role!`);
-    return ctx.send({ embeds: [embed] });
-});
+    await ctx.member.roles.add(role.id);
+    const embed = new EmbedBuilder()
+        .setTitle("Success!")
+        .setDescription(`You now have the ${role} color role!`)
+        .setColor(role.color);
+    await ctx.message.edit({ embeds: [embed], components: [] });
+})
 
 export default command;

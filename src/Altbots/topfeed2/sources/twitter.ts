@@ -8,7 +8,7 @@ interface ITwitterSourceInput extends ITopfeedSourceInput {
     handle: string;
 }
 
-const twitter = new TwitterApi(secrets.apis.twitter.bearer_token).readOnly;
+const twitter = new TwitterApi('').readOnly;
 
 export class TwitterSource extends TopfeedSource {
     type = "Twitter";

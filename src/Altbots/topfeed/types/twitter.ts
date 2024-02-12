@@ -1,9 +1,6 @@
-import async from "async";
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
-import TwitterApi, { MediaVideoInfoV1, TweetV2 } from "twitter-api-v2";
-import VideoUrl from "video-url-link";
+import { TweetApiUtilsData, TwitterOpenApi, TwitterOpenApiClient } from "twitter-openapi-typescript";
 import secrets from "../../../Configuration/secrets";
-import F from "../../../Helpers/funcs";
 import { Checked, Watcher } from "./base";
 
 type TweetType = {
@@ -16,53 +13,46 @@ type TweetType = {
     tweetText: string;
 };
 
-const twitter = new TwitterApi(secrets.apis.twitter.bearer_token).readOnly;
-
+const twitter = new TwitterOpenApi();
 export class TwitterWatcher extends Watcher<TweetType> {
     type = "Twitter" as const;
     userid: string;
+    #twitterClient: TwitterOpenApiClient;
     async fetchRecentItems(): Promise<Checked<TweetType>[]> {
+        const client = await this.fetchTwitterClient();
         if (!this.userid) await this.fetchUserID();
 
         // Tweets, retweets
-        const { tweets, includes } = await twitter.v2.userTimeline(this.userid, {
-            expansions: ["referenced_tweets.id", "referenced_tweets.id.author_id", "attachments.media_keys"],
-            "tweet.fields": [
-                "created_at",
-                "geo",
-                "public_metrics",
-                "in_reply_to_user_id",
-                "referenced_tweets",
-                "source"
-            ],
-            "media.fields": ["preview_image_url", "type", "url"],
-            "user.fields": ["profile_image_url", "username"],
-            max_results: 5
-        });
+        const response = await client.getTweetApi().getUserTweets({ userId: this.userid, count: 5 });
+        const tweets = response.data.data;
 
-        const checkedTweets: Checked<TweetType>[] = await async.mapSeries(tweets.slice(0, 1), async (tweet: TweetV2) => {
-            const referencedTweet = tweet.referenced_tweets?.[0];
-            const tweetType = referencedTweet?.type ? F.titleCase(referencedTweet.type) : "Tweeted";
+        const promises = tweets.map((tweet) => {
+            const tweetType = tweet.tweet.legacy?.retweetedStatusResult ? 'Retweeted' : 'Tweeted';
+            const referencedTweet = tweet.tweet.quotedStatusResult || tweet.tweet.legacy?.retweetedStatusResult;
 
-            const nameRes = includes.users?.find((u) => u.id === referencedTweet?.id);
-            const tweeterUsername = tweetType === "Retweeted" && nameRes ? nameRes.username : this.handle;
-            const tweeterImage = includes.users?.find((u) => u.id === (nameRes?.id || this.userid))?.profile_image_url;
+            // Advertisements 🙄
+            if (!referencedTweet && tweet.user.restId !== this.userid) return;
 
-            const url = `https://twitter.com/${tweeterUsername}/status/${tweet.id}`;
+            const userResult = referencedTweet?.result?.typename === 'Tweet' ? referencedTweet.result.core?.userResults.result : undefined;
 
-            const videoURL = await this.getVideoInTweet(url);
+            const name = userResult?.typename === 'User' ? userResult.legacy.screenName : undefined;
+            const tweeterUsername = tweetType === "Retweeted" && name ? name : this.handle
+            const tweeterImage = userResult?.typename === 'User' ? userResult.legacy.profileImageUrlHttps : undefined;
 
-            const images = videoURL
-                ? [videoURL]
-                : (tweet.attachments?.media_keys || [])
-                    .map((mk) => includes.media?.find((m) => m.media_key === mk))
-                    .map((m) => m?.url || m?.preview_image_url || "")
-                    .filter((m) => m);
+            const url = `https://twitter.com/${tweeterUsername}/status/${tweet.tweet.restId}`;
 
-            const date = new Date(tweet.created_at || Date.now());
+            const videoURL = this.getVideoInTweet(tweet);
+
+            const imageUrls = tweet.tweet.legacy?.extendedEntities?.media
+                .filter((m) => m.type === "photo")
+                .map((m) => m.mediaUrlHttps);
+
+            const images = (videoURL ? [videoURL] : imageUrls) || [];
+
+            const date = new Date(tweet.tweet.legacy?.createdAt || Date.now());
 
             return {
-                uniqueIdentifier: tweet.id,
+                uniqueIdentifier: tweet.tweet.restId,
                 ping: true,
                 _data: {
                     images,
@@ -71,15 +61,19 @@ export class TwitterWatcher extends Watcher<TweetType> {
                     tweeterUsername,
                     tweetType,
                     tweeterImage,
-                    tweetText: tweet.text
+                    tweetText: tweet.tweet.legacy?.fullText || 'No text available.'
                 }
             };
-        });
+        })
+
+        const checkedTweets = await Promise.all(promises);
+
+        console.log(JSON.stringify(checkedTweets, null, 2));
 
         // Likes
         // TODO:
 
-        return [...checkedTweets];
+        return checkedTweets.filter(t => t) as Checked<TweetType>[];
     }
 
     async generateMessages(checkedItems: Checked<TweetType>[]): Promise<BaseMessageOptions[][]> {
@@ -137,28 +131,29 @@ export class TwitterWatcher extends Watcher<TweetType> {
      * Refetch the tweet with V1 since Twitter API V2 doesn't return videos :(
      * @param tweet The V2 tweet object
      */
-    async getVideoInTweet(tweetURL: string): Promise<string | undefined> {
-        try {
-            const url = await new Promise<string | undefined>((resolve) => {
-                VideoUrl.twitter.getInfo(tweetURL, {}, (error, info: { variants: MediaVideoInfoV1["variants"] }) => {
-                    if (error) {
-                        resolve(undefined);
-                    } else {
-                        const variants = info?.variants?.sort((v1, v2) => v2.bitrate - v1.bitrate);
-                        resolve(variants[0]?.url);
-                    }
-                });
-            });
+    getVideoInTweet(tweet: TweetApiUtilsData) {
+        const result = tweet.tweet.legacy?.extendedEntities?.media?.find((m) => m.type === "video");
+        const variants = result?.videoInfo?.variants
+            .filter((v) => v.bitrate)
+            .sort((v1, v2) => v2.bitrate! - v1.bitrate!);
 
-            return url;
-        } catch (e) {
-            return undefined;
-        }
+        return variants?.[0]?.url;
     }
 
     async fetchUserID(): Promise<void> {
-        const res = await twitter.v2.userByUsername(this.handle);
-        this.userid = res.data.id;
+        const res = await this.#twitterClient.getUserApi().getUserByScreenName({ screenName: this.handle });
+        if (!res.data.user) throw new Error("User not found or API unavailable");
+
+        this.userid = res.data.user?.restId;
+    }
+
+    async fetchTwitterClient(): Promise<TwitterOpenApiClient> {
+        if (this.#twitterClient) return this.#twitterClient;
+        this.#twitterClient = await twitter.getClientFromCookies({
+            ct0: secrets.apis.twitter.ct0,
+            auth_token: secrets.apis.twitter.auth_token
+        });
+        return this.#twitterClient;
     }
 }
 /**

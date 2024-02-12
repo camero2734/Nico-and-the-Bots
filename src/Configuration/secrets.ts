@@ -15,9 +15,8 @@ const secrets = {
             password: env.get("INSTAGRAM_PASSWORD").required().asString()
         },
         twitter: {
-            bearer_token: env.get("TWITTER_API_KEY").required().asString(),
-            access_token: env.get("TWITTER_ACCESS_TOKEN").required().asString(),
-            access_token_secret: env.get("TWITTER_ACCESS_TOKEN_SECRET").required().asString(),
+            ct0: env.get("TWITTER_CT0").required().asString(),
+            auth_token: env.get("TWITTER_AUTH_TOKEN").required().asString(),
         },
         genius: {
             client_id: env.get("GENIUS_CLIENT_ID").required().asString(),

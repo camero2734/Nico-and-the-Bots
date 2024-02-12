@@ -1,15 +1,18 @@
 # syntax = docker/dockerfile:experimental
-FROM node:iron-buster
+FROM node:iron-buster-slim
 
 USER root
 WORKDIR /code
 
 # System dependencies
+RUN apt update
+RUN apt install -y gnupg2 wget
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 RUN apt update
-RUN apt install -y git-crypt postgresql-client-14 pv build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+RUN apt install -y git-crypt postgresql-client-14 pv curl unzip
+# ...  build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 RUN npm i -g pm2 is-ci husky gen-esm-wrapper typescript@latest rimraf npm-run-all
 
 # NPM packages

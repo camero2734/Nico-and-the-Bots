@@ -14,7 +14,7 @@
     "prisma:update": "prisma migrate dev",
     "postinstall": "patch-package",
     "docker:dev": "docker-compose up --force-recreate --build --remove-orphans",
-    "docker:dev:db": "cross-env UPDATE_DB=1 yarn docker:dev",
+    "docker:dev:db": "UPDATE_DB=1 yarn docker:dev",
     "docker:build": "dotenv-run-script docker:_build",
     "docker:_build": "docker build --no-cache --build-arg CRYPT64=$CRYPT64 -t camer0/nico .",
     "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",

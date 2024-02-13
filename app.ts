@@ -1,4 +1,4 @@
-import { registerFont } from "canvas";
+import { GlobalFonts } from "@napi-rs/canvas";
 import * as Discord from "discord.js";
 import http from "http";
 import "source-map-support/register";
@@ -182,14 +182,18 @@ async function setup() {
     const guild = await client.guilds.fetch(guildID);
 
     // Load fonts into node-canvas
-    const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
-    for (const font of fonts) registerFont(`./src/Assets/fonts/${font}.ttf`, { family: "futura" });
+    // const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
+    // for (const font of fonts) registerFont(`./src/Assets/fonts/${font}.ttf`, { family: "Futura" });
 
-    registerFont(`./src/Assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
-    registerFont(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
-    registerFont(`./src/Assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
-    registerFont(`./src/Assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
-    registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
+    // registerFont(`./src/Assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
+    // registerFont(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
+    // registerFont(`./src/Assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
+    // registerFont(`./src/Assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
+    // registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
+
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
 
     Scheduler(client);
     topfeedBot.registerChecks();

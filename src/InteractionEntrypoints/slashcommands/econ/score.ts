@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { ApplicationCommandOptionType, AttachmentBuilder, GuildMember, Snowflake } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -107,6 +107,8 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
         measuredTextHeight = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
     }
 
+    console.log(cctx.font, /FONT/);
+
     cctx.strokeStyle = "black";
     cctx.fillStyle = inverted ? "black" : "white";
     cctx.lineWidth = inverted ? 0 : 6;
@@ -187,7 +189,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     cctx.strokeText(`${placeNum}`, 85, 100);
     cctx.fillText(`${placeNum}`, 85, 100);
 
-    return canvas.toBuffer();
+    return canvas.toBuffer('image/png');
 }
 
 export default command;

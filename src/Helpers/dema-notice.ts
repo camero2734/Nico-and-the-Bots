@@ -1,12 +1,12 @@
 import { BishopType, ViolationType } from "@prisma/client";
-import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
+import { createCanvas, loadImage, SKRSContext2D } from "@napi-rs/canvas";
 import { GuildMember, AttachmentBuilder, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
 // Thanks https://stackoverflow.com/questions/22998551/how-to-paragraph-text-drawn-onto-canvas
-function fillParagraph(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number) {
+function fillParagraph(ctx: SKRSContext2D, text: string, x: number, y: number, maxWidth: number) {
     const words = text.split(" ");
     let line = "";
     const lineHeight = 50;
@@ -128,7 +128,7 @@ export async function sendViolationNotice(
     transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:")
     transmissionEmbed.setImage(`attachment://${fileName}`);
     transmissionEmbed.setColor("Red");
-    await m.edit({ content: `${member}`, embeds: [transmissionEmbed], files: [new AttachmentBuilder(canvas.toBuffer(), { name: fileName })] }); // prettier-ignore
+    await m.edit({ content: `${member}`, embeds: [transmissionEmbed], files: [new AttachmentBuilder(canvas.toBuffer('image/png'), { name: fileName })] }); // prettier-ignore
 }
 
 function formatInfractionNumber(infractionNo: number) {

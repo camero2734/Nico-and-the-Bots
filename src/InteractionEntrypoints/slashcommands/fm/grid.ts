@@ -1,4 +1,4 @@
-import { createCanvas, Image, loadImage } from "canvas";
+import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
 import { CommandError } from "../../../Configuration/definitions";
 import { EmbedBuilder, ApplicationCommandOptionType, Colors } from "discord.js";
 import fetch from "node-fetch";
@@ -100,7 +100,7 @@ command.setHandler(async (ctx) => {
 
     await ctx.send({
         embeds: [embed.toJSON()],
-        files: [{ name: "chart.png", attachment: canvas.toBuffer() }]
+        files: [{ name: "chart.png", attachment: canvas.toBuffer('image/png') }]
     });
 });
 

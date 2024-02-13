@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -196,7 +196,7 @@ export class SacarverBot {
         ctx.textAlign = "center";
         ctx.fillText(`#${memberNum}`, 155, 0);
 
-        return new AttachmentBuilder(canvas.toBuffer(), { name: "welcome.png" });
+        return new AttachmentBuilder(canvas.toBuffer('image/png'), { name: "welcome.png" });
     }
 
     async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {

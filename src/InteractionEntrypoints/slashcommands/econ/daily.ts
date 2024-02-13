@@ -105,7 +105,7 @@ command.setHandler(async (ctx) => {
     let checkingSize = 40;
     while ((measuredTextWidth > maxWidth || measuredTextHeight > maxHeight) && checkingSize > 5) {
         checkingSize--;
-        cctx.font = checkingSize + "px futura";
+        cctx.font = checkingSize + "px Futura";
         const textInfo = cctx.measureText(ctx.member.displayName);
         measuredTextWidth = textInfo.width;
         measuredTextHeight = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
@@ -113,12 +113,12 @@ command.setHandler(async (ctx) => {
 
     //DRAW NAME
     cctx.fillStyle = ctx.member.displayHexColor;
-    cctx.font = checkingSize + "px futura";
+    cctx.font = checkingSize + "px Futura";
     cctx.fillText(ctx.member.displayName, 120, 65);
 
     //DRAW GOT CREDITS & BADGE
     cctx.fillStyle = "white";
-    cctx.font = "40px futura";
+    cctx.font = "40px Futura";
     const creditsEarnedLine = `Got ${creditsToGive} credits!`;
     cctx.fillText(creditsEarnedLine, 120, 120);
     const { width } = cctx.measureText(creditsEarnedLine);

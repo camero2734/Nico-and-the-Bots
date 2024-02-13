@@ -4,7 +4,7 @@ import radix64Setup from "radix-64";
 import * as R from "ramda";
 import * as crypto from "crypto";
 import { channelIDs } from "../Configuration/config";
-import { Canvas, CanvasRenderingContext2D } from "canvas";
+import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 /**
  * Just some commonly used short functions
  */
@@ -85,7 +85,7 @@ const F = {
         return Uint8Array.from(arr);
     },
     // prettier-ignore
-    canvasFitText(ctx: CanvasRenderingContext2D, canvas: Canvas, text: string, font: string, opts?: { maxWidth?: number, maxFontSize?: number }): number {
+    canvasFitText(ctx: SKRSContext2D, canvas: Canvas, text: string, font: string, opts?: { maxWidth?: number, maxFontSize?: number }): number {
         ctx.save();
 
         const maxWidth = opts?.maxWidth || canvas.width;

@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { CommandError } from "../../../Configuration/definitions";
 import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import Mime from "mime-types";
@@ -41,7 +41,7 @@ command.setHandler(async (ctx) => {
 
     const embed = new EmbedBuilder().setImage("attachment://clown.png");
 
-    await ctx.send({ embeds: [embed], files: [{ name: "clown.png", attachment: canvas.toBuffer() }] });
+    await ctx.send({ embeds: [embed], files: [{ name: "clown.png", attachment: canvas.toBuffer('image/png') }] });
 });
 
 export default command;

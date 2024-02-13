@@ -1,11 +1,24 @@
 import { parse } from "date-fns";
 import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
-import * as ytdl from "youtube-dl";
+import metascraper from "metascraper";
+import metascraperYoutube from "metascraper-youtube";
+import metascraperDate from "metascraper-date";
+import metascraperDescription from "metascraper-description";
+import metascraperImage from "metascraper-image";
+import metascraperTitle from "metascraper-title";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+
+const getYtInfo = metascraper([
+    metascraperYoutube(),
+    metascraperDate(),
+    metascraperDescription(),
+    metascraperImage(),
+    metascraperTitle()
+]);
 
 const command = new SlashCommand(<const>{
     description: "Submits an interview to the interview channel",
@@ -41,26 +54,25 @@ command.setHandler(async (ctx) => {
 
     // Fetch info
     const embed = new EmbedBuilder().setDescription("Fetching video info...").setColor(0x111111);
-    await ctx.send({ embeds: [embed] });
+    await ctx.editReply({ embeds: [embed] });
 
-    const info: Record<string, string> = await new Promise((resolve) =>
-        ytdl.getInfo(id!, (_error, output) => resolve(output as unknown as Record<string, string>))
-    );
-
-    const { channel, view_count, fulltitle, thumbnail, upload_date, description } = info;
-
-    const uploadDate = parse(upload_date, "yyyyMMdd", new Date());
-
-    console.log(channel, view_count, fulltitle, thumbnail);
+    const html = await fetch(url).then((r) => r.text());
+    const metadata = await getYtInfo({ url, html });
+    const channel = metadata.author || "Unknown";
+    const date = metadata.date ? new Date(metadata.date) : new Date();
+    const fullTitle = metadata.title || "No title provided";
+    const thumbnail = metadata.image;
+    const description = metadata.description || "No description provided";
 
     embed.setAuthor({ name: ctx.member.displayName, iconURL: ctx.user.displayAvatarURL() });
-    embed.setTitle(info.title);
+    embed.setTitle(fullTitle);
     embed.addFields([{ name: "Channel", value: channel, inline: true }]);
-    embed.addFields([{ name: "Views", value: `${view_count}`, inline: true }]);
+    // embed.addFields([{ name: "Views", value: `${view_count}`, inline: true }]);
     embed.addFields([{ name: "Link", value: "[Click Here](https://youtu.be/" + id + ")", inline: true }]);
-    embed.setImage(thumbnail);
-    embed.setDescription(description || "No description provided");
-    embed.addFields([{ name: "Uploaded", value: F.discordTimestamp(uploadDate, "relative") }]);
+    if (thumbnail) embed.setImage(thumbnail);
+    embed.setDescription(description);
+    embed.setURL(url);
+    embed.addFields([{ name: "Uploaded", value: F.discordTimestamp(date, "relative") }]);
 
     const interviewsChannel = ctx.channel.guild.channels.cache.get(channelIDs.interviewsubmissions) as TextChannel;
 
@@ -72,50 +84,45 @@ command.setHandler(async (ctx) => {
         new ButtonBuilder()
             .setLabel("Approve")
             .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
-            .setStyle(ButtonStyle.Success)
+            .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+            .setLabel("Reject")
+            .setCustomId(genNoId({ interviewId: `${dbInterview.id}` }))
+            .setStyle(ButtonStyle.Danger)
     ]);
 
     await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 
     const finalEmbed = new EmbedBuilder().setColor(0x111111).setDescription("Sent video to staff for approval!");
-    await ctx.send({ embeds: [finalEmbed] });
+    await ctx.editReply({ embeds: [finalEmbed] });
 });
 
 const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId"], async (ctx, args) => {
+    await ctx.deferUpdate();
+
     const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-    embed.setColor(0x00ff00);
+    embed.setColor('Green');
 
     await ctx.editReply({ components: [], embeds: [embed] });
     const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
 
-    await chan.send({ content: `<@&${roles.topfeed.selectable.interviews}>`, embeds: [embed] });
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
+        new ButtonBuilder()
+            .setURL(embed.data.url!)
+            .setLabel("View on YouTube")
+            .setStyle(ButtonStyle.Link)
+    ]);
+    await chan.send({ content: `<@&${roles.topfeed.selectable.interviews}>`, components: [actionRow], embeds: [embed] });
 });
 
-// const ReactionHandler: CommandReactionHandler = async ({ reaction }): Promise<boolean> => {
-//     const msg = reaction.message;
+const genNoId = command.addInteractionListener("intvwNo", <const>["interviewId"], async (ctx, args) => {
+    await ctx.deferUpdate();
 
-//     // Verify reaction is to this command
-//     if (msg.channel.id !== channelIDs.interviewsubmissions || !msg.author?.bot || !msg.embeds[0]?.footer) return false;
+    const embed = EmbedBuilder.from(ctx.message.embeds[0]);
+    embed.setColor('Red');
+    embed.setFooter({ text: `Rejected by ${ctx.user.tag}` })
 
-//     const accepting = reaction.emoji.name === "✅";
-
-//     await msg.reactions.removeAll();
-
-//     // Do something
-//     const newEmbed = new EmbedBuilder(msg.embeds[0]);
-//     newEmbed.setColor(accepting ? "#00FF00" : "#FF0000");
-//     msg.edit({ embeds: [newEmbed] });
-
-//     if (accepting) {
-//         await msg.guild?.roles.cache.get(roles.topfeed.selectable.interviews)?.setMentionable(true);
-//         const m = await (<TextChannel>msg.guild?.channels.cache.get(channelIDs.interviews))?.send({
-//             content: `<@&${roles.topfeed.selectable.interviews}>`,
-//             embeds: [newEmbed]
-//         });
-//         await m.react("📺");
-//     }
-
-//     return true;
-// };
+    await ctx.editReply({ components: [], embeds: [embed] });
+});
 
 export default command;

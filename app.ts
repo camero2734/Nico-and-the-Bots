@@ -92,7 +92,12 @@ client.on("messageCreate", async (msg: Discord.Message) => {
 });
 
 client.on("messageUpdate", async (_oldMsg, newMsg) => {
-    await SlurFilter(await newMsg.fetch());
+    try {
+        await SlurFilter(await newMsg.fetch());
+    } catch (e) {
+        console.log("Slur filter failed to fetch message", newMsg.id)
+    }
+
 });
 
 client.on("guildMemberUpdate", async (oldMem, newMem) => {

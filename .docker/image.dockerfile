@@ -1,21 +1,26 @@
 # syntax = docker/dockerfile:experimental
-FROM node:iron-buster
+FROM node:iron-buster-slim
 
 USER root
 WORKDIR /code
 
 # System dependencies
+RUN apt update
+RUN apt install -y gnupg2 wget
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 RUN apt update
-RUN apt install -y git-crypt postgresql-client-14 pv build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+RUN apt install -y git-crypt postgresql-client-14 pv curl unzip python3 make g++
+# ...  build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 RUN npm i -g pm2 is-ci husky gen-esm-wrapper typescript@latest rimraf npm-run-all
 
 # NPM packages
-COPY yarn.lock package.json ./
-RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn \
-    yarn install --frozen-lockfile --pure-lockfile
+RUN curl -fsSL https://bun.sh/install | bash
+RUN mv /root/.bun/bin/* /usr/local/bin
+COPY bun.lockb package.json ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --verbose
 
 # Copy all files
 COPY . .

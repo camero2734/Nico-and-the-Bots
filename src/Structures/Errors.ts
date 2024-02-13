@@ -13,6 +13,7 @@ export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unkn
         const embed = new EmbedBuilder()
             .setDescription(e.message)
             .setTitle("An error occurred!")
+            .setColor("DarkRed")
             .setFooter({ text: "DEMA internet machine broke" });
         ectx.send({
             embeds: [embed],

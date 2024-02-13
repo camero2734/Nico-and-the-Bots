@@ -2,7 +2,7 @@ import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { TopfeedService } from "./service";
 import { TopfeedSource } from "./source";
-import { TiktokSource } from "./sources/tiktok";
+// import { TiktokSource } from "./sources/tiktok";
 
 const TylerInfo = <const>{
     displayName: "Tyler Joseph",
@@ -18,7 +18,7 @@ const BandInfo = <const>{
 
 const sources: TopfeedSource[] = [
     // new TwitterSource({ ...TylerInfo, handle: "tylerrjoseph" }),
-    new TiktokSource({ ...BandInfo, username: "twentyonepilots" })
+    // new TiktokSource({ ...BandInfo, username: "twentyonepilots" })
     // new InstagramSource({ ...TylerInfo, username: "tylerrjoseph" }),
     // new TiktokSource({ ...TylerInfo, username: "tylerrjoseph" }),
     // new WebsiteSource({

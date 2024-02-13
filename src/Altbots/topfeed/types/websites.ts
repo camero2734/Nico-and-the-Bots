@@ -205,7 +205,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const distance = F.hammingDist(oldBuffer, newBuffer);
 
-        const isNew = !old || distance > 10;
+        const isNew = false; // !old || distance > 10;
 
         return { image: screenshot, hash, isNew, subtype };
     }

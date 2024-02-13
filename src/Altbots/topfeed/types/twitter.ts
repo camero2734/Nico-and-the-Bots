@@ -30,8 +30,8 @@ export class TwitterWatcher extends Watcher<TweetType> {
             const tweetType = tweet.tweet.legacy?.retweetedStatusResult ? 'Retweeted' : 'Tweeted';
             const referencedTweet = tweet.tweet.quotedStatusResult || tweet.tweet.legacy?.retweetedStatusResult;
 
-            // Advertisements 🙄
-            if (!referencedTweet && tweet.user.restId !== this.userid) return;
+            // Remove advertisements 🙄
+            if (tweet.user.restId !== this.userid) return;
 
             const userResult = referencedTweet?.result?.typename === 'Tweet' ? referencedTweet.result.core?.userResults.result : undefined;
 

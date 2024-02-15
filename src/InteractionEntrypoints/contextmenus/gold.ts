@@ -10,7 +10,7 @@ import { TimedInteractionListener } from "../../Structures/TimedInteractionListe
 
 const GOLD_COST = 1000;
 const ADDITIONAL_GOLD_COST = 500;
-export const NUM_GOLDS_FOR_CERTIFICATION = 5;
+export const NUM_GOLDS_FOR_CERTIFICATION = 2;
 export const NUM_DAYS_FOR_CERTIFICATION = 1;
 const NOT_CERTIFIED_FIELD = "⚠️ Not certified!";
 

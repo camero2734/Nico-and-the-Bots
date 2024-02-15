@@ -120,6 +120,7 @@
     "video-url-link": "^0.1.5",
     "wikijs": "6.3.3",
     "ws": "^8.5.0",
+    "youtube.ts": "^0.2.9",
     "zod": "^3.11.6"
   },
   "devDependencies": {

@@ -6,6 +6,8 @@ on: [pull_request]
 jobs:
   build-image:
     runs-on: ubuntu-latest
+    concurrency:
+      group: build-or-deploy
     steps:
       - name: Check out code
         uses: actions/checkout@v2

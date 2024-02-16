@@ -28,7 +28,7 @@ command.setHandler(async (ctx) => {
     const allAnswers = await prisma.verifiedQuizAnswer.findMany();
     const results = QuizQuestions.map((q) => ({
         question: q,
-        answers: allAnswers.filter((a) => a.questionId === q.id)
+        answers: allAnswers.filter((a) => a.questionId === q.permaId)
     })).filter((q) => q.answers.length > 0);
 
     const partitionByCorrectness = R.partition((a: VerifiedQuizAnswer): boolean => a.answer === 0);

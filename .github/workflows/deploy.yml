@@ -41,7 +41,7 @@ jobs:
         id: check-tag
         continue-on-error: true
         run: |
-          docker inspect camer0/nico:${{ env.TAG }}
+          docker manifest inspect camer0/nico:${{ env.TAG }} > /dev/null
 
       - name: Build and push image
         if: steps.check-tag.outcome == 'failure'

@@ -1,8 +1,8 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { addDays, differenceInDays } from "date-fns";
+import { EmbedBuilder } from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { addDays, differenceInDays } from "date-fns";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

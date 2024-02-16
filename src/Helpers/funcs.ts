@@ -1,10 +1,10 @@
+import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import * as bigintConversion from "bigint-conversion";
-import { Guild, GuildMember, Message, BaseMessageOptions, Snowflake, TextChannel } from "discord.js";
+import * as crypto from "crypto";
+import { BaseMessageOptions, Guild, GuildMember, Message, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
-import * as crypto from "crypto";
 import { channelIDs } from "../Configuration/config";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 /**
  * Just some commonly used short functions
  */

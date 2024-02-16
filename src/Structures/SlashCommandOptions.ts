@@ -9,10 +9,8 @@ import {
     ApplicationCommandOptionData,
     ApplicationCommandOptionType,
     AutocompleteInteraction,
-    CommandInteraction,
     CommandInteractionOption,
     Interaction,
-    MessageComponentInteraction,
     Snowflake
 } from "discord.js";
 

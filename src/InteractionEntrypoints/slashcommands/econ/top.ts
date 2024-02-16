@@ -1,10 +1,9 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { badgeLoader } from "../../../Helpers";
+import { prisma, queries } from "../../../Helpers/prisma-init";
 import { LevelCalculator } from "../../../Helpers/score-manager";
-import fetch from "node-fetch";
-import { queries, prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const PAGE_SIZE = 10;

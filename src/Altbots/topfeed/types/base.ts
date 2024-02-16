@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TopfeedPost, TopfeedType } from ".prisma/client";
-import { Message, BaseMessageOptions, Snowflake } from "discord.js";
+import { Prisma } from "@prisma/client";
+import { BaseMessageOptions, Message, Snowflake } from "discord.js";
 import { NicoClient } from "../../../../app";
 import { prisma } from "../../../Helpers/prisma-init";
-import { Prisma } from "@prisma/client";
 
 export interface Checked<T> {
     uniqueIdentifier: string;
@@ -20,7 +20,7 @@ export abstract class Watcher<T> {
 
     protected client = NicoClient;
 
-    async afterCheck(msg: Message): Promise<void> {
+    async afterCheck(_msg: Message): Promise<void> {
         // Override in child to do something
     }
 

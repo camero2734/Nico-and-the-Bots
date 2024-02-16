@@ -1,6 +1,5 @@
-import { Queue, QueueScheduler, Worker } from "bullmq";
-import { minutesToMilliseconds } from "date-fns";
-import { Collection, Message, BaseMessageOptions, Snowflake, TextChannel } from "discord.js";
+import { QueueScheduler, Worker } from "bullmq";
+import { BaseMessageOptions, Collection, Message, Snowflake, TextChannel } from "discord.js";
 import IORedis from "ioredis";
 import { NicoClient } from "../../../app";
 import { guildID } from "../../Configuration/config";
@@ -21,24 +20,24 @@ export interface MessageUpdate {
     intervalMinutes?: number;
 }
 
-const queue = new Queue(QUEUE_NAME, {
-    ...redisOpts,
-    defaultJobOptions: {
-        removeOnFail: true,
-        removeOnComplete: true
-    }
-});
+// const queue = new Queue(QUEUE_NAME, {
+//     ...redisOpts,
+//     defaultJobOptions: {
+//         removeOnFail: true,
+//         removeOnComplete: true
+//     }
+// });
 
 const messageUpdates = new Collection<string, MessageUpdate>();
 
-const registerMessageUpdate = async (msgUpdate: MessageUpdate) => {
-    console.log(`Registering ${msgUpdate.name}`);
+// const registerMessageUpdate = async (msgUpdate: MessageUpdate) => {
+//     console.log(`Registering ${msgUpdate.name}`);
 
-    const intervalMinutes = msgUpdate.intervalMinutes || 2;
-    await queue.add(msgUpdate.name, "", { repeat: { every: minutesToMilliseconds(intervalMinutes) } });
+//     const intervalMinutes = msgUpdate.intervalMinutes || 2;
+//     await queue.add(msgUpdate.name, "", { repeat: { every: minutesToMilliseconds(intervalMinutes) } });
 
-    messageUpdates.set(msgUpdate.name, msgUpdate);
-};
+//     messageUpdates.set(msgUpdate.name, msgUpdate);
+// };
 //
 // registerMessageUpdate(UpdateProgress);
 

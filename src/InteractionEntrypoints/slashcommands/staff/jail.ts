@@ -5,26 +5,21 @@ import {
     ButtonBuilder,
     ButtonComponent,
     ButtonStyle,
+    ChannelSelectMenuBuilder,
     ChannelType,
     ComponentType,
     EmbedBuilder,
     GuildMember,
     GuildMemberRoleManager,
+    MentionableSelectMenuBuilder,
     MessageActionRowComponentBuilder,
     MessageComponentInteraction,
     OverwriteData,
-    StringSelectMenuBuilder,
-    Snowflake,
-    TextChannel,
-    AnyComponentBuilder,
-    UserSelectMenuComponent,
-    RoleSelectMenuComponent,
-    MentionableSelectMenuComponent,
-    ChannelSelectMenuComponent,
-    UserSelectMenuBuilder,
     RoleSelectMenuBuilder,
-    MentionableSelectMenuBuilder,
-    ChannelSelectMenuBuilder
+    Snowflake,
+    StringSelectMenuBuilder,
+    TextChannel,
+    UserSelectMenuBuilder
 } from "discord.js";
 import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";

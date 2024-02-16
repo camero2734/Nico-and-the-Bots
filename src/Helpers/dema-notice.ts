@@ -29,7 +29,7 @@ function fillParagraph(ctx: SKRSContext2D, text: string, x: number, y: number, m
 
 type ViolationDataGenerator = (bishop: BishopType, inData: string) => { name: string; found: string; reason: string };
 const violationData: Record<ViolationType, ViolationDataGenerator> = {
-    PossessionOfContraband: (bishop, roleName) => ({
+    PossessionOfContraband: (_bishop, roleName) => ({
         name: "POSSESSION OF ILLEGAL CONTRABAND",
         found: "in possession of regulated materials that have been outlawed by the Dema Council",
         reason: `Possession of ${roleName.toUpperCase()}`

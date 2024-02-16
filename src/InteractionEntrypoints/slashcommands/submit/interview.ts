@@ -1,11 +1,10 @@
-import { parse } from "date-fns";
 import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
 import metascraper from "metascraper";
-import metascraperYoutube from "metascraper-youtube";
 import metascraperDate from "metascraper-date";
 import metascraperDescription from "metascraper-description";
 import metascraperImage from "metascraper-image";
 import metascraperTitle from "metascraper-title";
+import metascraperYoutube from "metascraper-youtube";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -87,7 +86,7 @@ command.setHandler(async (ctx) => {
             .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
             .setLabel("Reject")
-            .setCustomId(genNoId({ interviewId: `${dbInterview.id}` }))
+            .setCustomId(genNoId({}))
             .setStyle(ButtonStyle.Danger)
     ]);
 
@@ -106,6 +105,11 @@ const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId
     await ctx.editReply({ components: [], embeds: [embed] });
     const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
 
+    await prisma.submittedInterview.update({
+        where: { id: +args.interviewId },
+        data: { approved: true }
+    });
+
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setURL(embed.data.url!)
@@ -115,7 +119,7 @@ const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId
     await chan.send({ content: `<@&${roles.topfeed.selectable.interviews}>`, components: [actionRow], embeds: [embed] });
 });
 
-const genNoId = command.addInteractionListener("intvwNo", <const>["interviewId"], async (ctx, args) => {
+const genNoId = command.addInteractionListener("intvwNo", [], async (ctx) => {
     await ctx.deferUpdate();
 
     const embed = EmbedBuilder.from(ctx.message.embeds[0]);

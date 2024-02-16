@@ -1,17 +1,15 @@
-import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { format } from "date-fns";
 import {
     CategoryChannel,
     ChannelType,
-    Client,
     Collection,
     Guild,
     GuildChannel,
     OverwriteData,
-    Role,
     TextChannel
 } from "discord.js";
 import fetch from "node-fetch";
+import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
 const ROLE_HEX = "#ffc6d5";

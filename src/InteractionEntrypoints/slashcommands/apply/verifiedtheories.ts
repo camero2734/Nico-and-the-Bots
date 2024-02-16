@@ -1,13 +1,12 @@
 import {
     ActionRowBuilder,
-    MessageActionRowComponent,
     ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
     GuildMember,
     Message,
-    TextChannel,
-    MessageActionRowComponentBuilder
+    MessageActionRowComponentBuilder,
+    TextChannel
 } from "discord.js";
 import R from "ramda";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";

@@ -13,7 +13,7 @@ import {
     SelectMenuOptionBuilder
 } from "discord.js";
 import fs from "fs";
-import { channelIDs, roles } from "../../../Configuration/config";
+import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";

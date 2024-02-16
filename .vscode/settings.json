@@ -3,7 +3,7 @@
     "[prisma]": {
         "editor.defaultFormatter": "Prisma.prisma"
     },
-    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.preferences.importModuleSpecifier": "relative",
     "explorer.compactFolders": false,
     "editor.tabSize": 4

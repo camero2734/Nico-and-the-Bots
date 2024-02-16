@@ -8,10 +8,10 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
     AlbumResponse,
     ArtistResponse,
-    createFMMethod,
-    getFMUsername,
     RecentTracksResponse,
-    TrackResponse
+    TrackResponse,
+    createFMMethod,
+    getFMUsername
 } from "./_consts";
 
 const command = new SlashCommand(<const>{
@@ -153,7 +153,7 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [embed], components: [starActionRow] });
 });
 
-const genStarId = command.addInteractionListener("fmStarInt", <const>["fmStarId"], async (ctx, args) => {
+const genStarId = command.addInteractionListener("fmStarInt", <const>["fmStarId"], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     await ctx.editReply({ content: "This feature is coming in a future update" });

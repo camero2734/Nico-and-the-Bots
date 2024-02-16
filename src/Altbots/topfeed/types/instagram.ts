@@ -60,7 +60,7 @@ export class InstaWatcher extends Watcher<InstaType> {
         return checkedItems.map((item) => {
             const { url, caption, images, date } = item._data;
 
-            const msgs: BaseMessageOptions[] = [];
+            // const msgs: BaseMessageOptions[] = [];
 
             const mainEmbed = new EmbedBuilder()
                 .setAuthor({

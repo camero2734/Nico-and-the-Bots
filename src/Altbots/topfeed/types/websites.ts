@@ -13,7 +13,6 @@ import {
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
-import F from "../../../Helpers/funcs";
 import { Checked, Watcher } from "./base";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
@@ -196,7 +195,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         console.log(`${this.url}`, oldBuffer.byteLength, newBuffer.byteLength);
 
-        const distance = F.hammingDist(oldBuffer, newBuffer);
+        // const distance = F.hammingDist(oldBuffer, newBuffer);
 
         const isNew = false; // !old || distance > 10;
 

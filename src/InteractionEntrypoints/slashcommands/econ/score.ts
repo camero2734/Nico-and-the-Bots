@@ -107,8 +107,6 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
         measuredTextHeight = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
     }
 
-    console.log(cctx.font, /FONT/);
-
     cctx.strokeStyle = "black";
     cctx.fillStyle = inverted ? "black" : "white";
     cctx.lineWidth = inverted ? 0 : 6;

@@ -60,7 +60,11 @@ const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
 
 client.on("ready", async () => {
-    console.log(`Logged in as ${client.user?.tag}!`);
+    console.log("===================================");
+    console.log("||                               ||");
+    console.log("||      🚀 Nico logged in!       ||");
+    console.log("||                               ||");
+    console.log("===================================");
 
     guild = await client.guilds.fetch({ force: true, guild: guildID });
 
@@ -70,8 +74,6 @@ client.on("ready", async () => {
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
-
-    // startTopfeed();
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;

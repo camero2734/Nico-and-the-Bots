@@ -4,7 +4,6 @@ import fs, { promises as fsp } from "fs";
 import util from 'util';
 import { exec as _exec } from "child_process";
 import _glob from "glob";
-const exec = util.promisify(_exec);
 const glob = util.promisify(_glob);
 import streamUtil from "stream";
 

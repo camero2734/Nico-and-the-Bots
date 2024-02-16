@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { addDays, differenceInDays } from "date-fns";
@@ -184,7 +184,7 @@ command.setHandler(async (ctx) => {
         files: [
             {
                 name: "daily.png",
-                attachment: canvas.toBuffer()
+                attachment: canvas.toBuffer('image/png')
             }
         ]
     });

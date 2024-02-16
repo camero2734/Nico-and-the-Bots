@@ -2,14 +2,14 @@ module.exports = {
     apps: [
         {
             name: "nico",
-            script: "yarn",
-            args: "start",
+            script: "bun",
+            args: "run start",
             interpreter: 'none'
         },
         {
             name: "nico-dev",
-            script: "yarn",
-            args: "dev",
+            script: "bun",
+            args: "run dev",
             interpreter: 'none'
         }
     ]

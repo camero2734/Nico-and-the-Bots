@@ -254,14 +254,6 @@ async function sendFinalEmbed(
             }`
         );
 
-    // Dm them results
-    try {
-        const dm = await member.createDM();
-        await dm.send({ embeds: [embed] });
-    } catch (e) {
-        //
-    }
-
     return [embed, []];
 }
 

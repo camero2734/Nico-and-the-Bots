@@ -11,9 +11,8 @@ fi
 bunx prisma migrate deploy
 bunx prisma generate
 
-
 if [ "$NODE_ENV" == "development" ]; then
-    bun run --watch app.ts
+    sleep 100000
 else
     bun run app.ts
 fi

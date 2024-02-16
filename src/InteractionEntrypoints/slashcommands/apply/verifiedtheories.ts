@@ -226,7 +226,7 @@ async function sendFinalEmbed(
 
         // Record question answer
         await prisma.verifiedQuizAnswer.create({
-            data: { userId: member.id, answer: answerGiven, questionId: q.id }
+            data: { userId: member.id, answer: answerGiven, questionId: q.permaId }
         });
     }
     const correct = questionList.length - incorrect;

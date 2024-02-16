@@ -233,7 +233,7 @@ model VerifiedQuiz {
 
 model VerifiedQuizAnswer {
   id         Int @id @default(autoincrement())
-  questionId Int
+  questionId String
 
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String

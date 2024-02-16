@@ -9,7 +9,7 @@ import {
     TextChannel
 } from "discord.js";
 import R from "ramda";
-import { channelIDs, guildID, roles } from "../../../Configuration/config";
+import { channelIDs, guildID, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -31,6 +31,10 @@ command.setHandler(async (ctx) => {
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
         throw new CommandError("You already passed the quiz!");
+    }
+
+    if (ctx.user.id !== userIDs.me) {
+        throw new CommandError("This command is currently disabled.");
     }
 
     // Ensure they can't retake the quiz for N hours
@@ -83,8 +87,8 @@ command.setHandler(async (ctx) => {
         new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message")
     ]);
 
-    await ctx.send({
-        embeds: [new EmbedBuilder().setDescription("The quiz was DM'd to you!").toJSON()],
+    await ctx.editReply({
+        embeds: [new EmbedBuilder().setDescription("The quiz was DM'd to you!")],
         components: [dmActionRow]
     });
 
@@ -113,7 +117,7 @@ command.setHandler(async (ctx) => {
     const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.member); // prettier-ignore
 
     await dmMessage.edit({
-        embeds: [quizEmbed.toJSON()],
+        embeds: [quizEmbed],
         components: quizComponents
     });
 });

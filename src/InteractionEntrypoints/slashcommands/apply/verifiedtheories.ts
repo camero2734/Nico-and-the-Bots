@@ -9,7 +9,7 @@ import {
     TextChannel
 } from "discord.js";
 import R from "ramda";
-import { channelIDs, guildID, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -31,10 +31,6 @@ command.setHandler(async (ctx) => {
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
         throw new CommandError("You already passed the quiz!");
-    }
-
-    if (ctx.user.id !== userIDs.me) {
-        throw new CommandError("This command is currently disabled.");
     }
 
     // Ensure they can't retake the quiz for N hours
@@ -257,14 +253,6 @@ async function sendFinalEmbed(
                 : `You may apply again in ${hours} hours.`
             }`
         );
-
-    // Dm them results
-    try {
-        const dm = await member.createDM();
-        await dm.send({ embeds: [embed] });
-    } catch (e) {
-        //
-    }
 
     return [embed, []];
 }

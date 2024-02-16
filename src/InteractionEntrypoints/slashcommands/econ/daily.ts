@@ -1,8 +1,8 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { addDays, differenceInDays } from "date-fns";
+import { EmbedBuilder } from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { addDays, differenceInDays } from "date-fns";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -105,7 +105,7 @@ command.setHandler(async (ctx) => {
     let checkingSize = 40;
     while ((measuredTextWidth > maxWidth || measuredTextHeight > maxHeight) && checkingSize > 5) {
         checkingSize--;
-        cctx.font = checkingSize + "px futura";
+        cctx.font = checkingSize + "px Futura";
         const textInfo = cctx.measureText(ctx.member.displayName);
         measuredTextWidth = textInfo.width;
         measuredTextHeight = textInfo.actualBoundingBoxAscent + textInfo.actualBoundingBoxDescent;
@@ -113,12 +113,12 @@ command.setHandler(async (ctx) => {
 
     //DRAW NAME
     cctx.fillStyle = ctx.member.displayHexColor;
-    cctx.font = checkingSize + "px futura";
+    cctx.font = checkingSize + "px Futura";
     cctx.fillText(ctx.member.displayName, 120, 65);
 
     //DRAW GOT CREDITS & BADGE
     cctx.fillStyle = "white";
-    cctx.font = "40px futura";
+    cctx.font = "40px Futura";
     const creditsEarnedLine = `Got ${creditsToGive} credits!`;
     cctx.fillText(creditsEarnedLine, 120, 120);
     const { width } = cctx.measureText(creditsEarnedLine);
@@ -184,7 +184,7 @@ command.setHandler(async (ctx) => {
         files: [
             {
                 name: "daily.png",
-                attachment: canvas.toBuffer()
+                attachment: canvas.toBuffer('image/png')
             }
         ]
     });

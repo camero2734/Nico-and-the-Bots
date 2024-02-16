@@ -1,10 +1,9 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { badgeLoader } from "../../../Helpers";
+import { prisma, queries } from "../../../Helpers/prisma-init";
 import { LevelCalculator } from "../../../Helpers/score-manager";
-import fetch from "node-fetch";
-import { queries, prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const PAGE_SIZE = 10;
@@ -131,7 +130,7 @@ async function generateImage(
     cctx.translate(0, 35);
     cctx.fillStyle = "white";
     cctx.textAlign = "center";
-    cctx.font = "28px futura";
+    cctx.font = "28px Futura";
     cctx.strokeStyle = "black";
     cctx.shadowColor = "black";
     cctx.lineWidth = 1;
@@ -155,7 +154,7 @@ async function generateImage(
         // Place num
         cctx.translate(45, 10);
         cctx.textAlign = "end";
-        cctx.font = "25px futura";
+        cctx.font = "25px Futura";
         cctx.fillStyle = "white";
         drawText(`${placeNum}`, 0, 34);
 
@@ -163,7 +162,7 @@ async function generateImage(
         cctx.translate(10, 0);
         const avatar = await loadImage(
             member?.user.displayAvatarURL({ extension: "png", size: 128 }) ||
-                "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
+            "https://cdn.landesa.org/wp-content/uploads/default-user-image.png"
         );
 
         cctx.shadowBlur = 1;
@@ -180,7 +179,7 @@ async function generateImage(
         cctx.translate(70, 0);
         cctx.fillStyle = "white";
         cctx.textAlign = "start";
-        cctx.font = "34px futura";
+        cctx.font = "34px Futura";
         let displayedName = member?.displayName.replace(/[^\w[\]()!@#%^&*-_+= ]/g, "").replace(/ {2,}/g, " ").trim() || member?.displayName || "Missing user"; // prettier-ignore
         let textInfo = cctx.measureText(displayedName);
         if (member && textInfo.width > 200 && member.user.username.length < displayedName.length) {
@@ -193,7 +192,7 @@ async function generateImage(
         // drawText(displayedName, 0, 26, 200);
 
         // Level
-        cctx.font = "20px futura";
+        cctx.font = "20px Futura";
         cctx.fillStyle = "white";
         drawText(`Level: ${LevelCalculator.calculateLevel(score)}`, 0, 55);
 
@@ -212,10 +211,10 @@ async function generateImage(
     cctx.translate(0, UNIT_HEIGHT - 10);
     cctx.textAlign = "end";
     cctx.fillStyle = "white";
-    cctx.font = "20px futura";
+    cctx.font = "20px Futura";
     drawText(`${pageNum + 1}`, UNIT_WIDTH - 10, 0);
 
-    return canvas.toBuffer();
+    return canvas.toBuffer('image/png');
 }
 
 export default command;

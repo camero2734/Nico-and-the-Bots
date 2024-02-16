@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -28,7 +28,7 @@ command.setHandler(async (ctx) => {
         const timestamp = F.discordTimestamp(app.submittedAt || new Date(), "relative");
         const member = await ctx.guild.members.fetch(app.userId).catch(() => undefined);
         if (!member) continue;
-        embed.addFields([{ name: `${member.displayName}`, value: `Submitted ${timestamp} | [View](${app.messageUrl}])`}]);
+        embed.addFields([{ name: `${member.displayName}`, value: `Submitted ${timestamp} | [View](${app.messageUrl}])` }]);
     }
 
     await ctx.editReply({ embeds: [embed] });

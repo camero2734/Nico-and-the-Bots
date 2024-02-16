@@ -1,18 +1,16 @@
-import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "discord.js";
-import { TextInputStyle } from "discord-api-types/payloads/v9";
-import { userIDs } from "../../../Configuration/config";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import { ViolationType } from "@prisma/client";
+import { userIDs } from "../../../Configuration/config";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
     description: "Test command",
     options: []
 });
 
-const MODAL_FIELDS = <const>{
-    TV_FIELD: "tv_field"
-};
+// const MODAL_FIELDS = <const>{
+//     TV_FIELD: "tv_field"
+// };
 
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
@@ -36,13 +34,13 @@ command.setHandler(async (ctx) => {
     // ctx.showModal(modal);
 });
 
-const genModalId = command.addInteractionListener("myForm", [], async (ctx) => {
-    if (!ctx.isModalSubmit()) return;
+// const genModalId = command.addInteractionListener("myForm", [], async (ctx) => {
+//     if (!ctx.isModalSubmit()) return;
 
-    const inputField = ctx.fields.getTextInputValue(MODAL_FIELDS.TV_FIELD);
+//     const inputField = ctx.fields.getTextInputValue(MODAL_FIELDS.TV_FIELD);
 
-    console.log("Got a response from the modal!");
-    ctx.reply(`Thank you for saying ${inputField}`);
-});
+//     console.log("Got a response from the modal!");
+//     ctx.reply(`Thank you for saying ${inputField}`);
+// });
 
 export default command;

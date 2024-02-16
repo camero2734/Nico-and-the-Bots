@@ -1,4 +1,4 @@
-import { Snowflake, ApplicationCommandOptionType } from "discord.js";
+import { Snowflake } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 
@@ -61,7 +61,7 @@ export class District<T extends typeof districtOrder[number]> {
         return `${parseFloat((100 * percent).toFixed(2))}%`;
     }
 
-    constructor(public bishop: T) {}
+    constructor(public bishop: T) { }
     setDifficulty(diff: string): this {
         this.difficulty = diff;
         return this;

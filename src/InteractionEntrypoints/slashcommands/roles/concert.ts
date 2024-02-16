@@ -55,7 +55,7 @@ command.setHandler(async (ctx) => {
 const genSelectCountryId = command.addInteractionListener("selectCountry", <const>[], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
 
-    const [countryActionRowCom, concertActionRowCom] = ctx.message.components;
+    const [_, concertActionRowCom] = ctx.message.components;
 
 
     const concertsByCountry = getConcertsByCountry(ctx.guild);

@@ -1,6 +1,6 @@
-import secrets from "../../../Configuration/secrets";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
+import secrets from "../../../Configuration/secrets";
 import { prisma } from "../../../Helpers/prisma-init";
 
 export class Album {
@@ -19,7 +19,7 @@ export class Album {
 export const createFMMethod = (username: string) => {
     const base = `http://ws.audioscrobbler.com/2.0/?`;
     const opts = new URLSearchParams({ username, api_key: secrets.apis.lastfm, format: "json" });
-    return (options: { method: string; [k: string]: string }) => {
+    return (options: { method: string;[k: string]: string }) => {
         for (const [key, value] of Object.entries(options)) {
             opts.append(key, value);
         }

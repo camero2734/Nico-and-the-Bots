@@ -1,4 +1,4 @@
-import { ColorResolvable, Snowflake, ApplicationCommandOptionType } from "discord.js";
+import { ColorResolvable, Snowflake } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 
@@ -7,7 +7,7 @@ export interface Change {
     to: ColorResolvable;
 }
 
-const colors = {...roles.colors.tier1, ...roles.colors.tier2, ...roles.colors.tier3, ...roles.colors.tier4, ...roles.colors.DExclusive}; // prettier-ignore
+const colors = { ...roles.colors.tier1, ...roles.colors.tier2, ...roles.colors.tier3, ...roles.colors.tier4, ...roles.colors.DExclusive }; // prettier-ignore
 
 const _changes: Partial<Record<keyof typeof colors, Change>> = {
     "Rebel Red": { from: "#ff0060", to: "#D30E3B" },

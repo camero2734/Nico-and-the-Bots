@@ -1,6 +1,6 @@
-import { channelIDs } from "../Configuration/config";
-import { Channel, EmojiIdentifierResolvable, Message, Snowflake, ThreadChannel } from "discord.js";
+import { EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
 import Mime from "mime-types";
+import { channelIDs } from "../Configuration/config";
 
 interface BaseReactType {
     reactTo: string;
@@ -16,12 +16,12 @@ class FileReact implements BaseReactType {
         public checkRawURLs = false
     ) { }
     public static MimeCheck(mimes: string[]) {
-        return (extension: string, mime: string): boolean => {
+        return (_extension: string, mime: string): boolean => {
             return mimes.some((uMime) => mime.startsWith(uMime.toLowerCase()));
         };
     }
     public static ExtensionCheck(extensions: string[]) {
-        return (extension: string, mime: string): boolean => {
+        return (extension: string): boolean => {
             return extensions.some((ext) => ext === extension);
         };
     }

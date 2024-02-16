@@ -1,11 +1,8 @@
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
-import moize from "moize";
-import { minutesToMilliseconds } from "date-fns";
-import Fuse from "fuse.js";
 import { getTagNameSearcher } from "./_consts";
 
 const command = new SlashCommand(<const>{

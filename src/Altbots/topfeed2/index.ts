@@ -1,20 +1,19 @@
 import { guild } from "../../../app";
-import { channelIDs, roles } from "../../Configuration/config";
 import { TopfeedService } from "./service";
 import { TopfeedSource } from "./source";
 // import { TiktokSource } from "./sources/tiktok";
 
-const TylerInfo = <const>{
-    displayName: "Tyler Joseph",
-    channelId: channelIDs.topfeed.tyler,
-    roleId: roles.topfeed.selectable.tyler
-};
+// const TylerInfo = <const>{
+//     displayName: "Tyler Joseph",
+//     channelId: channelIDs.topfeed.tyler,
+//     roleId: roles.topfeed.selectable.tyler
+// };
 
-const BandInfo = <const>{
-    displayName: "twenty one pilots",
-    channelId: channelIDs.topfeed.band,
-    roleId: roles.topfeed.selectable.band
-};
+// const BandInfo = <const>{
+//     displayName: "twenty one pilots",
+//     channelId: channelIDs.topfeed.band,
+//     roleId: roles.topfeed.selectable.band
+// };
 
 const sources: TopfeedSource[] = [
     // new TwitterSource({ ...TylerInfo, handle: "tylerrjoseph" }),

@@ -1,17 +1,15 @@
 import {
     ApplicationCommandData,
     ApplicationCommandType,
-    ContextMenuCommandInteraction,
     GuildMember,
     Interaction,
     Message,
     MessageContextMenuCommandInteraction,
-    TextChannel,
     UserContextMenuCommandInteraction
 } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
-import { ApplicationData, ContextMenus } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
+import { ApplicationData, ContextMenus } from "./data";
 
 type TargetTypes = {
     [ApplicationCommandType.Message]: Message;
@@ -22,8 +20,6 @@ export type ContextMenuHandler<T extends keyof TargetTypes> = (
     ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction,
     target: TargetTypes[T]
 ) => Promise<unknown>;
-
-type CtxMenuInteraction = (MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) & { member: GuildMember; channel: TextChannel };
 
 export abstract class ContextMenu<T extends keyof TargetTypes> extends InteractionEntrypoint<ContextMenuHandler<T>> {
     public commandData: ApplicationCommandData;

@@ -1,6 +1,5 @@
 import { User } from "@prisma/client";
-import { GuildMember, GuildMemberRoleManager, RoleManager, Snowflake } from "discord.js";
-import { Role } from "discord.js";
+import { GuildMember, Role, RoleManager, Snowflake } from "discord.js";
 import { roles } from "../../Configuration/config";
 
 export class ColorCategory {

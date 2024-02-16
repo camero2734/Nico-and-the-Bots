@@ -1,4 +1,4 @@
-import { Image, loadImage } from "canvas";
+import { Image, loadImage } from "@napi-rs/canvas";
 import { GuildMember } from "discord.js";
 import { prisma } from "./prisma-init";
 

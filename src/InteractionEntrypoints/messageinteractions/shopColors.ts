@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, MessageComponent, InteractionEditReplyOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, InteractionEditReplyOptions } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -34,7 +34,7 @@ const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", <const>[], 
 // Category submenu
 const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
     const categories = getColorRoleCategories(ctx.guild.roles);
-    const [name, category] = Object.entries(categories).find(([id, data]) => data.id === args.categoryId) || [];
+    const [name, category] = Object.entries(categories).find(([_id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
 
     await ctx.deferUpdate();

@@ -2,20 +2,17 @@ import crypto from "crypto";
 import * as Diff from "diff";
 import {
     ActionRowBuilder,
+    AttachmentBuilder,
+    BaseMessageOptions,
     ButtonBuilder,
     ButtonStyle,
     EmbedBuilder,
     Message,
-    AttachmentBuilder,
-    BaseMessageOptions,
     Snowflake
 } from "discord.js";
-import https from "https";
-import fetch from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
-import F from "../../../Helpers/funcs";
 import { Checked, Watcher } from "./base";
 
 const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
@@ -30,10 +27,6 @@ type CheckObj = {
 };
 
 type CheckReturn = CheckObj[WATCH_METHOD]["_data"];
-
-const agent = new https.Agent({
-    rejectUnauthorized: false
-});
 
 export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<CheckReturn> {
     static hash(input: string): string {
@@ -156,9 +149,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         console.log(`Checking html for ${this.url}`);
 
-        const res = await fetch(this.url, { agent });
-        const buff = await res.buffer();
-        const html = buff.toString("utf-8");
+        const res = await fetch(this.url, { tls: { rejectUnauthorized: false } });
+        const html = await res.text();
         const hash = SiteWatcher.hash(html);
 
         const old = await this.getLatestItem(subtype);
@@ -172,7 +164,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     async #checkLastModified(): Promise<CheckObj["LAST_MODIFIED"]["_data"]> {
         const subtype = <const>"LAST_MODIFIED";
 
-        const res = await fetch(this.url, { agent });
+        const res = await fetch(this.url, { tls: { rejectUnauthorized: false } });
         const lastModified = res.headers.get("last-modified") || "Wed, 21 Oct 2015 07:28:00 GMT";
         const hash = SiteWatcher.hash(lastModified);
 
@@ -203,7 +195,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         console.log(`${this.url}`, oldBuffer.byteLength, newBuffer.byteLength);
 
-        const distance = F.hammingDist(oldBuffer, newBuffer);
+        // const distance = F.hammingDist(oldBuffer, newBuffer);
 
         const isNew = false; // !old || distance > 10;
 

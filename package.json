@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "dev:debug": "set DEBUG=consola && yarn dev",
-    "start": "ts-node app.ts",
+    "start": "bun run app.ts",
     "update": "npm-check -u",
     "deploy": "fish ./deploy.fish",
     "build": "rimraf dist && swc app.ts -d dist && swc src -d dist/src",
@@ -20,16 +20,14 @@
     "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",
     "tasks:fetch-db": "ts-node tasks/fetch-db.ts"
   },
-  "engines": {
-    "node": ">= 16.6.0"
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@discordjs/builders": "^0.14.0-dev.1652832619-dfe449c",
     "@discordjs/collection": "^0.6.0-dev.1644235500.b936103",
     "@discordjs/rest": "^0.4.0-dev.1646395403.6f7a366",
-    "@prisma/client": "^5.9.1",
+    "@napi-rs/canvas": "^0.1.45",
+    "@prisma/client": "5.9.1",
     "@swc/wasm": "^1.2.174",
     "@types/async": "^3.2.7",
     "@types/diff": "^5.0.0",
@@ -51,9 +49,8 @@
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "async": "^3.2.1",
-    "bigint-conversion": "2.2.1",
+    "bigint-conversion": "^2.4.3",
     "bullmq": "1.68.4",
-    "canvas": "^2.11.2",
     "chalk": "^4.1.1",
     "consola": "^2.15.3",
     "cross-env": "^7.0.3",
@@ -90,12 +87,12 @@
     "normalize-url": "^4.5.0",
     "npm-check": "^5.9.2",
     "ordinal": "^1.0.3",
-    "parse-duration": "^0.4.4",
+    "parse-duration": "^1.1.0",
     "patch-package": "^6.4.7",
     "pm2": "^5.2.0",
     "postinstall-postinstall": "^2.1.0",
     "prettier": "2.5.1",
-    "prisma": "^5.9.1",
+    "prisma": "5.9.1",
     "radix-64": "^1.0.4",
     "ramda": "^0.27.1",
     "regenerator-runtime": "^0.13.9",
@@ -124,7 +121,11 @@
     "zod": "^3.11.6"
   },
   "devDependencies": {
+    "@types/bun": "^1.0.5",
     "dotenv-run-script": "^0.2.0",
     "nodemon": "^2.0.12"
+  },
+  "overrides": {
+    "re2": "npm:@dashevo/wasm-re2"
   }
 }

@@ -1,13 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "discord.js";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
-    Colors,
-    InteractionReplyOptions,
-    MessageEditOptions,
+    ActionRowBuilder, ButtonBuilder, Colors, EmbedBuilder, InteractionReplyOptions,
+    MessageEditOptions, ModalBuilder, TextInputBuilder
 } from "discord.js";
 import { nanoid } from "nanoid";
-import { roles, userIDs } from "../../../Configuration/config";
-import { CommandError, NULL_CUSTOM_ID } from "../../../Configuration/definitions";
+import { roles } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { sendToStaff } from "../../messageinteractions/staffFBApp";
@@ -23,9 +21,9 @@ interface Question {
     short?: boolean;
 }
 
-interface AnsweredQuestion extends Question {
-    answer: string;
-}
+// interface AnsweredQuestion extends Question {
+//     answer: string;
+// }
 
 const PART_ONE: Record<string, Question> = <const>{
     REFERRED_FROM: {

@@ -1,5 +1,5 @@
-import { EmbedBuilder, ApplicationCommandOptionType, RoleSelectMenuBuilder, ActionRowBuilder } from "discord.js";
-import { channelIDs, userIDs } from "../../../Configuration/config";
+import { ActionRowBuilder, EmbedBuilder, RoleSelectMenuBuilder } from "discord.js";
+import { channelIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

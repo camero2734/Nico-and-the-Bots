@@ -1,8 +1,7 @@
-import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedError, TopfeedSource } from "../source";
-import { TweetV2, TwitterApi, TwitterApiReadOnly, TwitterV2IncludesHelper } from "twitter-api-v2";
-import secrets from "../../../Configuration/secrets";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder, Attachment, BaseMessageOptions } from "discord.js";
+import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder } from "discord.js";
+import { TweetV2, TwitterApi, TwitterV2IncludesHelper } from "twitter-api-v2";
 import { emojiIDs } from "../../../Configuration/config";
+import { ITopfeedPost, ITopfeedRunOutput, ITopfeedSourceInput, TopfeedError, TopfeedSource } from "../source";
 
 interface ITwitterSourceInput extends ITopfeedSourceInput {
     handle: string;

@@ -51,7 +51,7 @@ export class QuestionIDEncoder {
  */
 export class PreviousAnswersEncoder {
     public answerIndices: Map<Question, number> = new Map();
-    constructor(private questions: Question[]) {}
+    constructor(private questions: Question[]) { }
 
     markAnswer(question: Question, answer: number | string): boolean {
         if (!this.questions.includes(question)) return false;

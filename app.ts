@@ -1,6 +1,5 @@
-import { registerFont } from "canvas";
+import { GlobalFonts } from "@napi-rs/canvas";
 import * as Discord from "discord.js";
-import http from "http";
 import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
@@ -17,16 +16,16 @@ import "./src/Helpers/message-updates/_queue";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import SlurFilter from "./src/Helpers/slur-filter";
+import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
+import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
+import { ErrorHandler } from "./src/Structures/Errors";
+import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import {
     ContextMenus,
     InteractionHandlers,
     ReactionHandlers,
     SlashCommands
 } from "./src/Structures/data";
-import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
-import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
-import { ErrorHandler } from "./src/Structures/Errors";
-import { AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 
 
 const client = new Discord.Client({
@@ -60,7 +59,11 @@ const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
 
 client.on("ready", async () => {
-    console.log(`Logged in as ${client.user?.tag}!`);
+    console.log("===================================");
+    console.log("||                               ||");
+    console.log("||      🚀 Nico logged in!       ||");
+    console.log("||                               ||");
+    console.log("===================================");
 
     guild = await client.guilds.fetch({ force: true, guild: guildID });
 
@@ -70,8 +73,6 @@ client.on("ready", async () => {
     sacarverBot.beginWelcomingMembers();
     keonsBot.setupShop();
     setup();
-
-    // startTopfeed();
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
@@ -181,15 +182,9 @@ client.on("interactionCreate", async (interaction) => {
 async function setup() {
     const guild = await client.guilds.fetch(guildID);
 
-    // Load fonts into node-canvas
-    const fonts = ["h", "f", "NotoEmoji-Regular", "a", "j", "c", "br"];
-    for (const font of fonts) registerFont(`./src/Assets/fonts/${font}.ttf`, { family: "futura" });
-
-    registerFont(`./src/Assets/fonts/FiraCode/Regular.ttf`, { family: "FiraCode" });
-    registerFont(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, { family: "'Arial Narrow'" });
-    registerFont(`./src/Assets/fonts/ArialNarrow/Bold.ttf`, { family: "'Arial Narrow'", weight: "bold" });
-    registerFont(`./src/Assets/fonts/ArialNarrow/BoldItalic.ttf`, { family: "'Arial Narrow'", weight: "bold", style: "italic" }); // prettier-ignore
-    registerFont(`./src/Assets/fonts/ArialNarrow/Italic.ttf`, { family: "'Arial Narrow'", style: "italic" });
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
 
     Scheduler(client);
     topfeedBot.registerChecks();

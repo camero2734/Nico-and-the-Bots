@@ -30,7 +30,7 @@ export abstract class TopfeedSource implements Required<ITopfeedSourceInput> {
 
     abstract type: string;
 
-    constructor(private opts: ITopfeedSourceInput) {
+    constructor(opts: ITopfeedSourceInput) {
         this.displayName = opts.displayName;
         this.channelId = opts.channelId;
         this.roleId = opts.roleId;

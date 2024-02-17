@@ -22,6 +22,8 @@ services:
       NODE_ENV: "development"
     volumes:
       - .:/code:delegated
+    ports:
+      - "2121:2121"
   db:
     image: postgres:14.1
     restart: always

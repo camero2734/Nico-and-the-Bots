@@ -82,6 +82,8 @@ client.on("ready", async () => {
     await botChan.send({
         embeds: [new Discord.EmbedBuilder({ description: `Fetched all ${guild.members.cache.size} members` })]
     });
+
+    startPingServer();
 });
 
 client.on("messageCreate", async (msg: Discord.Message) => {
@@ -194,6 +196,18 @@ async function setup() {
     const concertManager = getConcertChannelManager(guild);
     await concertManager.fetchConcerts();
     await concertManager.checkChannels();
+}
+
+function startPingServer() {
+    const started = Date.now();
+    Bun.serve({
+        port: 2121,
+        fetch() {
+            return new Response(
+                `Nico is running. Uptime: ${Math.floor((Date.now() - started) / 1000)}s`,
+            );
+        }
+    })
 }
 
 export const NicoClient = client;

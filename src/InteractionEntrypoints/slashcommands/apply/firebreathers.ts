@@ -4,7 +4,6 @@ import {
     AttachmentBuilder,
     ButtonBuilder,
     ButtonStyle,
-    Colors,
     EmbedBuilder,
     Guild,
     StringSelectMenuBuilder,
@@ -182,68 +181,72 @@ export async function sendToStaff(
     }
 }
 
-const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async (ctx, args) => {
-    await ctx.deferUpdate();
-    await ctx.editReply({ components: [] });
+const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async () => {
+    console.log("Hello")
+    // console.log("Before deferUpdate");
+    // await ctx.deferUpdate();
+    // console.log("Before editReply");
+    // await ctx.editReply({ components: [] });
+    // console.log("After editReply");
 
-    const applicationId = args.applicationId;
-    const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });
-    if (!application) throw new CommandError("This application no longer exists");
+    // const applicationId = args.applicationId;
+    // const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });
+    // if (!application) throw new CommandError("This application no longer exists");
 
-    const member = await ctx.guild.members.fetch(application.userId);
-    if (!member) throw new CommandError("This member appears to have left the server");
+    // const member = await ctx.guild.members.fetch(application.userId);
+    // if (!member) throw new CommandError("This member appears to have left the server");
 
-    const embed = new EmbedBuilder()
-        .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
-        .setFooter({ text: applicationId });
+    // const embed = new EmbedBuilder()
+    //     .setAuthor({ name: "Firebreathers Application results", iconURL: member.client.user?.displayAvatarURL() })
+    //     .setFooter({ text: applicationId });
 
-    if (!embed.data.author) return; // Just to make typescript happy
+    // if (!embed.data.author) return; // Just to make typescript happy
 
-    const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
+    // const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
 
-    const action = ctx.isAnySelectMenu() ? +ctx.values[0] : +args.type;
-    if (action === ActionTypes.Accept) {
-        await prisma.firebreatherApplication.update({
-            where: { applicationId },
-            data: { approved: true, decidedAt: new Date() }
-        });
-        await member.roles.add(roles.deatheaters);
+    // const action = ctx.isAnySelectMenu() ? +ctx.values[0] : +args.type;
+    // if (action === ActionTypes.Accept) {
+    //     await prisma.firebreatherApplication.update({
+    //         where: { applicationId },
+    //         data: { approved: true, decidedAt: new Date() }
+    //     });
+    //     await member.roles.add(roles.deatheaters);
 
-        embed.data.author.name = "Firebreathers Application Approved";
-        embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
+    //     embed.data.author.name = "Firebreathers Application Approved";
+    //     embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
 
-        await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
-    } else if (action === ActionTypes.Deny) {
-        await prisma.firebreatherApplication.update({
-            where: { applicationId },
-            data: { approved: false, decidedAt: new Date() }
-        });
+    //     await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
+    // } else if (action === ActionTypes.Deny) {
+    //     await prisma.firebreatherApplication.update({
+    //         where: { applicationId },
+    //         data: { approved: false, decidedAt: new Date() }
+    //     });
 
-        const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
+    //     const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
 
-        embed.data.author.name = "Firebreathers Application Denied";
-        embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
-        await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
-    } else throw new Error("Invalid action type");
+    //     embed.data.author.name = "Firebreathers Application Denied";
+    //     embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
+    //     await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
+    // } else throw new Error("Invalid action type");
 
-    const doneByEmbed = new EmbedBuilder()
-        .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.displayAvatarURL() })
-        .setDescription(
-            `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
-        )
-        .setFooter({ text: applicationId });
+    // const doneByEmbed = new EmbedBuilder()
+    //     .setAuthor({ name: ctx.member.displayName, iconURL: ctx.member.displayAvatarURL() })
+    //     .setDescription(
+    //         `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
+    //     )
+    //     .setFooter({ text: applicationId });
 
-    // Archive thread
-    const thread = ctx.message.thread;
-    if (thread) {
-        await thread.setArchived(true, "Decision was made, thread no longer necessary");
+    // // Archive thread
+    // const thread = ctx.message.thread;
+    // if (thread) {
+    //     await thread.setArchived(true, "Decision was made, thread no longer necessary");
 
-        doneByEmbed.addFields([{ name: "Thread", value: `${thread}` }]);
-    }
+    //     doneByEmbed.addFields([{ name: "Thread", value: `${thread}` }]);
+    // }
 
-    await ctx.followUp({ embeds: [doneByEmbed] });
+    // await ctx.followUp({ embeds: [doneByEmbed] });
 
-    await F.sendMessageToUser(member, { embeds: [embed] });
+    // await F.sendMessageToUser(member, { embeds: [embed] });
 });
 
 export default command;

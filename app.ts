@@ -153,11 +153,13 @@ client.on("interactionCreate", async (interaction) => {
         if (!interactionHandler) return;
 
         try {
+            console.log("Handling interaction via:", interactionHandler.name);
             await interactionHandler.handler(
                 interaction as any,
                 interactionHandler.pattern.toDict(interaction.customId)
             );
         } catch (e) {
+            console.log("Error in interaction handler", e);
             ErrorHandler(interaction, e);
         }
     } else if (interaction.isAutocomplete()) {

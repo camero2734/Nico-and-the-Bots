@@ -1,11 +1,23 @@
 import { CommandInteraction, DMChannel, EmbedBuilder, Interaction, TextChannel } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
 
-export const ErrorHandler = (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
+const getReplyMethod = async (ctx: CommandInteraction) => {
+    if (!ctx.isRepliable()) return ctx.followUp;
+
+    if (!ctx.deferred && !ctx.replied) await ctx.deferReply({ ephemeral: true });
+    return ctx.editReply;
+}
+
+export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
+    console.log("===================================");
+    console.log("||                               ||");
+    console.log(`----> ${(e as object).constructor.name} Error!`);
+    console.log("||                               ||");
+    console.log("===================================");
+    if (e instanceof Error) console.log(e.stack);
+
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };
-    ectx.send = (
-        ectx.send ? ectx.send : ectx.replied || ectx.deferred ? ectx.followUp : ectx.reply
-    ) as typeof ectx["send"];
+    ectx.send = await getReplyMethod(ectx) as typeof ectx["send"];
 
     if (!ectx.send) return;
 

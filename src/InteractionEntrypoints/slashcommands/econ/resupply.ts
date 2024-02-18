@@ -43,7 +43,7 @@ command.setHandler(async (ctx) => {
         `\tbanditos.exe: Rerouting connection through Vulture VPN...`,
         `\tvvpn.exe: Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
         `\tbanditos.exe: Granting admin access...`,
-        `<DemaOS/Admin>" Welcome, ${randomBishop}!`,
+        `<DemaOS/Admin>: Welcome, ${randomBishop}!`,
         `\tbishops.exe: Accessing district supply lists... Please make a selection.`,
     ].join("\n\n")
     );
@@ -58,7 +58,7 @@ command.setHandler(async (ctx) => {
         }])
         .addFields([{ name: "**CONSOLE**", value: description }])
         .setColor(0xfce300)
-        .setImage("attachment://file.gif")
+        .setThumbnail("attachment://file.gif")
         .setFooter({
             text: `Choose a district. The further down the list, the higher the potential prize, but the chances of getting "caught" by the Bishop is also higher.`
         });
@@ -109,7 +109,7 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", <con
     if (!dbUser.dailyBox || !tokens) {
         const embed = new EmbedBuilder()
             .setDescription("You don't have any tokens! Use the `/econ daily` command to get some.")
-            .setImage("attachment://file.gif");
+            .setThumbnail("attachment://file.gif");
         await ctx.editReply({
             embeds: [embed],
             components: []
@@ -145,7 +145,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     const embed = new EmbedBuilder()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
-        .setImage("attachment://file.gif")
+        .setThumbnail("attachment://file.gif")
         .setFooter({
             text: "Notice: This command and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. DEMAtronix™ is a trademark of The Sacred Municipality of Dema."
         });
@@ -261,7 +261,7 @@ async function memberWon(
     const embed = new EmbedBuilder()
         .setAuthor({ name: "DEMAtronix™ Telephony System", iconURL: "https://i.imgur.com/csHALvp.png" })
         .setColor(0xfce300)
-        .setImage("attachment://file.gif")
+        .setThumbnail("attachment://file.gif")
         .setTitle(`You found a ${prizeName}!`)
         .setDescription(prizeDescription)
         .setFooter({ text: tokensRemaining });
@@ -291,7 +291,7 @@ async function sendWaitingMessage(interaction: MessageComponentInteraction, desc
         .setFooter({
             text: "Thank you for using DEMAtronix™ Telephony System. For any connection issues, please dial 1-866-VIALISM."
         })
-        .setImage("attachment://file.gif");
+        .setThumbnail("attachment://file.gif");
 
     await interaction.editReply({ components: [], embeds: [originalEmbed] });
 }

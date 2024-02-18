@@ -8,9 +8,9 @@ import {
     GuildMember,
     Message,
     MessageComponentInteraction,
-    SelectMenuBuilder,
-    SelectMenuInteraction,
-    SelectMenuOptionBuilder
+    StringSelectMenuBuilder,
+    StringSelectMenuInteraction,
+    StringSelectMenuOptionBuilder
 } from "discord.js";
 import fs from "fs";
 import { roles } from "../../../Configuration/config";
@@ -33,14 +33,19 @@ command.setHandler(async (ctx) => {
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
 
-    const wrapXML = (xml: string) => `\`\`\`xml\n${xml}\n\`\`\``;
+    const wrapCode = (code: string) => `\`\`\`yml\n${code}\n\`\`\``;
+
+    const randomBishop = F.randomValueInArray(districts).bishop;
 
     // prettier-ignore
-    const description = wrapXML([
-        `<SYSTEM> Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
-        "<SYSTEM> B4ND170S connected from 153.98.64.214. Connection unstable.",
-        "<B4ND170S> We have &eft suppl&es%^round DEMA. Yo> must evade them;.. You cannot get?caught."
-    ].join("\n\n")
+    const description = wrapCode([
+        `<DemaOS/Guest>: Welcome to DEMAtronix™ Telephony System. You have ${tokens} token${tokens === 1 ? "" : "s"} token available for use. Unauthorized access is strictly prohibited.`,
+        `\tbanditos.exe: Rerouting connection through Vulture VPN...`,
+        `\tvvpn.exe: Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
+        `\tbanditos.exe: Granting admin access...`,
+        `<DemaOS/Admin>: Welcome, ${randomBishop}!`,
+        `\tbishops.exe: Accessing district supply lists... Please make a selection.`,
+    ].join("\n")
     );
 
     const embed = new EmbedBuilder()
@@ -60,19 +65,19 @@ command.setHandler(async (ctx) => {
 
     const options = districts.map(
         (d, idx) =>
-            new SelectMenuOptionBuilder()
+            new StringSelectMenuOptionBuilder()
                 .setLabel(`DST. ${d.bishop.toUpperCase()}`)
                 .setDescription(`Search ${d.bishop}'s district. ${d.difficulty}.`)
                 .setValue(idx.toString())
                 .setEmoji({ id: d.emoji }).toJSON()
     );
 
-    const menu = new SelectMenuBuilder()
+    const menu = new StringSelectMenuBuilder()
         .addOptions(options)
         .setPlaceholder("Select a district to search")
-        .setCustomId(genSelectId({}));
+        .setCustomId(genSelectId({ matchingBishop: randomBishop }));
 
-    const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([menu]);
+    const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents([menu]);
 
     const buttonActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary)
@@ -85,8 +90,8 @@ command.setHandler(async (ctx) => {
     });
 });
 
-const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], async (ctx) => {
-    if (!ctx.isSelectMenu() || !ctx.member) return;
+const genSelectId = command.addInteractionListener("banditosBishopsSelect", <const>["matchingBishop"], async (ctx, args) => {
+    if (!ctx.isStringSelectMenu() || !ctx.member) return;
 
     await ctx.deferUpdate();
 
@@ -119,7 +124,11 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", [], 
 
     const CHANCE_CAUGHT = District.catchPercent(districtNum);
 
-    const ran = Math.random();
+    let ran = Math.random();
+    if (district.bishop === args.matchingBishop) {
+        ran = Math.max(ran, Math.random());
+    }
+
     const isCaught = ran < CHANCE_CAUGHT;
 
     if (isCaught) return memberCaught(ctx, district, dbUser.dailyBox);
@@ -130,7 +139,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
     if (!ctx.isButton()) return;
 
     await ctx.deferUpdate();
-    await sendWaitingMessage(ctx, "Downloading `supplyList.txt` from `B@ND1?0S`...");
+    await sendWaitingMessage(ctx, "Downloading `supplyList.txt`...");
     await F.wait(1500);
 
     const embed = new EmbedBuilder()
@@ -159,8 +168,6 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
 
         const prizeStr = prizeStrings.map((p) => `➼ ${p}`).join("\n");
 
-        // const expectedValue = (1 - District.catchPercent(i)) * creditsPrize.percent * creditsPrize.amount;
-
         const catchRate = District.convPercent(District.catchPercent(i));
 
         embed.addFields([{
@@ -177,7 +184,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
 });
 
 async function memberCaught(
-    ctx: SelectMenuInteraction,
+    ctx: StringSelectMenuInteraction,
     district: typeof districts[number],
     dailyBox: DailyBox
 ): Promise<void> {
@@ -208,7 +215,7 @@ async function memberCaught(
 }
 
 async function memberWon(
-    ctx: SelectMenuInteraction,
+    ctx: StringSelectMenuInteraction,
     district: typeof districts[number],
     dbUserWithBox: User & { dailyBox: DailyBox }
 ) {

@@ -63,7 +63,7 @@ export abstract class InteractionEntrypoint<
 
             const allowedAnywhere = ["tags", "fm"];
 
-            if (ctx.isCommand()) {
+            if (ctx.isChatInputCommand()) {
                 if (!member.roles.cache.has(roles.staff)) {
                     if (
                         ctx.commandName === "staff" ||

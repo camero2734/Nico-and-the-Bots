@@ -5,10 +5,9 @@ import { GeniusClient } from "../../../Helpers/apis/genius";
 import { SpotifyClient } from "../../../Helpers/apis/spotify";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
-    getFMUsername,
-    fm
+    fm,
+    getFMUsername
 } from "./_consts";
-import { format } from "date-fns";
 
 const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
@@ -47,7 +46,8 @@ command.setHandler(async (ctx) => {
         artist: tracks[0].artist?.name,
         name: tracks[0].name,
         image: tracks[0].image?.find((i) => i.size === "small")?.url,
-        date: tracks[0].dateAdded ? "Played: " + format(tracks[0].dateAdded, "dd MMM yyyy, HH:mm") : "Now playing"
+        status: tracks[0].dateAdded ? "Played" : "Now playing",
+        rawDate: tracks[0].dateAdded || new Date()
     };
 
     const [trackRes, artistRes, albumRes] = await Promise.allSettled([
@@ -93,7 +93,8 @@ command.setHandler(async (ctx) => {
         .addFields([{ name: "Album", value: albumField, inline: true }])
         .addFields([{ name: "Artist", value: artistField, inline: true }])
         .setThumbnail(thumbnail)
-        .setFooter({ text: track.date })
+        .setFooter({ text: track.status })
+        .setTimestamp(track.rawDate)
         .setAuthor({
             name: `${total} total scrobbles`,
             iconURL: "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",

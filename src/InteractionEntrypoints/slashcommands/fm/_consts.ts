@@ -4,20 +4,20 @@ import { prisma } from "../../../Helpers/prisma-init";
 import secrets from "../../../Configuration/secrets";
 import SimpleFM from '@solely/simple-fm';
 
-// export type RankedAlbum = LastFMUserGetTopAlbumsResponse["topalbums"]["album"][number];
+export type RankedAlbum = Awaited<ReturnType<SimpleFM['user']['getTopAlbums']>>['albums'][number];
 
 export const fm = new SimpleFM(secrets.apis.lastfm);
 
 export class Album {
     artist: string;
-    name: string;
+    name?: string;
     playcount: number;
-    image: string;
-    constructor(album: any) {
+    image?: string;
+    constructor(album: RankedAlbum) {
         this.artist = album.artist.name;
         this.name = album.name;
-        this.playcount = +album.playcount;
-        this.image = album.image[album.image.length - 1]["#text"];
+        this.playcount = +album.playCount;
+        this.image = album.image?.[album.image.length - 1].url
     }
 }
 

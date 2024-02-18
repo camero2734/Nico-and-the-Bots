@@ -76,7 +76,9 @@ command.setHandler(async (ctx) => {
 
     const imageSize = size < 15 ? "/300x300/" : "/34s/";
 
-    const images = await Promise.allSettled(collected.map((c) => loadImage(c.image.replace("/300x300/", imageSize))));
+    console.log(JSON.stringify(collected));
+
+    const images = await Promise.allSettled(collected.map((c) => loadImage(c.image?.replace("/300x300/", imageSize) || "")));
 
     cctx.fillStyle = "white";
     cctx.strokeStyle = "black";
@@ -85,9 +87,8 @@ command.setHandler(async (ctx) => {
 
     for (let i = 0; i < collected.length; i++) {
         const album = collected[i];
-        if (album.image.length < 2) continue;
         const fetchImage = images[i];
-        const image = fetchImage.status === "fulfilled" ? fetchImage.value : new Image();
+        const image = fetchImage.status === "fulfilled" && fetchImage.value ? fetchImage.value : new Image();
 
         const x = 200 * (i % size);
         const y = 200 * Math.floor(i / size);
@@ -99,8 +100,8 @@ command.setHandler(async (ctx) => {
             cctx.fillRect(x, y, 200, 200);
         }
 
-        cctx.strokeText(album.name, x, y + 10);
-        cctx.fillText(album.name, x, y + 10);
+        cctx.strokeText(album.name!, x, y + 10);
+        cctx.fillText(album.name!, x, y + 10);
     }
 
     const lastFMIcon = "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png";

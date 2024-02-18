@@ -90,12 +90,15 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setColor(0xff0000)
         .setTitle(`${username}'s FM`)
-        .addFields([{ name: "Track", value: trackField, inline: true }])
-        .addFields([{ name: "Album", value: albumField, inline: true }])
-        .addFields([{ name: "Artist", value: artistField, inline: true }])
-        .setDescription(F.discordTimestamp(track.rawDate, "shortDateTime"))
+        .addFields([
+            { name: "Track", value: trackField, inline: true },
+            { name: "Album", value: albumField, inline: true },
+            { name: "Artist", value: artistField, inline: true },
+            { name: "\u200b", value: F.discordTimestamp(track.rawDate, "shortDateTime") }
+        ])
         .setThumbnail(thumbnail)
         .setFooter({ text: track.status })
+        .setTimestamp(track.rawDate)
         .setAuthor({
             name: `${total} total scrobbles`,
             iconURL: "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",

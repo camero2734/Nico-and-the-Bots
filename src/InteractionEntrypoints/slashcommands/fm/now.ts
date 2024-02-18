@@ -8,6 +8,7 @@ import {
     fm,
     getFMUsername
 } from "./_consts";
+import F from "../../../Helpers/funcs";
 
 const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
@@ -92,9 +93,9 @@ command.setHandler(async (ctx) => {
         .addFields([{ name: "Track", value: trackField, inline: true }])
         .addFields([{ name: "Album", value: albumField, inline: true }])
         .addFields([{ name: "Artist", value: artistField, inline: true }])
+        .setDescription(F.discordTimestamp(track.rawDate, "shortDateTime"))
         .setThumbnail(thumbnail)
         .setFooter({ text: track.status })
-        .setTimestamp(track.rawDate)
         .setAuthor({
             name: `${total} total scrobbles`,
             iconURL: "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",

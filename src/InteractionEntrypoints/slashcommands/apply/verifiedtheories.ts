@@ -187,6 +187,7 @@ async function generateEmbedAndButtons(
         .setFooter({ text: "Select the correct answer by selecting an option below" });
 
     const selectMenu = new StringSelectMenuBuilder();
+    selectMenu.setPlaceholder(newQuestion.question.slice(0, 150));
     selectMenu.setCustomId(genVeriquizId({
         currentID: newQuestion.hexID,
         questionIDs,

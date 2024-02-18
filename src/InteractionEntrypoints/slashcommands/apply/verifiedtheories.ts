@@ -6,10 +6,11 @@ import {
     GuildMember,
     Message,
     MessageActionRowComponentBuilder,
+    StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
-import R from "ramda";
-import { channelIDs, guildID, roles } from "../../../Configuration/config";
+import { channelIDs, guildID, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -27,6 +28,8 @@ const command = new SlashCommand(<const>{
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
+
+    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is currently disabled");
 
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
@@ -118,9 +121,12 @@ command.setHandler(async (ctx) => {
     });
 });
 
-const veriquizArgs = <const>["currentID", "questionIDs", "previousAnswers", "chosenAnswer"];
+const veriquizArgs = <const>["currentID", "questionIDs", "previousAnswers"];
 const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, async (ctx, args) => {
-    const { currentID, questionIDs, previousAnswers, chosenAnswer } = args;
+    if (!ctx.isStringSelectMenu()) return;
+
+    const { currentID, questionIDs, previousAnswers } = args;
+    const chosenAnswer = ctx.values[0];
 
     await ctx.deferUpdate();
 
@@ -178,26 +184,23 @@ async function generateEmbedAndButtons(
         .setAuthor({ name: `Question ${newIndex + 1} / ${numQs}` })
         .setTitle("Verified Theories Quiz")
         .setDescription(newQuestion.question)
-        .setFooter({ text: "Select the correct answer by hitting a button below" });
+        .setFooter({ text: "Select the correct answer by selecting an option below" });
 
-    // Update variables and encode into buttons' customIDs
-    const components = F.shuffle(
-        newQuestion.answers.map((answer, idx) => {
-            return new ButtonBuilder()
-                .setLabel(answer)
-                .setStyle(ButtonStyle.Primary)
-                .setCustomId(
-                    genVeriquizId({
-                        currentID: newQuestion.hexID,
-                        questionIDs,
-                        previousAnswers: answerEncode.toString(),
-                        chosenAnswer: idx.toString()
-                    })
-                );
-        })
-    );
+    const selectMenu = new StringSelectMenuBuilder();
+    selectMenu.setPlaceholder(newQuestion.question.slice(0, 150));
+    selectMenu.setCustomId(genVeriquizId({
+        currentID: newQuestion.hexID,
+        questionIDs,
+        previousAnswers: answerEncode.toString(),
+    }));
+    selectMenu.setOptions(F.shuffle(newQuestion.answers.map((answer, idx) => {
+        return new StringSelectMenuOptionBuilder({
+            label: answer,
+            value: idx.toString(),
+        });
+    })));
 
-    const actionRows = R.splitEvery(5, components).map((cs) => new ActionRowBuilder<ButtonBuilder>().setComponents(cs));
+    const actionRows = [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu)];
 
     return [embed, actionRows];
 }

@@ -45,7 +45,7 @@ command.setHandler(async (ctx) => {
         `\tbanditos.exe: Granting admin access...`,
         `<DemaOS/Admin>: Welcome, ${randomBishop}!`,
         `\tbishops.exe: Accessing district supply lists... Please make a selection.`,
-    ].join("\n\n")
+    ].join("\n")
     );
 
     const embed = new EmbedBuilder()

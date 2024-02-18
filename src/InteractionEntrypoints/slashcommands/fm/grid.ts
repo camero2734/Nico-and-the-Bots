@@ -1,9 +1,11 @@
 import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
+import { ApplicationCommandOptionType, Colors, EmbedBuilder } from "discord.js";
+import { LastFMUser } from 'lastfm-ts-api';
+import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType, Colors } from "discord.js";
-import fetch from "node-fetch";
-import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
+import secrets from "../../../Configuration/secrets";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { Album, getFMUsername } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Generates a weekly overview for your last.fm stats",
@@ -54,19 +56,20 @@ command.setHandler(async (ctx) => {
 
     if (size > 20) throw new CommandError("The grid can be at most 20x20");
 
-    const fmEndpoint = createFMMethod(username);
 
-    const req_url = fmEndpoint({ method: "user.gettopalbums", period: date, limit: `${num}` });
+    const res = await new LastFMUser(secrets.apis.lastfm).getTopAlbums({
+        user: username,
+        period: date,
 
-    const res = await fetch(req_url);
-    const json = (await res.json()) as Record<string, any>;
+    });
+    const topAlbums = res.topalbums.album;
 
-    const topTracks = json?.topalbums?.album as RankedAlbum[];
-    if (!topTracks) throw new Error("Toptracks null");
-    const collected = topTracks.slice(0, num).map((a) => new Album(a));
+    const collected = topAlbums.slice(0, num).map((a) => new Album(a));
 
     //CREATE COLLAGE
-    const canvas = createCanvas(size * 200, size * 200);
+    const width = size * 200;
+    const height = size * 200;
+    const canvas = createCanvas(width, height);
     const cctx = canvas.getContext("2d");
 
     const imageSize = size < 15 ? "/300x300/" : "/34s/";
@@ -75,6 +78,8 @@ command.setHandler(async (ctx) => {
 
     cctx.fillStyle = "white";
     cctx.strokeStyle = "black";
+
+    const totalPlaycount = collected.reduce((acc, a) => acc + a.playcount, 0);
 
     for (let i = 0; i < collected.length; i++) {
         const album = collected[i];
@@ -85,6 +90,12 @@ command.setHandler(async (ctx) => {
         const x = 200 * (i % size);
         const y = 200 * Math.floor(i / size);
         cctx.drawImage(image, x, y, 200, 200);
+
+        if (ctx.user.id === userIDs.me) {
+            const opacity = album.playcount / totalPlaycount;
+            cctx.fillStyle = `rgba(0, 0, 0, ${1 - opacity})`;
+            cctx.fillRect(x, y, 200, 200);
+        }
 
         cctx.strokeText(album.name, x, y + 10);
         cctx.fillText(album.name, x, y + 10);

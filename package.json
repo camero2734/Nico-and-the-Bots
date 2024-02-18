@@ -70,6 +70,7 @@
     "instagram-private-api": "^1.45.1",
     "ioredis": "4.28.5",
     "is-ci": "^3.0.1",
+    "lastfm-ts-api": "^2.1.0",
     "lodash": "^4.17.21",
     "lodash.snakecase": "^4.1.1",
     "metascraper": "^5.44.0",

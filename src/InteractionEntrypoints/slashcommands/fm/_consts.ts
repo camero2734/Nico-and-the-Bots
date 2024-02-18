@@ -1,17 +1,20 @@
 import { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
-import secrets from "../../../Configuration/secrets";
 import { prisma } from "../../../Helpers/prisma-init";
+import { LastFMUserGetTopAlbumsResponse } from "lastfm-ts-api";
+import secrets from "../../../Configuration/secrets";
+
+export type RankedAlbum = LastFMUserGetTopAlbumsResponse["topalbums"]["album"][number];
 
 export class Album {
     artist: string;
     name: string;
-    playcount: string;
+    playcount: number;
     image: string;
     constructor(album: RankedAlbum) {
         this.artist = album.artist.name;
         this.name = album.name;
-        this.playcount = album.playcount;
+        this.playcount = +album.playcount;
         this.image = album.image[album.image.length - 1]["#text"];
     }
 }
@@ -108,14 +111,6 @@ export interface ArtistResponse {
 }
 
 export interface RankedArtist {
-    url: string;
-    name: string;
-    mbid: string;
-}
-export interface RankedAlbum {
-    artist: RankedArtist;
-    image: TrackImage[];
-    playcount: string;
     url: string;
     name: string;
     mbid: string;

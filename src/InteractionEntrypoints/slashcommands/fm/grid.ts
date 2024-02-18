@@ -1,7 +1,6 @@
 import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
 import { ApplicationCommandOptionType, Colors, EmbedBuilder } from "discord.js";
 import { LastFMUser } from 'lastfm-ts-api';
-import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -39,6 +38,12 @@ const command = new SlashCommand(<const>{
             description: "The Last.FM username to lookup",
             required: false,
             type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "relative",
+            description: "Change the brightness of the album art based on relative playcount",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
         }
     ]
 });
@@ -91,7 +96,7 @@ command.setHandler(async (ctx) => {
         const y = 200 * Math.floor(i / size);
         cctx.drawImage(image, x, y, 200, 200);
 
-        if (ctx.user.id === userIDs.me) {
+        if (ctx.opts.relative) {
             const opacity = (0.9 * album.playcount / maxPlaycount) + 0.1;
             cctx.fillStyle = `rgba(0, 0, 0, ${1 - opacity})`;
             cctx.fillRect(x, y, 200, 200);

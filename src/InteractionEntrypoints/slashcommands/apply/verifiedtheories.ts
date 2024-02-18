@@ -28,6 +28,8 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
+    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is currently disabled");
+
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
         throw new CommandError("You already passed the quiz!");

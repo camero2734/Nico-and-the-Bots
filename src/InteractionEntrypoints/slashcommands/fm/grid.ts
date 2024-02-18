@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
     cctx.fillStyle = "white";
     cctx.strokeStyle = "black";
 
-    const totalPlaycount = collected.reduce((acc, a) => acc + a.playcount, 0);
+    const maxPlaycount = Math.max(...collected.map((a) => a.playcount));
 
     for (let i = 0; i < collected.length; i++) {
         const album = collected[i];
@@ -92,7 +92,7 @@ command.setHandler(async (ctx) => {
         cctx.drawImage(image, x, y, 200, 200);
 
         if (ctx.user.id === userIDs.me) {
-            const opacity = album.playcount / totalPlaycount;
+            const opacity = (0.9 * album.playcount / maxPlaycount) + 0.1;
             cctx.fillStyle = `rgba(0, 0, 0, ${1 - opacity})`;
             cctx.fillRect(x, y, 200, 200);
         }

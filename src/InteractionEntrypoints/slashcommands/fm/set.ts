@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
-import { lastFmUser } from "./_consts";
+import { fm } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Sets your lastfm username for use with other /fm commands",
@@ -104,15 +104,14 @@ command.setHandler(async (ctx) => {
     });
 
     async function getMostRecentTrack(username: string) {
-        const res = await lastFmUser.getRecentTracks({ user: username, limit: 1 });
-        const info = res.recenttracks;
+        const res = await fm.user.getRecentTracks({ username, limit: 1 });
 
         return {
-            album: info.track[0].album["#text"] || "No Album",
-            artist: info.track[0].artist["#text"] || "No Artist",
-            name: info.track[0].name || "No Track",
-            image: info.track[0].image.pop()?.["#text"] || "",
-            date: info.track[0].date ? "Played: " + info.track[0].date["#text"] : "Now playing"
+            album: res.tracks[0].album.name || "No Album",
+            artist: res.tracks[0].artist?.name || "No Artist",
+            name: res.tracks[0].name || "No Track",
+            image: res.tracks[0].image?.pop()?.url || "",
+            date: res.tracks[0].dateAdded ? "Played: " + res.tracks[0].dateAdded : "Now playing"
         };
     }
 });

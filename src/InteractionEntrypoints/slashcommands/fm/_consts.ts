@@ -1,28 +1,25 @@
 import { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
-import { LastFMAlbum, LastFMArtist, LastFMTrack, LastFMUser, LastFMUserGetTopAlbumsResponse } from "lastfm-ts-api";
 import secrets from "../../../Configuration/secrets";
+import SimpleFM from '@solely/simple-fm';
 
-export type RankedAlbum = LastFMUserGetTopAlbumsResponse["topalbums"]["album"][number];
+// export type RankedAlbum = LastFMUserGetTopAlbumsResponse["topalbums"]["album"][number];
+
+export const fm = new SimpleFM(secrets.apis.lastfm);
 
 export class Album {
     artist: string;
     name: string;
     playcount: number;
     image: string;
-    constructor(album: RankedAlbum) {
+    constructor(album: any) {
         this.artist = album.artist.name;
         this.name = album.name;
         this.playcount = +album.playcount;
         this.image = album.image[album.image.length - 1]["#text"];
     }
 }
-
-export const lastFmUser = new LastFMUser(secrets.apis.lastfm);
-export const lastFmTrack = new LastFMTrack(secrets.apis.lastfm);
-export const lastFmArtist = new LastFMArtist(secrets.apis.lastfm);
-export const lastFmAlbum = new LastFMAlbum(secrets.apis.lastfm);
 
 export const getFMUsername = async (
     username: string | undefined,

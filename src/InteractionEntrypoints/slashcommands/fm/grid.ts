@@ -1,10 +1,8 @@
 import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
 import { ApplicationCommandOptionType, Colors, EmbedBuilder } from "discord.js";
-import { LastFMUser } from 'lastfm-ts-api';
 import { CommandError } from "../../../Configuration/definitions";
-import secrets from "../../../Configuration/secrets";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { Album, getFMUsername } from "./_consts";
+import { Album, fm, getFMUsername } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Generates a weekly overview for your last.fm stats",
@@ -62,12 +60,11 @@ command.setHandler(async (ctx) => {
     if (size > 20) throw new CommandError("The grid can be at most 20x20");
 
 
-    const res = await new LastFMUser(secrets.apis.lastfm).getTopAlbums({
-        user: username,
+    const res = await fm.user.getTopAlbums({
+        username,
         period: date,
-
-    });
-    const topAlbums = res.topalbums.album;
+    } as any);
+    const topAlbums = res.albums;
 
     const collected = topAlbums.slice(0, num).map((a) => new Album(a));
 

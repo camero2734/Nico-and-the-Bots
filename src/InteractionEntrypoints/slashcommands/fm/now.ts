@@ -6,10 +6,7 @@ import { SpotifyClient } from "../../../Helpers/apis/spotify";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
     getFMUsername,
-    lastFmAlbum,
-    lastFmArtist,
-    lastFmTrack,
-    lastFmUser
+    fm
 } from "./_consts";
 
 const command = new SlashCommand(<const>{
@@ -35,27 +32,27 @@ command.setHandler(async (ctx) => {
     const selfFM = !ctx.opts.username && !ctx.opts.user;
     const username = await getFMUsername(ctx.opts.username, ctx.opts.user, ctx.member);
 
-    const recentRes = await lastFmUser.getRecentTracks({ user: username, limit: 1 });
+    const recentRes = await fm.user.getRecentTracks({ username, limit: 1 });
 
-    const info = recentRes.recenttracks;
-    const total = info["@attr"].total;
+    const tracks = recentRes.tracks;
+    const total = recentRes.search.totalResults;
 
     if (!total) {
         throw new CommandError(`Unable to get your recent tracks. Are you sure your username ${username} is correct?`);
     }
 
     const track = {
-        album: info.track[0].album["#text"],
-        artist: info.track[0].artist["#text"],
-        name: info.track[0].name,
-        image: info.track[0].image.find((i) => i.size === "small")?.["#text"],
-        date: info.track[0].date ? "Played: " + info.track[0].date["#text"] : "Now playing"
+        album: tracks[0].album.name,
+        artist: tracks[0].artist?.name,
+        name: tracks[0].name,
+        image: tracks[0].image?.find((i) => i.size === "small")?.url,
+        date: tracks[0].dateAdded ? "Played: " + tracks[0].dateAdded : "Now playing"
     };
 
     const [trackRes, artistRes, albumRes] = await Promise.allSettled([
-        lastFmTrack.getInfo({ track: track.name, artist: track.artist, username: username }),
-        lastFmArtist.getInfo({ track: track.name, artist: track.artist, username: username }),
-        lastFmAlbum.getInfo({ album: track.album, artist: track.artist, username: username })
+        fm.track.getInfo({ track: track.name, artist: track.artist!, username: username }),
+        fm.artist.getInfo({ artist: track.artist!, username: username }),
+        fm.album.getInfo({ album: track.album!, artist: track.artist!, username: username })
     ]);
     const trackPlay = trackRes.status === "fulfilled" ? trackRes.value : null;
     const artistPlay = artistRes.status === "fulfilled" ? artistRes.value : null;
@@ -68,19 +65,18 @@ command.setHandler(async (ctx) => {
     }
 
     const trackName = track.name || "No Title";
-    console.log(JSON.stringify(trackPlay?.track));
-    const trackCount = trackPlay?.track?.playcount || 0;
-    const trackURL = trackPlay?.track?.url || "https://www.last.fm";
+    const trackCount = trackPlay?.userStats.userPlayCount || 0;
+    const trackURL = trackPlay?.url || "https://www.last.fm";
     const trackField = `${trackName}\n[${trackCount} play${+trackCount === 1 ? "" : "s"}](${us_pl(trackURL)})`;
 
     const albumName = track.album || "No Album";
-    const albumCount = albumPlay?.album?.playcount || 0;
-    const albumURL = albumPlay?.album?.url || "https://www.last.fm";
+    const albumCount = albumPlay?.userStats?.userPlayCount || 0;
+    const albumURL = albumPlay?.url || "https://www.last.fm";
     const albumField = `${albumName}\n[${albumCount} play${+albumCount === 1 ? "" : "s"}](${us_pl(albumURL)})`;
 
     const artistName = track.artist || "No Artist";
-    const artistCount = artistPlay?.artist?.stats?.playcount || 0;
-    const artistURL = artistPlay?.artist?.url || "https://www.last.fm";
+    const artistCount = artistPlay?.userStats.userPlayCount || 0;
+    const artistURL = artistPlay?.url || "https://www.last.fm";
     const artistField = `${artistName}\n[${artistCount} play${+artistCount === 1 ? "" : "s"}](${us_pl(artistURL)})`;
 
     const thumbnail =

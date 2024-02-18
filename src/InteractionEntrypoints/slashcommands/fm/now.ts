@@ -53,9 +53,9 @@ command.setHandler(async (ctx) => {
     };
 
     const [trackRes, artistRes, albumRes] = await Promise.allSettled([
-        lastFmTrack.getInfo({ track: track.name, artist: track.artist }),
-        lastFmArtist.getInfo({ track: track.name, artist: track.artist }),
-        lastFmAlbum.getInfo({ album: track.album, artist: track.artist })
+        lastFmTrack.getInfo({ track: track.name, artist: track.artist, username: username }),
+        lastFmArtist.getInfo({ track: track.name, artist: track.artist, username: username }),
+        lastFmAlbum.getInfo({ album: track.album, artist: track.artist, username: username })
     ]);
     const trackPlay = trackRes.status === "fulfilled" ? trackRes.value : null;
     const artistPlay = artistRes.status === "fulfilled" ? artistRes.value : null;
@@ -68,6 +68,7 @@ command.setHandler(async (ctx) => {
     }
 
     const trackName = track.name || "No Title";
+    console.log(JSON.stringify(trackPlay?.track));
     const trackCount = trackPlay?.track?.playcount || 0;
     const trackURL = trackPlay?.track?.url || "https://www.last.fm";
     const trackField = `${trackName}\n[${trackCount} play${+trackCount === 1 ? "" : "s"}](${us_pl(trackURL)})`;

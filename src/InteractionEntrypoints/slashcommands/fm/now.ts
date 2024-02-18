@@ -8,6 +8,7 @@ import {
     getFMUsername,
     fm
 } from "./_consts";
+import { format } from "date-fns";
 
 const command = new SlashCommand(<const>{
     description: "Displays now playing on last.fm",
@@ -46,7 +47,7 @@ command.setHandler(async (ctx) => {
         artist: tracks[0].artist?.name,
         name: tracks[0].name,
         image: tracks[0].image?.find((i) => i.size === "small")?.url,
-        date: tracks[0].dateAdded ? "Played: " + tracks[0].dateAdded : "Now playing"
+        date: tracks[0].dateAdded ? "Played: " + format(tracks[0].dateAdded, "dd MMM yyyy, HH:mm") : "Now playing"
     };
 
     const [trackRes, artistRes, albumRes] = await Promise.allSettled([

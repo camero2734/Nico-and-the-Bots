@@ -1,6 +1,5 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import * as Discord from "discord.js";
-import "source-map-support/register";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
@@ -151,6 +150,9 @@ client.on("interactionCreate", async (interaction) => {
 
         const interactionHandler = InteractionHandlers.get(interactionID);
         if (!interactionHandler) return;
+
+        if ('webhookId' in interaction) await interaction.message?.fetchWebhook();
+        if ('messageId' in interaction) await interaction.message?.fetch();
 
         try {
             console.log("Handling interaction via:", interactionHandler.name);

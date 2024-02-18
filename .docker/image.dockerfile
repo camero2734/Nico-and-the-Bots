@@ -1,5 +1,3 @@
-# syntax = docker/dockerfile:experimental
-
 # Any newer version of bun breaks prisma, https://github.com/oven-sh/bun/issues/7864
 FROM oven/bun:1.0.18-slim
 

@@ -1,9 +1,8 @@
 import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
+import { ApplicationCommandOptionType, Colors, EmbedBuilder } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType, Colors } from "discord.js";
-import fetch from "node-fetch";
-import { Album, createFMMethod, getFMUsername, RankedAlbum } from "./_consts";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { Album, fm, getFMUsername } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Generates a weekly overview for your last.fm stats",
@@ -37,6 +36,12 @@ const command = new SlashCommand(<const>{
             description: "The Last.FM username to lookup",
             required: false,
             type: ApplicationCommandOptionType.String
+        },
+        {
+            name: "relative",
+            description: "Change the brightness of the album art based on relative playcount",
+            required: false,
+            type: ApplicationCommandOptionType.Boolean
         }
     ]
 });
@@ -54,40 +59,49 @@ command.setHandler(async (ctx) => {
 
     if (size > 20) throw new CommandError("The grid can be at most 20x20");
 
-    const fmEndpoint = createFMMethod(username);
 
-    const req_url = fmEndpoint({ method: "user.gettopalbums", period: date, limit: `${num}` });
+    const res = await fm.user.getTopAlbums({
+        username,
+        period: date,
+    } as any);
+    const topAlbums = res.albums;
 
-    const res = await fetch(req_url);
-    const json = (await res.json()) as Record<string, any>;
-
-    const topTracks = json?.topalbums?.album as RankedAlbum[];
-    if (!topTracks) throw new Error("Toptracks null");
-    const collected = topTracks.slice(0, num).map((a) => new Album(a));
+    const collected = topAlbums.slice(0, num).map((a) => new Album(a));
 
     //CREATE COLLAGE
-    const canvas = createCanvas(size * 200, size * 200);
+    const width = size * 200;
+    const height = size * 200;
+    const canvas = createCanvas(width, height);
     const cctx = canvas.getContext("2d");
 
     const imageSize = size < 15 ? "/300x300/" : "/34s/";
 
-    const images = await Promise.allSettled(collected.map((c) => loadImage(c.image.replace("/300x300/", imageSize))));
+    console.log(JSON.stringify(collected));
+
+    const images = await Promise.allSettled(collected.map((c) => loadImage(c.image?.replace("/300x300/", imageSize) || "")));
 
     cctx.fillStyle = "white";
     cctx.strokeStyle = "black";
 
+    const maxPlaycount = Math.max(...collected.map((a) => a.playcount));
+
     for (let i = 0; i < collected.length; i++) {
         const album = collected[i];
-        if (album.image.length < 2) continue;
         const fetchImage = images[i];
-        const image = fetchImage.status === "fulfilled" ? fetchImage.value : new Image();
+        const image = fetchImage.status === "fulfilled" && fetchImage.value ? fetchImage.value : new Image();
 
         const x = 200 * (i % size);
         const y = 200 * Math.floor(i / size);
         cctx.drawImage(image, x, y, 200, 200);
 
-        cctx.strokeText(album.name, x, y + 10);
-        cctx.fillText(album.name, x, y + 10);
+        if (ctx.opts.relative) {
+            const opacity = (0.9 * album.playcount / maxPlaycount) + 0.1;
+            cctx.fillStyle = `rgba(0, 0, 0, ${1 - opacity})`;
+            cctx.fillRect(x, y, 200, 200);
+        }
+
+        cctx.strokeText(album.name!, x, y + 10);
+        cctx.fillText(album.name!, x, y + 10);
     }
 
     const lastFMIcon = "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png";

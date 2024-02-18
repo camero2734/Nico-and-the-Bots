@@ -1,11 +1,9 @@
 import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder } from "discord.js";
-import fetch from "node-fetch";
 import { CommandError } from "../../../Configuration/definitions";
-import secrets from "../../../Configuration/secrets";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
-import { RecentTracksResponse } from "./_consts";
+import { lastFmUser } from "./_consts";
 
 const command = new SlashCommand(<const>{
     description: "Sets your lastfm username for use with other /fm commands",
@@ -106,22 +104,16 @@ command.setHandler(async (ctx) => {
     });
 
     async function getMostRecentTrack(username: string) {
-        try {
-            const url = `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&limit=1&api_key=${secrets.apis.lastfm}&format=json`;
-            const response = (await (await fetch(url)).json()) as RecentTracksResponse;
+        const res = await lastFmUser.getRecentTracks({ user: username, limit: 1 });
+        const info = res.recenttracks;
 
-            const info = response.recenttracks;
-            return {
-                album: info.track[0].album["#text"] || "No Album",
-                artist: info.track[0].artist["#text"] || "No Artist",
-                name: info.track[0].name || "No Track",
-                image: info.track[0].image.pop()?.["#text"] || "",
-                date: info.track[0].date ? "Played: " + info.track[0].date["#text"] : "Now playing"
-            };
-        } catch (e) {
-            console.log(e, /SETFM_ERROR/);
-            return null;
-        }
+        return {
+            album: info.track[0].album["#text"] || "No Album",
+            artist: info.track[0].artist["#text"] || "No Artist",
+            name: info.track[0].name || "No Track",
+            image: info.track[0].image.pop()?.["#text"] || "",
+            date: info.track[0].date ? "Played: " + info.track[0].date["#text"] : "Now playing"
+        };
     }
 });
 

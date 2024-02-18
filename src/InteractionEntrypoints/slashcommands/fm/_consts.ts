@@ -1,7 +1,7 @@
 import { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
-import { LastFMUserGetTopAlbumsResponse } from "lastfm-ts-api";
+import { LastFMAlbum, LastFMArtist, LastFMTrack, LastFMUser, LastFMUserGetTopAlbumsResponse } from "lastfm-ts-api";
 import secrets from "../../../Configuration/secrets";
 
 export type RankedAlbum = LastFMUserGetTopAlbumsResponse["topalbums"]["album"][number];
@@ -19,17 +19,10 @@ export class Album {
     }
 }
 
-export const createFMMethod = (username: string) => {
-    const base = `http://ws.audioscrobbler.com/2.0/?`;
-    const opts = new URLSearchParams({ username, api_key: secrets.apis.lastfm, format: "json" });
-    return (options: { method: string;[k: string]: string }) => {
-        for (const [key, value] of Object.entries(options)) {
-            opts.append(key, value);
-        }
-
-        return `${base}${opts}`;
-    };
-};
+export const lastFmUser = new LastFMUser(secrets.apis.lastfm);
+export const lastFmTrack = new LastFMTrack(secrets.apis.lastfm);
+export const lastFmArtist = new LastFMArtist(secrets.apis.lastfm);
+export const lastFmAlbum = new LastFMAlbum(secrets.apis.lastfm);
 
 export const getFMUsername = async (
     username: string | undefined,
@@ -46,72 +39,3 @@ export const getFMUsername = async (
         throw new CommandError(`${whose} Last.FM username isn't connected!`);
     } else return fm.username;
 };
-
-interface TrackDate {
-    uts: string;
-    "#text": string;
-}
-
-interface FMIdentifier {
-    mbid: string;
-    "#text": string;
-}
-
-interface TrackImage {
-    size: "small" | "medium" | "large" | "extralarge";
-    "#text": string;
-}
-
-interface Track {
-    artist: FMIdentifier;
-    "@attr"?: { nowplaying: string };
-    mbid: string;
-    album: FMIdentifier;
-    streamable: string;
-    url: string;
-    name: string;
-    image: TrackImage[];
-    date?: TrackDate;
-}
-
-interface RecentTracksAttr {
-    page: string;
-    total: string;
-    user: string;
-    perPage: string;
-    totalPages: string;
-}
-
-interface RecentTracks {
-    "@attr": RecentTracksAttr;
-    track: Track[];
-}
-
-export interface RecentTracksResponse {
-    recenttracks: RecentTracks;
-}
-
-interface FMPlayResponse {
-    userplaycount: number;
-    url: string;
-}
-
-export interface TrackResponse {
-    track?: FMPlayResponse;
-}
-
-export interface AlbumResponse {
-    album?: FMPlayResponse;
-}
-
-export interface ArtistResponse {
-    artist?: {
-        stats?: FMPlayResponse;
-    };
-}
-
-export interface RankedArtist {
-    url: string;
-    name: string;
-    mbid: string;
-}

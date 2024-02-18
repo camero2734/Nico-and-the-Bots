@@ -1,14 +1,14 @@
 import { addDays } from "date-fns";
 import {
     ActionRowBuilder,
+    AttachmentBuilder,
     ButtonBuilder,
     ButtonStyle,
     Colors,
     EmbedBuilder,
     Guild,
-    AttachmentBuilder,
-    SelectMenuBuilder,
-    SelectMenuOptionBuilder,
+    StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder,
     TextChannel
 } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
@@ -103,16 +103,16 @@ export async function sendToStaff(
             embed.addFields([{ name: name, value: value?.substring(0, 1000) || "*Nothing*" }]);
         }
 
-        const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([
-            new SelectMenuBuilder()
+        const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents([
+            new StringSelectMenuBuilder()
                 .addOptions(
                     [
-                        new SelectMenuOptionBuilder({
+                        new StringSelectMenuOptionBuilder({
                             label: "Accept",
                             value: ActionTypes.Accept.toString(),
                             emoji: { id: emojiIDs.upvote }
                         }),
-                        new SelectMenuOptionBuilder({
+                        new StringSelectMenuOptionBuilder({
                             label: "Deny",
                             value: ActionTypes.Deny.toString(),
                             emoji: { id: emojiIDs.downvote }
@@ -183,8 +183,8 @@ export async function sendToStaff(
 }
 
 const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async (ctx, args) => {
-    const reply = await ctx.fetchReply();
-    await reply.edit({ components: [] });
+    await ctx.deferUpdate();
+    await ctx.editReply({ components: [] });
 
     const applicationId = args.applicationId;
     const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });
@@ -201,7 +201,7 @@ const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "a
 
     const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
 
-    const action = ctx.isSelectMenu() ? +ctx.values[0] : +args.type;
+    const action = ctx.isAnySelectMenu() ? +ctx.values[0] : +args.type;
     if (action === ActionTypes.Accept) {
         await prisma.firebreatherApplication.update({
             where: { applicationId },

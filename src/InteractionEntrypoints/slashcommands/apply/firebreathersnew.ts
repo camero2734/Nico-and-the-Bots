@@ -8,7 +8,7 @@ import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { sendToStaff } from "../../messageinteractions/staffFBApp";
+import { sendToStaff } from "./firebreathers";
 
 const command = new SlashCommand(<const>{
     description: "Test command",

@@ -32,7 +32,7 @@ export class CustomIDPattern<T extends Readonly<string[]>> {
     }
 }
 
-export type InteractionListener = { handler: ListenerCustomIdGenerator<any>; pattern: CustomIDPattern<any> };
+export type InteractionListener = { name: string, handler: ListenerCustomIdGenerator<any>; pattern: CustomIDPattern<any> };
 
 export const createInteractionListener = <T extends Readonly<string[]> = any>(
     name: string,
@@ -50,5 +50,5 @@ export const createInteractionListener = <T extends Readonly<string[]> = any>(
         return [encodedName, ...values].join(pattern.delimiter);
     };
 
-    return [encodedName, { handler: interactionHandler, pattern }, customIdGenerator];
+    return [encodedName, { name, handler: interactionHandler, pattern }, customIdGenerator];
 };

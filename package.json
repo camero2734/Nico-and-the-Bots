@@ -15,8 +15,7 @@
     "postinstall": "patch-package",
     "docker:dev": "docker-compose up --force-recreate --build --remove-orphans -d",
     "docker:dev:db": "UPDATE_DB=1 yarn docker:dev",
-    "docker:build": "dotenv-run-script docker:_build",
-    "docker:_build": "docker build --no-cache --build-arg CRYPT64=$CRYPT64 -t camer0/nico .",
+    "docker:build": "docker-compose build",
     "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",
     "tasks:fetch-db": "ts-node tasks/fetch-db.ts"
   },

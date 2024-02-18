@@ -30,9 +30,9 @@ import SeedRandom from "seed-random";
 import { dropEmojiGuildId, guildID, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
-import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
+import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 
 const safeCheck = async (p: Promise<unknown>) => {
     try {

@@ -183,11 +183,8 @@ export async function sendToStaff(
 }
 
 const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async (ctx, args) => {
-    console.log("Before deferUpdate");
     await ctx.deferUpdate();
-    console.log("Before editReply");
     await ctx.editReply({ components: [] });
-    console.log("After editReply");
 
     const applicationId = args.applicationId;
     const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });

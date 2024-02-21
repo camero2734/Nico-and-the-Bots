@@ -1,6 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
-import { roles } from "../../../Configuration/config";
-import { prisma } from "../../../Helpers/prisma-init";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{

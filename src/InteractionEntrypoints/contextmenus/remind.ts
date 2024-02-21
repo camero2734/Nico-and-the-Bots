@@ -17,7 +17,8 @@ ctxMenu.setHandler(async (ctx, msg) => {
     if (!msg.member) throw new Error("Could not find member");
 
     const modal = new ModalBuilder()
-        .setCustomId(genHandleId({ originalMessageId: msg.id }));
+        .setCustomId(genHandleId({ originalMessageId: msg.id }))
+        .setTitle("⏰ Set a reminder");
 
     const remindedAction = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()

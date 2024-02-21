@@ -18,7 +18,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     await ctx.deferReply({ ephemeral: true });
 
     const modal = new ModalBuilder()
-        .setCustomId(genHandleId({}));
+        .setCustomId(genHandleId({ originalMessageId: msg.id }));
 
     const remindedAction = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
@@ -45,13 +45,17 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
 const genHandleId = ctxMenu.addInteractionListener(
     "submitReminderModal",
-    <const>[],
-    async (ctx) => {
+    <const>["originalMessageId"],
+    async (ctx, args) => {
         if (!ctx.isModalSubmit()) return;
         await ctx.deferReply({ ephemeral: true });
 
         const time = ctx.fields.getTextInputValue(REMIND_WHEN_CUSTOM_ID);
-        const text = ctx.fields.getTextInputValue(REMIND_EXTRA_TEXT_CUSTOM_ID);
+        const extraText = ctx.fields.getTextInputValue(REMIND_EXTRA_TEXT_CUSTOM_ID);
+
+        // const text = https://canary.discord.com/channels/269657133673349120/940390987841302598/1209926910247968818
+        let text = `**👋 You asked me to remind you about this message:** https://discord.com/channels/${ctx.guildId}/${ctx.channelId}/${args.originalMessageId}`;
+        if (extraText) text += `\n\n**You also said:**\n${extraText}`;
 
         const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
         const durationMs = parseDuration(timeStr);

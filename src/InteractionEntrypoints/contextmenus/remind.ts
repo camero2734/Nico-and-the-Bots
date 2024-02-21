@@ -13,9 +13,8 @@ const REMIND_WHEN_CUSTOM_ID = "REMINDER_MODAL_WHEN";
 const REMIND_EXTRA_TEXT_CUSTOM_ID = "REMINDER_MODAL_EXTRA_TEXT";
 
 ctxMenu.setHandler(async (ctx, msg) => {
+    if (!ctx.isMessageContextMenuCommand()) return;
     if (!msg.member) throw new Error("Could not find member");
-
-    await ctx.deferReply({ ephemeral: true });
 
     const modal = new ModalBuilder()
         .setCustomId(genHandleId({ originalMessageId: msg.id }));

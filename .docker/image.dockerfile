@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM oven/bun:1.0-debian
 
 USER root
 WORKDIR /code
@@ -13,11 +13,6 @@ RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n \
     && bash n $NODE_VERSION \
     && rm n \
     && npm install -g n
-
-# Copy patched bun binary
-# See https://github.com/oven-sh/bun/issues/7864
-COPY ./bun-patched /usr/local/bin/bun
-RUN ln -s /usr/local/bin/bun /usr/local/bin/bunx
 
 # NPM packages
 COPY bun.lockb package.json ./

@@ -1,6 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
-import { roles } from "../../../Configuration/config";
-import { prisma } from "../../../Helpers/prisma-init";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand(<const>{
@@ -15,14 +13,7 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
     const member = await ctx.member.guild.members.fetch(user);
-    await member.roles.remove(roles.muted);
-    await member.roles.add(roles.banditos);
-
-    // Mark any current mutes as finished
-    await prisma.mute.updateMany({
-        where: { mutedUserId: member.id },
-        data: { finished: true }
-    });
+    await member.timeout(null);
 
     const embed = new EmbedBuilder().setDescription(`${member} has been unmuted!`);
     await ctx.send({ embeds: [embed] });

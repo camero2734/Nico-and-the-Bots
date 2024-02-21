@@ -14,7 +14,6 @@ import {
 } from "date-fns";
 import { isBefore } from "date-fns/fp";
 import {
-    BaseMessageOptions,
     ChannelType,
     Client,
     Collection,
@@ -30,9 +29,9 @@ import SeedRandom from "seed-random";
 import { dropEmojiGuildId, guildID, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
+import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
-import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 
 const safeCheck = async (p: Promise<unknown>) => {
     try {
@@ -52,7 +51,6 @@ export default async function (client: Client): Promise<void> {
     });
 
     async function every5Seconds() {
-        await safeCheck(checkMutes(guild));
         await safeCheck(checkReminders(guild));
         await safeCheck(checkMemberRoles(guild));
         await safeCheck(checkVCRoles(guild));
@@ -80,42 +78,6 @@ export default async function (client: Client): Promise<void> {
     every5Seconds();
     every30Seconds();
     every60Seconds();
-}
-
-async function tryToDM(member: GuildMember, msg: BaseMessageOptions): Promise<void> {
-    try {
-        const dm = await member.createDM();
-        await dm.send(msg);
-    } catch (e) {
-        console.log(e, /UNABLE_TO_DM/);
-    }
-}
-
-async function checkMutes(guild: Guild): Promise<void> {
-    const finishedMutes = await prisma.mute.findMany({
-        where: { endsAt: { lte: new Date() }, finished: false }
-    });
-
-    for (const mute of finishedMutes) {
-        try {
-            const member = await guild.members.fetch(mute.mutedUserId.toSnowflake());
-
-            // Remove timeout, give back Banditos role
-            await member.roles.remove(roles.muted);
-            await member.roles.add(roles.banditos);
-
-            const embed = new EmbedBuilder({ description: "Your mute has ended." });
-            tryToDM(member, { embeds: [embed] });
-        } catch (e) {
-            console.log(e, mute.mutedUserId, /UNABLE_TO_UNMUTE/);
-        }
-    }
-
-    const fetchedIds = finishedMutes.map((r) => r.id);
-    await prisma.mute.updateMany({
-        where: { id: { in: fetchedIds } },
-        data: { finished: true }
-    });
 }
 
 async function checkReminders(guild: Guild): Promise<void> {

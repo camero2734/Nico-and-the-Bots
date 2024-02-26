@@ -184,7 +184,18 @@ command.setHandler(async (ctx) => {
 
     // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
     cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    // Add a blue tint to the left image
+    cctx.fillStyle = "#5865F2";
+    cctx.globalAlpha = 0.5;
+    cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    cctx.globalAlpha = 1;
+
     cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    // Add a red tint to the right image
+    cctx.fillStyle = "#F04747";
+    cctx.globalAlpha = 0.5;
+    cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    cctx.globalAlpha = 1;
 
     // Draw a divider
     const DIVIDER_WIDTH = 10;
@@ -202,11 +213,11 @@ command.setHandler(async (ctx) => {
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setCustomId("TODO1")
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Primary)
             .setLabel(choice1[1].name),
         new ButtonBuilder()
             .setCustomId("TODO2")
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Danger)
             .setLabel(choice2[1].name)
     ]);
 
@@ -214,9 +225,10 @@ command.setHandler(async (ctx) => {
 });
 
 function getRandomSong(): [Album, SongContender] {
-    const album = albums[Math.floor(Math.random() * albums.length)];
-    const song = album.songs[Math.floor(Math.random() * album.songs.length)];
-    return [album, song];
+    const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
+    const song = songs[Math.floor(Math.random() * songs.length)];
+
+    return [song.album, song];
 }
 
 export default command;

@@ -1,10 +1,12 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, ThreadAutoArchiveDuration, bold, italic } from "discord.js";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { CommandError } from "../../../Configuration/definitions";
+import { addHours, isPast } from "date-fns";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, ThreadAutoArchiveDuration, bold, italic } from "discord.js";
+import { nanoid } from "nanoid";
 import { emojiIDs } from "../../../Configuration/config";
-import { addHours } from "date-fns";
+import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -172,6 +174,8 @@ const albums = [
     },
 ] satisfies Album[];
 
+const embedFooter = (totalVotes: number) => `${totalVotes} votes | Votes are anonymous | Voting ends in 24 hours`;
+
 const command = new SlashCommand(<const>{
     description: "Test command for song battles",
     options: []
@@ -183,6 +187,7 @@ command.setHandler(async (ctx) => {
     const { album: album1, song: song1 } = getRandomSong();
     const { album: album2, song: song2 } = getRandomSong();
 
+    // Create the image
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
     const cctx = canvas.getContext("2d");
 
@@ -193,7 +198,6 @@ command.setHandler(async (ctx) => {
     const leftImage = await loadImage(leftImageUrl);
     const rightImage = await loadImage(rightImageUrl);
 
-    // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
     cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
     // Add a blue aura to the left iamge
     cctx.fillStyle = "#5865F2";
@@ -220,6 +224,17 @@ command.setHandler(async (ctx) => {
     const endsAt = addHours(startsAt, 24);
 
     const battleNumber = 1;
+
+    // Create database poll
+    const pollName = `SongBattle2024-${battleNumber}-${nanoid(10)}`;
+    const poll = await prisma.poll.create({
+        data: {
+            name: pollName,
+            options: [toSongId(song1, album1), toSongId(song2, album2)],
+        }
+    });
+
+    // Create embed
     const embed = new EmbedBuilder()
         .setTitle(`Battle #${battleNumber}: ${bold("Which song do you prefer?")}`)
         .setThumbnail("attachment://battle.png")
@@ -228,22 +243,24 @@ command.setHandler(async (ctx) => {
             { name: song2.name, value: italic(album2.name), inline: true },
         ])
         .setColor(album1.color)
-        .setFooter({ text: "0 votes | Votes are anonymous | Voting ends in 24 hours" })
+        .setFooter({ text: embedFooter(0) })
         .setTimestamp(startsAt);
 
+    // Create message components
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
-            .setCustomId(genButtonId({ songName: song1.name }))
+            .setCustomId(genButtonId({ songId: toSongId(song1, album1), pollId: poll.id.toString() }))
             .setStyle(ButtonStyle.Primary)
             .setLabel(song1.name)
             .setEmoji(album1.emoji),
         new ButtonBuilder()
-            .setCustomId(genButtonId({ songName: song2.name }))
+            .setCustomId(genButtonId({ songId: toSongId(song2, album2), pollId: poll.id.toString() }))
             .setStyle(ButtonStyle.Success)
             .setLabel(song2.name)
             .setEmoji(album2.emoji)
     ]);
 
+    // Create the main message
     const m = await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });
 
     // Create a discussion thread
@@ -255,21 +272,55 @@ command.setHandler(async (ctx) => {
     await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 });
 
-const genButtonId = command.addInteractionListener("songBattleButton", <const>["songName"], async (ctx, args) => {
+const genButtonId = command.addInteractionListener("songBattleButton", <const>["pollId", "songId"], async (ctx, args) => {
     await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
-    const { song, album } = getByName(args.songName);
+    // Check if the poll is still active
+    if (isPast(addHours(ctx.message.createdAt, 24))) {
+        throw new CommandError("Voting has ended");
+    }
 
-    const [total, ...rest] = ctx.message.embeds[0].data.footer!.text.split(" ");
-    const totalVotes = parseInt(total) + 1;
+    // Find associated poll
+    const pollId = parseInt(args.pollId);
+    const poll = await prisma.poll.findUnique({ where: { id: pollId } });
+    if (!poll) throw new CommandError("Poll not found");
+
+    const choiceId = poll.options.findIndex(o => o === args.songId);
+
+    // Check if the user has already voted
+    const existingVote = await prisma.vote.findFirst({
+        select: { id: true },
+        where: { pollId, userId: ctx.user.id }
+    });
+
+    // Create or update the vote
+    await prisma.vote.upsert({
+        where: { pollId_userId: { pollId, userId: ctx.user.id } },
+        create: {
+            pollId,
+            userId: ctx.user.id,
+            choices: [choiceId]
+        },
+        update: {
+            choices: [choiceId]
+        }
+    });
+
+    const totalVotes = await prisma.vote.count({ where: { pollId } });
+
+    const { song, album } = fromSongId(args.songId);
 
     const embed = new EmbedBuilder(ctx.message.embeds[0].data);
-    console.log(`Setting footer to: ${[totalVotes, ...rest].join(" ")}`)
-    embed.setFooter({ text: [totalVotes, ...rest].join(" ") });
+    embed.setFooter({ text: embedFooter(totalVotes) });
 
     await ctx.message.edit({ embeds: [embed], attachments: [...ctx.message.attachments.values()] });
-    await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
+
+    if (existingVote) {
+        await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
+    } else {
+        await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
+    }
 });
 
 function getRandomSong(): { song: SongContender, album: Album } {
@@ -279,9 +330,15 @@ function getRandomSong(): { song: SongContender, album: Album } {
     return { song, album: song.album };
 }
 
-function getByName(songName: string): { song: SongContender, album: Album } {
+const DELIMITER = "%";
+function toSongId(song: SongContender, album: Album) {
+    return [song.name, album.name].join(DELIMITER);
+}
+
+function fromSongId(id: string): { song: SongContender, album: Album } {
+    const [songName, albumName] = id.split(DELIMITER);
     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
-    const song = songs.find(s => s.name === songName);
+    const song = songs.find(s => s.name === songName && s.album.name === albumName);
 
     if (!song) throw new CommandError("Song not found");
 

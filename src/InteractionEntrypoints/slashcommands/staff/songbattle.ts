@@ -1,9 +1,10 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, bold, italic } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, ThreadAutoArchiveDuration, bold, italic } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { CommandError } from "../../../Configuration/definitions";
 import { emojiIDs } from "../../../Configuration/config";
 import { addHours } from "date-fns";
+import F from "../../../Helpers/funcs";
 
 enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -215,6 +216,8 @@ command.setHandler(async (ctx) => {
     const buffer = canvas.toBuffer("image/png");
     const attachment = new AttachmentBuilder(buffer, { name: "battle.png" });
 
+    const endsAt = addHours(new Date(), 24);
+
     const battleNumber = 1;
     const embed = new EmbedBuilder()
         .setTitle(`Battle #${battleNumber}: ${bold("Which song do you prefer?")}`)
@@ -225,7 +228,7 @@ command.setHandler(async (ctx) => {
         ])
         .setColor(album1.color)
         .setFooter({ text: "0 votes | Votes are anonymous | Voting ends" })
-        .setTimestamp(addHours(new Date(), 24));
+        .setTimestamp(endsAt);
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
@@ -240,7 +243,15 @@ command.setHandler(async (ctx) => {
             .setEmoji(album2.emoji)
     ]);
 
-    await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });
+    const m = await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });
+
+    // Create a discussion thread
+    const thread = await m.startThread({
+        name: `Song Battle #${battleNumber}`,
+        autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
+    });
+
+    await thread.send(`**Welcome to the song battle! Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 });
 
 const genButtonId = command.addInteractionListener("songBattleButton", <const>["songName"], async (ctx, args) => {

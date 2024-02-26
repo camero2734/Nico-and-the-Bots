@@ -220,8 +220,8 @@ export async function songBattleCron() {
             });
 
             // Disable the buttons
-            const actionRow = new ActionRowBuilder<ButtonBuilder>(previousMessage.components[0]);
-            actionRow.components.forEach(c => c.setDisabled(true));
+            const actionRow = previousMessage.components[0].toJSON();
+            actionRow.components.forEach(c => c.disabled = true);
 
             await previousMessage.edit({ embeds: [embed], components: [actionRow] });
         }

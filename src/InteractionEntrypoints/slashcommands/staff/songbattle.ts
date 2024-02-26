@@ -179,8 +179,8 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const [album1, song1] = getRandomSong();
-    const [album2, song2] = getRandomSong();
+    const { album: album1, song: song1 } = getRandomSong();
+    const { album: album2, song: song2 } = getRandomSong();
 
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
     const cctx = canvas.getContext("2d");
@@ -247,7 +247,7 @@ const genButtonId = command.addInteractionListener("songBattleButton", <const>["
     await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
-    const [song, album] = getByName(args.songName);
+    const { song, album } = getByName(args.songName);
 
     const [total, ...rest] = ctx.message.embeds[0].data.footer!.text.split(" ");
     const totalVotes = parseInt(total) + 1;
@@ -260,20 +260,20 @@ const genButtonId = command.addInteractionListener("songBattleButton", <const>["
     await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
 });
 
-function getRandomSong(): [Album, SongContender] {
+function getRandomSong(): { song: SongContender, album: Album } {
     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
     const song = songs[Math.floor(Math.random() * songs.length)];
 
-    return [song.album, song];
+    return { song, album: song.album };
 }
 
-function getByName(songName: string): [Album, SongContender] {
+function getByName(songName: string): { song: SongContender, album: Album } {
     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
     const song = songs.find(s => s.name === songName);
 
     if (!song) throw new CommandError("Song not found");
 
-    return [song.album, song];
+    return { song, album: song.album }
 }
 
 export default command;

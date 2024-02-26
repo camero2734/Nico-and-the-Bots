@@ -120,6 +120,14 @@ export const emojiIDs = <const>{
         filled: "871795752760918018",
         empty: "871795753251639306",
         end: "871795752786071693"
+    },
+    albums: {
+        selfTitled: "833129307055456256",
+        regionalAtBest: "833129752021827594",
+        vessel: "833130006413574204",
+        blurryface: "833130087943634944",
+        trench: "833130193568530483",
+        scaledAndIcy: "840759270625771521"
     }
 };
 

@@ -2,6 +2,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorR
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { CommandError } from "../../../Configuration/definitions";
+import { emojiIDs } from "../../../Configuration/config";
 
 enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -17,6 +18,7 @@ interface Album {
     name: AlbumName;
     image?: string;
     color: ColorResolvable;
+    emoji: string;
     songs: SongContender[];
 }
 
@@ -32,6 +34,7 @@ const albums = [
         name: AlbumName.SelfTitled,
         image: "https://i.scdn.co/image/ab67616d0000b2734f5687326079d90e731a10a6",
         color: "#8cb82c",
+        emoji: emojiIDs.albums.selfTitled,
         songs: [
             { name: "Implicit Demand for Proof" },
             { name: "Fall Away" },
@@ -53,6 +56,7 @@ const albums = [
         name: AlbumName.RegionalAtBest,
         image: "https://i.scdn.co/image/ab67616d0000b2739e09415e1975a4fae4389f1d",
         color: "#9bc1db",
+        emoji: emojiIDs.albums.regionalAtBest,
         songs: [
             { name: "Guns for Hands" },
             { name: "Holding on to You" },
@@ -74,6 +78,7 @@ const albums = [
         name: AlbumName.Vessel,
         image: "https://i.scdn.co/image/ab67616d0000b273d263500f1f97e978daa5ceb1",
         color: "#aebfd9",
+        emoji: emojiIDs.albums.vessel,
         songs: [
             { name: "Ode to Sleep" },
             { name: "Holding on to You" },
@@ -93,6 +98,7 @@ const albums = [
         name: AlbumName.Blurryface,
         image: "https://i.scdn.co/image/ab67616d00001e02352e5ec301a02278ffe53d14",
         color: "#ec5748",
+        emoji: emojiIDs.albums.blurryface,
         songs: [
             { name: "Heavydirtysoul" },
             { name: "Stressed Out" },
@@ -114,6 +120,7 @@ const albums = [
         name: AlbumName.Trench,
         image: "https://i.scdn.co/image/ab67616d00001e027a1bbe4ec7066c9db1d0f398",
         color: "#fce300",
+        emoji: emojiIDs.albums.trench,
         songs: [
             { name: "Jumpsuit" },
             { name: "Levitate" },
@@ -135,6 +142,7 @@ const albums = [
         name: AlbumName.ScaledAndIcy,
         image: "https://i.scdn.co/image/ab67616d00001e02239ee8e0c619611d8beef008",
         color: "#01dead",
+        emoji: emojiIDs.albums.scaledAndIcy,
         songs: [
             { name: "Good Day" },
             { name: "Choker" },
@@ -152,6 +160,7 @@ const albums = [
     {
         name: AlbumName.Singles,
         color: "#FFFFFF",
+        emoji: "1211716502621917215",
         songs: [
             { name: "Cancer", image: "https://i.scdn.co/image/ab67616d00001e020fde79bfa5e23cb9cbdcd142" },
             { name: "Heathens", image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb" },
@@ -184,18 +193,25 @@ command.setHandler(async (ctx) => {
 
     // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
     cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a blue tint to the left image
-    cctx.fillStyle = "#5865F2";
-    cctx.globalAlpha = 0.5;
+    // Add a blue border to the left image
+    cctx.save();
+    const gradient = cctx.createRadialGradient(IMAGE_SIZE / 4, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 4, IMAGE_SIZE / 2, IMAGE_SIZE / 2);
+    gradient.addColorStop(0, 'rgba(88, 101, 242, 0.5)');
+    gradient.addColorStop(1, 'rgba(88, 101, 242, 0)');
+    cctx.fillStyle = gradient;
     cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.globalAlpha = 1;
+    cctx.restore();
+
 
     cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a red tint to the right image
-    cctx.fillStyle = "#F04747";
-    cctx.globalAlpha = 0.5;
+    // Add a red border to the right image #F04747
+    cctx.save();
+    const gradient2 = cctx.createRadialGradient(IMAGE_SIZE * 0.75, IMAGE_SIZE / 2, 0, IMAGE_SIZE * 0.75, IMAGE_SIZE / 2, IMAGE_SIZE / 2);
+    gradient2.addColorStop(0, 'rgba(240, 71, 71, 0.5)');
+    gradient2.addColorStop(1, 'rgba(240, 71, 71, 0)');
+    cctx.fillStyle = gradient2;
     cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.globalAlpha = 1;
+    cctx.restore();
 
     // Draw a divider
     const DIVIDER_WIDTH = 10;
@@ -214,11 +230,13 @@ command.setHandler(async (ctx) => {
         new ButtonBuilder()
             .setCustomId("TODO1")
             .setStyle(ButtonStyle.Primary)
-            .setLabel(choice1[1].name),
+            .setLabel(choice1[1].name)
+            .setEmoji(choice1[0].emoji),
         new ButtonBuilder()
             .setCustomId("TODO2")
             .setStyle(ButtonStyle.Danger)
             .setLabel(choice2[1].name)
+            .setEmoji(choice2[0].emoji)
     ]);
 
     await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });

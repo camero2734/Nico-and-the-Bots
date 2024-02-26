@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, bold, italic } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedBuilder, italic } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
@@ -179,13 +179,20 @@ const embedFooter = (totalVotes: number) => `${totalVotes} votes | Votes are ano
 
 const entrypoint = new ManualEntrypoint();
 
+const buttonColors: Partial<Record<ButtonStyle, string>> = {
+    [ButtonStyle.Primary]: "#5865F2",
+    [ButtonStyle.Secondary]: "#4F545C",
+    [ButtonStyle.Success]: "#43B581",
+    [ButtonStyle.Danger]: "#F04747",
+};
+
 export async function songBattleCron() {
     // Get song battle channel
     const channel = await guild.channels.fetch(channelIDs.songbattles);
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, album1, album2, nextBattleNumber, result } = await determineNextMatchup();
+    const { song1, song2, album1, album2, nextBattleNumber, result, totalMatches } = await determineNextMatchup();
 
     // Update the previous battle's message
     const previousPoll = await prisma.poll.findFirst({
@@ -211,12 +218,17 @@ export async function songBattleCron() {
                     return "... Neither (Tie)";
                 })()
             })
-            await previousMessage.edit({ embeds: [embed] });
 
-            // Remove the message to indicate this poll is over
-            previousPoll.options = previousPoll.options.slice(0, 2);
+            // Disable the buttons
+            const actionRow = previousMessage.components[0];
+            actionRow.data.components.forEach(c => c.type === ComponentType.Button && (c.disabled = true));
+
+            await previousMessage.edit({ embeds: [embed], components: [actionRow] });
         }
     }
+
+    // Pick two random button colors
+    const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
 
     // Create the image
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
@@ -230,15 +242,15 @@ export async function songBattleCron() {
     const rightImage = await loadImage(rightImageUrl);
 
     cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a blue aura to the left iamge
-    cctx.fillStyle = "#5865F2";
+    // Add a tint to the left iamge
+    cctx.fillStyle = button1[1]!;
     cctx.globalAlpha = 0.4;
     cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
     cctx.globalAlpha = 1;
 
     cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a green tint to the right image
-    cctx.fillStyle = "#43B581";
+    // Add a tint to the right image
+    cctx.fillStyle = button2[1]!;
     cctx.globalAlpha = 0.4;
     cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
     cctx.globalAlpha = 1;
@@ -268,7 +280,7 @@ export async function songBattleCron() {
 
     // Create embed
     const embed = new EmbedBuilder()
-        .setTitle(`Battle #${nextBattleNumber}: ${bold("Which song do you prefer?")}`)
+        .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
             { name: song1.name, value: italic(album1.name), inline: true },
@@ -282,12 +294,12 @@ export async function songBattleCron() {
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setCustomId(genButtonId({ songId: toSongId(song1, album1), pollId: poll.id.toString() }))
-            .setStyle(ButtonStyle.Primary)
+            .setStyle(button1[0])
             .setLabel(song1.name)
             .setEmoji(album1.emoji),
         new ButtonBuilder()
             .setCustomId(genButtonId({ songId: toSongId(song2, album2), pollId: poll.id.toString() }))
-            .setStyle(ButtonStyle.Success)
+            .setStyle(button2[0])
             .setLabel(song2.name)
             .setEmoji(album2.emoji)
     ]);

@@ -244,7 +244,7 @@ command.setHandler(async (ctx) => {
 });
 
 const genButtonId = command.addInteractionListener("songBattleButton", <const>["songName"], async (ctx, args) => {
-    ctx.deferReply({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
     const [song, album] = getByName(args.songName);
@@ -253,6 +253,7 @@ const genButtonId = command.addInteractionListener("songBattleButton", <const>["
     const totalVotes = parseInt(total) + 1;
 
     const embed = new EmbedBuilder(ctx.message.embeds[0].data);
+    console.log(`Setting footer to: ${[totalVotes, ...rest].join(" ")}`)
     embed.setFooter({ text: [totalVotes, ...rest].join(" ") });
 
     await ctx.message.edit({ embeds: [embed] });

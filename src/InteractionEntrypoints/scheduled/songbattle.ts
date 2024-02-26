@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { addHours, isPast } from "date-fns";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, ThreadAutoArchiveDuration, bold, italic } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, bold, italic } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
@@ -33,6 +33,7 @@ interface SongContender {
 }
 
 const IMAGE_SIZE = 1000;
+const PREFIX = "SongBattle2024Test-";
 
 const albums = [
     {
@@ -180,10 +181,37 @@ const embedFooter = (totalVotes: number) => `${totalVotes} votes | Votes are ano
 const entrypoint = new ManualEntrypoint();
 
 export async function songBattleCron() {
-    const { song1, song2, album1, album2, nextBattleNumber, result: _result } = await determineNextMatchup();
+    // Get song battle channel
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+    // Determine the next matchup
+    const { song1, song2, album1, album2, nextBattleNumber, result } = await determineNextMatchup();
 
     // Update the previous battle's message
-    // TODO
+    const previousMessageId = await prisma.poll.findFirst({
+        where: {
+            name: { startsWith: PREFIX },
+        },
+        orderBy: { id: "desc" }
+    }).then(p => p?.options[2]);
+
+    if (previousMessageId) {
+        const previousMessage = await channel.messages?.fetch(previousMessageId);
+
+        if (previousMessage) {
+            const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+            embed.addFields({
+                name: "🏆 Winner",
+                value: (() => {
+                    if (result === Result.Song1) return `${song1.name}, ${italic(album1.name)}`;
+                    if (result === Result.Song2) return `${song2.name}, ${italic(album2.name)}`;
+                    return "... Neither (Tie)";
+                })()
+            })
+            await previousMessage.edit({ embeds: [embed] });
+        }
+    }
 
     // Create the image
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
@@ -219,14 +247,17 @@ export async function songBattleCron() {
     const attachment = new AttachmentBuilder(buffer, { name: "battle.png" });
 
     const startsAt = new Date();
-    const endsAt = addHours(startsAt, 24);
+
+    // Placeholder message
+    const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
+    const m = await channel.send({ embeds: [startEmbed] });
 
     // Create database poll
-    const pollName = `SongBattle2024Test-${nextBattleNumber}-${nanoid(10)}`;
+    const pollName = `${PREFIX}${nextBattleNumber}-${nanoid(10)}`;
     const poll = await prisma.poll.create({
         data: {
             name: pollName,
-            options: [toSongId(song1, album1), toSongId(song2, album2)],
+            options: [toSongId(song1, album1), toSongId(song2, album2), m.id],
         }
     });
 
@@ -256,19 +287,18 @@ export async function songBattleCron() {
             .setEmoji(album2.emoji)
     ]);
 
-    // Create the main message
-    const channel = await guild.channels.fetch(channelIDs.songbattles);
-    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
-
-    const m = await channel.send({ embeds: [embed], files: [attachment], components: [actionRow] });
+    // Send the main message
+    await m.edit({ embeds: [embed], files: [attachment], components: [actionRow] });
 
     // Create a discussion thread
-    const thread = await m.startThread({
-        name: `Song Battle #${nextBattleNumber}`,
-        autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
-    });
+    // TODO: re-enable me, annoying for testing
+    // const endsAt = addHours(startsAt, 24);
+    // const thread = await m.startThread({
+    //     name: `Song Battle #${nextBattleNumber}`,
+    //     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
+    // });
 
-    await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
+    // await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 }
 
 const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const>["pollId", "songId"], async (ctx, args) => {
@@ -362,10 +392,11 @@ async function determineNextMatchup(): Promise<{
     album2: Album;
     nextBattleNumber: number;
     result?: Result;
+    totalMatches: number;
 }> {
     const previousBattlesRaw = await prisma.poll.findMany({
         where: {
-            name: { startsWith: "SongBattle2024Test-" }
+            name: { startsWith: PREFIX }
         },
         include: { votes: true },
         orderBy: { id: "asc" }
@@ -422,7 +453,10 @@ async function determineNextMatchup(): Promise<{
     const { song: song1, album: album1 } = fromSongId(song1Id);
     const { song: song2, album: album2 } = fromSongId(song2Id);
 
-    return { song1, song2, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result };
+    // The total number of matches that will be played
+    const totalMatches = histories.size - 1;
+
+    return { song1, song2, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result, totalMatches };
 }
 
 export default entrypoint;

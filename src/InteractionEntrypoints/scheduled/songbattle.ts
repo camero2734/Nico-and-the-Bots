@@ -180,8 +180,10 @@ const embedFooter = (totalVotes: number) => `${totalVotes} votes | Votes are ano
 const entrypoint = new ManualEntrypoint();
 
 export async function songBattleCron() {
-    const { album: album1, song: song1 } = getRandomSong();
-    const { album: album2, song: song2 } = getRandomSong();
+    const { song1, song2, album1, album2, nextBattleNumber, result: _result } = await determineNextMatchup();
+
+    // Update the previous battle's message
+    // TODO
 
     // Create the image
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
@@ -219,10 +221,8 @@ export async function songBattleCron() {
     const startsAt = new Date();
     const endsAt = addHours(startsAt, 24);
 
-    const battleNumber = 1;
-
     // Create database poll
-    const pollName = `SongBattle2024-${battleNumber}-${nanoid(10)}`;
+    const pollName = `SongBattle2024Test-${nextBattleNumber}-${nanoid(10)}`;
     const poll = await prisma.poll.create({
         data: {
             name: pollName,
@@ -232,7 +232,7 @@ export async function songBattleCron() {
 
     // Create embed
     const embed = new EmbedBuilder()
-        .setTitle(`Battle #${battleNumber}: ${bold("Which song do you prefer?")}`)
+        .setTitle(`Battle #${nextBattleNumber}: ${bold("Which song do you prefer?")}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
             { name: song1.name, value: italic(album1.name), inline: true },
@@ -264,7 +264,7 @@ export async function songBattleCron() {
 
     // Create a discussion thread
     const thread = await m.startThread({
-        name: `Song Battle #${battleNumber}`,
+        name: `Song Battle #${nextBattleNumber}`,
         autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
     });
 
@@ -322,12 +322,12 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const
     }
 });
 
-function getRandomSong(): { song: SongContender, album: Album } {
-    const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
-    const song = songs[Math.floor(Math.random() * songs.length)];
+// function getRandomSong(): { song: SongContender, album: Album } {
+//     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
+//     const song = songs[Math.floor(Math.random() * songs.length)];
 
-    return { song, album: song.album };
-}
+//     return { song, album: song.album };
+// }
 
 const DELIMITER = "%";
 function toSongId(song: SongContender, album: Album) {
@@ -342,6 +342,87 @@ function fromSongId(id: string): { song: SongContender, album: Album } {
     if (!song) throw new CommandError("Song not found");
 
     return { song, album: song.album }
+}
+
+interface SongBattleHistory {
+    rounds: number;
+    eliminated: boolean;
+}
+
+enum Result {
+    Song1,
+    Song2,
+    Tie
+}
+
+async function determineNextMatchup(): Promise<{
+    song1: SongContender;
+    song2: SongContender;
+    album1: Album;
+    album2: Album;
+    nextBattleNumber: number;
+    result?: Result;
+}> {
+    const previousBattlesRaw = await prisma.poll.findMany({
+        where: {
+            name: { startsWith: "SongBattle2024Test-" }
+        },
+        include: { votes: true },
+        orderBy: { id: "asc" }
+    });
+
+    const histories: Map<string, SongBattleHistory> = new Map();
+
+    // Initialize all songs
+    for (const album of albums) {
+        for (const song of album.songs) {
+            histories.set(toSongId(song, album), { rounds: 0, eliminated: false });
+        }
+    }
+
+    // The last battle's result will be stored here
+    let result: Result | undefined;
+
+    // Go through rounds and eliminate songs
+    for (const battle of previousBattlesRaw) {
+        const totalVotes = battle.votes.length;
+        const song1Votes = battle.votes.filter(v => v.choices[0] === 0).length;
+        const song2Votes = totalVotes - song1Votes;
+
+        const song1 = histories.get(battle.options[0]);
+        const song2 = histories.get(battle.options[1]);
+
+        if (!song1 || !song2) throw new CommandError("Song not found");
+
+        if (song1Votes > song2Votes) {
+            song2.eliminated = true;
+            result = Result.Song1;
+        } else if (song2Votes > song1Votes) {
+            song1.eliminated = true;
+            result = Result.Song2;
+        } else {
+            // Tie -- these songs are thrown back into the pool
+            // hopefully they won't be matched up again :)
+            result = Result.Tie;
+        }
+
+        song1.rounds++;
+        song2.rounds++;
+    }
+
+    // We want two random songs such that:
+    // - They have not been eliminated
+    // - They've been in the fewest number of rounds
+    //
+    // This approximates a tournament bracket w/o having to store the entire bracket
+    const eligibleSongs = Array.from(histories.entries()).filter(([_, h]) => !h.eliminated);
+    const sorted = F.shuffle(eligibleSongs).sort((a, b) => a[1].rounds - b[1].rounds);
+    const [song1Id, song2Id] = sorted.slice(0, 2).map(s => s[0]);
+
+    const { song: song1, album: album1 } = fromSongId(song1Id);
+    const { song: song2, album: album2 } = fromSongId(song2Id);
+
+    return { song1, song2, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result };
 }
 
 export default entrypoint;

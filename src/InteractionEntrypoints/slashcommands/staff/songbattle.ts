@@ -196,14 +196,14 @@ command.setHandler(async (ctx) => {
     cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
     // Add a blue aura to the left iamge
     cctx.fillStyle = "#5865F2";
-    cctx.globalAlpha = 0.2;
+    cctx.globalAlpha = 0.4;
     cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
     cctx.globalAlpha = 1;
 
     cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a red tint to the right image
-    cctx.fillStyle = "#F04747";
-    cctx.globalAlpha = 0.2;
+    // Add a green tint to the right image
+    cctx.fillStyle = "#43B581";
+    cctx.globalAlpha = 0.4;
     cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
     cctx.globalAlpha = 1;
 
@@ -229,13 +229,13 @@ command.setHandler(async (ctx) => {
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
-            .setCustomId("TODO1")
+            .setCustomId(genButtonId({ songName: song1.name }))
             .setStyle(ButtonStyle.Primary)
             .setLabel(song1.name)
             .setEmoji(album1.emoji),
         new ButtonBuilder()
-            .setCustomId("TODO2")
-            .setStyle(ButtonStyle.Danger)
+            .setCustomId(genButtonId({ songName: song2.name }))
+            .setStyle(ButtonStyle.Success)
             .setLabel(song2.name)
             .setEmoji(album2.emoji)
     ]);
@@ -243,9 +243,34 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });
 });
 
+const genButtonId = command.addInteractionListener("songBattleButton", <const>["songName"], async (ctx, args) => {
+    ctx.deferReply({ ephemeral: true });
+    if (!ctx.isButton()) return;
+
+    const [song, album] = getByName(args.songName);
+
+    const [total, ...rest] = ctx.message.embeds[0].data.footer!.text.split(" ");
+    const totalVotes = parseInt(total) + 1;
+
+    const embed = new EmbedBuilder(ctx.message.embeds[0].data);
+    embed.setFooter({ text: [totalVotes, ...rest].join(" ") });
+
+    await ctx.message.edit({ embeds: [embed] });
+    await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
+});
+
 function getRandomSong(): [Album, SongContender] {
     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
     const song = songs[Math.floor(Math.random() * songs.length)];
+
+    return [song.album, song];
+}
+
+function getByName(songName: string): [Album, SongContender] {
+    const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
+    const song = songs.find(s => s.name === songName);
+
+    if (!song) throw new CommandError("Song not found");
 
     return [song.album, song];
 }

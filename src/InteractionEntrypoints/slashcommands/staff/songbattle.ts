@@ -216,7 +216,8 @@ command.setHandler(async (ctx) => {
     const buffer = canvas.toBuffer("image/png");
     const attachment = new AttachmentBuilder(buffer, { name: "battle.png" });
 
-    const endsAt = addHours(new Date(), 24);
+    const startsAt = new Date();
+    const endsAt = addHours(startsAt, 24);
 
     const battleNumber = 1;
     const embed = new EmbedBuilder()
@@ -227,8 +228,8 @@ command.setHandler(async (ctx) => {
             { name: song2.name, value: italic(album2.name), inline: true },
         ])
         .setColor(album1.color)
-        .setFooter({ text: "0 votes | Votes are anonymous | Voting ends" })
-        .setTimestamp(endsAt);
+        .setFooter({ text: "0 votes | Votes are anonymous | Voting ends in 24 hours" })
+        .setTimestamp(startsAt);
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
@@ -251,7 +252,7 @@ command.setHandler(async (ctx) => {
         autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
     });
 
-    await thread.send(`**Welcome to the song battle! Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
+    await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 });
 
 const genButtonId = command.addInteractionListener("songBattleButton", <const>["songName"], async (ctx, args) => {

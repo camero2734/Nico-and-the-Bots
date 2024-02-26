@@ -5,7 +5,7 @@ import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
 import F from "../../Helpers/funcs";
 import { prisma, queries } from "../../Helpers/prisma-init";
-import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts.shopColors";
 
 enum ActionTypes {
@@ -14,7 +14,7 @@ enum ActionTypes {
     // Delete
 }
 
-const msgInt = new MessageInteraction();
+const msgInt = new ManualEntrypoint();
 
 export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });

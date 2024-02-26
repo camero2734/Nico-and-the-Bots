@@ -224,8 +224,8 @@ command.setHandler(async (ctx) => {
             { name: song2.name, value: italic(album2.name), inline: true },
         ])
         .setColor(album1.color)
-        .setTimestamp(addHours(new Date(), 24))
-        .setFooter({ text: "0 votes || Voting is anonymous until a winner is declared. Vote by clicking a button below" });
+        .setFooter({ text: "0 votes | Votes are anonymous | Voting ends" })
+        .setTimestamp(addHours(new Date(), 24));
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
@@ -256,7 +256,7 @@ const genButtonId = command.addInteractionListener("songBattleButton", <const>["
     console.log(`Setting footer to: ${[totalVotes, ...rest].join(" ")}`)
     embed.setFooter({ text: [totalVotes, ...rest].join(" ") });
 
-    await ctx.message.edit({ embeds: [embed] });
+    await ctx.message.edit({ embeds: [embed], attachments: [...ctx.message.attachments.values()] });
     await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
 });
 

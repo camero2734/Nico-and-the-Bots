@@ -1,5 +1,4 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { addHours, isPast } from "date-fns";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, bold, italic } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
@@ -213,6 +212,9 @@ export async function songBattleCron() {
                 })()
             })
             await previousMessage.edit({ embeds: [embed] });
+
+            // Remove the message to indicate this poll is over
+            previousPoll.options = previousPoll.options.slice(0, 2);
         }
     }
 
@@ -308,15 +310,15 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const
     await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
-    // Check if the poll is still active
-    if (isPast(addHours(ctx.message.createdAt, 24))) {
-        throw new CommandError("Voting has ended");
-    }
-
     // Find associated poll
     const pollId = parseInt(args.pollId);
     const poll = await prisma.poll.findUnique({ where: { id: pollId } });
     if (!poll) throw new CommandError("Poll not found");
+
+    // Check if the poll is still active
+    if (poll.options[2] !== ctx.message.id) {
+        throw new CommandError("This poll has ended");
+    }
 
     const choiceId = poll.options.findIndex(o => o === args.songId);
 

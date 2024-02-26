@@ -2,11 +2,12 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { addHours, isPast } from "date-fns";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, ThreadAutoArchiveDuration, bold, italic } from "discord.js";
 import { nanoid } from "nanoid";
-import { emojiIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
-import F from "../../../Helpers/funcs";
-import { prisma } from "../../../Helpers/prisma-init";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { guild } from "../../../app";
+import { channelIDs, emojiIDs } from "../../Configuration/config";
+import { CommandError } from "../../Configuration/definitions";
+import F from "../../Helpers/funcs";
+import { prisma } from "../../Helpers/prisma-init";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
 enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -176,14 +177,9 @@ const albums = [
 
 const embedFooter = (totalVotes: number) => `${totalVotes} votes | Votes are anonymous | Voting ends in 24 hours`;
 
-const command = new SlashCommand(<const>{
-    description: "Test command for song battles",
-    options: []
-});
+const entrypoint = new ManualEntrypoint();
 
-command.setHandler(async (ctx) => {
-    await ctx.deferReply();
-
+export async function songBattleCron() {
     const { album: album1, song: song1 } = getRandomSong();
     const { album: album2, song: song2 } = getRandomSong();
 
@@ -261,7 +257,10 @@ command.setHandler(async (ctx) => {
     ]);
 
     // Create the main message
-    const m = await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+    const m = await channel.send({ embeds: [embed], files: [attachment], components: [actionRow] });
 
     // Create a discussion thread
     const thread = await m.startThread({
@@ -270,9 +269,9 @@ command.setHandler(async (ctx) => {
     });
 
     await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
-});
+}
 
-const genButtonId = command.addInteractionListener("songBattleButton", <const>["pollId", "songId"], async (ctx, args) => {
+const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const>["pollId", "songId"], async (ctx, args) => {
     await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
@@ -345,4 +344,4 @@ function fromSongId(id: string): { song: SongContender, album: Album } {
     return { song, album: song.album }
 }
 
-export default command;
+export default entrypoint;

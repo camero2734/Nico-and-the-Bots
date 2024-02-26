@@ -10,7 +10,7 @@ import { NicoClient } from "../../../app";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma, PrismaType } from "../../Helpers/prisma-init";
-import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
     calculateNextPrize,
     DropPrize,
@@ -64,7 +64,7 @@ export async function createNewDrop() {
     // runDropInChannel(channel);
 }
 
-const msgInt = new MessageInteraction();
+const msgInt = new ManualEntrypoint();
 
 export const GenBtnId = msgInt.addInteractionListener("dropGuess", <const>["dropId", "idx"], async (ctx, args) => {
     await ctx.deferUpdate();

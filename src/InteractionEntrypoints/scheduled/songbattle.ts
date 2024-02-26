@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedBuilder, italic } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, italic } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
@@ -217,11 +217,11 @@ export async function songBattleCron() {
                     if (result === Result.Song2) return `${song2.name}, ${italic(album2.name)}`;
                     return "... Neither (Tie)";
                 })()
-            })
+            });
 
             // Disable the buttons
-            const actionRow = previousMessage.components[0];
-            actionRow.data.components.forEach(c => c.type === ComponentType.Button && (c.disabled = true));
+            const actionRow = new ActionRowBuilder<ButtonBuilder>(previousMessage.components[0]);
+            actionRow.components.forEach(c => c.setDisabled(true));
 
             await previousMessage.edit({ embeds: [embed], components: [actionRow] });
         }
@@ -326,11 +326,6 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const
     const pollId = parseInt(args.pollId);
     const poll = await prisma.poll.findUnique({ where: { id: pollId } });
     if (!poll) throw new CommandError("Poll not found");
-
-    // Check if the poll is still active
-    if (poll.options[2] !== ctx.message.id) {
-        throw new CommandError("This poll has ended");
-    }
 
     const choiceId = poll.options.findIndex(o => o === args.songId);
 

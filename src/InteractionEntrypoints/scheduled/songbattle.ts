@@ -189,18 +189,21 @@ export async function songBattleCron() {
     const { song1, song2, album1, album2, nextBattleNumber, result } = await determineNextMatchup();
 
     // Update the previous battle's message
-    const previousMessageId = await prisma.poll.findFirst({
+    const previousPoll = await prisma.poll.findFirst({
         where: {
             name: { startsWith: PREFIX },
         },
         orderBy: { id: "desc" }
-    }).then(p => p?.options[2]);
+    });
+    const previousMessageId = previousPoll?.options[2];
 
     if (previousMessageId) {
         const previousMessage = await channel.messages?.fetch(previousMessageId);
 
         if (previousMessage) {
             const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+            const { song: song1, album: album1 } = fromSongId(previousPoll.options[0]);
+            const { song: song2, album: album2 } = fromSongId(previousPoll.options[1]);
             embed.addFields({
                 name: "🏆 Winner",
                 value: (() => {

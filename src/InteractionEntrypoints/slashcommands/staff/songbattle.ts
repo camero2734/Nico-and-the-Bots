@@ -1,8 +1,9 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, bold, italic } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { CommandError } from "../../../Configuration/definitions";
 import { emojiIDs } from "../../../Configuration/config";
+import { addHours } from "date-fns";
 
 enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -178,14 +179,14 @@ const command = new SlashCommand(<const>{
 command.setHandler(async (ctx) => {
     await ctx.deferReply();
 
-    const choice1 = getRandomSong();
-    const choice2 = getRandomSong();
+    const [album1, song1] = getRandomSong();
+    const [album2, song2] = getRandomSong();
 
     const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
     const cctx = canvas.getContext("2d");
 
-    const leftImageUrl = choice1[0].image || choice1[1].image;
-    const rightImageUrl = choice2[0].image || choice2[1].image;
+    const leftImageUrl = album1.image || song1.image;
+    const rightImageUrl = album2.image || song2.image;
     if (!leftImageUrl || !rightImageUrl) throw new CommandError("Missing image(s)");
 
     const leftImage = await loadImage(leftImageUrl);
@@ -193,25 +194,18 @@ command.setHandler(async (ctx) => {
 
     // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
     cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a blue border to the left image
-    cctx.save();
-    const gradient = cctx.createRadialGradient(IMAGE_SIZE / 4, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 4, IMAGE_SIZE / 2, IMAGE_SIZE / 2);
-    gradient.addColorStop(0, 'rgba(88, 101, 242, 0.5)');
-    gradient.addColorStop(1, 'rgba(88, 101, 242, 0)');
-    cctx.fillStyle = gradient;
+    // Add a blue aura to the left iamge
+    cctx.fillStyle = "#5865F2";
+    cctx.globalAlpha = 0.2;
     cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.restore();
-
+    cctx.globalAlpha = 1;
 
     cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a red border to the right image #F04747
-    cctx.save();
-    const gradient2 = cctx.createRadialGradient(IMAGE_SIZE * 0.75, IMAGE_SIZE / 2, 0, IMAGE_SIZE * 0.75, IMAGE_SIZE / 2, IMAGE_SIZE / 2);
-    gradient2.addColorStop(0, 'rgba(240, 71, 71, 0.5)');
-    gradient2.addColorStop(1, 'rgba(240, 71, 71, 0)');
-    cctx.fillStyle = gradient2;
+    // Add a red tint to the right image
+    cctx.fillStyle = "#F04747";
+    cctx.globalAlpha = 0.2;
     cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.restore();
+    cctx.globalAlpha = 1;
 
     // Draw a divider
     const DIVIDER_WIDTH = 10;
@@ -221,22 +215,29 @@ command.setHandler(async (ctx) => {
     const buffer = canvas.toBuffer("image/png");
     const attachment = new AttachmentBuilder(buffer, { name: "battle.png" });
 
+    const battleNumber = 1;
     const embed = new EmbedBuilder()
-        .setTitle(`${choice1[1].name} vs ${choice2[1].name}`)
-        .setImage("attachment://battle.png")
-        .setColor(choice1[0].color);
+        .setTitle(`Battle #${battleNumber}: ${bold("Which song do you prefer?")}`)
+        .setThumbnail("attachment://battle.png")
+        .addFields([
+            { name: song1.name, value: italic(album1.name), inline: true },
+            { name: song2.name, value: italic(album2.name), inline: true },
+        ])
+        .setColor(album1.color)
+        .setTimestamp(addHours(new Date(), 24))
+        .setFooter({ text: "0 votes || Voting is anonymous until a winner is declared. Vote by clicking a button below" });
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
             .setCustomId("TODO1")
             .setStyle(ButtonStyle.Primary)
-            .setLabel(choice1[1].name)
-            .setEmoji(choice1[0].emoji),
+            .setLabel(song1.name)
+            .setEmoji(album1.emoji),
         new ButtonBuilder()
             .setCustomId("TODO2")
             .setStyle(ButtonStyle.Danger)
-            .setLabel(choice2[1].name)
-            .setEmoji(choice2[0].emoji)
+            .setLabel(song2.name)
+            .setEmoji(album2.emoji)
     ]);
 
     await ctx.editReply({ embeds: [embed], files: [attachment], components: [actionRow] });

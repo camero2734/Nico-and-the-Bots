@@ -199,7 +199,8 @@ export async function songBattleCron() {
         where: {
             name: { startsWith: PREFIX },
         },
-        orderBy: { id: "desc" }
+        orderBy: { id: "desc" },
+        include: { votes: true }
     });
     const previousMessageId = previousPoll?.options[2];
 
@@ -208,16 +209,24 @@ export async function songBattleCron() {
 
         if (previousMessage) {
             const embed = new EmbedBuilder(previousMessage.embeds[0].data);
-            const { song: song1, album: album1 } = fromSongId(previousPoll.options[0]);
-            const { song: song2, album: album2 } = fromSongId(previousPoll.options[1]);
-            embed.addFields({
-                name: "🏆 Winner",
-                value: (() => {
-                    if (result === Result.Song1) return `${song1.name}, ${italic(album1.name)}`;
-                    if (result === Result.Song2) return `${song2.name}, ${italic(album2.name)}`;
-                    return "... Neither (Tie)";
-                })()
-            });
+
+            let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+
+            for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
+                const field = embed.data.fields?.[i];
+                if (!field) continue;
+
+                const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
+                field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
+                field.value = `${field.value} (${voteCount} votes)`;
+            }
+
+            if (winnerIdx === false) {
+                embed.addFields({
+                    name: "🙁 Tie",
+                    value: "No winner was determined. These songs will be put back into the pool.",
+                });
+            }
 
             // Disable the buttons
             const actionRow = previousMessage.components[0].toJSON();
@@ -426,6 +435,8 @@ async function determineNextMatchup(): Promise<{
     // The last battle's result will be stored here
     let result: Result | undefined;
 
+    let numTies = 0;
+
     // Go through rounds and eliminate songs
     for (const battle of previousBattlesRaw) {
         const totalVotes = battle.votes.length;
@@ -447,6 +458,7 @@ async function determineNextMatchup(): Promise<{
             // Tie -- these songs are thrown back into the pool
             // hopefully they won't be matched up again :)
             result = Result.Tie;
+            numTies++; // They also add to the total number of matches
         }
 
         song1.rounds++;
@@ -466,7 +478,7 @@ async function determineNextMatchup(): Promise<{
     const { song: song2, album: album2 } = fromSongId(song2Id);
 
     // The total number of matches that will be played
-    const totalMatches = histories.size - 1;
+    const totalMatches = histories.size - 1 + numTies;
 
     return { song1, song2, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result, totalMatches };
 }

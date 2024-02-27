@@ -57,7 +57,7 @@ export async function songBattleCron() {
             const actionRow = previousMessage.components[0].toJSON();
             actionRow.components.forEach(c => c.disabled = true);
 
-            await previousMessage.edit({ embeds: [embed], components: [actionRow] });
+            await previousMessage.edit({ embeds: [embed], components: [actionRow], attachments: [...previousMessage.attachments.values()] });
         }
     }
 

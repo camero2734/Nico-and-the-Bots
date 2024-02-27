@@ -11,7 +11,7 @@ export enum AlbumName {
     Blurryface = "Blurryface",
     Trench = "Trench",
     ScaledAndIcy = "Scaled And Icy",
-    Singles = "Singles/Covers",
+    Singles = "Singles",
 }
 
 export interface Album {

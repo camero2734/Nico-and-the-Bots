@@ -175,7 +175,7 @@ const albums = [
     },
 ] satisfies Album[];
 
-const embedFooter = (totalVotes: number) => `${totalVotes} votes | Votes are anonymous | Voting ends in 24 hours`;
+const embedFooter = (totalVotes: number) => `${totalVotes} vote${F.plural(totalVotes)} | Votes are anonymous | Voting ends in 24 hours`;
 
 const entrypoint = new ManualEntrypoint();
 
@@ -218,7 +218,7 @@ export async function songBattleCron() {
 
                 const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
                 field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
-                field.value = `${field.value} (${voteCount} votes)`;
+                field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
             }
 
             if (winnerIdx === false) {
@@ -372,13 +372,6 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const
         await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
     }
 });
-
-// function getRandomSong(): { song: SongContender, album: Album } {
-//     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
-//     const song = songs[Math.floor(Math.random() * songs.length)];
-
-//     return { song, album: song.album };
-// }
 
 const DELIMITER = "%";
 function toSongId(song: SongContender, album: Album) {

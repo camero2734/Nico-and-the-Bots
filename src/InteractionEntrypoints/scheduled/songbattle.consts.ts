@@ -192,7 +192,7 @@ export function fromSongId(id: string): { song: SongContender, album: Album } {
     const songs = albums.map(a => a.songs.map(s => ({ ...s, album: a }))).flat();
     const song = songs.find(s => s.name === songName && s.album.name === albumName);
 
-    if (!song) throw new CommandError("Song not found");
+    if (!song) throw new CommandError(`Song not found: ${songName} in album ${albumName}`);
 
     return { song, album: song.album }
 }
@@ -248,7 +248,7 @@ export async function determineNextMatchup(): Promise<{
         const song1 = histories.get(battle.options[0]);
         const song2 = histories.get(battle.options[1]);
 
-        if (!song1 || !song2) throw new CommandError("Song not found");
+        if (!song1 || !song2) throw new CommandError(`Song not found in history: ${battle.options[0]} or ${battle.options[1]}`);
 
         if (song1Votes > song2Votes) {
             song2.eliminated = true;

@@ -168,6 +168,7 @@ export const albums = [
             { name: "Level of Concern", image: "https://i.scdn.co/image/ab67616d00001e02ab2f8973949159695f65df7b" },
             { name: "Christmas Saves the Year", image: "https://i.scdn.co/image/ab67616d00001e02fdd772158c3af54caf44879b" },
             { name: "Twenty-Four (Switchfoot Cover)", image: "https://i.scdn.co/image/ab67616d00001e0243882fdb47a06d880f61efdc" },
+            { name: "Time to Say Goodbye", image: "https://i1.sndcdn.com/artworks-000005083596-vd83l9-t500x500.jpg" },
         ]
     },
 ] satisfies Album[];

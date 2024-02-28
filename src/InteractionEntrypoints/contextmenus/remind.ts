@@ -6,6 +6,7 @@ import { prisma } from "../../Helpers/prisma-init";
 import { ERRORS, REMINDER_LIMIT } from "../slashcommands/remind/_consts";
 import { addMilliseconds } from "date-fns";
 import F from "../../Helpers/funcs";
+import { roles } from "../../Configuration/config";
 
 const ctxMenu = new MessageContextMenu("⏰ Remind Me");
 
@@ -85,5 +86,7 @@ const genHandleId = ctxMenu.addInteractionListener(
         await ctx.editReply({ embeds: [confirmEmbed] });
     }
 );
+
+ctxMenu.addPermission(roles.banditos, true);
 
 export default ctxMenu;

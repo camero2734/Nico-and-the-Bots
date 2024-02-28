@@ -38,7 +38,7 @@ export abstract class InteractionEntrypoint<
         return this;
     }
 
-    addInteractionListener<T extends Readonly<string[]>>(
+    addInteractionListener<const T extends Readonly<string[]>>(
         name: string,
         args: T,
         interactionHandler: ListenerCustomIdGenerator<T>

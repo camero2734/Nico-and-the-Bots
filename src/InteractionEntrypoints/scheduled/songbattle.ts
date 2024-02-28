@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, italic } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, ThreadAutoArchiveDuration, italic } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs } from "../../Configuration/config";
@@ -8,8 +8,11 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { IMAGE_SIZE, PREFIX, Result, buttonColors, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { Cron } from "croner";
 
 const entrypoint = new ManualEntrypoint();
+
+const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 export async function songBattleCron() {
     // Get song battle channel
@@ -57,7 +60,7 @@ export async function songBattleCron() {
             const actionRow = previousMessage.components[0].toJSON();
             actionRow.components.forEach(c => c.disabled = true);
 
-            await previousMessage.edit({ embeds: [embed], components: [actionRow], attachments: [...previousMessage.attachments.values()] });
+            await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
         }
     }
 
@@ -98,6 +101,8 @@ export async function songBattleCron() {
     const attachment = new AttachmentBuilder(buffer, { name: "battle.png" });
 
     const startsAt = new Date();
+    const endsAt = cron.nextRun()!;
+
 
     // Placeholder message
     const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
@@ -142,17 +147,15 @@ export async function songBattleCron() {
     await m.edit({ embeds: [embed], files: [attachment], components: [actionRow] });
 
     // Create a discussion thread
-    // TODO: re-enable me, annoying for testing
-    // const endsAt = addHours(startsAt, 24);
-    // const thread = await m.startThread({
-    //     name: `Song Battle #${nextBattleNumber}`,
-    //     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
-    // });
+    const thread = await m.startThread({
+        name: `Song Battle #${nextBattleNumber}`,
+        autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
+    });
 
-    // await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
+    await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 }
 
-const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const>["pollId", "songId"], async (ctx, args) => {
+const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["pollId", "songId"], async (ctx, args) => {
     await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
@@ -189,7 +192,7 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", <const
     const embed = new EmbedBuilder(ctx.message.embeds[0].data);
     embed.setFooter({ text: embedFooter(totalVotes) });
 
-    await ctx.message.edit({ embeds: [embed], attachments: [...ctx.message.attachments.values()] });
+    await ctx.message.edit({ embeds: [embed], files: [...ctx.message.attachments.values()] });
 
     if (existingVote) {
         await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });

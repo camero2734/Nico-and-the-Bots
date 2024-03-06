@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { nanoid } from "nanoid";
 import { channelIDs, userIDs } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
@@ -17,9 +17,10 @@ ticketInteraction.onBotReady(async (guild, client) => {
     const ticketMessage = messages.find((m) => m.author.id === client.user?.id);
 
     const embed = new EmbedBuilder()
-        .setTitle("Submit a ticket")
+        .setTitle(`Submit a ticket`)
         .setDescription("Would you like to raise an issue with the server staff? Click the button below to submit a ticket")
-        .setColor("Blue");
+        .setColor("Blue")
+        .setTimestamp(Date.now());
 
     const button = new ButtonBuilder()
         .setLabel("Open a ticket")
@@ -73,6 +74,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
         name: title,
         autoArchiveDuration: 60,
         reason: `Ticket opened by ${ctx.user.tag}`,
+        type: ChannelType.PrivateThread
     });
 
     await thread.members.add(ctx.user.id);

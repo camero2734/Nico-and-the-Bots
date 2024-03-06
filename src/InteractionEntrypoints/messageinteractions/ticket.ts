@@ -80,7 +80,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
     await thread.members.add(ctx.user.id);
 
     await thread.send({
-        content: `<@${roles.staff}>`,
+        content: `<@${roles.staffSupport}>`,
         embeds: [
             new EmbedBuilder()
                 .setAuthor({
@@ -90,8 +90,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
                 .setTitle(title)
                 .setDescription(description)
                 .setColor("Blue")
-        ],
-        allowedMentions: { parse: [] }
+        ]
     });
 
     await ctx.editReply(`Ticket submitted! A staff member will be with you shortly in <#${thread.id}>`);

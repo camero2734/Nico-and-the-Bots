@@ -22,7 +22,7 @@ export const channelIDs = <const>{
     submittedsuggestions: "470406723572596746",
     artistsubmissions: "584215214468104194",
     leakstheories: "940390927661412353",
-    suggestions: "470421876976517141",
+    suggestions: "1059818853066084404",
     fairlylog: "470423228679192576",
     lyrics: "470425013770649600",
     staffventing: "470452236531531786",

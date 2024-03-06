@@ -10,9 +10,9 @@ const MODAL_TITLE_ID = nanoid();
 const MODAL_DESCRIPTION_ID = nanoid();
 
 const content = `
-# :gdd: Staff Support
+# <:gdd:898775936391053332> Staff Support
 
-## :question:Purpose
+## :question: Purpose
 
 This channel is dedicated for submitting tickets to the server staff. If you have a :red_circle: **serious** issue that you want to discuss with the staff, please continue reading below to submit a ticket
 

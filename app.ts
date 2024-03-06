@@ -66,7 +66,7 @@ client.on("ready", async () => {
 
     guild = await client.guilds.fetch({ force: true, guild: guildID });
 
-    await entrypointsReady;
+    const entrypoints = await entrypointsReady;
     InteractionEntrypoint.registerAllCommands(guild);
 
     sacarverBot.beginWelcomingMembers();
@@ -81,6 +81,10 @@ client.on("ready", async () => {
     await botChan.send({
         embeds: [new Discord.EmbedBuilder({ description: `Fetched all ${guild.members.cache.size} members` })]
     });
+
+    for (const [_path, entrypoint] of entrypoints) {
+        await entrypoint.runOnBotReady(guild);
+    }
 
     startPingServer();
 });

@@ -8,6 +8,8 @@ import { InteractionListener, ListenerCustomIdGenerator, createInteractionListen
 import { ReactionListener } from "./ListenerReaction";
 import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 
+type OnBotReadyFunc = (guild: Guild) => Promise<void> | void;
+
 export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,
     HandlerArgs extends any[] = []
@@ -20,6 +22,8 @@ export abstract class InteractionEntrypoint<
     public abstract commandData: ApplicationCommandData;
 
     private commandPermissions = new Collection<Snowflake, boolean>([[roles.staff, true]]);
+
+    private onBotReadyFuncs: Array<OnBotReadyFunc> = [];
 
     public getPermissions() {
         return this.commandPermissions.clone();
@@ -73,6 +77,14 @@ export abstract class InteractionEntrypoint<
             EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx });
             ErrorHandler(ctx, e);
         }
+    }
+
+    async onBotReady(func: OnBotReadyFunc): Promise<void> {
+        this.onBotReadyFuncs.push(func);
+    }
+
+    async runOnBotReady(guild: Guild): Promise<void> {
+        await Promise.all(this.onBotReadyFuncs.map((func) => func(guild)));
     }
 
     protected abstract _register(path: string[]): string;

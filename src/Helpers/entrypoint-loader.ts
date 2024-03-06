@@ -105,4 +105,6 @@ export async function registerAllEntrypoints() {
     for (const [path, entrypoint] of entrypoints) {
         entrypoint.register(path.parts);
     }
+
+    return entrypoints;
 }

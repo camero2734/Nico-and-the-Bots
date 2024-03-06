@@ -83,7 +83,7 @@ client.on("ready", async () => {
     });
 
     for (const [_path, entrypoint] of entrypoints) {
-        await entrypoint.runOnBotReady(guild);
+        await entrypoint.runOnBotReady(guild, client);
     }
 
     startPingServer();

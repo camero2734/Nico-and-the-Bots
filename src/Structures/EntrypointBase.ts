@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
+import { ApplicationCommandData, Client, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ErrorHandler } from "./Errors";
@@ -8,7 +8,7 @@ import { InteractionListener, ListenerCustomIdGenerator, createInteractionListen
 import { ReactionListener } from "./ListenerReaction";
 import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
 
-type OnBotReadyFunc = (guild: Guild) => Promise<void> | void;
+type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 
 export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,
@@ -83,8 +83,8 @@ export abstract class InteractionEntrypoint<
         this.onBotReadyFuncs.push(func);
     }
 
-    async runOnBotReady(guild: Guild): Promise<void> {
-        await Promise.all(this.onBotReadyFuncs.map((func) => func(guild)));
+    async runOnBotReady(guild: Guild, client: Client): Promise<void> {
+        await Promise.all(this.onBotReadyFuncs.map((func) => func(guild, client)));
     }
 
     protected abstract _register(path: string[]): string;

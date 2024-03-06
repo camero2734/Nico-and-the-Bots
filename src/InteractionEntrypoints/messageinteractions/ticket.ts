@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import { channelIDs } from "../../Configuration/config";
+import { channelIDs, roles } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { nanoid } from "nanoid";
 
@@ -69,7 +69,25 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
     const title = ctx.fields.getTextInputValue(MODAL_TITLE_ID);
     const description = ctx.fields.getTextInputValue(MODAL_DESCRIPTION_ID);
 
-    await ctx.editReply(`You submitted a ticket with the title "${title}" and the description "${description.slice(0, 100)}"`);
+    const thread = await ctx.channel.threads.create({
+        name: title,
+        autoArchiveDuration: 60,
+        reason: `Ticket opened by ${ctx.user.tag}`,
+    });
+
+    await thread.send({
+        content: `<@&${roles.staff}>`,
+        embeds: [
+            new EmbedBuilder()
+                .setAuthor({
+                    name: ctx.user.tag,
+                    iconURL: ctx.user.displayAvatarURL(),
+                })
+                .setTitle(title)
+                .setDescription(description)
+                .setColor("Blue")
+        ]
+    })
 });
 
 

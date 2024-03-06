@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { nanoid } from "nanoid";
-import { channelIDs, userIDs } from "../../Configuration/config";
+import { channelIDs, roles } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
 const ticketInteraction = new ManualEntrypoint();
@@ -18,7 +18,7 @@ ticketInteraction.onBotReady(async (guild, client) => {
 
     const embed = new EmbedBuilder()
         .setTitle(`Submit a ticket`)
-        .setDescription("Would you like to raise an issue with the server staff? Click the button below to submit a ticket")
+        .setDescription("Would you like to raise an issue with the server staff? Click the button below to submit a ticket.")
         .setColor("Blue")
         .setTimestamp(Date.now());
 
@@ -80,7 +80,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
     await thread.members.add(ctx.user.id);
 
     await thread.send({
-        content: `<@${userIDs.me}>`,
+        content: `<@${roles.staff}>`,
         embeds: [
             new EmbedBuilder()
                 .setAuthor({
@@ -90,7 +90,8 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
                 .setTitle(title)
                 .setDescription(description)
                 .setColor("Blue")
-        ]
+        ],
+        allowedMentions: { parse: [] }
     });
 
     await ctx.editReply(`Ticket submitted! A staff member will be with you shortly in <#${thread.id}>`);

@@ -22,7 +22,7 @@ export const channelIDs = <const>{
     submittedsuggestions: "470406723572596746",
     artistsubmissions: "584215214468104194",
     leakstheories: "940390927661412353",
-    suggestions: "470421876976517141",
+    suggestions: "1059818853066084404",
     fairlylog: "470423228679192576",
     lyrics: "470425013770649600",
     staffventing: "470452236531531786",
@@ -89,7 +89,8 @@ export const channelIDs = <const>{
         josh: "534882732820529174",
         band: "534882758770688031",
         dmaorg: "534882770619465731"
-    }
+    },
+    ticketSupport: "1214992264829599754",
 };
 
 export const categoryIDs = <const>{
@@ -148,6 +149,7 @@ export const roles = <const>{
     dema: "451217741584793601",
     common: "332021614256455690",
     vc: "465268535543988224",
+    staffSupport: "1215033226674839582",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",

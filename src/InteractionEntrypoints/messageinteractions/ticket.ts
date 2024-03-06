@@ -97,8 +97,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
                 .setTitle(title)
                 .setDescription(description)
                 .setColor("Blue")
-        ],
-        allowedMentions: { parse: [] }
+        ]
     });
 
     await ctx.editReply(`Ticket submitted! A staff member will be with you shortly in <#${thread.id}>`);

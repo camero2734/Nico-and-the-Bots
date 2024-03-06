@@ -9,17 +9,22 @@ const ticketInteraction = new ManualEntrypoint();
 const MODAL_TITLE_ID = nanoid();
 const MODAL_DESCRIPTION_ID = nanoid();
 
+const content = `
+# :gdd: Staff Support
+
+## :question:Purpose
+
+This channel is dedicated for submitting tickets to the server staff. If you have a :red_circle: **serious** issue that you want to discuss with the staff, please continue reading below to submit a ticket
+
+:warning: **Please note that this is not a channel for <#${channelIDs.suggestions}> or  general questions.** :warning:
+
+## :tickets: Submitting a ticket
+Press the button below, and you'll be given a small form to fill out with initial details. A private channel will be created with **only you and staff members** to discuss. You can send more information/images/etc. once it's been created. We'll do our best to respond as quickly as possible :hourglass:
+`;
+
 ticketInteraction.onBotReady(async (guild, client) => {
     const channel = await guild.channels.fetch(channelIDs.ticketSupport);
     if (!channel?.isTextBased()) return;
-
-    const content = `
-# Staff Support
-
-This channel is for submitting tickets to the server staff. If you have a **serious**  issue that you would like to raise with the staff, please click the button below to submit a ticket.
-
-**Please note that this is not a channel for suggestions or general questions.**
-`;
 
     const messages = await channel.messages.fetch({ limit: 100 });
     const ticketMessage = messages.find((m) => m.author.id === client.user?.id);
@@ -92,7 +97,8 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
                 .setTitle(title)
                 .setDescription(description)
                 .setColor("Blue")
-        ]
+        ],
+        allowedMentions: { parse: [] }
     });
 
     await ctx.editReply(`Ticket submitted! A staff member will be with you shortly in <#${thread.id}>`);

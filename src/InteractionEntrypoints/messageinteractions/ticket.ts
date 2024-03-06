@@ -55,7 +55,7 @@ const genBtnId = ticketInteraction.addInteractionListener("ticketOpenModal", [],
         new TextInputBuilder()
             .setStyle(TextInputStyle.Paragraph)
             .setLabel("Issue Description")
-            .setPlaceholder("A detailed description of your issue. You can send follow-up messages after submitting the ticket with images/etc.")
+            .setPlaceholder("A detailed description of your issue")
             .setCustomId(MODAL_DESCRIPTION_ID)
     );
 

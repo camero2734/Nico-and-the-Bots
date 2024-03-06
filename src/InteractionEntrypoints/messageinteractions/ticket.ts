@@ -14,9 +14,16 @@ const content = `
 
 ## :question: Purpose
 
-This channel is dedicated for submitting tickets to the server staff. If you have a :red_circle: **serious** issue that you want to discuss with the staff, please continue reading below to submit a ticket
+This channel is dedicated for submitting support tickets directly to the server staff. :warning: **Please note that this is not a channel for <#${channelIDs.suggestions}> or  general questions.** :warning:
+### You should use submit a ticket if:
+- You are being targeted/harassed by others
+- You have a dispute with another user that requires mediation
+- You need to report inappropriate behavior or content
+- You have a concern about privacy, security, accessibility, etc.
+- You need clarification on the server rules or policies
+- You have any other issue that you feel requires staff attention
 
-:warning: **Please note that this is not a channel for <#${channelIDs.suggestions}> or  general questions.** :warning:
+If you have an issue that you want to discuss with the staff, please continue reading below to submit a ticket.
 
 ## :tickets: Submitting a ticket
 Press the button below, and you'll be given a small form to fill out with initial details. A private channel will be created with **only you and staff members** to discuss. You can send more information/images/etc. once it's been created. We'll do our best to respond as quickly as possible :hourglass:

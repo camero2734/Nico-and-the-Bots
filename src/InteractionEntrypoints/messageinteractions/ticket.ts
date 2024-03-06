@@ -38,7 +38,6 @@ ticketInteraction.onBotReady(async (guild, client) => {
 
 const genBtnId = ticketInteraction.addInteractionListener("ticketOpenModal", [], async (ctx) => {
     if (!ctx.isButton()) return;
-    await ctx.deferReply({ ephemeral: true });
 
     const modal = new ModalBuilder()
         .setTitle("Ticket Submission")

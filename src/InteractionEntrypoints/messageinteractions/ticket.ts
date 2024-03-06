@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import { channelIDs, roles } from "../../Configuration/config";
-import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { nanoid } from "nanoid";
+import { channelIDs, userIDs } from "../../Configuration/config";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
 const ticketInteraction = new ManualEntrypoint();
 
@@ -75,8 +75,10 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
         reason: `Ticket opened by ${ctx.user.tag}`,
     });
 
+    await thread.members.add(ctx.user.id);
+
     await thread.send({
-        content: `<@&${roles.staff}>`,
+        content: `<@${userIDs.me}>`,
         embeds: [
             new EmbedBuilder()
                 .setAuthor({
@@ -87,7 +89,9 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
                 .setDescription(description)
                 .setColor("Blue")
         ]
-    })
+    });
+
+    await ctx.editReply(`Ticket submitted! A staff member will be with you shortly in <#${thread.id}>`);
 });
 
 

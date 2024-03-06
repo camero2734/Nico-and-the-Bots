@@ -13,14 +13,16 @@ ticketInteraction.onBotReady(async (guild, client) => {
     const channel = await guild.channels.fetch(channelIDs.ticketSupport);
     if (!channel?.isTextBased()) return;
 
+    const content = `
+# Staff Support
+
+This channel is for submitting tickets to the server staff. If you have a **serious**  issue that you would like to raise with the staff, please click the button below to submit a ticket.
+
+**Please note that this is not a channel for suggestions or general questions.**
+`;
+
     const messages = await channel.messages.fetch({ limit: 100 });
     const ticketMessage = messages.find((m) => m.author.id === client.user?.id);
-
-    const embed = new EmbedBuilder()
-        .setTitle(`Submit a ticket`)
-        .setDescription("Would you like to raise an issue with the server staff? Click the button below to submit a ticket.")
-        .setColor("Blue")
-        .setTimestamp(Date.now());
 
     const button = new ButtonBuilder()
         .setLabel("Open a ticket")
@@ -31,9 +33,9 @@ ticketInteraction.onBotReady(async (guild, client) => {
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
 
     if (ticketMessage) {
-        await ticketMessage.edit({ embeds: [embed], components: [actionRow] });
+        await ticketMessage.edit({ content, embeds: [], components: [actionRow] });
     } else {
-        await channel.send({ embeds: [embed], components: [actionRow] });
+        await channel.send({ content, embeds: [], components: [actionRow] });
     }
 });
 
@@ -80,7 +82,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
     await thread.members.add(ctx.user.id);
 
     await thread.send({
-        content: `<@${roles.staffSupport}>`,
+        content: `<@&${roles.staffSupport}>`,
         embeds: [
             new EmbedBuilder()
                 .setAuthor({

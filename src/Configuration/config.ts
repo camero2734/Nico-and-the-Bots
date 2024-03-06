@@ -89,7 +89,8 @@ export const channelIDs = <const>{
         josh: "534882732820529174",
         band: "534882758770688031",
         dmaorg: "534882770619465731"
-    }
+    },
+    ticketSupport: "1214992264829599754",
 };
 
 export const categoryIDs = <const>{

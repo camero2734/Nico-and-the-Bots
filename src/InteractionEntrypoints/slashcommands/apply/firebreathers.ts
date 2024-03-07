@@ -14,7 +14,7 @@ import {
     TextInputBuilder,
     TextInputStyle
 } from "discord.js";
-import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
+import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -42,7 +42,7 @@ command.setHandler(async (ctx) => {
     // Ensure they haven't already started an application
     const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 
-    if (activeApplication) {
+    if (activeApplication && ctx.user.id !== userIDs.myAlt) {
         const { applicationId } = activeApplication;
         if (activeApplication.decidedAt) {
             const timestamp = F.discordTimestamp(

@@ -100,5 +100,4 @@ export async function getActiveFirebreathersApplication(userId: Snowflake): Prom
     });
 }
 
-// prettier-ignore
 export const genApplicationLink = (applicationId: string) => `https://docs.google.com/forms/d/e/1FAIpQLSdhs01W8sAJTzp-lZNC0G2exKmNK1IcNsLtZuf5W-Zww_-p3w/viewform?usp=pp_url&entry.775451243=${applicationId}`;

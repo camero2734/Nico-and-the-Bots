@@ -66,7 +66,7 @@ export async function createNewDrop() {
 
 const msgInt = new ManualEntrypoint();
 
-export const GenBtnId = msgInt.addInteractionListener("dropGuess", <const>["dropId", "idx"], async (ctx, args) => {
+export const GenBtnId = msgInt.addInteractionListener("dropGuess", ["dropId", "idx"], async (ctx, args) => {
     await ctx.deferUpdate();
 
     if (!ctx.isButton()) return;

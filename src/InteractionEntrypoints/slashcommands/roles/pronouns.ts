@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });
 
-const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[], async (ctx) => {
+const genSelectId = command.addInteractionListener("pronounRoleSelect", [], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
 
     await ctx.deferUpdate();

@@ -50,7 +50,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
 const NUM_PEOPLE_TEXT = (num: number) => `${num} report${F.plural(num)}`;
 
-const genId = ctxMenu.addInteractionListener("reportMessage", <const>["channelId", "messageId"], async (ctx, args) => {
+const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "messageId"], async (ctx, args) => {
     if (!ctx.isSelectMenu()) throw new Error("Invalid interaction type");
 
     await ctx.deferUpdate();

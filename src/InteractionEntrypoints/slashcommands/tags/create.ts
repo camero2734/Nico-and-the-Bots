@@ -58,7 +58,7 @@ command.setHandler(async (ctx) => {
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });
 
-const generateYesID = command.addInteractionListener("tcYes", <const>["name", "textLookup"], async (ctx, args) => {
+const generateYesID = command.addInteractionListener("tcYes", ["name", "textLookup"], async (ctx, args) => {
     await ctx.deferReply({ ephemeral: true });
 
     const { value: text, id } = (await prisma.temporaryText.findUnique({ where: { id: +args.textLookup } })) || {};

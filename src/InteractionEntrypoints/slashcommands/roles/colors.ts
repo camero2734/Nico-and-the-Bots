@@ -37,7 +37,7 @@ command.setHandler(async (ctx) => {
     return ctx.send({ embeds: [embed], components: [actionRow] });
 });
 
-const roleSelectedId = command.addInteractionListener("roleSelected", <const>["originalUserId"], async (ctx, args) => {
+const roleSelectedId = command.addInteractionListener("roleSelected", ["originalUserId"], async (ctx, args) => {
     if (!ctx.isRoleSelectMenu()) return;
     if (args.originalUserId !== ctx.user.id) return;
 

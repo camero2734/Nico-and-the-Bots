@@ -142,7 +142,7 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [embed], components: [starActionRow] });
 });
 
-const genStarId = command.addInteractionListener("fmStarInt", <const>["fmStarId"], async (ctx) => {
+const genStarId = command.addInteractionListener("fmStarInt", ["fmStarId"], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     await ctx.editReply({ content: "This feature is coming in a future update" });

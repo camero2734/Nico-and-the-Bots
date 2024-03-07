@@ -52,7 +52,7 @@ command.setHandler(async (ctx) => {
     await ctx.send({ embeds: [embed], components: [countryActionRow, concertActionRow] });
 });
 
-const genSelectCountryId = command.addInteractionListener("selectCountry", <const>[], async (ctx) => {
+const genSelectCountryId = command.addInteractionListener("selectCountry", [], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
 
     const [_, concertActionRowCom] = ctx.message.components;
@@ -92,7 +92,7 @@ const genSelectCountryId = command.addInteractionListener("selectCountry", <cons
     await ctx.update({ components: [countryActionRow, concertActionRow] });
 });
 
-const genSelectConcertId = command.addInteractionListener("selectConcert", <const>["country"], async (ctx, args) => {
+const genSelectConcertId = command.addInteractionListener("selectConcert", ["country"], async (ctx, args) => {
     if (!ctx.isSelectMenu()) return;
 
     const concertsByCountry = getConcertsByCountry(ctx.guild);

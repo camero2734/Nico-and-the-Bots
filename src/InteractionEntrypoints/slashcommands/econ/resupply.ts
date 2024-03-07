@@ -90,7 +90,7 @@ command.setHandler(async (ctx) => {
     });
 });
 
-const genSelectId = command.addInteractionListener("banditosBishopsSelect", <const>["matchingBishop"], async (ctx, args) => {
+const genSelectId = command.addInteractionListener("banditosBishopsSelect", ["matchingBishop"], async (ctx, args) => {
     if (!ctx.isStringSelectMenu() || !ctx.member) return;
 
     await ctx.deferUpdate();

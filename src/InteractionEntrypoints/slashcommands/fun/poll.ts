@@ -135,7 +135,7 @@ command.setHandler(async (ctx) => {
     }
 });
 
-const genPollResId = command.addInteractionListener("pollresponse", <const>["pollId"], async (ctx, args) => {
+const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], async (ctx, args) => {
     if (!ctx.isSelectMenu()) return;
     const { pollId } = args;
     const indices = ctx.values?.map((n) => parseInt(n)).filter((n) => n >= 0 && !isNaN(n));

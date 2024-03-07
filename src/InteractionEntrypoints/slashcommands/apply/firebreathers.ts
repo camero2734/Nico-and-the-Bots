@@ -182,7 +182,7 @@ export async function sendToStaff(
     }
 }
 
-const genId = command.addInteractionListener("staffFBAppRes", <const>["type", "applicationId"], async (ctx, args) => {
+const genId = command.addInteractionListener("staffFBAppRes", ["type", "applicationId"], async (ctx, args) => {
     await ctx.deferUpdate();
     await ctx.editReply({ components: [] });
 

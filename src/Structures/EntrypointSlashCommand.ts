@@ -142,7 +142,7 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
     }
 
     upvoteDownVoteListener(name: string) {
-        const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
+        const gen = this.addInteractionListener(`${name}&updn`, ["isUpvote", "pollID"], async (ctx, args) => {
             if (!ctx.isButton()) return;
 
             await ctx.deferUpdate();

@@ -96,7 +96,7 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [finalEmbed] });
 });
 
-const genYesID = command.addInteractionListener("intvwYes", <const>["interviewId"], async (ctx, args) => {
+const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], async (ctx, args) => {
     await ctx.deferUpdate();
 
     const embed = EmbedBuilder.from(ctx.message.embeds[0]);

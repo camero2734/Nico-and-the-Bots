@@ -265,6 +265,7 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
         .setDescription(
             `${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`
         )
+        .addFields([{ name: "Reason", value: reason || "*No reason given*" }])
         .setFooter({ text: applicationId });
 
     // Archive thread

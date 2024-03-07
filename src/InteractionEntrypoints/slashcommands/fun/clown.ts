@@ -5,7 +5,7 @@ import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Put an image onto a clown's monitor 🤡",
     options: [
         {

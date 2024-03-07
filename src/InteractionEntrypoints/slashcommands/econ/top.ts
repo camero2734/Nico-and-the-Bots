@@ -17,7 +17,7 @@ const timePeriodChoices = <const>[
     { name: "All time", value: 0 }
 ];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Displays the server point leaderboard",
     options: [
         {

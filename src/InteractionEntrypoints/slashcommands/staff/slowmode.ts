@@ -2,7 +2,7 @@ import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Enables slow mode in the channel",
     options: [
         {

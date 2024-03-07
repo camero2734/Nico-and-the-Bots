@@ -2,7 +2,7 @@ import { EmbedBuilder } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Enables or disables the announcements role",
     options: []
 });

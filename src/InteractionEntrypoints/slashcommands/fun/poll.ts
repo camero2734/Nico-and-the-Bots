@@ -18,7 +18,7 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Creates a message that users can react to to receive a role",
     options: [
         {
@@ -135,7 +135,7 @@ command.setHandler(async (ctx) => {
     }
 });
 
-const genPollResId = command.addInteractionListener("pollresponse", <const>["pollId"], async (ctx, args) => {
+const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], async (ctx, args) => {
     if (!ctx.isSelectMenu()) return;
     const { pollId } = args;
     const indices = ctx.values?.map((n) => parseInt(n)).filter((n) => n >= 0 && !isNaN(n));

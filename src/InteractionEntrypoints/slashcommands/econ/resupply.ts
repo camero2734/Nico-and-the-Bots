@@ -20,7 +20,7 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { District, ItemDescriptions, PrizeType, districts, getPrizeName } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",
     options: []
 });
@@ -90,7 +90,7 @@ command.setHandler(async (ctx) => {
     });
 });
 
-const genSelectId = command.addInteractionListener("banditosBishopsSelect", <const>["matchingBishop"], async (ctx, args) => {
+const genSelectId = command.addInteractionListener("banditosBishopsSelect", ["matchingBishop"], async (ctx, args) => {
     if (!ctx.isStringSelectMenu() || !ctx.member) return;
 
     await ctx.deferUpdate();

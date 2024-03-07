@@ -4,7 +4,7 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const names = <const>["role1", "role2", "role3", "role4", "role5"];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Retrieves information for a role",
     options: names.map(
         (name, idx) =>

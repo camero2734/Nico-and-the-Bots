@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Mutes a user",
     options: [
         { name: "user", description: "The user to unmute", required: true, type: ApplicationCommandOptionType.User }

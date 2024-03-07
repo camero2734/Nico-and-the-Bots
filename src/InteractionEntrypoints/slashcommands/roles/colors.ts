@@ -4,7 +4,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Chooses a color role purchased from the shop",
     options: []
 });
@@ -37,7 +37,7 @@ command.setHandler(async (ctx) => {
     return ctx.send({ embeds: [embed], components: [actionRow] });
 });
 
-const roleSelectedId = command.addInteractionListener("roleSelected", <const>["originalUserId"], async (ctx, args) => {
+const roleSelectedId = command.addInteractionListener("roleSelected", ["originalUserId"], async (ctx, args) => {
     if (!ctx.isRoleSelectMenu()) return;
     if (args.originalUserId !== ctx.user.id) return;
 

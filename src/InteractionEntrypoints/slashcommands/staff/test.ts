@@ -3,7 +3,7 @@ import { userIDs } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Test command",
     options: []
 });

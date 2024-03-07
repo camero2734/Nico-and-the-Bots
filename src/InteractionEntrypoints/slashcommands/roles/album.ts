@@ -13,7 +13,7 @@ const albumRoles = {
     "Self Titled": ST
 };
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Get a role for one of the band's albums",
     options: [
         {

@@ -8,7 +8,7 @@ interface Ping {
 
 const previousPings: Ping[] = [];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Checks the bot's ping",
     options: []
 });

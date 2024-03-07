@@ -19,7 +19,7 @@ enum ActionTypes {
     DeleteReminder
 }
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Presents a list of your reminders",
     options: []
 });

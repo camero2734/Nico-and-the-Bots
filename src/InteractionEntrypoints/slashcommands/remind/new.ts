@@ -7,7 +7,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { ERRORS, REMINDER_LIMIT } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Sets up a reminder from Nico",
     options: [
         {

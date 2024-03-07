@@ -3,7 +3,7 @@ import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Sends a message that allows you to select pronoun roles",
     options: []
 });
@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
     await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });
 
-const genSelectId = command.addInteractionListener("pronounRoleSelect", <const>[], async (ctx) => {
+const genSelectId = command.addInteractionListener("pronounRoleSelect", [], async (ctx) => {
     if (!ctx.isSelectMenu()) return;
 
     await ctx.deferUpdate();

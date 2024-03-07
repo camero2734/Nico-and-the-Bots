@@ -115,7 +115,7 @@ const options = {
 };
 const fuse = new Fuse(rules, options);
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Displays a server rule",
     options: [
         {

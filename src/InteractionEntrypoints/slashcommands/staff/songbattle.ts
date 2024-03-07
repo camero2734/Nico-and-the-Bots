@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { songBattleCron } from "../../scheduled/songbattle";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Test command for song battles",
     options: []
 });

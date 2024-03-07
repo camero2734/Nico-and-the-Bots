@@ -48,7 +48,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
 const genAdditionalGoldId = ctxMenu.addInteractionListener(
     "additionalGold",
-    <const>["originalUserId", "originalMessageId", "originalChannelId"],
+    ["originalUserId", "originalMessageId", "originalChannelId"],
     async (ctx, args) => {
         await ctx.deferReply({ ephemeral: true });
         await handleGold(

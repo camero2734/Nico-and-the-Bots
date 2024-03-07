@@ -7,9 +7,12 @@ import {
     Colors,
     EmbedBuilder,
     Guild,
+    ModalBuilder,
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder,
-    TextChannel
+    TextChannel,
+    TextInputBuilder,
+    TextInputStyle
 } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -119,7 +122,7 @@ export async function sendToStaff(
                         })
                     ].map(o => o.toJSON())
                 )
-                .setCustomId(genId({ applicationId, type: "" }))
+                .setCustomId(genModalId({ applicationId }))
         ]);
 
         const scoreCard = await generateScoreCard(member);
@@ -182,9 +185,39 @@ export async function sendToStaff(
     }
 }
 
-const genId = command.addInteractionListener("staffFBAppRes", ["type", "applicationId"], async (ctx, args) => {
+const MODAL_REASON = "fbAppModalReason";
+const genModalId = command.addInteractionListener("staffFBAppModal", ["applicationId"], async (ctx, args) => {
+    if (!ctx.isAnySelectMenu()) return;
+
+    const action: ActionTypes = +ctx.values[0];
+
+    const verb = action === ActionTypes.Accept ? "Accept" : "Deny";
+    const verbPast = action === ActionTypes.Accept ? "accepted" : "denied";
+
+    const modal = new ModalBuilder()
+        .setTitle(`${verb}ing Firebreathers Application`)
+        .setCustomId(genId({ applicationId: args.applicationId, type: action.toString() }));
+
+    const titleInput = new ActionRowBuilder<TextInputBuilder>().setComponents(
+        new TextInputBuilder()
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+            .setLabel(`${verb} Reason`)
+            .setPlaceholder(`Why was the application ${verbPast}? This is optional and will be sent to the user.`)
+            .setCustomId(MODAL_REASON)
+    );
+
+    await ctx.showModal(modal.setComponents(titleInput));
+});
+
+const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", "type"], async (ctx, args) => {
     await ctx.deferUpdate();
     await ctx.editReply({ components: [] });
+
+    if (!ctx.isModalSubmit()) return;
+
+    const action: ActionTypes = +args.type;
+    const reason = ctx.fields.getTextInputValue(MODAL_REASON);
 
     const applicationId = args.applicationId;
     const application = await prisma.firebreatherApplication.findUnique({ where: { applicationId } });
@@ -199,9 +232,10 @@ const genId = command.addInteractionListener("staffFBAppRes", ["type", "applicat
 
     if (!embed.data.author) return; // Just to make typescript happy
 
+    if (reason) embed.addFields({ name: "Reason", value: reason });
+
     const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
 
-    const action = ctx.isAnySelectMenu() ? +ctx.values[0] : +args.type;
     if (action === ActionTypes.Accept) {
         await prisma.firebreatherApplication.update({
             where: { applicationId },
@@ -245,5 +279,7 @@ const genId = command.addInteractionListener("staffFBAppRes", ["type", "applicat
 
     await F.sendMessageToUser(member, { embeds: [embed] });
 });
+
+
 
 export default command;

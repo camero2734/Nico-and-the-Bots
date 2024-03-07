@@ -7,7 +7,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Shows stats about verified questions",
     options: [
         {

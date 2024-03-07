@@ -3,7 +3,7 @@ import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Sends a message that allows you to select pronoun roles",
     options: []
 });

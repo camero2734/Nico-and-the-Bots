@@ -23,7 +23,7 @@ const emojiMap: Record<typeof tf[keyof typeof tf], Snowflake> = {
     [tf.other]: "694781760407601233"
 };
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Gives you notification roles for topfeed channels (when someone posts on SM, DMAORG updates, etc.)",
     options: [
         {

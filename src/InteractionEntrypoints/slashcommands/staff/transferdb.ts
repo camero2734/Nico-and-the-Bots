@@ -9,7 +9,7 @@
 // import { prisma } from "../../../Helpers/prisma-init";
 // import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-// const command = new SlashCommand(<const>{
+// const command = new SlashCommand({
 //     description: "Migrates DB",
 //     options: []
 // });

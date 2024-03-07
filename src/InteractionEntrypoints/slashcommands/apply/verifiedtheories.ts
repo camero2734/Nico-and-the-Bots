@@ -21,7 +21,7 @@ import { TimedInteractionListener } from "../../../Structures/TimedInteractionLi
 import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Opens an application for the verified-theories channel",
     options: []
 });

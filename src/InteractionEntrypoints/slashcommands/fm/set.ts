@@ -5,7 +5,7 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import { fm } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Sets your lastfm username for use with other /fm commands",
     options: [
         {

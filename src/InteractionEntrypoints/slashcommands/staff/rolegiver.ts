@@ -8,7 +8,7 @@ enum ActionTypes {
     Remove
 }
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Creates a message that users can react to to receive a role",
     options: [
         {

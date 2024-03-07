@@ -4,7 +4,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Bans a member",
     options: [
         { name: "user", description: "The member to ban", required: true, type: ApplicationCommandOptionType.User },

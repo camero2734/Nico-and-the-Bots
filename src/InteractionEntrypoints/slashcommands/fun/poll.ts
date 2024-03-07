@@ -18,7 +18,7 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Creates a message that users can react to to receive a role",
     options: [
         {

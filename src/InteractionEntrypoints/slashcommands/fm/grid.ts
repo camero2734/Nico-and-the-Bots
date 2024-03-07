@@ -4,7 +4,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { Album, fm, getFMUsername } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Generates a weekly overview for your last.fm stats",
     options: [
         {

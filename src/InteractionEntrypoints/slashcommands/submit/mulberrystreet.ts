@@ -16,7 +16,7 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Submits an image, video, or audio file to #mulberry-street",
     options: [
         {

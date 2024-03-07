@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Removes all firebreathers",
     options: []
 });

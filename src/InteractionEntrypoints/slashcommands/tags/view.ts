@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "View tags created by someone",
     options: [
         {

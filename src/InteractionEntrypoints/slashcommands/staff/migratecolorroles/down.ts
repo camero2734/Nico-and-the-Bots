@@ -2,7 +2,7 @@ import { Snowflake } from "discord.js";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { Change, changes } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Reverts changes",
     options: []
 });

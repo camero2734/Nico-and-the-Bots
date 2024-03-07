@@ -24,7 +24,7 @@ enum ActionTypes {
     Deny
 }
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Opens an application to the Firebreathers role",
     options: []
 });

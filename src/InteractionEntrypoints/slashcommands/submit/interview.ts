@@ -19,7 +19,7 @@ const getYtInfo = metascraper([
     metascraperTitle()
 ]);
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Submits an interview to the interview channel",
     options: [
         {

@@ -9,7 +9,7 @@ import {
     getFMUsername
 } from "./_consts";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Displays now playing on last.fm",
     options: [
         {

@@ -5,7 +5,7 @@ import { getConcertChannelManager } from "../../../Helpers/concert-channels";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Selects a concert channel",
     options: []
 });

@@ -4,7 +4,7 @@ import ordinal from "ordinal";
 import { queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Displays some information about a user",
     options: [
         {

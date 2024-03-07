@@ -5,7 +5,7 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const TAG_COST = 1000;
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Creates (or edits) a command that sends a short snippet of text",
     options: [
         { name: "name", description: "The name of the tag", required: true, type: ApplicationCommandOptionType.String },

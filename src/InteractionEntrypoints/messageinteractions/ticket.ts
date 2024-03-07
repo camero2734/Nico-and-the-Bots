@@ -92,9 +92,9 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
     });
 
     await thread.members.add(ctx.user.id);
+    await thread.send({ content: `<@&${roles.staffSupport}>` });
 
     await thread.send({
-        content: `<@&${roles.staffSupport}>`,
         embeds: [
             new EmbedBuilder()
                 .setAuthor({

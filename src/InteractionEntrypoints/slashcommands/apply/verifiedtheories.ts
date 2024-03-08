@@ -109,7 +109,9 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
         .setCustomId(genModalSubmitId({}));
 
     // Morse code
-    const morse = morseEncode(generateWords());
+    const validCharacters = "!,@#$%&:;<>{}😀😁😂🤣😃😄😅😆😊😋😎🥲🤔";
+    const [dotChar, dashChar] = F.randomValueInArray(validCharacters.split(""));
+    const morse = morseEncode(generateWords(), dotChar, dashChar);
 
     const morseInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
@@ -143,7 +145,7 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
             .setStyle(TextInputStyle.Paragraph)
             .setPlaceholder("Enter the decoded sentence here")
             .setLabel("Decode the following")
-            .setValue(ascii + `, ${randomBase}`)
+            .setValue(ascii)
     );
 
     modal.setComponents(F.shuffle([morseInput, caesarInput, asciiInput]));

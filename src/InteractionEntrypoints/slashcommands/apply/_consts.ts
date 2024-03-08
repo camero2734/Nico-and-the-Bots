@@ -135,12 +135,14 @@ const morseAlphabet: Record<string, string> = {
 
 const reverseMorseAlphabet: Record<string, string> = Object.fromEntries(Object.entries(morseAlphabet).map(([k, v]) => [v, k]));
 
-export function morseEncode(str: string) {
+export function morseEncode(str: string, dotChar: string, dashChar: string) {
     return str
         .toLowerCase()
         .split("")
         .map((c) => morseAlphabet[c])
-        .join(" ");
+        .join(" ")
+        .replace(/\./g, dotChar)
+        .replace(/-/g, dashChar);
 }
 
 export function morseDecode(str: string) {

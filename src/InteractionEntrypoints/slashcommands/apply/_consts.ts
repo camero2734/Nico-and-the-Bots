@@ -140,9 +140,9 @@ export function morseEncode(str: string, dotChar: string, dashChar: string) {
         .toLowerCase()
         .split("")
         .map((c) => morseAlphabet[c])
-        .join(" ")
+        .join("/")
         .replace(/\./g, dotChar)
-        .replace(/-/g, dashChar);
+        .replace(/\-/g, dashChar);
 }
 
 export function morseDecode(str: string) {

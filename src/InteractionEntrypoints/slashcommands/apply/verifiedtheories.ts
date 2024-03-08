@@ -109,8 +109,8 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
         .setCustomId(genModalSubmitId({}));
 
     // Morse code
-    const validCharacters = "!,@#$%&:;<>{}😀😁😂🤣😃😄😅😆😊😋😎🥲🤔";
-    const [dotChar, dashChar] = F.randomValueInArray(validCharacters.split(""));
+    const validCharacters = "😀😁😂🤣😃😄😅😆😊😋😎🥲🤔😔😓🫤🙃😭😤😧🤬😡🤡🥺🥳🧐";
+    const [dotChar, dashChar] = F.shuffle([...validCharacters]);
     const morse = morseEncode(generateWords(), dotChar, dashChar);
 
     const morseInput = new ActionRowBuilder<TextInputBuilder>().addComponents(

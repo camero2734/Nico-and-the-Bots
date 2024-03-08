@@ -1,11 +1,11 @@
 import { FirebreatherApplication } from ".prisma/client";
+import type { Faker } from '@faker-js/faker';
 import { hoursToMilliseconds, subDays } from "date-fns";
 import { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
-import { faker } from '@faker-js/faker';
 
 const VERIFIED_DELAY_HOURS = 12;
 export const VerifiedQuizConsts = {
@@ -173,7 +173,7 @@ export function caesarDecode(str: string, shift: number) {
 }
 
 // Word generator
-export function generateWords() {
+export function generateWords(faker: Faker) {
     return [
         faker.word.adverb(),
         faker.word.verb(),

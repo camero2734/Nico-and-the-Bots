@@ -1,3 +1,5 @@
+import { Faker, en } from "@faker-js/faker";
+import { roundToNearestMinutes } from "date-fns";
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -104,14 +106,19 @@ const genCancelId = command.addInteractionListener("verifcancel", [], async (ctx
 const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) => {
     if (!ctx.isButton()) return;
 
+    // Ensure the user gets the same questions every time (but different after a while)
+    const seed = roundToNearestMinutes(new Date(), { nearestTo: 30 }).getTime() ^ F.hashToInt(ctx.user.id);
+    const faker = new Faker({ locale: [en] });
+    faker.seed(seed);
+
     const modal = new ModalBuilder()
         .setTitle("Verified Theories Quiz -- Part 1")
         .setCustomId(genModalSubmitId({}));
 
     // Morse code
     const validCharacters = "😀😁😂🤣😃😄😅😆😊😋😎🥲🤔😔😓🫤🙃😭😤😧🤬😡🤡🥺🥳🧐";
-    const [dotChar, dashChar] = F.shuffle([...validCharacters]);
-    const morse = morseEncode(generateWords(), dotChar, dashChar);
+    const [dotChar, dashChar] = faker.helpers.shuffle([...validCharacters]);
+    const morse = morseEncode(generateWords(faker), dotChar, dashChar);
 
     const morseInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
@@ -123,8 +130,8 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
     );
 
     // Caeser cipher
-    const rot = Math.floor(Math.random() * 25) + 1; // 1-25
-    const caesar = caesarEncode(generateWords(), rot);
+    const rot = faker.number.int({ min: 1, max: 25 });
+    const caesar = caesarEncode(generateWords(faker), rot);
     const caesarInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
             .setCustomId("caesar")
@@ -135,8 +142,8 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
     );
 
     // ASCII
-    const words = generateWords();
-    const randomBase = F.randomValueInArray([2, 10, 16]);
+    const words = generateWords(faker);
+    const randomBase = faker.helpers.arrayElement([2, 10, 16]);
 
     const ascii = words.split("").map((c) => c.charCodeAt(0).toString(randomBase)).join(" ");
     const asciiInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -148,7 +155,7 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
             .setValue(ascii)
     );
 
-    modal.setComponents(F.shuffle([morseInput, caesarInput, asciiInput]));
+    modal.setComponents(faker.helpers.shuffle([morseInput, caesarInput, asciiInput]));
 
     await ctx.showModal(modal);
 });

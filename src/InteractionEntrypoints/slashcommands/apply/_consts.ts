@@ -5,6 +5,7 @@ import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
+import { faker } from '@faker-js/faker';
 
 const VERIFIED_DELAY_HOURS = 12;
 export const VerifiedQuizConsts = {
@@ -101,3 +102,81 @@ export async function getActiveFirebreathersApplication(userId: Snowflake): Prom
 }
 
 export const genApplicationLink = (applicationId: string) => `https://docs.google.com/forms/d/e/1FAIpQLSdhs01W8sAJTzp-lZNC0G2exKmNK1IcNsLtZuf5W-Zww_-p3w/viewform?usp=pp_url&entry.775451243=${applicationId}`;
+
+// Morse code
+const morseAlphabet: Record<string, string> = {
+    a: ".-",
+    b: "-...",
+    c: "-.-.",
+    d: "-..",
+    e: ".",
+    f: "..-.",
+    g: "--.",
+    h: "....",
+    i: "..",
+    j: ".---",
+    k: "-.-",
+    l: ".-..",
+    m: "--",
+    n: "-.",
+    o: "---",
+    p: ".--.",
+    q: "--.-",
+    r: ".-.",
+    s: "...",
+    t: "-",
+    u: "..-",
+    v: "...-",
+    w: ".--",
+    x: "-..-",
+    y: "-.--",
+    z: "--.."
+};
+
+const reverseMorseAlphabet: Record<string, string> = Object.fromEntries(Object.entries(morseAlphabet).map(([k, v]) => [v, k]));
+
+export function morseEncode(str: string) {
+    return str
+        .toLowerCase()
+        .split("")
+        .map((c) => morseAlphabet[c])
+        .join(" ");
+}
+
+export function morseDecode(str: string) {
+    return str
+        .split(" ")
+        .map((c) => reverseMorseAlphabet[c])
+        .join("")
+        .toUpperCase();
+}
+
+// Caesar cipher
+const alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+export function caesarEncode(str: string, shift: number) {
+    return str
+        .toLowerCase()
+        .split("")
+        .map((c) => {
+            if (c === " ") return " ";
+            const idx = alphabet.indexOf(c);
+            return alphabet[(idx + shift) % alphabet.length];
+        })
+        .join("");
+}
+
+export function caesarDecode(str: string, shift: number) {
+    return caesarEncode(str, -shift);
+}
+
+// Word generator
+export function generateWords() {
+    return [
+        faker.word.adverb(),
+        faker.word.verb(),
+        faker.word.adjective(),
+        faker.word.adjective(),
+        faker.word.noun(),
+    ].join(" ");
+}

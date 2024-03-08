@@ -25,6 +25,7 @@
     "@discordjs/builders": "^0.14.0-dev.1652832619-dfe449c",
     "@discordjs/collection": "^0.6.0-dev.1644235500.b936103",
     "@discordjs/rest": "^0.4.0-dev.1646395403.6f7a366",
+    "@faker-js/faker": "^8.4.1",
     "@napi-rs/canvas": "^0.1.45",
     "@prisma/client": "5.9.1",
     "@solely/simple-fm": "^1.6.4",

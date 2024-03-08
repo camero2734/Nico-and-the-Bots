@@ -6,19 +6,21 @@ import {
     GuildMember,
     Message,
     MessageActionRowComponentBuilder,
+    ModalBuilder,
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder,
-    TextChannel
+    TextChannel,
+    TextInputBuilder,
+    TextInputStyle
 } from "discord.js";
-import { channelIDs, guildID, roles } from "../../../Configuration/config";
+import { channelIDs, guildID, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
-import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
+import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts, caesarEncode, generateWords, morseEncode } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 
 const command = new SlashCommand({
@@ -28,6 +30,8 @@ const command = new SlashCommand({
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
+
+    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is currently disabled");
 
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
@@ -70,12 +74,9 @@ command.setHandler(async (ctx) => {
         throw new CommandError("You must have server DMs enabled to use this command");
     }
 
-    const timedListener = new TimedInteractionListener(dmMessage, <const>["verifbegin", "verifcancel"]);
-    const [beginId, cancelId] = timedListener.customIDs;
-
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-        new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(beginId),
-        new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(cancelId)
+        new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(genModalId({})),
+        new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(genCancelId({}))
     ]);
 
     await dmMessage.edit({ components: [actionRow] });
@@ -88,18 +89,58 @@ command.setHandler(async (ctx) => {
         embeds: [new EmbedBuilder().setDescription("The quiz was DM'd to you!")],
         components: [dmActionRow]
     });
+});
 
-    const [buttonPressed, bctx] = await timedListener.wait();
+const genCancelId = command.addInteractionListener("verifcancel", [], async (ctx) => {
+    if (!ctx.isButton()) return;
 
-    await bctx?.deferUpdate();
+    await ctx.deferUpdate();
+    await ctx.editReply({
+        embeds: [new EmbedBuilder().setDescription("Okay, you may restart the quiz at any time.")],
+        components: []
+    });
+});
 
-    if (buttonPressed !== beginId) {
-        await dmMessage.edit({
-            embeds: [new EmbedBuilder().setDescription("Okay, you may restart the quiz at any time.")],
-            components: []
-        });
-        return;
-    }
+const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) => {
+    if (!ctx.isButton()) return;
+
+    const modal = new ModalBuilder()
+        .setTitle("Verified Theories Quiz -- Part 1")
+        .setCustomId(genModalSubmitId({}));
+
+    // Morse code
+    const morse = morseEncode(generateWords());
+
+    const morseInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+            .setCustomId("morse")
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("Enter the decoded sentence here")
+            .setLabel("Decode the following morse code")
+            .setValue(morse)
+    );
+
+    // Caeser cipher
+    const rot = Math.floor(Math.random() * 25) + 1; // 1-25
+    const caesar = caesarEncode(generateWords(), rot);
+    const caesarInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+            .setCustomId("caesar")
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("Enter the decoded sentence here")
+            .setLabel("Decode the following caesar cipher")
+            .setValue(caesar)
+    );
+
+    modal.setComponents([morseInput, caesarInput]);
+
+    // Binary TODO
+
+    await ctx.showModal(modal);
+});
+
+const genModalSubmitId = command.addInteractionListener("verifmodaldone", [], async (ctx) => {
+    if (!ctx.isModalSubmit()) return;
 
     // Update database
     await prisma.verifiedQuiz.update({
@@ -113,14 +154,13 @@ command.setHandler(async (ctx) => {
     const questionIDs = QuestionIDEncoder.encode(questionList);
     const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.member); // prettier-ignore
 
-    await dmMessage.edit({
-        embeds: [quizEmbed],
-        components: quizComponents
-    });
+    const dm = await ctx.user.createDM();
+    if (!dm) throw new CommandError("You must have server DMs enabled to use this command");
+
+    await dm.send({ embeds: [quizEmbed], components: quizComponents });
 });
 
-const veriquizArgs = <const>["currentID", "questionIDs", "previousAnswers"];
-const genVeriquizId = command.addInteractionListener("veriquiz", veriquizArgs, async (ctx, args) => {
+const genVeriquizId = command.addInteractionListener("veriquiz", ["currentID", "questionIDs", "previousAnswers"], async (ctx, args) => {
     if (!ctx.isStringSelectMenu()) return;
 
     const { currentID, questionIDs, previousAnswers } = args;

@@ -128,23 +128,25 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
             .setCustomId("caesar")
             .setStyle(TextInputStyle.Paragraph)
             .setPlaceholder("Enter the decoded sentence here")
-            .setLabel("Decode the followingr")
+            .setLabel("Decode the following")
             .setValue(caesar)
     );
 
-    // Binary
+    // ASCII
     const words = generateWords();
-    const binary = words.split("").map((c) => c.charCodeAt(0).toString(2)).join(" ");
-    const binaryInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
+    const randomBase = F.randomValueInArray([2, 10, 16]);
+
+    const ascii = words.split("").map((c) => c.charCodeAt(0).toString(randomBase)).join(" ");
+    const asciiInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
-            .setCustomId("binary")
+            .setCustomId("ascii")
             .setStyle(TextInputStyle.Paragraph)
             .setPlaceholder("Enter the decoded sentence here")
             .setLabel("Decode the following")
-            .setValue(binary)
+            .setValue(ascii + `, ${randomBase}`)
     );
 
-    modal.setComponents(F.shuffle([morseInput, caesarInput, binaryInput]));
+    modal.setComponents(F.shuffle([morseInput, caesarInput, asciiInput]));
 
     await ctx.showModal(modal);
 });

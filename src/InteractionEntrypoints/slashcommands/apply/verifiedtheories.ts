@@ -116,7 +116,7 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
             .setCustomId("morse")
             .setStyle(TextInputStyle.Paragraph)
             .setPlaceholder("Enter the decoded sentence here")
-            .setLabel("Decode the following morse code")
+            .setLabel("Decode the following")
             .setValue(morse)
     );
 
@@ -128,13 +128,23 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
             .setCustomId("caesar")
             .setStyle(TextInputStyle.Paragraph)
             .setPlaceholder("Enter the decoded sentence here")
-            .setLabel("Decode the following caesar cipher")
+            .setLabel("Decode the followingr")
             .setValue(caesar)
     );
 
-    modal.setComponents([morseInput, caesarInput]);
+    // Binary
+    const words = generateWords();
+    const binary = words.split("").map((c) => c.charCodeAt(0).toString(2)).join(" ");
+    const binaryInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+            .setCustomId("binary")
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("Enter the decoded sentence here")
+            .setLabel("Decode the following")
+            .setValue(binary)
+    );
 
-    // Binary TODO
+    modal.setComponents(F.shuffle([morseInput, caesarInput, binaryInput]));
 
     await ctx.showModal(modal);
 });

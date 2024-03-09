@@ -61,7 +61,7 @@ command.setHandler(async (ctx) => {
                 "There are two parts to the quiz. The first part is a series of encoded sentences that you must decode. The second part is a series of multiple choice questions.",
                 `**If you fail either part of the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.**`,
                 "## Part 1: Decoding",
-                "This part asks you to decode sentences that are encoded in various ways. You must decode them all correctly to proceed. All answers are case-insensitive and spaces are ignored. They are composed of valid English words.",
+                "This part asks you to decode sentences that are encoded in various ways. You must decode them all correctly to proceed. All answers are case-insensitive and spaces are ignored. They are composed of valid English words, like `sometimes retrieve good insubstantial sanity`",
                 "Replace the encoded value with the decoded sentence in each input box. If you lose the original cipher, close the modal and click on the 'Reopen' button to get it back.",
                 "## Part 2: Multiple choice questions",
                 `This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,

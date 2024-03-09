@@ -1,4 +1,5 @@
 
+import { faker } from '@faker-js/faker';
 import F from '../src/Helpers/funcs';
 
 // export function generateWords(seed: number) {
@@ -21,3 +22,12 @@ import F from '../src/Helpers/funcs';
 const r = F.hashToInt("47041016822353186234235325235235695788");
 console.log(r, r.toString().length, r < Number.MAX_SAFE_INTEGER)
 console.log(r.toString(36), r.toString(36).length);
+
+
+console.log([
+    faker.word.adverb(),
+    faker.word.verb(),
+    faker.word.adjective(),
+    faker.word.adjective(),
+    faker.word.noun(),
+].join(" "));

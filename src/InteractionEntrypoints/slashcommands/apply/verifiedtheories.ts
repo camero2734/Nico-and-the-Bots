@@ -186,10 +186,35 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
     }
 
     if (!correct) {
+        // Send to user
+        const hours = VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS;
+        const embed = new EmbedBuilder()
+            .setColor(0xff8888)
+            .setDescription(
+                `You failed the verified theories quiz.\n\nYou may apply again in ${hours} hours.`
+            );
         await ctx.editReply({
-            embeds: [new EmbedBuilder().setDescription("You entered at least one answer incorrectly. Try again later.")],
+            embeds: [embed],
             components: []
         });
+
+        // Send to staff
+        const staffEmbed = new EmbedBuilder()
+            .setAuthor({ name: ctx.user.username, iconURL: ctx.user.displayAvatarURL() })
+            .setTitle("Failed the verified theories quiz")
+            .setDescription(`Failed part 1`)
+            .setColor(0xff8888);
+
+        for (const key in partOne) {
+            const inputted = ctx.fields.getTextInputValue(key);
+            const expected = partOne[key].decoded;
+            staffEmbed.addFields({ name: key, value: `**Expected**: ${expected}\n**Received**: ${inputted}` });
+        }
+
+        const staffChan = await ctx.guild.channels.fetch(channelIDs.verifiedapplications);
+        if (!staffChan?.isTextBased()) return;
+        await staffChan.send({ embeds: [staffEmbed] });
+
         return;
     }
 

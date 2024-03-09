@@ -55,18 +55,20 @@ command.setHandler(async (ctx) => {
 
     // Ensure they're ready to take the quiz
     const initialEmbed = new EmbedBuilder()
-        .setTitle("Verified Theories Quiz")
+        .setTitle("<:cliffordpopcorn:893992063677366295> Vultue Verification Validator")
         .setDescription(
             [
-                "# Test",
+                "# Verified Quiz",
+                `This quiz is required for access to <#${channelIDs.verifiedtheories}>`,
                 "There are two parts to the quiz. The first part is a series of encoded sentences that you must decode. The second part is a series of multiple choice questions.",
-                "**Part 1:** Decoding",
+                `**If you fail either part of the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.**`,
+                "## Part 1: Decoding",
                 "This part asks you to decode sentences that are encoded in various ways. You must decode them all correctly to proceed. All answers are case-insensitive and spaces are ignored. They are composed of valid English words.",
-                "Replace the encoded sentence with the decoded sentence in each input box. If you lose the encoded sentence, you can close and reopen the modal.",
-                "**Part 2:** Multiple choice questions",
+                "Replace the encoded value with the decoded sentence in each input box. If you lose the original cipher, close the modal and click on the 'Reopen' button to get it back.",
+                "## Part 2: Multiple choice questions",
                 `This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,
-                `**If you fail the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.`,
-                `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
+                `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`,
+                "If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below."
             ].join("\n\n")
         )
         .addFields([{
@@ -138,17 +140,21 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
     modal.setComponents(components);
 
     await ctx.showModal(modal);
-});
-
-const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {
-    if (!ctx.isModalSubmit()) return;
-    await ctx.deferUpdate({ fetchReply: true });
 
     // Update database. At this point they must wait the full time to retake the quiz.
     await prisma.verifiedQuiz.update({
         where: { userId: ctx.user.id },
         data: { lastTaken: new Date(), timesTaken: { increment: 1 } }
     });
+
+    // Update existing message
+    const msg = ctx.message;
+    console.log(msg?.id, /MSG/);
+});
+
+const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {
+    if (!ctx.isModalSubmit()) return;
+    await ctx.deferUpdate({ fetchReply: true });
 
     // Determine if they entered the correct answers to part one
     const seed = parseInt(args.seed36, 36);
@@ -243,7 +249,7 @@ async function generateEmbedAndButtons(
     const newQuestion = questionList[newIndex];
     const embed = new EmbedBuilder()
         .setAuthor({ name: `Question ${newIndex + 1} / ${numQs}` })
-        .setTitle("Verified Theories Quiz")
+        .setTitle("Verified Theories Quiz -- Part 2")
         .setDescription(newQuestion.question)
         .setFooter({ text: "Select the correct answer by selecting an option below" });
 

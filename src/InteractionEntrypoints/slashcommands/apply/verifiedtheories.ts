@@ -33,7 +33,9 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
-    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is currently disabled");
+    if (!ctx.member.roles.cache.has(roles.staff) && ctx.user.id !== userIDs.myAlt) {
+        throw new CommandError("This command is currently disabled.");
+    }
 
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
@@ -59,7 +61,7 @@ command.setHandler(async (ctx) => {
         .setDescription(
             [
                 "# Verified Quiz",
-                `This quiz is required for access to <#${channelIDs.verifiedtheories}>`,
+                `This quiz is required for access to <#${channelIDs.verifiedtheories}>. It's recommended you do this from a computer if possible, but it's not required.`,
                 "There are two parts to the quiz. The first part is a series of encoded sentences that you must decode. The second part is a series of multiple choice questions.",
                 `**If you fail either part of the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.**`,
                 "## Part 1: Decoding",
@@ -201,17 +203,18 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
         // Send to staff
         const staffEmbed = new EmbedBuilder()
             .setAuthor({ name: ctx.user.username, iconURL: ctx.user.displayAvatarURL() })
-            .setTitle("Failed the verified theories quiz")
-            .setDescription(`Failed part 1`)
+            .setTitle("Failed: Part 1")
             .setColor(0xff8888);
 
         for (const key in partOne) {
             const inputted = ctx.fields.getTextInputValue(key);
             const expected = partOne[key].decoded;
-            staffEmbed.addFields({ name: key, value: `**Expected**: ${expected}\n**Received**: ${inputted}` });
+            const encoded = partOne[key].encoded;
+            staffEmbed.addFields({ name: key, value: `**Encoded**: ${encoded}\n**Expected**: ${expected}\n**Received**: ${inputted}` });
         }
 
-        const staffChan = await ctx.guild.channels.fetch(channelIDs.verifiedapplications);
+        const guild = await ctx.client.guilds.fetch(guildID);
+        const staffChan = await guild.channels.fetch(channelIDs.verifiedapplications);
         if (!staffChan?.isTextBased()) return;
         await staffChan.send({ embeds: [staffEmbed] });
 
@@ -357,7 +360,7 @@ async function sendFinalEmbed(
         .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
             `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
-                ? `You can now access <#${channelIDs.verifiedtheories}>`
+                ? `You can now access <#${channelIDs.verifiedtheories}>. Congratulations!\n\nPlease ensure you read the pinned messages and abide by the rules to avoid being removed from the channel.`
                 : `You may apply again in ${hours} hours.`
             }`
         );

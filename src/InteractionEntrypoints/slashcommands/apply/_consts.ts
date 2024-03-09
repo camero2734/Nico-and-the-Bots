@@ -161,7 +161,7 @@ export function caesarEncode(str: string, shift: number) {
         .toLowerCase()
         .split("")
         .map((c) => {
-            if (c === " ") return " ";
+            if (!/[^a-z]/.test(c)) return " ";
             const idx = alphabet.indexOf(c);
             return alphabet[(idx + shift) % alphabet.length];
         })

@@ -58,6 +58,12 @@ command.setHandler(async (ctx) => {
         .setTitle("Verified Theories Quiz")
         .setDescription(
             [
+                "# Test",
+                "There are two parts to the quiz. The first part is a series of encoded sentences that you must decode. The second part is a series of multiple choice questions.",
+                "**Part 1:** Decoding",
+                "This part asks you to decode sentences that are encoded in various ways. You must decode them all correctly to proceed. All answers are case-insensitive and spaces are ignored. They are composed of valid English words.",
+                "Replace the encoded sentence with the decoded sentence in each input box. If you lose the encoded sentence, you can close and reopen the modal.",
+                "**Part 2:** Multiple choice questions",
                 `This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,
                 `**If you fail the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.** If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.`,
                 `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`
@@ -138,7 +144,13 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
     if (!ctx.isModalSubmit()) return;
     await ctx.deferUpdate({ fetchReply: true });
 
-    // Determine if they entered the correct details
+    // Update database. At this point they must wait the full time to retake the quiz.
+    await prisma.verifiedQuiz.update({
+        where: { userId: ctx.user.id },
+        data: { lastTaken: new Date(), timesTaken: { increment: 1 } }
+    });
+
+    // Determine if they entered the correct answers to part one
     const seed = parseInt(args.seed36, 36);
     const partOne = generatePartOne(seed);
 
@@ -161,12 +173,6 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
         });
         return;
     }
-
-    // Update database
-    await prisma.verifiedQuiz.update({
-        where: { userId: ctx.user.id },
-        data: { lastTaken: new Date(), timesTaken: { increment: 1 } }
-    });
 
     // Generate initial variables
     const questionList = F.shuffle(QuizQuestions).slice(0, VerifiedQuizConsts.NUM_QUESTIONS);

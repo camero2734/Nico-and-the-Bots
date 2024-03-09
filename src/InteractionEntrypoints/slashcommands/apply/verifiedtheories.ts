@@ -107,61 +107,60 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
     if (!ctx.isButton()) return;
 
     // Ensure the user gets the same questions every time (but different after a while)
-    const seed = roundToNearestMinutes(new Date(), { nearestTo: 30 }).getTime() ^ F.hashToInt(ctx.user.id);
-    const faker = new Faker({ locale: [en] });
-    faker.seed(seed);
+    const currentTime = roundToNearestMinutes(new Date(), { nearestTo: 30 }).getTime();
+    const seed = F.hashToInt(`${ctx.user.id}:${currentTime}`);
 
     const modal = new ModalBuilder()
         .setTitle("Verified Theories Quiz -- Part 1")
-        .setCustomId(genModalSubmitId({}));
+        .setCustomId(genModalSubmitId({ seed36: seed.toString(36) }));
 
-    // Morse code
-    const validCharacters = "😀😁😂🤣😃😄😅😆😊😋😎🥲🤔😔😓🫤🙃😭😤😧🤬😡🤡🥺🥳🧐";
-    const [dotChar, dashChar] = faker.helpers.shuffle([...validCharacters]);
-    const morse = morseEncode(generateWords(faker), dotChar, dashChar);
+    const questions = generatePartOne(seed);
 
-    const morseInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-            .setCustomId("morse")
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Enter the decoded sentence here")
-            .setLabel("Decode the following")
-            .setValue(morse)
-    );
+    const components = [];
+    for (const [key, { encoded }] of Object.entries(questions)) {
+        const component = new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+                .setCustomId(key)
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder("Enter the decoded sentence here")
+                .setLabel("Decode the following")
+                .setValue(encoded)
+        );
+        components.push(component);
+    }
 
-    // Caeser cipher
-    const rot = faker.number.int({ min: 1, max: 25 });
-    const caesar = caesarEncode(generateWords(faker), rot);
-    const caesarInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-            .setCustomId("caesar")
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Enter the decoded sentence here")
-            .setLabel("Decode the following")
-            .setValue(caesar)
-    );
-
-    // ASCII
-    const words = generateWords(faker);
-    const randomBase = faker.helpers.arrayElement([2, 10, 16]);
-
-    const ascii = words.split("").map((c) => c.charCodeAt(0).toString(randomBase)).join(" ");
-    const asciiInput = new ActionRowBuilder<TextInputBuilder>().addComponents(
-        new TextInputBuilder()
-            .setCustomId("ascii")
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Enter the decoded sentence here")
-            .setLabel("Decode the following")
-            .setValue(ascii)
-    );
-
-    modal.setComponents(faker.helpers.shuffle([morseInput, caesarInput, asciiInput]));
+    modal.setComponents(components);
 
     await ctx.showModal(modal);
 });
 
-const genModalSubmitId = command.addInteractionListener("verifmodaldone", [], async (ctx) => {
+const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {
     if (!ctx.isModalSubmit()) return;
+    await ctx.deferUpdate({ fetchReply: true });
+
+    // Determine if they entered the correct details
+    const seed = parseInt(args.seed36, 36);
+    const partOne = generatePartOne(seed);
+
+    const normalize = (str: string) => str.replace(/ /g, "").toLowerCase().trim();
+
+    let correct = true;
+    for (const key in partOne) {
+        const inputted = ctx.fields.getTextInputValue(key);
+        const expected = partOne[key].decoded;
+        if (normalize(inputted) !== normalize(expected)) {
+            correct = false;
+            break;
+        }
+    }
+
+    if (!correct) {
+        await ctx.editReply({
+            embeds: [new EmbedBuilder().setDescription("You entered at least one answer incorrectly. Try again later.")],
+            components: []
+        });
+        return;
+    }
 
     // Update database
     await prisma.verifiedQuiz.update({
@@ -175,10 +174,7 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", [], as
     const questionIDs = QuestionIDEncoder.encode(questionList);
     const [quizEmbed, quizComponents] = await generateEmbedAndButtons(-1, questionList, answerEncoder, questionIDs, ctx.member); // prettier-ignore
 
-    const dm = await ctx.user.createDM();
-    if (!dm) throw new CommandError("You must have server DMs enabled to use this command");
-
-    await dm.send({ embeds: [quizEmbed], components: quizComponents });
+    await ctx.editReply({ embeds: [quizEmbed], components: quizComponents });
 });
 
 const genVeriquizId = command.addInteractionListener("veriquiz", ["currentID", "questionIDs", "previousAnswers"], async (ctx, args) => {
@@ -317,6 +313,38 @@ async function sendFinalEmbed(
         );
 
     return [embed, []];
+}
+
+function generatePartOne(seed: number) {
+    const faker = new Faker({ locale: [en] });
+    faker.seed(seed);
+
+    // Morse code
+    const validCharacters = "😀😁😂🤣😃😄😅😆😊😋😎🥲🤔😔😓🫤🙃😭😤😧🤬😡🤡🥺🥳🧐";
+    const [dotChar, dashChar] = faker.helpers.shuffle([...validCharacters]);
+
+    const morseDecoded = generateWords(faker);
+    const morse = morseEncode(morseDecoded, dotChar, dashChar);
+
+    // Caeser cipher
+    const rot = faker.number.int({ min: 1, max: 25 });
+    const caesarDecoded = generateWords(faker);
+    const caesar = caesarEncode(caesarDecoded, rot);
+
+    // ASCII
+    const randomBase = faker.helpers.arrayElement([2, 10, 16]);
+
+    const asciiDecoded = generateWords(faker);
+    const ascii = asciiDecoded.split("").map((c) => c.charCodeAt(0).toString(randomBase)).join(" ");
+
+    const options = {
+        morse: { encoded: morse, decoded: morseDecoded },
+        caesar: { encoded: caesar, decoded: caesarDecoded },
+        ascii: { encoded: ascii, decoded: asciiDecoded }
+    };
+    const order = faker.helpers.shuffle(Object.keys(options)) as Array<keyof typeof options>;
+
+    return Object.fromEntries(order.map((key) => [key, options[key]]));
 }
 
 export default command;

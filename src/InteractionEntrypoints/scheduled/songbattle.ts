@@ -1,8 +1,8 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, ThreadAutoArchiveDuration, italic } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
-import { channelIDs } from "../../Configuration/config";
+import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -144,7 +144,7 @@ export async function songBattleCron() {
     ]);
 
     // Send the main message
-    await m.edit({ embeds: [embed], files: [attachment], components: [actionRow] });
+    await m.edit({ content: roleMention(roles.songBattles), embeds: [embed], files: [attachment], components: [actionRow] });
 
     // Create a discussion thread
     const thread = await m.startThread({

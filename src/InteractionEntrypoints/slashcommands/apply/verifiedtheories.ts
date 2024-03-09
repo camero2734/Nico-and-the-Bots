@@ -149,7 +149,20 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
 
     // Update existing message
     const msg = ctx.message;
-    console.log(msg?.id, /MSG/);
+
+    const dmActionRow = new ActionRowBuilder<ButtonBuilder>(msg.components[0].toJSON());
+    const beginBtn = dmActionRow.components.find(c => (c.data.label === "Begin" || c.data.label === "Reopen"));
+    const cancelBtn = dmActionRow.components.find(c => c.data.label === "Cancel");
+
+    if (!beginBtn || !cancelBtn) throw new Error("Invalid components");
+
+    beginBtn.setLabel("Reopen");
+    cancelBtn.setDisabled(true);
+
+    const embed = new EmbedBuilder(msg.embeds[0].toJSON());
+    embed.setFooter({ text: "You have started the quiz. Click 'Reopen' to continue." });
+
+    await msg.edit({ components: [dmActionRow], embeds: [embed] });
 });
 
 const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {

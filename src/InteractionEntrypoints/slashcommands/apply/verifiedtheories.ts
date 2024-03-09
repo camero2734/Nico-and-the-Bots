@@ -175,7 +175,7 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
     const seed = parseInt(args.seed36, 36);
     const partOne = generatePartOne(seed);
 
-    const normalize = (str: string) => str.replace(/ /g, "").toLowerCase().trim();
+    const normalize = (str: string) => str.toLowerCase().replace(/[^a-z]/g, "").trim();
 
     let correct = true;
     for (const key in partOne) {
@@ -186,6 +186,24 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
             break;
         }
     }
+
+    // Send to staff
+    const staffEmbed = new EmbedBuilder()
+        .setAuthor({ name: ctx.user.username, iconURL: ctx.user.displayAvatarURL() })
+        .setTitle(`${correct ? "Passed" : "Failed"}: Part 1`)
+        .setColor(correct ? "Blurple" : 0xff8888);
+
+    for (const key in partOne) {
+        const inputted = ctx.fields.getTextInputValue(key);
+        const expected = partOne[key].decoded;
+        const encoded = partOne[key].encoded;
+        staffEmbed.addFields({ name: key, value: `**Encoded**: ${encoded}\n**Expected**: ${expected}\n**Received**: ${inputted}` });
+    }
+
+    const guild = await ctx.client.guilds.fetch(guildID);
+    const staffChan = await guild.channels.fetch(channelIDs.verifiedapplications);
+    if (!staffChan?.isTextBased()) return;
+    await staffChan.send({ embeds: [staffEmbed] });
 
     if (!correct) {
         // Send to user
@@ -199,24 +217,6 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
             embeds: [embed],
             components: []
         });
-
-        // Send to staff
-        const staffEmbed = new EmbedBuilder()
-            .setAuthor({ name: ctx.user.username, iconURL: ctx.user.displayAvatarURL() })
-            .setTitle("Failed: Part 1")
-            .setColor(0xff8888);
-
-        for (const key in partOne) {
-            const inputted = ctx.fields.getTextInputValue(key);
-            const expected = partOne[key].decoded;
-            const encoded = partOne[key].encoded;
-            staffEmbed.addFields({ name: key, value: `**Encoded**: ${encoded}\n**Expected**: ${expected}\n**Received**: ${inputted}` });
-        }
-
-        const guild = await ctx.client.guilds.fetch(guildID);
-        const staffChan = await guild.channels.fetch(channelIDs.verifiedapplications);
-        if (!staffChan?.isTextBased()) return;
-        await staffChan.send({ embeds: [staffEmbed] });
 
         return;
     }

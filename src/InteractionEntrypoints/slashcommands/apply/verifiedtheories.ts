@@ -57,12 +57,13 @@ command.setHandler(async (ctx) => {
         .setDescription(
             [
                 "# Verified Quiz",
-                `This quiz is required for access to <#${channelIDs.verifiedtheories}>. It's recommended you do this from a computer if possible, but it's not required.`,
+                `This quiz is required for access to <#${channelIDs.verifiedtheories}>.`,
                 "There are two parts to the quiz. The first part is a series of encoded sentences that you must decode. The second part is a series of multiple choice questions.",
                 `**If you fail either part of the quiz, you must wait ${VerifiedQuizConsts.DELAY_BETWEEN_TAKING_HOURS} hours before trying again.**`,
                 "## Part 1: Decoding",
                 "This part asks you to decode sentences that are encoded in various ways. You must decode them all correctly to proceed. All answers are case-insensitive and spaces are ignored. They are composed of valid English words, like `sometimes retrieve good insubstantial sanity`",
                 "Replace the encoded value with the decoded sentence in each input box. If you lose the original cipher, close the modal and click on the 'Reopen' button to get it back.",
+                "It's recommended you do this part from a computer if possible, but it's not required.",
                 "## Part 2: Multiple choice questions",
                 `This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,
                 `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`,

@@ -194,13 +194,8 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
         const inputted = ctx.fields.getTextInputValue(key);
         const expected = partOne[key].decoded;
         const encoded = partOne[key].encoded;
-        staffEmbed.addFields({ name: key, value: `**Encoded**: ${encoded}\n**Expected**: ${expected}\n**Received**: ${inputted}` });
+        staffEmbed.addFields({ name: key, value: `**Encoded**: ${encoded}\n**Expected**: ${expected}\n**Received**: ${inputted}`.substring(0, 1000) });
     }
-
-    const guild = await ctx.client.guilds.fetch(guildID);
-    const staffChan = await guild.channels.fetch(channelIDs.verifiedapplications);
-    if (!staffChan?.isTextBased()) return;
-    await staffChan.send({ embeds: [staffEmbed] });
 
     if (!correct) {
         // Send to user
@@ -217,6 +212,10 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
 
         return;
     }
+
+    const guild = await ctx.client.guilds.fetch(guildID);
+    const staffChan = await guild?.channels.fetch(channelIDs.verifiedapplications);
+    if (staffChan?.isTextBased()) await staffChan.send({ embeds: [staffEmbed] });
 
     // Generate initial variables
     const questionList = F.shuffle(QuizQuestions).slice(0, VerifiedQuizConsts.NUM_QUESTIONS);

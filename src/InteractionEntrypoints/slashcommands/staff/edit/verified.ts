@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
+import { addYears } from "date-fns";
 
 const command = new SlashCommand({
     description: "Edits a user's economy",
@@ -30,11 +31,12 @@ command.setHandler(async (ctx) => {
     const { user, action } = ctx.opts;
 
     if (action === "BAN") {
-        await ctx.editReply({ content: "Banning users from retaking the verified quiz is not yet supported." });
-        return;
-    }
-
-    if (action === "RESET_TIMER") {
+        await prisma.verifiedQuiz.update({
+            where: { userId: user },
+            data: { lastTaken: addYears(new Date(), 100) }
+        });
+        await ctx.editReply({ content: "User can no longer retake the verified quiz." });
+    } else if (action === "RESET_TIMER") {
         await prisma.verifiedQuiz.update({
             where: { userId: user },
             data: { lastTaken: new Date(0) }

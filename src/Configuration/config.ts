@@ -128,7 +128,8 @@ export const emojiIDs = <const>{
         vessel: "833130006413574204",
         blurryface: "833130087943634944",
         trench: "833130193568530483",
-        scaledAndIcy: "840759270625771521"
+        scaledAndIcy: "840759270625771521",
+        clancy: "1214045012879343658"
     }
 };
 

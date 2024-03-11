@@ -11,6 +11,7 @@ export enum AlbumName {
     Blurryface = "Blurryface",
     Trench = "Trench",
     ScaledAndIcy = "Scaled And Icy",
+    Clancy = "Clancy",
     Singles = "Singles",
 }
 
@@ -156,6 +157,15 @@ export const albums = [
             { name: "Bounce Man" },
             { name: "No Chances" },
             { name: "Redecorate" },
+        ]
+    },
+    {
+        name: AlbumName.Clancy,
+        image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26",
+        color: "#E33E36",
+        emoji: emojiIDs.albums.clancy,
+        songs: [
+            { name: "Overcompensate" }
         ]
     },
     {

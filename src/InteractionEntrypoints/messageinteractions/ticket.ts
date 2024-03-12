@@ -91,6 +91,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
         type: ChannelType.PrivateThread
     });
 
+    await thread.setInvitable(false);
     await thread.members.add(ctx.user.id);
     await thread.send({ content: `<@&${roles.staffSupport}>` });
 

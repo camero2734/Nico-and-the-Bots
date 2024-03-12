@@ -17,7 +17,8 @@ export class Album {
         this.artist = album.artist.name;
         this.name = album.name;
         this.playcount = +album.playCount;
-        this.image = album.image?.[album.image.length - 1].url
+
+        this.image = album.image?.at(-1)?.url || "http://orig14.deviantart.net/5162/f/2014/153/9/e/no_album_art__no_cover___placeholder_picture_by_cmdrobot-d7kpm65.jpg";
     }
 }
 

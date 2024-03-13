@@ -1,6 +1,7 @@
-import { Collection, Colors, EmbedBuilder } from "discord.js";
+import { Colors, EmbedBuilder } from "discord.js";
 import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
@@ -13,18 +14,14 @@ command.setHandler(async (ctx) => {
 
     await ctx.deferReply({ ephemeral: true });
 
-    const districtRoleIds = new Collection(Object.entries(roles.districts));
-    const hasRole = ctx.member.roles.cache.intersect(districtRoleIds);
+    // Make sure the user doesn't already have a district role
+    const districtRoleIds = Object.values(roles.districts);
+    const hasRole = ctx.member.roles.cache.find(r => (districtRoleIds as string[]).includes(r.id));
+    if (hasRole) throw new CommandError(`You have already been assigned to ${hasRole.name.toUpperCase()}.`);
 
-    if (hasRole.size > 0) throw new CommandError(`You have already been assigned to DST. ${hasRole.firstKey()?.toUpperCase()}.`);
-
-    const district = districtRoleIds.randomKey();
-    if (!district) throw new CommandError("Invalid district");
-
-    const roleId = districtRoleIds.get(district);
-    if (!roleId) throw new CommandError("Invalid roleId");
-
-    const role = await ctx.guild.roles.fetch(roleId);
+    // Assign a district role
+    const assignedRoleId = F.randomValueInArray(districtRoleIds);
+    const role = await ctx.guild.roles.fetch(assignedRoleId);
     if (!role) throw new CommandError("Invalid role");
 
     await ctx.member.roles.add(role);
@@ -32,7 +29,7 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setColor(Colors.Gold)
         .setTitle("District assignment")
-        .setDescription(`You have been assigned to DST. ${district.toUpperCase()} district in DEMA`);
+        .setDescription(`You have been assigned to ${role.name}`);
 
     await ctx.editReply({ embeds: [embed] });
 });

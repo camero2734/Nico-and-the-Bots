@@ -1,9 +1,9 @@
+import { Faker, en } from "@faker-js/faker";
 import { Colors, EmbedBuilder } from "discord.js";
-import { roles, userIDs } from "../../../Configuration/config";
+import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { Faker, en } from "@faker-js/faker";
 
 const loadingMessages = [
     "Verifying residency eligibility based on Dema's citizenship criteria",
@@ -18,7 +18,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-    if (ctx.user.id !== userIDs.me) throw new CommandError("This command is not available to you.");
+    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is not available to you.");
 
     await ctx.deferReply({ ephemeral: true });
 
@@ -29,45 +29,65 @@ command.setHandler(async (ctx) => {
 
     // Assign a district role
     const faker = new Faker({ locale: [en] });
-    faker.seed(F.hashToInt(`district:${ctx.user.id}`));
+    faker.seed(F.hashToInt(`district:bishop:${ctx.user.id}`));
     const assignedRoleId = faker.helpers.arrayElement(districtRoleIds);
     const role = await ctx.guild.roles.fetch(assignedRoleId);
     if (!role) throw new CommandError("Invalid role");
 
     // Now have some fun -- pretend to think about it for a few seconds
     const embed = new EmbedBuilder()
-        .setTitle("Digital Entry Management Assistant Relocation (DEMA-R) program")
+        .setTitle("Digital Entry Management Assistant for Relocation (DEMA-R) program")
         .setDescription("Thank you for choosing the Dema relocation program. We are now processing your application.")
         .setColor(Colors.Red);
 
     await ctx.editReply({ embeds: [embed] });
 
-    const displayedMessages = faker.helpers.shuffle(loadingMessages).slice(0, 3);
+    const allMessages = faker.helpers.shuffle(loadingMessages).slice(0, 3);
 
-    for (const msg of displayedMessages) {
-        await F.wait(300);
-        embed.addFields({
-            name: msg,
-            value: "..."
-        });
+    let newEmbed = new EmbedBuilder(embed.toJSON());
+    for (let i = 0; i <= allMessages.length; i++) {
+        await F.wait(1500);
+        newEmbed = new EmbedBuilder(embed.toJSON());
 
-        await ctx.editReply({ embeds: [embed] });
+        const pastMessages = allMessages.slice(0, i);
+        const latestMessage = allMessages[i];
+
+        for (const msg of pastMessages) {
+            newEmbed.addFields({
+                name: msg,
+                value: "✅"
+            });
+        }
+
+        if (latestMessage) {
+            newEmbed.addFields({
+                name: latestMessage,
+                value: "..."
+            });
+        }
+
+        await ctx.editReply({ embeds: [newEmbed] });
     }
 
-    await F.wait(1000);
+    newEmbed.addFields({
+        name: "\u200b",
+        value: "Processing complete. Fetching district assignment..."
+    });
+    await ctx.editReply({ embeds: [newEmbed] });
+
+    await F.wait(1500);
 
     const bishopName = Object.entries(roles.districts).find(x => x[1] === assignedRoleId)?.[0]?.toUpperCase();
 
-    const finalEmbed = new EmbedBuilder()
-        .setTitle("Digital Entry Management Assistant Relocation (DEMA-R) program")
-        .setDescription("Your application has been processed.")
-        .setColor(Colors.Red)
+    newEmbed
         .addFields({
-            name: "District Assignment",
+            name: "<:bishop:860026157982547988> District Assignment",
             value: `You have been assigned to ${role.name.toUpperCase()}. ${bishopName} welcomes you to your new home.`
         });
 
-    await ctx.editReply({ embeds: [finalEmbed] });
+    await ctx.member.roles.add(assignedRoleId);
+
+    await ctx.editReply({ embeds: [newEmbed] });
 });
 
 

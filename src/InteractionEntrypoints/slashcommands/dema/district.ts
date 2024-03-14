@@ -8,8 +8,28 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 const loadingMessages = [
     "Verifying residency eligibility based on Dema's citizenship criteria",
     "Conducting assessments for integration into Dema's societal fabric",
-    "Enhancing indoctrination procedures to ensure undying allegiance to Vialism",
+    "Enhancing indoctrination procedures to ensure undying allegiance",
     "Fetching failed perimeter escape records to cross-check with your application",
+    "Calculating the optimal district assignment based on your psychological profile",
+    "Preparing propaganda materials for your arrival",
+    "Checking DMAORG records for any outstanding cases, warrants, or sanctions",
+    "Running your application by the Dema Council for final approval",
+    "Validating your application against the Vialist Code of Conduct",
+    "Ensuring all breaches are sealed and all exits are locked",
+    "Bringing Keons back from the dead to sign off on your application",
+    "Cross-checking DNA samples with Clancy's",
+    "Scanning for presence of psychokinetic weapons",
+    "Initializing tax collection procedures",
+    "Asking Reisdro to bless your application",
+    "Getting Listo to fix the application form",
+    "Requesting a Vetomo Vibe Check",
+    "Waiting for Nills to finish his coffee",
+    "Waiting for Nico to... oh... nevermind... he's... busy.",
+    "Asking Andre to stop playing the drums",
+    "Printing your Dema ID card",
+    "Planning airstrike on Voldsoy cove",
+    "Painting the walls of your new home gray",
+    "Tracking down every NED",
 ];
 
 const command = new SlashCommand({
@@ -36,7 +56,7 @@ command.setHandler(async (ctx) => {
 
     // Now have some fun -- pretend to think about it for a few seconds
     const embed = new EmbedBuilder()
-        .setTitle("Digital Entry Management Assistant for Relocation (DEMA-R) program")
+        .setTitle("Digital Entry Management Assistant for Relocation (DEMA-R)")
         .setDescription("Thank you for choosing the Dema relocation program. We are now processing your application.")
         .setColor(Colors.Red);
 

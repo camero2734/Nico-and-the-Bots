@@ -1,6 +1,6 @@
 import { Faker, en } from "@faker-js/faker";
 import { ActionRowBuilder, Colors, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import { roles } from "../../../Configuration/config";
+import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -52,6 +52,8 @@ I WILL REPORT ANY SUSPICIOUS ACTIVITY TO MY BISHOP.
 I PUT MY FULL FAITH IN THE HONORABLE DEMA COUNCIL.
 `.trim();
 
+const PREFERRED_DISTRICT_ID = "preferredDistrict";
+const REASON_FOR_RELOCATION_ID = "reasonForRelocation";
 const AGREE_TO_TERMS_ID = "agreeToTerms";
 
 const command = new SlashCommand({
@@ -76,11 +78,20 @@ command.setHandler(async (ctx) => {
             .setStyle(TextInputStyle.Short)
             .setLabel("DO YOU HAVE A PREFERRED DISTRICT?")
             .setPlaceholder("ENTER DISTRICT NAME")
-            .setCustomId("lol_you_dont_get_to_choose")
+            .setCustomId(PREFERRED_DISTRICT_ID)
             .setRequired(false)
     );
 
     const secondQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
+        new TextInputBuilder()
+            .setStyle(TextInputStyle.Paragraph)
+            .setLabel("REASON FOR IMMIGRATION")
+            .setPlaceholder("WE'RE HAPPY TO HAVE YOU. PLEASE ENTER YOUR REASON FOR RELOCATING TO DEMA.")
+            .setCustomId(REASON_FOR_RELOCATION_ID)
+            .setRequired(true)
+    );
+
+    const thirdQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
             .setStyle(TextInputStyle.Paragraph)
             .setLabel("VIALIST TERMS AND CONDITIONS")
@@ -89,7 +100,7 @@ command.setHandler(async (ctx) => {
             .setRequired(true)
     );
 
-    modal.setComponents(firstQuestion, secondQuestion);
+    modal.setComponents(firstQuestion, secondQuestion, thirdQuestion);
 
     await ctx.showModal(modal);
 });
@@ -171,6 +182,31 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
     await ctx.member.roles.add(assignedRoleId);
 
     await ctx.editReply({ embeds: [newEmbed] });
+
+    const staffEmbed = new EmbedBuilder()
+        .setTitle("District Assignment")
+        .setDescription(`${ctx.member} has been assigned to ${role.name.toUpperCase()}.`)
+        .setColor(Colors.Blurple)
+        .addFields([
+            {
+                name: "Reason for Relocation",
+                value: ctx.fields.getTextInputValue(REASON_FOR_RELOCATION_ID)
+            },
+            {
+                name: "Preferred District",
+                value: ctx.fields.getTextInputValue(PREFERRED_DISTRICT_ID) || "None"
+            },
+            {
+                name: "Received Messages",
+                value: allMessages.map(x => `✅ ${x}`).join("\n")
+            }
+        ])
+        .setFooter({ text: `CITIZEN ${citizenId}` });
+
+    const channel = await ctx.client.channels.fetch(channelIDs.demadistricting);
+    if (!channel?.isTextBased()) return;
+
+    await channel.send({ embeds: [staffEmbed] });
 });
 
 

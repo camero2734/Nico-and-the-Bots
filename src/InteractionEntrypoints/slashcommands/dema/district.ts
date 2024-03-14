@@ -173,11 +173,22 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
 
     const bishopName = Object.entries(roles.districts).find(x => x[1] === assignedRoleId)?.[0]?.toUpperCase();
 
-    newEmbed
-        .addFields({
-            name: "<:bishop:860026157982547988> District Assignment",
-            value: `You have been assigned to ${role.name.toUpperCase()}. ${bishopName} welcomes you to your new home.`
-        });
+    // he's dead lol
+    if (assignedRoleId === roles.districts.keons) {
+        newEmbed
+            .addFields({
+                name: "<:bishop:860026157982547988> District Assignment",
+                value: `You have been assigned to ${role.name.toUpperCase()}. ${bishopName} would have welcomed you to your new home, but he's... out at the moment.`
+            });
+
+    } else {
+        newEmbed
+            .addFields({
+                name: "<:bishop:860026157982547988> District Assignment",
+                value: `You have been assigned to ${role.name.toUpperCase()}. ${bishopName} welcomes you to your new home.`
+            });
+    }
+
 
     await ctx.member.roles.add(assignedRoleId);
 

@@ -62,11 +62,11 @@ command.setHandler(async (ctx) => {
 
     await ctx.editReply({ embeds: [embed] });
 
-    const allMessages = faker.helpers.shuffle(loadingMessages).slice(0, 3);
+    const allMessages = F.shuffle(loadingMessages).slice(0, 3);
 
     let newEmbed = new EmbedBuilder(embed.toJSON());
     for (let i = 0; i <= allMessages.length; i++) {
-        await F.wait(1500);
+        await F.wait(3000);
         newEmbed = new EmbedBuilder(embed.toJSON());
 
         const pastMessages = allMessages.slice(0, i);
@@ -95,7 +95,7 @@ command.setHandler(async (ctx) => {
     });
     await ctx.editReply({ embeds: [newEmbed] });
 
-    await F.wait(1500);
+    await F.wait(3000);
 
     const bishopName = Object.entries(roles.districts).find(x => x[1] === assignedRoleId)?.[0]?.toUpperCase();
 

@@ -52,7 +52,6 @@ I WILL REPORT ANY SUSPICIOUS ACTIVITY TO MY BISHOP.
 I PUT MY FULL FAITH IN THE HONORABLE DEMA COUNCIL.
 `.trim();
 
-const CITIZENSHIP_NUMBER_ID = "citizenshipNumber";
 const AGREE_TO_TERMS_ID = "agreeToTerms";
 
 const command = new SlashCommand({
@@ -75,10 +74,10 @@ command.setHandler(async (ctx) => {
     const firstQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
             .setStyle(TextInputStyle.Short)
-            .setLabel("ENTER YOUR CITIZENSHIP NUMBER")
-            .setPlaceholder("THIS WAS SENT TO YOU IN A RED ENVELOPE (Enter any number)")
-            .setCustomId(CITIZENSHIP_NUMBER_ID)
-
+            .setLabel("DO YOU HAVE A PREFERRED DISTRICT?")
+            .setPlaceholder("ENTER DISTRICT NAME")
+            .setCustomId("lol_you_dont_get_to_choose")
+            .setRequired(false)
     );
 
     const secondQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
@@ -87,6 +86,7 @@ command.setHandler(async (ctx) => {
             .setLabel("VIALIST TERMS AND CONDITIONS")
             .setValue(termsAndConditions)
             .setCustomId(AGREE_TO_TERMS_ID)
+            .setRequired(true)
     );
 
     modal.setComponents(firstQuestion, secondQuestion);
@@ -99,16 +99,13 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
 
     await ctx.deferReply({ ephemeral: true });
 
-    const citizenshipNumber = ctx.fields.getTextInputValue(CITIZENSHIP_NUMBER_ID);
     const agreeToTerms = ctx.fields.getTextInputValue(AGREE_TO_TERMS_ID);
 
     if (!agreeToTerms.includes(termsAndConditions)) {
         throw new CommandError("You must agree to the terms and conditions to proceed.");
     }
 
-    if (/[^0-9]/.test(citizenshipNumber)) {
-        throw new CommandError("Invalid citizenship number");
-    }
+    const citizenId = ctx.user.id.slice(0, -2) + "_" + ctx.user.id.slice(-2);
 
     const districtRoleIds = Object.values(roles.districts);
 
@@ -124,7 +121,7 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
         .setTitle("Digital Entry Management Assistant for Relocation (DEMA-R)")
         .setDescription("Thank you for choosing the Dema relocation program. We are now processing your application.")
         .setColor(Colors.Red)
-        .setFooter({ text: `CITIZEN ${citizenshipNumber}` })
+        .setFooter({ text: `CITIZEN ${citizenId}` })
 
     await ctx.editReply({ embeds: [embed] });
 

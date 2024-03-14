@@ -27,9 +27,15 @@ const loadingMessages = [
     "Waiting for Nico to... oh... nevermind... he's... busy.",
     "Asking Andre to stop playing the drums",
     "Printing your Dema ID card",
-    "Planning airstrike on Voldsoy cove",
+    "Issuing travel warning to Voldsoy cove",
     "Painting the walls of your new home gray",
     "Tracking down every NED",
+    "Preparing your Dema goodie bag :D",
+    "Waiting for Sacarver to finish interrogating your family",
+    "Burning Clancy's letters",
+    "Feeding the Bishops' horses",
+    "Taking the Trash out",
+    "Ensuring your compass is properly calibrated",
 ];
 
 const command = new SlashCommand({

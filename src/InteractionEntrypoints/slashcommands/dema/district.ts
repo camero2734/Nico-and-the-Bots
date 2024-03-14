@@ -1,5 +1,5 @@
 import { Faker, en } from "@faker-js/faker";
-import { Colors, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, Colors, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -38,6 +38,23 @@ const loadingMessages = [
     "Ensuring your compass is properly calibrated",
 ];
 
+const termsAndConditions = `
+I AM A CITIZEN.
+
+I WILL NEVER ATTEMPT TO LEAVE THE CITY LIMITS.
+
+I AGREE TO UPHOLD THE IDEALS SET FORTH BY THE VIALIST CODE OF CONDUCT.
+
+I AGREE TO RESIDE IN THE DISTRICT TO WHICH I AM ASSIGNED.
+
+I WILL REPORT ANY SUSPICIOUS ACTIVITY TO MY BISHOP.
+
+I PUT MY FULL FAITH IN THE HONORABLE DEMA COUNCIL.
+`.trim();
+
+const CITIZENSHIP_NUMBER_ID = "citizenshipNumber";
+const AGREE_TO_TERMS_ID = "agreeToTerms";
+
 const command = new SlashCommand({
     description: "Receive your district assignment in DEMA",
     options: []
@@ -46,16 +63,54 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is not available to you.");
 
-    await ctx.deferReply({ ephemeral: true });
-
     // Make sure the user doesn't already have a district role
     const districtRoleIds = Object.values(roles.districts);
     const hasRole = ctx.member.roles.cache.find(r => (districtRoleIds as string[]).includes(r.id));
     if (hasRole) throw new CommandError(`You have already been assigned to ${hasRole.name.toUpperCase()}.`);
 
+    const modal = new ModalBuilder()
+        .setTitle("DEMA-R FORM 1539")
+        .setCustomId(genModalSubmitId({}));
+
+    const firstQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
+        new TextInputBuilder()
+            .setStyle(TextInputStyle.Paragraph)
+            .setLabel("ENTER YOUR CITIZENSHIP NUMBER")
+            .setPlaceholder("YOU SHOULD HAVE RECEIVED THIS IN THE RED LETTER (Enter any number)")
+            .setCustomId(CITIZENSHIP_NUMBER_ID)
+
+    );
+
+    const secondQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
+        new TextInputBuilder()
+            .setStyle(TextInputStyle.Paragraph)
+            .setLabel("VIALIST TERMS AND CONDITIONS")
+            .setValue(termsAndConditions)
+            .setCustomId(AGREE_TO_TERMS_ID)
+    );
+
+    modal.setComponents(firstQuestion, secondQuestion);
+
+    await ctx.showModal(modal);
+});
+
+const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [], async (ctx) => {
+    if (!ctx.isModalSubmit()) return;
+
+    await ctx.deferReply({ ephemeral: true });
+
+    const citizenshipNumber = ctx.fields.getTextInputValue(CITIZENSHIP_NUMBER_ID);
+    const agreeToTerms = ctx.fields.getTextInputValue(AGREE_TO_TERMS_ID);
+
+    if (agreeToTerms.trim() !== termsAndConditions) {
+        throw new CommandError("You must agree to the terms and conditions to proceed.");
+    }
+
+    const districtRoleIds = Object.values(roles.districts);
+
     // Assign a district role
     const faker = new Faker({ locale: [en] });
-    faker.seed(F.hashToInt(`district:bishop:${ctx.user.id}`));
+    faker.seed(F.hashToInt(`district:bishop:${ctx.user.id}:${citizenshipNumber}`));
     const assignedRoleId = faker.helpers.arrayElement(districtRoleIds);
     const role = await ctx.guild.roles.fetch(assignedRoleId);
     if (!role) throw new CommandError("Invalid role");
@@ -115,7 +170,6 @@ command.setHandler(async (ctx) => {
 
     await ctx.editReply({ embeds: [newEmbed] });
 });
-
 
 
 export default command;

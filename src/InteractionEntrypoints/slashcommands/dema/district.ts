@@ -74,9 +74,9 @@ command.setHandler(async (ctx) => {
 
     const firstQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
-            .setStyle(TextInputStyle.Paragraph)
+            .setStyle(TextInputStyle.Short)
             .setLabel("ENTER YOUR CITIZENSHIP NUMBER")
-            .setPlaceholder("YOU SHOULD HAVE RECEIVED THIS IN THE RED LETTER (Enter any number)")
+            .setPlaceholder("THIS WAS SENT TO YOU IN A RED ENVELOPE (Enter any number)")
             .setCustomId(CITIZENSHIP_NUMBER_ID)
 
     );
@@ -102,15 +102,19 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
     const citizenshipNumber = ctx.fields.getTextInputValue(CITIZENSHIP_NUMBER_ID);
     const agreeToTerms = ctx.fields.getTextInputValue(AGREE_TO_TERMS_ID);
 
-    if (agreeToTerms.trim() !== termsAndConditions) {
+    if (!agreeToTerms.includes(termsAndConditions)) {
         throw new CommandError("You must agree to the terms and conditions to proceed.");
+    }
+
+    if (/[^0-9]/.test(citizenshipNumber)) {
+        throw new CommandError("Invalid citizenship number");
     }
 
     const districtRoleIds = Object.values(roles.districts);
 
     // Assign a district role
     const faker = new Faker({ locale: [en] });
-    faker.seed(F.hashToInt(`district:bishop:${ctx.user.id}:${citizenshipNumber}`));
+    faker.seed(F.hashToInt(`district:bishop:${ctx.user.id}`));
     const assignedRoleId = faker.helpers.arrayElement(districtRoleIds);
     const role = await ctx.guild.roles.fetch(assignedRoleId);
     if (!role) throw new CommandError("Invalid role");
@@ -119,7 +123,8 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
     const embed = new EmbedBuilder()
         .setTitle("Digital Entry Management Assistant for Relocation (DEMA-R)")
         .setDescription("Thank you for choosing the Dema relocation program. We are now processing your application.")
-        .setColor(Colors.Red);
+        .setColor(Colors.Red)
+        .setFooter({ text: `CITIZEN ${citizenshipNumber}` })
 
     await ctx.editReply({ embeds: [embed] });
 

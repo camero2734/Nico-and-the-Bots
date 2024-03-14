@@ -106,7 +106,7 @@ export async function songBattleCron() {
 
     // Placeholder message
     const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
-    const m = await channel.send({ embeds: [startEmbed] });
+    const m = await channel.send({ content: roleMention(roles.songBattles), embeds: [startEmbed] });
 
     // Create database poll
     const pollName = `${PREFIX}${nextBattleNumber}-${nanoid(10)}`;

@@ -240,7 +240,7 @@ async function districtBadge(bishop: string, rgb: [number, number, number]): Pro
     const imgData = ctx.getImageData(0, 0, 500, 500);
     const data = imgData.data;
 
-    const colorFrom = [43, 43, 40];
+    const colorFrom = [0, 0, 0];
     const colorTo = rgb;
 
     for (let i = 0; i < data.length; i += 4) {
@@ -249,7 +249,7 @@ async function districtBadge(bishop: string, rgb: [number, number, number]): Pro
         const b = data[i + 2];
 
         const row = Math.floor(i / 2000);
-        const brightness = Math.min(0.3 + (row / 500) * ((r + g + b) / 3) / 255, 1);
+        const brightness = Math.min(0.2 + (row / 500) * ((r + g + b) / 3) / 255, 1);
 
         data[i] = F.lerp(brightness, colorFrom[0], colorTo[0]);
         data[i + 1] = F.lerp(brightness, colorFrom[1], colorTo[1]);
@@ -266,15 +266,14 @@ async function districtBadge(bishop: string, rgb: [number, number, number]): Pro
 
     ctx.save();
     ctx.font = "bold 18px Futura";
-    ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.letterSpacing = "10px";
-    ctx.fillText("I AM A", 251, 200);
-    ctx.fillText("CITIZEN", 251, 230);
+    ctx.fillText("I AM A", 255, 200);
+    ctx.fillText("CITIZEN", 255, 230);
     ctx.restore();
 
     // Border around the image
-    ctx.strokeStyle = ctx.fillStyle;
+    ctx.strokeStyle = `rgba(${colorTo.join(", ")})`;
     ctx.lineWidth = 25;
     ctx.strokeRect(0, 0, 500, 500);
 

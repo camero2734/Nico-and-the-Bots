@@ -199,7 +199,7 @@ const F = {
     userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role } | undefined {
         const keys = F.entries(roles.districts);
         for (const [bishop, roleId] of keys) {
-            const role = member.guild.roles.cache.get(roleId);
+            const role = member.roles.cache.get(roleId);
             if (role) return { name: bishop, role };
         }
     },

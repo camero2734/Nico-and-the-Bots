@@ -15,13 +15,16 @@ command.setHandler(async (ctx) => {
 
     const embed = new EmbedBuilder()
         .setTitle("District Apporitionment")
-        .setColor("Blurple");
+        .setColor("Blurple")
 
+    let sum = 0;
     for (const [name, id] of districts) {
         const role = await ctx.guild.roles.fetch(id);
         if (!role) continue;
 
         const population = role.members.size;
+        sum += population;
+
         embed.addFields([
             {
                 name: name,
@@ -30,6 +33,8 @@ command.setHandler(async (ctx) => {
             }
         ])
     }
+
+    embed.setFooter({ text: `${sum} total residents` });
 
     await ctx.editReply({ embeds: [embed] });
 });

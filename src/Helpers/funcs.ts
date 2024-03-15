@@ -1,7 +1,7 @@
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import * as bigintConversion from "bigint-conversion";
 import * as crypto from "crypto";
-import { BaseMessageOptions, Guild, GuildMember, Message, Snowflake, TextChannel } from "discord.js";
+import { BaseMessageOptions, Guild, GuildMember, Message, Role, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import { channelIDs, roles } from "../Configuration/config";
@@ -196,10 +196,11 @@ const F = {
     capitalize(text: string): string {
         return text.charAt(0).toUpperCase() + text.slice(1);
     },
-    userBishop(member: GuildMember): keyof typeof roles["districts"] | undefined {
+    userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role } | undefined {
         const keys = F.entries(roles.districts);
         for (const [bishop, roleId] of keys) {
-            if (member.roles.cache.has(roleId)) return bishop;
+            const role = member.guild.roles.cache.get(roleId);
+            if (role) return { name: bishop, role };
         }
     },
     intColorToRGB(int: number): [number, number, number] {

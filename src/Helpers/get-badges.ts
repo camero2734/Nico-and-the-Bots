@@ -1,5 +1,6 @@
-import { Image, loadImage } from "@napi-rs/canvas";
+import { Image, createCanvas, loadImage } from "@napi-rs/canvas";
 import { GuildMember } from "discord.js";
+import F from "./funcs";
 import { prisma } from "./prisma-init";
 
 interface BadgeLoaderOptions {
@@ -208,6 +209,11 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
         return member.roles.cache.has("451217741584793601");
     });
 
+    const bishop = F.userBishop(member);
+    if (bishop) {
+        yield await districtBadge(bishop.name, F.intColorToRGB(bishop.role.color));
+    }
+
     yield await createBadge("banditos.png", async function () {
         return true;
     });
@@ -221,4 +227,57 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
             return img;
         } else return undefined;
     }
+}
+
+async function districtBadge(bishop: string, rgb: [number, number, number]): Promise<Image> {
+    const image = await loadImage("./src/Assets/badges/district.png");
+
+    const canvas = createCanvas(500, 500);
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(image, 0, 0, 500, 500);
+
+    ctx.save();
+    ctx.font = "bold 18px Futura";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.letterSpacing = "10px";
+    ctx.globalAlpha = 1;
+    ctx.fillText("I AM A", 251, 200);
+    ctx.fillText("CITIZEN", 251, 230);
+    ctx.restore();
+
+    const imgData = ctx.getImageData(0, 0, 500, 500);
+    const data = imgData.data;
+
+    const colorFrom = [0, 0, 0];
+    const colorTo = rgb;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        const row = Math.floor(i / 2000);
+        const brightness = (row / 500) * ((r + g + b) / 3) / 255;
+
+        data[i] = F.lerp(brightness, colorFrom[0], colorTo[0]);
+        data[i + 1] = F.lerp(brightness, colorFrom[1], colorTo[1]);
+        data[i + 2] = F.lerp(brightness, colorFrom[2], colorTo[2]);
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+
+    ctx.font = "bold 50px Futura";
+    ctx.fillStyle = `rgba(${colorTo.join(", ")})`;
+    ctx.textAlign = "center";
+    ctx.letterSpacing = "30px";
+    ctx.fillText(bishop.toUpperCase(), 265, 470);
+
+    // Border around the image
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.lineWidth = 10;
+    ctx.strokeRect(0, 0, 500, 500);
+
+    return await loadImage(canvas.toBuffer("image/png"));
 }

@@ -35,7 +35,7 @@ command.setHandler(async (ctx) => {
 
     const wrapCode = (code: string) => `\`\`\`yml\n${code}\n\`\`\``;
 
-    const bishop = F.userBishop(ctx.member) || F.randomValueInArray(districts).bishop;
+    const bishop = F.capitalize(F.userBishop(ctx.member) || F.randomValueInArray(districts).bishop);
 
     // prettier-ignore
     const description = wrapCode([

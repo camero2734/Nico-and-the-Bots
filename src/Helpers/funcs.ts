@@ -193,6 +193,9 @@ const F = {
         if (text.length <= maxLength) return text;
         else return text.substring(0, maxLength - 3) + "...";
     },
+    capitalize(text: string): string {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    },
     userBishop(member: GuildMember): keyof typeof roles["districts"] | undefined {
         const keys = F.entries(roles.districts);
         for (const [bishop, roleId] of keys) {

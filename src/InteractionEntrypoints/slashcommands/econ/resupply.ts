@@ -188,8 +188,6 @@ async function memberCaught(
     district: typeof districts[number],
     dailyBox: DailyBox
 ): Promise<void> {
-    // await (<Message>ctx.message).removeAttachments();
-
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 

@@ -62,8 +62,6 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError("This command is not available to you.");
-
     // Make sure the user doesn't already have a district role
     const districtRoleIds = Object.values(roles.districts);
     const hasRole = ctx.member.roles.cache.find(r => (districtRoleIds as string[]).includes(r.id));

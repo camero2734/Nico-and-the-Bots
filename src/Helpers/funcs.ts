@@ -201,6 +201,12 @@ const F = {
         for (const [bishop, roleId] of keys) {
             if (member.roles.cache.has(roleId)) return bishop;
         }
+    },
+    intColorToRGB(int: number): [number, number, number] {
+        const r = (int >> 16) & 255;
+        const g = (int >> 8) & 255;
+        const b = int & 255;
+        return [r, g, b];
     }
 };
 

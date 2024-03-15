@@ -32,87 +32,75 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     const ignore: string[] = [];
 
     yield await createBadge("booster.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("585527743324880897"));
-        });
+        return member.roles.cache.has("585527743324880897");
+
     });
 
     yield await createBadge("staff.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("330877657132564480"));
-        });
+        return member.roles.cache.has("330877657132564480");
+
     });
 
     yield await createBadge("rich.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("350036748404785153"));
-        });
+        return member.roles.cache.has("350036748404785153");
+
     });
 
     yield await createBadge("firebreather.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("283272728084086784"));
-        });
+        return member.roles.cache.has("283272728084086784");
+
     });
 
     yield await createBadge("cliqueart.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("705224524098043914"));
-        });
+        return member.roles.cache.has("705224524098043914");
+
     });
 
     yield await createBadge("youtube.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("341027502703116289"));
-        });
+        return member.roles.cache.has("341027502703116289");
+
     });
 
     yield await createBadge("commonfren.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("332021614256455690"));
-        });
+        return member.roles.cache.has("332021614256455690");
+
     });
 
     yield await createBadge("artist.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("341029793954922496"));
-        });
+        return member.roles.cache.has("341029793954922496");
+
     });
 
     yield await createBadge("top10.png", async function () {
-        return new Promise((resolve) => {
-            if (placeNum <= 10) {
-                resolve(true);
-                ignore.push("top100.png", "top50.png", "top25.png");
-            } else resolve(false);
-        });
+        if (placeNum <= 10) {
+            ignore.push("top100.png", "top50.png", "top25.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("level100.png", async function () {
-        return new Promise((resolve) => {
-            if (member.roles.cache.has("449654945076215828")) {
-                ignore.push("level50.png", "level25.png");
-                resolve(true);
-            } else resolve(false);
-        });
+        if (member.roles.cache.has("449654945076215828")) {
+            ignore.push("level50.png", "level25.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("top25.png", async function () {
-        return new Promise((resolve) => {
-            if (placeNum <= 25) {
-                resolve(true);
-                ignore.push("top100.png", "top50.png");
-            } else resolve(false);
-        });
+        if (placeNum <= 25) {
+            ignore.push("top100.png", "top50.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("top50.png", async function () {
-        return new Promise((resolve) => {
-            if (placeNum <= 50) {
-                resolve(true);
-                ignore.push("top100.png");
-            } else resolve(false);
-        });
+        if (placeNum <= 50) {
+            ignore.push("top100.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("ScavJumpsuit.png", async function () {
@@ -161,87 +149,67 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     });
 
     yield await createBadge("teamWinner.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("503645677574684683"));
-        });
+        return member.roles.cache.has("503645677574684683");
     });
 
     yield await createBadge("level50.png", async function () {
-        return new Promise((resolve) => {
-            if (member.roles.cache.has("449654893108527114")) {
-                ignore.push("level25.png");
-                resolve(true);
-            } else resolve(false);
-        });
+        if (member.roles.cache.has("449654893108527114")) {
+            ignore.push("level25.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("top100.png", async function () {
-        return new Promise((resolve) => {
-            if (placeNum <= 50) resolve(true);
-            else resolve(false);
-        });
+        return (placeNum <= 50);
     });
 
     yield await createBadge("level25.png", async function () {
-        return new Promise((resolve) => {
-            if (member.roles.cache.has("449654670357692416")) resolve(true);
-            else resolve(false);
-        });
+        return member.roles.cache.has("449654670357692416");
     });
 
     yield await createBadge("gold100.png", async function () {
-        return new Promise((resolve) => {
-            if (numGolds >= 100) {
-                ignore.push(...[50, 25, 10, 5].map((n) => `gold${n}.png`));
-                resolve(true);
-            } else resolve(false);
-        });
+        if (numGolds >= 100) {
+            ignore.push("gold50.png", "gold25.png", "gold10.png", "gold5.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("gold50.png", async function () {
-        return new Promise((resolve) => {
-            if (numGolds >= 50) {
-                ignore.push(...[25, 10, 5].map((n) => `gold${n}.png`));
-                resolve(true);
-            } else resolve(false);
-        });
+        if (numGolds >= 50) {
+            ignore.push("gold25.png", "gold10.png", "gold5.png");
+            return true;
+        }
+        return false;
     });
 
     yield await createBadge("gold25.png", async function () {
-        return new Promise((resolve) => {
-            if (numGolds >= 25) {
-                ignore.push(...[10, 5].map((n) => `gold${n}.png`));
-                resolve(true);
-            } else resolve(false);
-        });
+        if (numGolds >= 25) {
+            ignore.push("gold10.png", "gold5.png");
+            return true;
+        }
+        return false;
     });
     yield await createBadge("gold10.png", async function () {
-        return new Promise((resolve) => {
-            if (numGolds >= 10) {
-                ignore.push("gold5.png");
-                resolve(true);
-            } else resolve(false);
-        });
+        if (numGolds >= 10) {
+            ignore.push("gold5.png");
+            return true;
+        }
+
+        return false;
     });
 
     yield await createBadge("gold5.png", async function () {
-        return new Promise((resolve) => {
-            if (numGolds >= 5) {
-                resolve(true);
-            } else resolve(false);
-        });
+        return numGolds >= 5;
     });
 
     yield await createBadge("dema.png", async function () {
-        return new Promise((resolve) => {
-            resolve(member.roles.cache.has("451217741584793601"));
-        });
+        return member.roles.cache.has("451217741584793601");
     });
 
     yield await createBadge("banditos.png", async function () {
-        return new Promise((resolve) => {
-            resolve(true);
-        });
+        return true;
     });
 
     async function createBadge(fileName: string, hasBadge: () => Promise<unknown>): Promise<Image | undefined> {

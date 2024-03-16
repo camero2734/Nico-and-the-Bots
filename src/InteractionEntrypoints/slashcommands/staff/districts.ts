@@ -14,7 +14,7 @@ command.setHandler(async (ctx) => {
     const districts = F.entries(roles.districts);
 
     const embed = new EmbedBuilder()
-        .setTitle("District Apporitionment")
+        .setTitle("District Apportionment")
         .setColor("Blurple")
 
     let sum = 0;

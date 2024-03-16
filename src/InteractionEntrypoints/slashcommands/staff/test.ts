@@ -28,12 +28,19 @@ command.setHandler(async (ctx) => {
     const image = await createBishopImage(color);
     const attachment = new AttachmentBuilder(image, { name: "bishop.png" });
 
-    await webhookClient.send({
+    const m = await webhookClient.send({
         username: "Andre",
-        avatarURL: "attachment://bishop.png",
         embeds: [embed],
         files: [attachment],
     });
+
+    const channel = await ctx.guild.channels.fetch(m.channel_id);
+    if (!channel?.isTextBased()) return;
+
+    const msg = await channel.messages.fetch(m.id);
+    await msg.edit({
+        content: "Edited",
+    })
 });
 
 async function createBishopImage(colorTo: [number, number, number]) {

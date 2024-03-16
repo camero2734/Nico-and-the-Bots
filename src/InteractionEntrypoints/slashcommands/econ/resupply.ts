@@ -193,13 +193,14 @@ async function memberCaught(
     district: typeof districts[number],
     dailyBox: DailyBox
 ): Promise<void> {
+    const issuingBishop = F.capitalize(district.bishop) as BishopType;
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 
     const embed = new EmbedBuilder()
         .setColor(0xea523b)
-        .setTitle(`VIOLATION DETECTED BY ${district.bishop.toUpperCase()}`)
-        .setAuthor({ name: district.bishop, iconURL: emojiURL })
+        .setTitle(`VIOLATION DETECTED BY ${issuingBishop.toUpperCase()}`)
+        .setAuthor({ name: issuingBishop, iconURL: emojiURL })
         .setDescription(
             `You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.`
         )
@@ -207,7 +208,7 @@ async function memberCaught(
 
     sendViolationNotice(ctx.member as GuildMember, {
         violation: "ConspiracyAndTreason",
-        issuingBishop: F.capitalize(district.bishop) as BishopType
+        issuingBishop: issuingBishop
     });
 
     await ctx.editReply({

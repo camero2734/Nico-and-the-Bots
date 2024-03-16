@@ -7,13 +7,6 @@ WORKDIR /code
 RUN apt update
 RUN apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
 
-# Node for Prisma
-ARG NODE_VERSION=20
-RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n \
-    && bash n $NODE_VERSION \
-    && rm n \
-    && npm install -g n
-
 # NPM packages
 COPY bun.lockb package.json ./
 RUN bun install --frozen-lockfile

@@ -1,10 +1,10 @@
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import * as bigintConversion from "bigint-conversion";
 import * as crypto from "crypto";
-import { BaseMessageOptions, Guild, GuildMember, Message, Snowflake, TextChannel } from "discord.js";
+import { BaseMessageOptions, Guild, GuildMember, Message, Role, Snowflake, TextChannel } from "discord.js";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
-import { channelIDs } from "../Configuration/config";
+import { channelIDs, roles } from "../Configuration/config";
 /**
  * Just some commonly used short functions
  */
@@ -31,7 +31,10 @@ const F = {
     // the default Object.entries function does not retain type information
     entries: <T extends Record<string, T[keyof T]>>(obj: T): [keyof T, T[keyof T]][] =>
         Object.entries(obj) as [keyof T, T[keyof T]][],
-    // Rerurns [0, 1, 2, ..., n]
+
+    keys: <T extends Record<string, unknown>>(obj: T): (keyof T)[] => Object.keys(obj) as (keyof T)[],
+    values: <T extends Record<string, unknown>>(obj: T): T[keyof T][] => Object.values(obj) as T[keyof T][],
+    // Returns [0, 1, 2, ..., n]
     indexArray: R.times(R.identity),
     randomIndexInArray: <U>(arr: U[]): number => Math.floor(Math.random() * arr.length),
     randomValueInArray: <U>(arr: U[]): U => arr[F.randomIndexInArray(arr)],
@@ -189,6 +192,22 @@ const F = {
     ellipseText(text: string, maxLength: number): string {
         if (text.length <= maxLength) return text;
         else return text.substring(0, maxLength - 3) + "...";
+    },
+    capitalize(text: string): string {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    },
+    userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role } | undefined {
+        const keys = F.entries(roles.districts);
+        for (const [bishop, roleId] of keys) {
+            const role = member.roles.cache.get(roleId);
+            if (role) return { name: bishop, role };
+        }
+    },
+    intColorToRGB(int: number): [number, number, number] {
+        const r = (int >> 16) & 255;
+        const g = (int >> 8) & 255;
+        const b = int & 255;
+        return [r, g, b];
     }
 };
 

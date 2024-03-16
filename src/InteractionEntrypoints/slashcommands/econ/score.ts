@@ -67,8 +67,13 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     const inverted = invertedRoles.indexOf(src) !== -1;
 
     // Create canvas
-    const canvas = createCanvas(1000, 1000);
+    const ogSize = 1000;
+    const newSize = 2000;
+    const canvas = createCanvas(newSize, newSize);
     const cctx = canvas.getContext("2d");
+
+    const factor = newSize / ogSize;
+    cctx.scale(factor, factor);
 
     // Get images
     let avatar_url = member.user.avatarURL({ extension: "png", size: 512 });

@@ -103,6 +103,8 @@ export async function songBattleCron() {
     const startsAt = new Date();
     const endsAt = cron.nextRun()!;
 
+    // Ping message
+    await channel.send({ content: roleMention(roles.songBattles) });
 
     // Placeholder message
     const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
@@ -144,7 +146,7 @@ export async function songBattleCron() {
     ]);
 
     // Send the main message
-    await m.edit({ content: roleMention(roles.songBattles), embeds: [embed], files: [attachment], components: [actionRow] });
+    await m.edit({ embeds: [embed], files: [attachment], components: [actionRow] });
 
     // Create a discussion thread
     const thread = await m.startThread({

@@ -35,7 +35,7 @@ command.setHandler(async (ctx) => {
 
     const wrapCode = (code: string) => `\`\`\`yml\n${code}\n\`\`\``;
 
-    const randomBishop = F.randomValueInArray(districts).bishop;
+    const bishop = F.capitalize(F.userBishop(ctx.member)?.name || F.randomValueInArray(districts).bishop);
 
     // prettier-ignore
     const description = wrapCode([
@@ -43,7 +43,7 @@ command.setHandler(async (ctx) => {
         `\tbanditos.exe: Rerouting connection through Vulture VPN...`,
         `\tvvpn.exe: Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
         `\tbanditos.exe: Granting admin access...`,
-        `<DemaOS/Admin>: Welcome, ${randomBishop}!`,
+        `<DemaOS/Admin>: Welcome, ${bishop}!`,
         `\tbishops.exe: Accessing district supply lists... Please make a selection.`,
     ].join("\n")
     );
@@ -75,7 +75,7 @@ command.setHandler(async (ctx) => {
     const menu = new StringSelectMenuBuilder()
         .addOptions(options)
         .setPlaceholder("Select a district to search")
-        .setCustomId(genSelectId({ matchingBishop: randomBishop }));
+        .setCustomId(genSelectId({ matchingBishop: bishop }));
 
     const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents([menu]);
 
@@ -188,8 +188,6 @@ async function memberCaught(
     district: typeof districts[number],
     dailyBox: DailyBox
 ): Promise<void> {
-    // await (<Message>ctx.message).removeAttachments();
-
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
     const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 

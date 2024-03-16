@@ -9,6 +9,7 @@ export const guildID = "269657133673349120";
 export const dropEmojiGuildId = "901909949821648936";
 
 export const channelIDs = <const>{
+    demadistricting: "1217952001317666926",
     songbattles: "1211412086442426429",
     commands: "940341308696965120",
     memes: "470335805697556480",
@@ -225,6 +226,17 @@ export const roles = <const>{
             "Ode to Pink": "692990523014774874",
             "Bandito Yellow": "693151392780517397"
         }
+    },
+    districts: {
+        keons: "1217561582574374943",
+        lisden: "1217562330548666418",
+        andre: "1217562633763291196",
+        sacarver: "1217562734443495545",
+        reisdro: "1217562900869419098",
+        nico: "1217563151394930789",
+        listo: "1217563263072604290",
+        vetomo: "1217563335801966716",
+        nills: "1217563448486137896"
     }
 };
 

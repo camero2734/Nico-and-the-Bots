@@ -43,7 +43,7 @@ const secrets = {
         }
     },
     randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString(),
-
+    webhookUrl: env.get("WEBHOOK_URL").required().asString(),
 };
 
 export default secrets;

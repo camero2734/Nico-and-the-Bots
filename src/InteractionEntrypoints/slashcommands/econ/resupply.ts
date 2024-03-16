@@ -111,7 +111,7 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", ["ma
 
     const dbUser = await queries.findOrCreateUser(ctx.member.id, { dailyBox: true });
     const tokens = dbUser.dailyBox?.tokens;
-    if (!dbUser.dailyBox || !tokens) {
+    if (!dbUser.dailyBox || !tokens || tokens < 1) {
         const embed = new EmbedBuilder()
             .setDescription("You don't have any tokens! Use the `/econ daily` command to get some.")
             .setThumbnail("attachment://file.gif");

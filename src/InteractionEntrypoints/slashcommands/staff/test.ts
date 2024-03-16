@@ -1,46 +1,69 @@
-import { ViolationType } from "@prisma/client";
-import { userIDs } from "../../../Configuration/config";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { AttachmentBuilder, EmbedBuilder, WebhookClient } from "discord.js";
+import { roles, userIDs } from "../../../Configuration/config";
+import secrets from "../../../Configuration/secrets";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
+import F from "../../../Helpers/funcs";
+import { CommandError } from "../../../Configuration/definitions";
 
 const command = new SlashCommand({
     description: "Test command",
     options: []
 });
 
-// const MODAL_FIELDS = <const>{
-//     TV_FIELD: "tv_field"
-// };
-
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    // const embed = new EmbedBuilder().setDescription("i don't remember discord.js at all lol");
-    // await ctx.send({ embeds: [embed] });
+    const webhookClient = new WebhookClient({ url: secrets.webhookUrl });
 
-    const member = await ctx.guild.members.fetch(userIDs.myAlt);
+    const embed = new EmbedBuilder()
+        .setAuthor({ name: "Andre", iconURL: "attachment://bishop.png" })
+        .setDescription("test!");
 
-    await sendViolationNotice(member, { violation: ViolationType.ConspiracyAndTreason, issuingBishop: "Nico" });
+    const role = await ctx.guild.roles.fetch(roles.districts.andre);
+    if (!role) throw new CommandError("Role not found");
 
-    // const modal = new ModalBuilder().setTitle("My Awesome Form").setCustomId(genModalId({}));
+    const color = F.intColorToRGB(role.color);
 
-    // const inputComponent = new TextInputBuilder()
-    //     .setCustomId(`${MODAL_FIELDS.TV_FIELD}`)
-    //     .setLabel("Say something")
-    //     .setStyle(TextInputStyle.Short);
+    const image = await createBishopImage(color);
+    const attachment = new AttachmentBuilder(image, { name: "bishop.png" });
 
-    // modal.setComponents([new ActionRowBuilder<TextInputBuilder>().addComponents([inputComponent])]);
-
-    // ctx.showModal(modal);
+    await webhookClient.send({
+        username: "Andre",
+        avatarURL: "attachment://bishop.png",
+        embeds: [embed],
+        files: [attachment],
+    });
 });
 
-// const genModalId = command.addInteractionListener("myForm", [], async (ctx) => {
-//     if (!ctx.isModalSubmit()) return;
+async function createBishopImage(colorTo: [number, number, number]) {
+    const image = await loadImage("./src/Assets/bishop_generic.png");
 
-//     const inputField = ctx.fields.getTextInputValue(MODAL_FIELDS.TV_FIELD);
+    const canvas = createCanvas(500, 500);
+    const ctx = canvas.getContext("2d");
 
-//     console.log("Got a response from the modal!");
-//     ctx.reply(`Thank you for saying ${inputField}`);
-// });
+    ctx.drawImage(image, 0, 0, 500, 500);
+
+    const imgData = ctx.getImageData(0, 0, 500, 500);
+    const data = imgData.data;
+
+    const colorFrom = [0, 0, 0];
+
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        const brightness = Math.min(0.2 + ((r + g + b) / 3) / 255, 1);
+
+        data[i] = F.lerp(brightness, colorFrom[0], colorTo[0]);
+        data[i + 1] = F.lerp(brightness, colorFrom[1], colorTo[1]);
+        data[i + 2] = F.lerp(brightness, colorFrom[2], colorTo[2]);
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+
+    return canvas.toBuffer("image/png");
+}
 
 export default command;

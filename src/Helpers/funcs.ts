@@ -208,7 +208,7 @@ const F = {
         const g = (int >> 8) & 255;
         const b = int & 255;
         return [r, g, b];
-    }
+    },
 };
 
 export default F;

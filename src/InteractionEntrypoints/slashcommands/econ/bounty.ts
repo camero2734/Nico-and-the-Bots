@@ -6,6 +6,7 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { BishopType } from "@prisma/client";
 
 const command = new SlashCommand({
     description: "Reaps bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
@@ -124,7 +125,7 @@ command.setHandler(async (ctx) => {
 
         sendViolationNotice(member, {
             violation: "FailedPerimeterEscape",
-            issuingBishop: assignedBishop.bishop
+            issuingBishop: F.capitalize(assignedBishop.bishop) as BishopType
         });
 
         await ctx.editReply({ embeds: [winEmbed.toJSON()] });

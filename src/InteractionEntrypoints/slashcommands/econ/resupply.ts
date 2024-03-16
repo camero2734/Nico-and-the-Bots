@@ -1,4 +1,4 @@
-import { DailyBox, User } from "@prisma/client";
+import { BishopType, DailyBox, User } from "@prisma/client";
 import { format } from "date-fns";
 import {
     ActionRowBuilder,
@@ -35,7 +35,7 @@ command.setHandler(async (ctx) => {
 
     const wrapCode = (code: string) => `\`\`\`yml\n${code}\n\`\`\``;
 
-    const bishop = F.capitalize(F.userBishop(ctx.member)?.name || F.randomValueInArray(districts).bishop);
+    const bishop = F.capitalize(F.userBishop(ctx.member)?.name || F.randomValueInArray(F.keys(roles.districts)));
 
     // prettier-ignore
     const description = wrapCode([
@@ -64,12 +64,11 @@ command.setHandler(async (ctx) => {
         });
 
     const options = districts.map(
-        (d, idx) =>
-            new StringSelectMenuOptionBuilder()
-                .setLabel(`DST. ${d.bishop.toUpperCase()}`)
-                .setDescription(`Search ${d.bishop}'s district. ${d.difficulty}.`)
-                .setValue(idx.toString())
-                .setEmoji({ id: d.emoji }).toJSON()
+        (d, idx) => new StringSelectMenuOptionBuilder()
+            .setLabel(`DST. ${d.bishop.toUpperCase()}`)
+            .setDescription(`Search ${F.capitalize(d.bishop)}'s district. ${d.difficulty}.`)
+            .setValue(idx.toString())
+            .setEmoji({ id: d.emoji })
     );
 
     const menu = new StringSelectMenuBuilder()
@@ -84,7 +83,7 @@ command.setHandler(async (ctx) => {
     ]);
 
     await ctx.editReply({
-        embeds: [embed.toJSON()],
+        embeds: [embed],
         files: [{ name: "file.gif", attachment: buffer }],
         components: [actionRow, buttonActionRow]
     });
@@ -95,10 +94,9 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", ["ma
 
     await ctx.deferUpdate();
 
-    const [_districtNum] = ctx.values || [];
-    if (!_districtNum) return;
+    const districtNum = Number(ctx.values.at(0));
+    if (isNaN(districtNum)) return;
 
-    const districtNum = +_districtNum;
     const district = districts[districtNum];
 
     await sendWaitingMessage(ctx, `Searching ${district.bishop}'s district...`);
@@ -202,7 +200,7 @@ async function memberCaught(
 
     sendViolationNotice(ctx.member as GuildMember, {
         violation: "ConspiracyAndTreason",
-        issuingBishop: district.bishop
+        issuingBishop: F.capitalize(district.bishop) as BishopType
     });
 
     await ctx.editReply({

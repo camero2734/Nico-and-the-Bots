@@ -1,6 +1,9 @@
 import { Snowflake } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
+import F from "../../../Helpers/funcs";
+import { Faker, en } from "@faker-js/faker";
+import { startOfDay } from "date-fns";
 
 export const BOUNTY_NUM_CREDITS = 1000;
 
@@ -46,12 +49,12 @@ export function getPrizeName(prize: Prize): string {
     else return "prize";
 }
 
-export class District<T extends typeof districtOrder[number]> {
+export class District {
     difficulty: string;
-    emoji: Snowflake = "860026157982547988";
     credits = 0;
 
     private prizes: Array<Prize> = [];
+
 
     static catchPercent(idx: number) {
         return [20, 35, 40, 50, 70, 75, 80, 85, 90][idx] / 100;
@@ -61,13 +64,9 @@ export class District<T extends typeof districtOrder[number]> {
         return `${parseFloat((100 * percent).toFixed(2))}%`;
     }
 
-    constructor(public bishop: T) { }
+    constructor(public idx: number) { }
     setDifficulty(diff: string): this {
         this.difficulty = diff;
-        return this;
-    }
-    setEmoji(id: Snowflake): this {
-        this.emoji = id;
         return this;
     }
     getCreditsPrize(): Prize & { type: PrizeType.Credits } {
@@ -105,62 +104,74 @@ export class District<T extends typeof districtOrder[number]> {
         this.prizes.push(prize);
         return this;
     }
+    get bishop() {
+        const faker = new Faker({ locale: [en] });
+        faker.seed(startOfDay(new Date()).getTime());
+
+        const dailyBishopOrder = faker.helpers.shuffle(F.keys(roles.districts));
+        return dailyBishopOrder[this.idx];
+    }
+    get emoji() {
+        switch (this.bishop) {
+            case "nico": return "860015969253326858";
+            case "sacarver": return "860015991031463947";
+            case "lisden": return "860015991491919882";
+            case "keons": return "860015991521804298";
+            default: return "860026157982547988";
+        }
+    }
 }
 
 // prettier-ignore
-export const districts: Array<District<typeof districtOrder[number]>> = [
-    new District("Andre")
+export const districts: Array<District> = [
+    new District(0)
         .setDifficulty("Easiest")
         .setCredits(500),
 
-    new District("Lisden")
+    new District(1)
         .setDifficulty("Very Easy")
-        .setEmoji("860015991491919882")
         .setCredits(750),
 
-    new District("Keons")
+    new District(2)
         .setDifficulty("Easy")
-        .setEmoji("860015991521804298")
         .setCredits(1000)
         .addItem("BOUNTY", "7.5%"),
 
-    new District("Reisdro")
+    new District(3)
         .setDifficulty("Medium")
         .setCredits(1250)
         .addItem("BOUNTY", "10%"),
 
-    new District("Sacarver")
+    new District(4)
         .setDifficulty("Hard")
-        .setEmoji("860015991031463947")
         .setCredits(2500)
         .addItem("BOUNTY", "10%")
         .addItem("JUMPSUIT", "5%")
         .addRole(roles.colors.tier1["Bandito Green"], "3%"),
 
-    new District("Listo")
+    new District(5)
         .setDifficulty("Very Hard")
         .setCredits(3000)
         .addItem("BOUNTY", "10%")
         .addItem("JUMPSUIT", "5%")
         .addRole(roles.colors.tier2["Jumpsuit Green"], "1%"),
 
-    new District("Vetomo")
+    new District(6)
         .setDifficulty("Extremely Hard")
         .setCredits(4000)
         .addItem("BOUNTY", "10%")
         .addItem("JUMPSUIT", "5%")
         .addRole(roles.colors.tier3["Torch Orange"], "0.75%"),
 
-    new District("Nills")
+    new District(7)
         .setDifficulty("Almost Impossible")
         .setCredits(5000)
         .addItem("BOUNTY", "10%")
         .addItem("JUMPSUIT", "5%")
         .addRole(roles.colors.tier4["Clancy Black"], "0.5%"),
 
-    new District("Nico")
+    new District(8)
         .setDifficulty("No Chances")
-        .setEmoji("860015969253326858")
         .setCredits(10000)
         .addItem("BOUNTY", "20%")
         .addItem("JUMPSUIT", "10%")

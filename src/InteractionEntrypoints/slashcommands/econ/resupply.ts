@@ -35,7 +35,9 @@ command.setHandler(async (ctx) => {
 
     const wrapCode = (code: string) => `\`\`\`yml\n${code}\n\`\`\``;
 
-    const bishop = F.capitalize(F.userBishop(ctx.member)?.name || F.randomValueInArray(F.keys(roles.districts)));
+    const userBishop = F.userBishop(ctx.member);
+
+    const bishop = F.capitalize(userBishop?.name || F.randomValueInArray(F.keys(roles.districts)));
 
     // prettier-ignore
     const description = wrapCode([
@@ -64,11 +66,16 @@ command.setHandler(async (ctx) => {
         });
 
     const options = districts.map(
-        (d, idx) => new StringSelectMenuOptionBuilder()
-            .setLabel(`DST. ${d.bishop.toUpperCase()}`)
-            .setDescription(`Search ${F.capitalize(d.bishop)}'s district. ${d.difficulty}.`)
-            .setValue(idx.toString())
-            .setEmoji({ id: d.emoji })
+        (d, idx) => {
+            const bishopName = d.bishop;
+            const prefix = userBishop?.name === bishopName ? "📍 " : " ";
+            const homeDistrict = userBishop?.name === bishopName ? " (Your District)" : "";
+            return new StringSelectMenuOptionBuilder()
+                .setLabel(`${prefix}DST. ${bishopName.toUpperCase()}`)
+                .setDescription(`Search ${F.capitalize(bishopName)}'s district${homeDistrict}. ${d.difficulty}.`)
+                .setValue(idx.toString())
+                .setEmoji({ id: d.emoji })
+        }
     );
 
     const menu = new StringSelectMenuBuilder()

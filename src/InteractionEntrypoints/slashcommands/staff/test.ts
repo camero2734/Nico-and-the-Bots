@@ -86,7 +86,7 @@ async function createBishopImage(name: string, colorTo: [number, number, number]
     const result = await S3.send(
         new PutObjectCommand({
             Bucket: bucket,
-            Key: "bishop_generic.png",
+            Key: fileName,
             Body: buffer,
         })
     );

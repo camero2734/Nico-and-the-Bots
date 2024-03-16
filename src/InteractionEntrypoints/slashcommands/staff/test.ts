@@ -1,10 +1,16 @@
-import { AttachmentBuilder, EmbedBuilder, WebhookClient } from "discord.js";
-import { roles, userIDs } from "../../../Configuration/config";
-import secrets from "../../../Configuration/secrets";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import F from "../../../Helpers/funcs";
+import { EmbedBuilder, WebhookClient } from "discord.js";
+import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import secrets from "../../../Configuration/secrets";
+import F from "../../../Helpers/funcs";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+
+import {
+    PutObjectCommand,
+    S3Client,
+} from "@aws-sdk/client-s3";
+
 
 const command = new SlashCommand({
     description: "Test command",
@@ -16,28 +22,27 @@ command.setHandler(async (ctx) => {
 
     const webhookClient = new WebhookClient({ url: secrets.webhookUrl });
 
-    const embed = new EmbedBuilder()
-        .setAuthor({ name: "Andre", iconURL: "attachment://bishop.png" })
-        .setDescription("test!");
-
     const role = await ctx.guild.roles.fetch(roles.districts.andre);
     if (!role) throw new CommandError("Role not found");
 
     const color = F.intColorToRGB(role.color);
 
-    const image = await createBishopImage(color);
-    const attachment = new AttachmentBuilder(image, { name: "bishop.png" });
+    const imageUrl = await createBishopImage("Andre", color);
+
+    const embed = new EmbedBuilder()
+        .setAuthor({ name: "Andre", iconURL: imageUrl })
+        .setDescription("test!");
 
     const m = await webhookClient.send({
         username: "Andre",
+        avatarURL: imageUrl,
         embeds: [embed],
-        files: [attachment],
     });
 
     await webhookClient.editMessage(m.id, { content: "Edited" });
 });
 
-async function createBishopImage(colorTo: [number, number, number]) {
+async function createBishopImage(name: string, colorTo: [number, number, number]): Promise<string> {
     const image = await loadImage("./src/Assets/bishop_generic.png");
 
     const canvas = createCanvas(500, 500);
@@ -64,7 +69,31 @@ async function createBishopImage(colorTo: [number, number, number]) {
 
     ctx.putImageData(imgData, 0, 0);
 
-    return canvas.toBuffer("image/png");
+    const buffer = canvas.toBuffer("image/png");
+
+    const S3 = new S3Client({
+        region: "auto",
+        endpoint: `https://${secrets.apis.cloudflare.ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+            accessKeyId: secrets.apis.cloudflare.ACCESS_KEY_ID,
+            secretAccessKey: secrets.apis.cloudflare.SECRET_ACCESS_KEY,
+        },
+    });
+
+    const bucket = "images";
+    const fileName = `bishop_${name}.png`;
+
+    const result = await S3.send(
+        new PutObjectCommand({
+            Bucket: bucket,
+            Key: "bishop_generic.png",
+            Body: buffer,
+        })
+    );
+
+    if (result.$metadata.httpStatusCode !== 200) throw new CommandError("Failed to upload image");
+
+    return `https://pub-6475c50df1c84cc0abfa49f0680ac4f7.r2.dev/${fileName}`;
 }
 
 export default command;

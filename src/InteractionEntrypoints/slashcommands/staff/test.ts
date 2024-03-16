@@ -34,13 +34,7 @@ command.setHandler(async (ctx) => {
         files: [attachment],
     });
 
-    const channel = await ctx.guild.channels.fetch(m.channel_id);
-    if (!channel?.isTextBased()) return;
-
-    const msg = await channel.messages.fetch(m.id);
-    await msg.edit({
-        content: "Edited",
-    })
+    await webhookClient.editMessage(m.id, { content: "Edited" });
 });
 
 async function createBishopImage(colorTo: [number, number, number]) {

@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, roleMention } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -18,7 +18,7 @@ command.setHandler(async (ctx) => {
         .setColor("Blurple")
 
     let sum = 0;
-    for (const [name, id] of districts) {
+    for (const [_name, id] of districts) {
         const role = await ctx.guild.roles.fetch(id);
         if (!role) continue;
 
@@ -27,7 +27,7 @@ command.setHandler(async (ctx) => {
 
         embed.addFields([
             {
-                name: name,
+                name: roleMention(role.id),
                 value: population.toString(),
                 inline: true
             }

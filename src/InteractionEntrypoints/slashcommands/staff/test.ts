@@ -22,22 +22,23 @@ command.setHandler(async (ctx) => {
 
     const color = F.intColorToRGB(role.color);
 
-    const imageUrl = await createBishopImage("Listo", color);
+    const [imageUrl, buffer] = await createBishopImage("Listo", color);
 
     const embed = new EmbedBuilder()
-        .setAuthor({ name: "Listo", iconURL: imageUrl })
+        .setAuthor({ name: "Listo", iconURL: "attachment://bishop.png" })
         .setDescription("test!");
 
     const m = await webhookClient.send({
         username: "Listo",
         avatarURL: imageUrl,
         embeds: [embed],
+        files: [{ name: "bishop.png", attachment: buffer }]
     });
 
     await webhookClient.editMessage(m.id, { content: "Edited" });
 });
 
-async function createBishopImage(name: string, colorTo: [number, number, number]): Promise<string> {
+async function createBishopImage(name: string, colorTo: [number, number, number]): Promise<[string, Buffer]> {
     const image = await loadImage("./src/Assets/bishop_generic.png");
 
     const canvas = createCanvas(500, 500);
@@ -66,7 +67,7 @@ async function createBishopImage(name: string, colorTo: [number, number, number]
 
     const buffer = canvas.toBuffer("image/png");
 
-    return uploadImageToCloudflareStorage(`bishop_${name}.png`, buffer);
+    return [await uploadImageToCloudflareStorage(`bishop_${name}.png`, buffer), buffer];
 }
 
 export default command;

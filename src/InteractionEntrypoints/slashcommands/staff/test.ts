@@ -14,25 +14,50 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    const channel = await ctx.guild.channels.fetch(channelIDs.districts.vetomo);
+    const currentChannel = ctx.channel;
+
+    if (!Object.keys(channelIDs.districts).includes(currentChannel.name)) {
+        throw new CommandError("Invalid channel");
+    }
+
+    const bishopName = currentChannel.name as keyof typeof channelIDs.districts;
+
+    const channel = await ctx.guild.channels.fetch(channelIDs.districts[bishopName]);
     if (channel?.type !== ChannelType.GuildText) throw new CommandError("Channel not found");
 
-    const role = await ctx.guild.roles.fetch(roles.districts.vetomo);
+    const role = await ctx.guild.roles.fetch(roles.districts[bishopName]);
     if (!role) throw new CommandError("Role not found");
 
     const color = F.intColorToRGB(role.color);
 
-    const [imageUrl, buffer] = await createBishopImage("Vetomo", color);
+    let imageUrl: string;
+    let buffer: Buffer;
+
+    if (bishopName in userIDs.bots) {
+        const bName = bishopName as keyof typeof userIDs.bots;
+        const botUser = await ctx.guild.members.fetch(userIDs.bots[bName]);
+        if (!botUser) throw new CommandError("Bot not found");
+
+        const botImg = botUser.avatarURL({ extension: "png" });
+        if (!botImg) throw new CommandError("Bot avatar not found");
+
+        imageUrl = botImg;
+        buffer = (await loadImage(imageUrl)).src;
+    } else {
+        [imageUrl, buffer] = await createBishopImage(bishopName, color);
+    }
+
+    if (!imageUrl || !buffer) throw new CommandError("Failed to create bishop image");
 
     const webhook = await channel.createWebhook({
-        name: "Vetomo",
+        name: F.capitalize(bishopName),
         avatar: imageUrl,
     });
 
     const webhookClient = new WebhookClient({ url: webhook.url });
 
     const embed = new EmbedBuilder()
-        .setAuthor({ name: "Vetomo", iconURL: "attachment://bishop.png" })
+        .setAuthor({ name: F.capitalize(bishopName), iconURL: "attachment://bishop.png" })
         .setDescription("test!");
 
     const m = await webhookClient.send({

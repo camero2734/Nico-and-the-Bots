@@ -92,6 +92,18 @@ export const channelIDs = <const>{
         dmaorg: "534882770619465731"
     },
     ticketSupport: "1214992264829599754",
+    gloriousVista: "1218877052199895180",
+    districts: {
+        keons: "1218876634732560465",
+        lisden: "1218876421120987187",
+        andre: "1218876684866945175",
+        sacarver: "1218876723916177430",
+        reisdro: "1218876869294952478",
+        nico: "1218876888014127104",
+        listo: "1218876909207949352",
+        vetomo: "1218876930778992720",
+        nills: "1218876943945039932"
+    }
 };
 
 export const categoryIDs = <const>{

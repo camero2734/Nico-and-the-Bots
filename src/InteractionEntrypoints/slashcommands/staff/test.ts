@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, WebhookClient } from "discord.js";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { getDistrictWebhookClient } from "../../../Helpers/district-webhooks";
@@ -50,7 +50,12 @@ command.setHandler(async (ctx) => {
 const genId = command.addInteractionListener("testBishopMsg", [], async (ctx) => {
     await ctx.deferUpdate();
 
-    await ctx.editReply({ content: "you did it" });
+    const webhook = await ctx.message.fetchWebhook();
+    if (!webhook) throw new Error("Webhook not found");
+
+    const client = new WebhookClient(webhook);
+
+    await client.send("you did it");
 });
 
 

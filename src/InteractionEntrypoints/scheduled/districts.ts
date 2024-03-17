@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Role, TextChannel, roleMention } from "discord.js";
+import { ActionRowBuilder, ChannelType, EmbedBuilder, Role, StringSelectMenuBuilder, TextChannel, roleMention } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { getDistrictWebhookClient } from "../../Helpers/district-webhooks";
@@ -37,7 +37,7 @@ export async function districtCron() {
         })
     );
 
-    for (let i = 0; i < districts.length; i++) {
+    for (let i = 0; i < 2; i++) {
         const prevDistrict = districts.at(i - 1)!;
         const district = districts[i];
         const nextDistrict = districts[(i + 1) % districts.length];
@@ -47,22 +47,37 @@ export async function districtCron() {
         const embed = new EmbedBuilder()
             .setTitle(`${district.role.name} Morning Report`)
             .setColor(district.role.color)
-            .setDescription(`Good morning, citizens of ${roleMention(district.role.id)}. Please ensure you safely hide your valuables before leaving your homes. The raiding party from ${roleMention(prevDistrict.role.id)} will be arriving today.`)
+            .setDescription(`Good morning, citizens of ${roleMention(district.role.id)}. Please ensure you safely hide your valuables before leaving your homes.\nThe raiding party from ${roleMention(prevDistrict.role.id)} will be arriving today.\nAlso, we will be raiding ${roleMention(nextDistrict.role.id)} today. Later today, we will select a quarter to raid.`)
             .addFields([
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
                 { name: "Defending", value: roleMention(prevDistrict.role.id), inline: true },
             ]);
 
-        const actionRow = new ActionRowBuilder<ButtonBuilder>()
-            .setComponents(["I", "II", "III", "IV"].map(qtr =>
-                new ButtonBuilder()
-                    .setLabel(`QTR ${qtr}`)
-                    .setStyle(ButtonStyle.Primary)
-                    .setCustomId(`placeholder${qtr}`)
-            ));
+        const selectMenu = new StringSelectMenuBuilder()
+            .setCustomId(genQtrId({}))
+            .setMaxValues(1)
+            .setMinValues(1)
+            .setPlaceholder("Select a quarter to hide in")
+            .setOptions([
+                { label: "QTR I", value: "1" },
+                { label: "QTR II", value: "2" },
+                { label: "QTR III", value: "3" },
+                { label: "QTR IV", value: "4" },
+            ]);
+
+        const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(selectMenu);
 
         await webhook.client.send({ embeds: [embed], components: [actionRow] });
     }
 }
+
+const genQtrId = entrypoint.addInteractionListener("districtQtrSel", [], async (ctx) => {
+    if (!ctx.isStringSelectMenu()) return;
+    await ctx.deferReply({ ephemeral: true });
+
+    const qtrIndex = parseInt(ctx.values[0]);
+
+    await ctx.editReply(`You selected QTR ${["I", "II", "III", "IV"][qtrIndex]}`);
+});
 
 export default entrypoint;

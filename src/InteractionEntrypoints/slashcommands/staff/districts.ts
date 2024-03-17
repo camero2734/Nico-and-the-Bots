@@ -18,7 +18,7 @@ command.setHandler(async (ctx) => {
         .setColor("Blurple")
 
     let sum = 0;
-    for (const [_name, id] of districts) {
+    for (const [name, id] of districts) {
         const role = await ctx.guild.roles.fetch(id);
         if (!role) continue;
 
@@ -27,8 +27,8 @@ command.setHandler(async (ctx) => {
 
         embed.addFields([
             {
-                name: roleMention(role.id),
-                value: population.toString(),
+                name: name,
+                value: `${roleMention(role.id)}\n${population}`,
                 inline: true
             }
         ])

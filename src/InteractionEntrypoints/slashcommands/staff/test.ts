@@ -22,7 +22,7 @@ command.setHandler(async (ctx) => {
         throw new CommandError("Invalid channel");
     }
 
-    const { webhook, client: bishopClient } = await getDistrictWebhookClient(bishopName, currentChannel, true);
+    const { webhook, client: bishopClient } = await getDistrictWebhookClient(bishopName, currentChannel);
 
     const iconURL = webhook.avatarURL({ extension: "png", size: 512 });
     if (!iconURL) throw new Error("Icon URL not found");

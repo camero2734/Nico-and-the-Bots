@@ -37,7 +37,7 @@ export async function districtCron() {
         })
     );
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 1; i++) {
         const prevDistrict = districts.at(i - 1)!;
         const district = districts[i];
         const nextDistrict = districts[(i + 1) % districts.length];
@@ -48,9 +48,9 @@ export async function districtCron() {
         const currencyAmount = 50;
 
         const embed = new EmbedBuilder()
-            .setTitle(`${district.role.name} Morning Report`)
+            .setTitle(`${roleMention(district.role.id)} Morning Report`)
             .setColor(district.role.color)
-            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **Ƌ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under our stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
+            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **Ƌ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
                 { name: "Defending", value: roleMention(prevDistrict.role.id), inline: true },

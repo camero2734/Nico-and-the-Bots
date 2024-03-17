@@ -22,19 +22,16 @@ command.setHandler(async (ctx) => {
         throw new CommandError("Invalid channel");
     }
 
-    const bishopWebhook = await getDistrictWebhookClient(bishopName, currentChannel);
-    const webhooks = await ctx.guild.fetchWebhooks();
-    const matching = webhooks.find(w => w.url === bishopWebhook.url);
-    if (!matching) throw new Error("Webhook not found");
+    const { webhook, client: bishopClient } = await getDistrictWebhookClient(bishopName, currentChannel);
 
-    const iconURL = matching.avatarURL({ extension: "png", size: 512 });
+    const iconURL = webhook.avatarURL({ extension: "png", size: 512 });
     if (!iconURL) throw new Error("Icon URL not found");
 
     const embed = new EmbedBuilder()
         .setAuthor({ name: F.capitalize(bishopName), iconURL })
         .setDescription("test!");
 
-    const m = await bishopWebhook.send({
+    const m = await bishopClient.send({
         embeds: [embed],
     });
 
@@ -45,7 +42,7 @@ command.setHandler(async (ctx) => {
             .setLabel("Test")
     );
 
-    await bishopWebhook.editMessage(m.id, { content: "Edited", components: [actionRow] });
+    await bishopClient.editMessage(m.id, { content: "Edited", components: [actionRow] });
 
     await ctx.editReply("OK");
 });

@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { TextChannel, WebhookClient } from "discord.js";
+import { TextChannel, Webhook, WebhookClient } from "discord.js";
 import { channelIDs, roles, userIDs } from "../Configuration/config";
 import { uploadImageToCloudflareStorage } from "./apis/cloudflare";
 import F from "./funcs";
@@ -36,7 +36,11 @@ async function createBishopImage(name: string, colorTo: [number, number, number]
     return [await uploadImageToCloudflareStorage(`bishop_${name}.png`, buffer), buffer];
 }
 
-export async function getDistrictWebhookClient(bishop: keyof typeof channelIDs["districts"], channel: TextChannel, forceUpdate = false): Promise<WebhookClient> {
+interface WebhookData {
+    webhook: Webhook;
+    client: WebhookClient;
+}
+export async function getDistrictWebhookClient(bishop: keyof typeof channelIDs["districts"], channel: TextChannel, forceUpdate = false): Promise<WebhookData> {
     if (forceUpdate) {
         const webhooks = await channel.fetchWebhooks();
         const existingWebhooks = webhooks.filter(w => w.name === bishop);
@@ -47,7 +51,10 @@ export async function getDistrictWebhookClient(bishop: keyof typeof channelIDs["
         const webhooks = await channel.fetchWebhooks();
         const existingWebhook = webhooks.find(w => w.name === bishop);
         if (existingWebhook) {
-            return new WebhookClient({ url: existingWebhook.url });
+            return {
+                client: new WebhookClient(existingWebhook),
+                webhook: existingWebhook,
+            };
         }
     }
 
@@ -80,5 +87,8 @@ export async function getDistrictWebhookClient(bishop: keyof typeof channelIDs["
         avatar: imageUrl,
     });
 
-    return new WebhookClient({ url: webhook.url });
+    return {
+        client: new WebhookClient(webhook),
+        webhook,
+    }
 }

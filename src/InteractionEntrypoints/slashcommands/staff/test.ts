@@ -1,5 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, WebhookClient } from "discord.js";
-import { channelIDs, userIDs } from "../../../Configuration/config";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, WebhookClient, roleMention } from "discord.js";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { getDistrictWebhookClient } from "../../../Helpers/district-webhooks";
 import F from "../../../Helpers/funcs";
@@ -13,11 +13,10 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    await ctx.deferReply({ ephemeral: true });
-
     const currentChannel = ctx.channel;
-
     if (currentChannel.id === channelIDs.gloriousVista) return gloriousVista(ctx);
+
+    await ctx.deferReply({ ephemeral: true });
 
     const bishopName = currentChannel.name as keyof typeof channelIDs["districts"];
 
@@ -62,6 +61,8 @@ const genId = command.addInteractionListener("testBishopMsg", [], async (ctx) =>
 });
 
 async function gloriousVista(ctx: (typeof SlashCommand)["GenericContextType"]) {
+    await ctx.deferReply();
+
     const botMember = await ctx.guild.members.fetch(ctx.client.user.id);
     if (!botMember) return;
 
@@ -70,13 +71,14 @@ async function gloriousVista(ctx: (typeof SlashCommand)["GenericContextType"]) {
         .setDescription("Thank you to all of our loyal citizens for their hard work yesterday. Here are the standings:")
         .setColor(botMember.displayColor);
 
-    const randomOrder = F.shuffle(F.entries(channelIDs.districts));
+    const randomOrder = F.shuffle(F.entries(roles.districts));
 
-    let i = 2;
-    for (const [name, _id] of randomOrder) {
+    let i = 1;
+    for (const [_name, id] of randomOrder) {
         embed.addFields({
-            name: `${i - 1}. ${F.capitalize(name)}`,
-            value: `${i} points`,
+            name: `${i}.`,
+            value: `${roleMention(id)}\n**${10 - i} points**`,
+            inline: true,
         });
         i++;
     }

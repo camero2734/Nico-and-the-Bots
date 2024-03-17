@@ -5,12 +5,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-
-import {
-    PutObjectCommand,
-    S3Client,
-} from "@aws-sdk/client-s3";
-
+import { uploadImageToCloudflareStorage } from "../../../Helpers/apis/image";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -22,19 +17,19 @@ command.setHandler(async (ctx) => {
 
     const webhookClient = new WebhookClient({ url: secrets.webhookUrl });
 
-    const role = await ctx.guild.roles.fetch(roles.districts.andre);
+    const role = await ctx.guild.roles.fetch(roles.districts.listo);
     if (!role) throw new CommandError("Role not found");
 
     const color = F.intColorToRGB(role.color);
 
-    const imageUrl = await createBishopImage("Andre", color);
+    const imageUrl = await createBishopImage("Listo", color);
 
     const embed = new EmbedBuilder()
-        .setAuthor({ name: "Andre", iconURL: imageUrl })
+        .setAuthor({ name: "Listo", iconURL: imageUrl })
         .setDescription("test!");
 
     const m = await webhookClient.send({
-        username: "Andre",
+        username: "Listo",
         avatarURL: imageUrl,
         embeds: [embed],
     });
@@ -71,29 +66,7 @@ async function createBishopImage(name: string, colorTo: [number, number, number]
 
     const buffer = canvas.toBuffer("image/png");
 
-    const S3 = new S3Client({
-        region: "auto",
-        endpoint: `https://${secrets.apis.cloudflare.ACCOUNT_ID}.r2.cloudflarestorage.com`,
-        credentials: {
-            accessKeyId: secrets.apis.cloudflare.ACCESS_KEY_ID,
-            secretAccessKey: secrets.apis.cloudflare.SECRET_ACCESS_KEY,
-        },
-    });
-
-    const bucket = "images";
-    const fileName = `bishop_${name}.png`;
-
-    const result = await S3.send(
-        new PutObjectCommand({
-            Bucket: bucket,
-            Key: fileName,
-            Body: buffer,
-        })
-    );
-
-    if (result.$metadata.httpStatusCode !== 200) throw new CommandError("Failed to upload image");
-
-    return `https://pub-6475c50df1c84cc0abfa49f0680ac4f7.r2.dev/${fileName}`;
+    return uploadImageToCloudflareStorage(`bishop_${name}.png`, buffer);
 }
 
 export default command;

@@ -44,7 +44,8 @@ const secrets = {
         cloudflare: {
             ACCOUNT_ID: env.get("CLOUDFLARE_ACCOUNT_ID").required().asString(),
             ACCESS_KEY_ID: env.get("CLOUDFLARE_ACCESS_KEY_ID").required().asString(),
-            SECRET_ACCESS_KEY: env.get("CLOUDFLARE_SECRET_ACCESS_KEY").required().asString()
+            SECRET_ACCESS_KEY: env.get("CLOUDFLARE_SECRET_ACCESS_KEY").required().asString(),
+            API_TOKEN: env.get("CLOUDFLARE_API_TOKEN").required().asString()
         }
     },
     randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString(),

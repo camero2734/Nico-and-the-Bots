@@ -48,7 +48,7 @@ export async function districtCron() {
         const currencyAmount = 50;
 
         const embed = new EmbedBuilder()
-            .setTitle(`${roleMention(district.role.id)} Morning Report`)
+            .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: webhook.webhook.avatarURL({ size: 512, extension: "png" })! })
             .setColor(district.role.color)
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **Ƌ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([

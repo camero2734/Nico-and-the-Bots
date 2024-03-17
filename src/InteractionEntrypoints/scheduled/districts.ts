@@ -44,10 +44,13 @@ export async function districtCron() {
 
         const webhook = await getDistrictWebhookClient(district.name, district.channel);
 
+        // This will probably be randomized per day
+        const currencyAmount = 50;
+
         const embed = new EmbedBuilder()
             .setTitle(`${district.role.name} Morning Report`)
             .setColor(district.role.color)
-            .setDescription(`Good morning, citizens of ${roleMention(district.role.id)}. Please ensure you safely hide your valuables before leaving your homes.\nThe raiding party from ${roleMention(prevDistrict.role.id)} will be arriving today.\nAlso, we will be raiding ${roleMention(nextDistrict.role.id)} today. Later today, we will select a quarter to raid.`)
+            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **Ƌ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under our stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
                 { name: "Defending", value: roleMention(prevDistrict.role.id), inline: true },
@@ -57,12 +60,12 @@ export async function districtCron() {
             .setCustomId(genQtrId({}))
             .setMaxValues(1)
             .setMinValues(1)
-            .setPlaceholder("Select a quarter to hide in")
+            .setPlaceholder("Vote for a quarter to hide the credits in")
             .setOptions([
-                { label: "QTR I", value: "1" },
-                { label: "QTR II", value: "2" },
-                { label: "QTR III", value: "3" },
-                { label: "QTR IV", value: "4" },
+                { label: "QTR I", value: "0" },
+                { label: "QTR II", value: "1" },
+                { label: "QTR III", value: "2" },
+                { label: "QTR IV", value: "3" },
             ]);
 
         const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(selectMenu);

@@ -55,7 +55,8 @@ export async function districtCron() {
             .addFields([
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
                 { name: "Defending", value: roleMention(prevDistrict.role.id), inline: true },
-            ]);
+            ])
+            .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(genQtrId({}))

@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, WebhookClient } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, TextChannel, Webhook, WebhookClient } from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { uploadImageToCloudflareStorage } from "../../../Helpers/apis/image";
@@ -49,10 +49,11 @@ command.setHandler(async (ctx) => {
 
     if (!imageUrl || !buffer) throw new CommandError("Failed to create bishop image");
 
-    const webhook = await channel.createWebhook({
-        name: F.capitalize(bishopName),
-        avatar: imageUrl,
-    });
+    const webhook = await getOrCreateWebhook(
+        channel,
+        F.capitalize(bishopName),
+        imageUrl,
+    );
 
     const webhookClient = new WebhookClient({ url: webhook.url });
 
@@ -80,6 +81,18 @@ const genId = command.addInteractionListener("testBishopMsg", [], async (ctx) =>
 
     await ctx.editReply({ content: "you did it" });
 });
+
+async function getOrCreateWebhook(channel: TextChannel, bishopName: string, avatarUrl: string): Promise<Webhook> {
+    const webhooks = await channel.fetchWebhooks();
+
+    const existingWebhook = webhooks.find(w => w.name === bishopName);
+    if (existingWebhook) return existingWebhook;
+
+    return await channel.createWebhook({
+        name: bishopName,
+        avatar: avatarUrl,
+    });
+}
 
 async function createBishopImage(name: string, colorTo: [number, number, number]): Promise<[string, Buffer]> {
     const image = await loadImage("./src/Assets/bishop_generic.png");

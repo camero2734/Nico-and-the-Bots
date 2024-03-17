@@ -16,6 +16,9 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     const currentChannel = ctx.channel;
+
+    if (currentChannel.id === channelIDs.gloriousVista) return gloriousVista(ctx);
+
     const bishopName = currentChannel.name as keyof typeof channelIDs["districts"];
 
     if (!Object.keys(channelIDs.districts).includes(bishopName)) {
@@ -58,6 +61,27 @@ const genId = command.addInteractionListener("testBishopMsg", [], async (ctx) =>
     await client.send("you did it");
 });
 
+async function gloriousVista(ctx: (typeof SlashCommand)["GenericContextType"]) {
+    const botMember = await ctx.guild.members.fetch(ctx.client.user.id);
+    if (!botMember) return;
 
+    const embed = new EmbedBuilder()
+        .setTitle("Glorious Vista Daily Standings")
+        .setDescription("Thank you to all of our loyal citizens for their hard work yesterday. Here are the standings:")
+        .setColor(botMember.displayColor);
+
+    const randomOrder = F.shuffle(F.entries(channelIDs.districts));
+
+    let i = 2;
+    for (const [name, _id] of randomOrder) {
+        embed.addFields({
+            name: `${i - 1}. ${F.capitalize(name)}`,
+            value: `${i} points`,
+        });
+        i++;
+    }
+
+    await ctx.editReply({ embeds: [embed] });
+}
 
 export default command;

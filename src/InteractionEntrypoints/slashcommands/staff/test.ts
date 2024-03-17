@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
         const botUser = await ctx.guild.members.fetch(userIDs.bots[bName]);
         if (!botUser) throw new CommandError("Bot not found");
 
-        const botImg = botUser.avatarURL({ extension: "png" });
+        const botImg = botUser.user.avatarURL({ extension: "png", size: 512 });
         if (!botImg) throw new CommandError("Bot avatar not found");
 
         imageUrl = botImg;

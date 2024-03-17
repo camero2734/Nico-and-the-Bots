@@ -53,10 +53,11 @@ export async function districtCron() {
             .setColor(district.role.color)
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **Ƌ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([
-                { name: "Defending", value: `${roleMention(prevDistrict.role.id)}\nQTR 1: **Ƌ10** (20 votes)\nQTR 2: **Ƌ31** (62 votes)\nQTR 3: **Ƌ4** (8 votes)\nQTR 4: **Ƌ5** (10 votes)`, inline: true },
+                { name: "Apportionment votes", value: "◱ 20 ⇒ **Ƌ10**\n◲ 62 ⇒ **Ƌ31**\n◰ 7 ⇒ **Ƌ4**\n◳ 10 ⇒ **Ƌ5**", inline: true },
+                { name: "Defending against", value: `${roleMention(prevDistrict.role.id)}`, inline: true },
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
             ])
-            .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
+            .setFooter({ text: "024 03MOON 18. See the pinned message in #glorious-vista for how to play" });
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId(genQtrId({}))

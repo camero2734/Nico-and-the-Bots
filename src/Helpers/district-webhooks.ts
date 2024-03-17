@@ -41,15 +41,17 @@ interface WebhookData {
     client: WebhookClient;
 }
 export async function getDistrictWebhookClient(bishop: keyof typeof channelIDs["districts"], channel: TextChannel, forceUpdate = false): Promise<WebhookData> {
+    const bishopName = F.capitalize(bishop);
+
     if (forceUpdate) {
         const webhooks = await channel.fetchWebhooks();
-        const existingWebhooks = webhooks.filter(w => w.name === bishop);
+        const existingWebhooks = webhooks.filter(w => w.name === bishopName);
         for (const webhook of existingWebhooks.values()) {
             await webhook.delete();
         }
     } else {
         const webhooks = await channel.fetchWebhooks();
-        const existingWebhook = webhooks.find(w => w.name === bishop);
+        const existingWebhook = webhooks.find(w => w.name === bishopName);
         if (existingWebhook) {
             return {
                 client: new WebhookClient(existingWebhook),
@@ -83,7 +85,7 @@ export async function getDistrictWebhookClient(bishop: keyof typeof channelIDs["
     if (!imageUrl || !buffer) throw new Error("Failed to create bishop image");
 
     const webhook = await channel.createWebhook({
-        name: bishop,
+        name: bishopName,
         avatar: imageUrl,
     });
 

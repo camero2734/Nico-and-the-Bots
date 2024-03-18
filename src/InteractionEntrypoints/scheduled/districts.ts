@@ -208,21 +208,12 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     const thisDistrictBishop = result.dailyDistrictBattle.defender;
 
     // We want to find the battle in which the user's district is the attacker
-    const beingAttackedBishop = await prisma.districtBattle.findUnique({
-        where: {
-            battleGroupId_attacker: {
-                battleGroupId: result.dailyDistrictBattle.battleGroupId,
-                attacker: thisDistrictBishop
-            }
-        },
-        select: { defender: true }
-    });
-    if (!beingAttackedBishop) throw new CommandError("District not found");
-
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const beingAttacked = districts.find(b => b.bishopType === beingAttackedBishop.defender);
-    const thisDistrict = districts.find(b => b.bishopType === thisDistrictBishop);
-    if (!beingAttacked || !thisDistrict) throw new CommandError("District not found");
+    const thisDistrictIndex = districts.findIndex(b => b.bishopType === thisDistrictBishop);
+    if (thisDistrictIndex === -1) throw new CommandError("District not found");
+
+    const thisDistrict = districts[thisDistrictIndex];
+    const beingAttacked = districts[(thisDistrictIndex + 1) % districts.length];
 
     const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, true));
     await ctx.editReply({

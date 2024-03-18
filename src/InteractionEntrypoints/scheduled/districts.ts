@@ -140,8 +140,8 @@ export async function districtCron() {
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits. (Results from yesterday)`)
             .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
 
-        const defendingEmbed = await buildDefendingEmbed(district, currencyAmount, await getQtrAlloc(newBattleGroup.id, district.bishopType, false));
-        const attackingEmbed = await buildAttackEmbed(prevDistrict, await getQtrAlloc(newBattleGroup.id, nextDistrict.bishopType, true));
+        const defendingEmbed = await buildDefendingEmbed(prevDistrict, currencyAmount, await getQtrAlloc(newBattleGroup.id, district.bishopType, false));
+        const attackingEmbed = await buildAttackEmbed(nextDistrict, await getQtrAlloc(newBattleGroup.id, nextDistrict.bishopType, true));
 
         const defendingMenu = new StringSelectMenuBuilder()
             .setCustomId(genDefendId({ districtBattleId: battle.id }))

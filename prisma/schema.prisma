@@ -412,6 +412,9 @@ model DistrictBattle {
 
   credits Int
   guesses DistrictBattleGuess[]
+
+  @@unique([battleGroupId, attacker])
+  @@unique([battleGroupId, defender])
 }
 
 model DistrictBattleGuess {

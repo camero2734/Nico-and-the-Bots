@@ -204,14 +204,27 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
         }
     });
 
-    // Get District being attacked
+    // The user's district is the defender in the battle group returned above
+    const thisDistrictBishop = result.dailyDistrictBattle.defender;
+
+    // We want to find the battle in which the user's district is the attacker
+    const beingAttackedBishop = await prisma.districtBattle.findUnique({
+        where: {
+            battleGroupId_attacker: {
+                battleGroupId: result.dailyDistrictBattle.battleGroupId,
+                attacker: thisDistrictBishop
+            }
+        },
+        select: { defender: true }
+    });
+    if (!beingAttackedBishop) throw new CommandError("District not found");
+
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const beingAttacked = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
-    const raider = districts.find(b => b.bishopType === result.dailyDistrictBattle.attacker);
+    const beingAttacked = districts.find(b => b.bishopType === beingAttackedBishop.defender);
+    const thisDistrict = districts.find(b => b.bishopType === thisDistrictBishop);
+    if (!beingAttacked || !thisDistrict) throw new CommandError("District not found");
 
-    if (!beingAttacked || !raider) throw new CommandError("District not found");
-
-    const newAttackEmbed = await buildAttackEmbed(raider, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingAttacked.bishopType, true));
+    const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, true));
     await ctx.editReply({
         embeds: [newAttackEmbed]
     })
@@ -251,12 +264,17 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
         }
     });
 
-    // Get District being attacked
-    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const beingDefended = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
-    if (!beingDefended) throw new CommandError("District not found");
+    // The user's district is the defender in the battle group returned above
+    const thisDistrictBishop = result.dailyDistrictBattle.defender;
+    const raiderBishop = result.dailyDistrictBattle.attacker;
 
-    const newDefendEmbed = await buildDefendingEmbed(beingDefended, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType, false));
+    // Get District being defended (user's district)
+    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
+    const thisDistrict = districts.find(b => b.bishopType === thisDistrictBishop);
+    const raider = districts.find(b => b.bishopType === raiderBishop);
+    if (!thisDistrict || !raider) throw new CommandError("District not found");
+
+    const newDefendEmbed = await buildDefendingEmbed(raider, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, false));
     await ctx.editReply({
         embeds: [newDefendEmbed]
     })

@@ -1,51 +1,15 @@
-import { ActionRowBuilder, ChannelType, EmbedBuilder, Role, StringSelectMenuBuilder, TextChannel, roleMention } from "discord.js";
-import { guild } from "../../../app";
-import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
-import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
-import F from "../../Helpers/funcs";
+import { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, roleMention } from "discord.js";
+import { emojiIDs } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
+import { dailyDistrictOrder } from "./districts.consts";
+import F from "../../Helpers/funcs";
 
 const entrypoint = new ManualEntrypoint();
 
 // const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
-interface District {
-    name: keyof typeof channelIDs["districts"];
-    role: Role;
-    channel: TextChannel;
-    webhook: WebhookData;
-    imageUrl: string;
-}
-
-const emoji = (id: string) => `<:emoji:${id}>`;
-
 export async function districtCron() {
-    // Determine which districts face each other today
-    // 0 -> 1 -> 2 -> 3 -> ... -> 8 -> 9 -> 0
-    const ranDistricts = F.shuffle(F.entries(channelIDs.districts));
-
-    const districts: District[] = await Promise.all(
-        ranDistricts.map(async ([name, channelId]) => {
-            const roleId = roles.districts[name];
-            const role = await guild.roles.fetch(roleId);
-            const channel = await guild.channels.fetch(channelId);
-
-            if (!role || !channel || channel.type !== ChannelType.GuildText) {
-                throw new Error(`Role or channel not found for ${name}`);
-            }
-
-            const webhook = await getDistrictWebhookClient(name, channel);
-            const imageUrl = webhook.webhook.avatarURL({ size: 512, extension: "png" })!;
-
-            return {
-                name,
-                role,
-                channel,
-                webhook,
-                imageUrl
-            };
-        })
-    );
+    const districts = await dailyDistrictOrder();
 
     for (let i = 0; i < 1; i++) {
         const prevDistrict = districts.at(i - 1)!;
@@ -66,20 +30,20 @@ export async function districtCron() {
             .setAuthor({ name: `Being raided by ${prevDistrict.role.name.toUpperCase()}`, iconURL: prevDistrict.imageUrl })
             .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`)
             .addFields([
-                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "20 votes ⇒ **ↁ10**", inline: true },
-                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "62 votes ⇒ **ↁ31**", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "7 votes ⇒ **ↁ4**", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "10 votes ⇒ **ↁ5**", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.i)} Qtr. I`, value: "20 votes ⇒ **ↁ10**", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "62 votes ⇒ **ↁ31**", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "7 votes ⇒ **ↁ4**", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "10 votes ⇒ **ↁ5**", inline: true },
             ]);
 
         const attackingEmbed = new EmbedBuilder()
             .setAuthor({ name: `Attacking ${nextDistrict.role.name.toUpperCase()}`, iconURL: nextDistrict.imageUrl })
             .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`)
             .addFields([
-                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "15 votes", inline: true },
-                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "46 votes", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "9 votes", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "65 votes", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.i)} Qtr. I`, value: "15 votes", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "46 votes", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "9 votes", inline: true },
+                { name: `${F.emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "65 votes", inline: true },
             ]);
 
         const defendingMenu = new StringSelectMenuBuilder()
@@ -122,7 +86,7 @@ const genQtrId = entrypoint.addInteractionListener("districtQtrSel", [], async (
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
 
-    await ctx.editReply(`You selected ${emoji(emojiId)} QTR ${["I", "II", "III", "IV"][qtrIndex]}`);
+    await ctx.editReply(`You selected ${F.emoji(emojiId)} QTR ${["I", "II", "III", "IV"][qtrIndex]}`);
 });
 
 export default entrypoint;

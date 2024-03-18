@@ -1,6 +1,8 @@
-import { userIDs } from "../../../Configuration/config";
+import { EmbedBuilder, roleMention } from "discord.js";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { districtCron } from "../../scheduled/districts";
+import F from "../../../Helpers/funcs";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -10,10 +12,11 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
+    const currentChannel = ctx.channel;
+    if (currentChannel.id === channelIDs.gloriousVista) return gloriousVista(ctx);
+
     await districtCron();
 
-    // const currentChannel = ctx.channel;
-    // if (currentChannel.id === channelIDs.gloriousVista) return gloriousVista(ctx);
 
     // await ctx.deferReply({ ephemeral: true });
 
@@ -59,31 +62,31 @@ command.setHandler(async (ctx) => {
 //     await client.send("you did it");
 // });
 
-// async function gloriousVista(ctx: (typeof SlashCommand)["GenericContextType"]) {
-//     await ctx.deferReply();
+async function gloriousVista(ctx: (typeof SlashCommand)["GenericContextType"]) {
+    await ctx.deferReply();
 
-//     const botMember = await ctx.guild.members.fetch(ctx.client.user.id);
-//     if (!botMember) return;
+    const botMember = await ctx.guild.members.fetch(ctx.client.user.id);
+    if (!botMember) return;
 
-//     const embed = new EmbedBuilder()
-//         .setTitle("Glorious Vista Daily Standings")
-//         .setDescription("Thank you to all loyal citizens for their hard work yesterday. Here are the standings:")
-//         .setColor(botMember.displayColor);
+    const embed = new EmbedBuilder()
+        .setTitle("Glorious Vista Daily Standings")
+        .setDescription("Thank you to all loyal citizens for their hard work yesterday. Here are the standings:")
+        .setColor(botMember.displayColor);
 
-//     const randomOrder = F.shuffle(F.entries(roles.districts));
+    const randomOrder = F.shuffle(F.entries(roles.districts));
 
-//     let i = 1;
-//     for (const [_name, id] of randomOrder) {
-//         const points = 10 - i;
-//         embed.addFields({
-//             name: `${i}.`,
-//             value: `${roleMention(id)}\n**${points} point${F.plural(points)}**`,
-//             inline: true,
-//         });
-//         i++;
-//     }
+    let i = 1;
+    for (const [_name, id] of randomOrder) {
+        const points = 10 - i;
+        embed.addFields({
+            name: "\u200b",
+            value: `${i}. ${roleMention(id)}\n**${points} point${F.plural(points)}**`,
+            inline: true,
+        });
+        i++;
+    }
 
-//     await ctx.editReply({ embeds: [embed] });
-// }
+    await ctx.editReply({ embeds: [embed] });
+}
 
 export default command;

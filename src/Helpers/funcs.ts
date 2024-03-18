@@ -25,6 +25,7 @@ const timestampTypes = <const>{
 };
 
 const F = {
+    emoji: (id: string) => `<:emoji:${id}>`,
     titleCase: (str: string) => str.split(" ").map(a => `${a[0].toUpperCase()}${a.slice(1).toLowerCase()}`).join(" "), // prettier-ignore
     lerp: (n: number, low: number, high: number): number => n * (high - low) + low,
     unlerp: (n: number, low: number, high: number): number => (n - low) / (high - low),

@@ -53,7 +53,7 @@ export async function districtCron() {
             .setColor(district.role.color)
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **Ƌ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([
-                { name: "Apportionment votes", value: "◱ 20 ⇒ **Ƌ10**\n◲ 62 ⇒ **Ƌ31**\n◰ 7 ⇒ **Ƌ4**\n◳ 10 ⇒ **Ƌ5**", inline: true },
+                { name: "Apportionment votes", value: "`◱` 20 ⇒ **Ƌ10**\n`◲` 62 ⇒ **Ƌ31**\n`◰` 7 ⇒ **Ƌ4**\n`◳`cc 10 ⇒ **Ƌ5**", inline: true },
                 { name: "Defending against", value: `${roleMention(prevDistrict.role.id)}`, inline: true },
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
             ])
@@ -65,7 +65,7 @@ export async function districtCron() {
             .setMinValues(1)
             .setPlaceholder("Vote for a quarter to hide the credits in")
             .setOptions([
-                { label: "QTR I", value: "0" },
+                { label: "QTR I", value: "0", emoji: { name: "◱" } },
                 { label: "QTR II", value: "1" },
                 { label: "QTR III", value: "2" },
                 { label: "QTR IV", value: "3" },
@@ -76,7 +76,7 @@ export async function districtCron() {
         const arrayBuffer = await Bun.file("./src/Assets/qtrs.png").arrayBuffer();
         const attachment = new AttachmentBuilder(Buffer.from(arrayBuffer), { name: "qtrs.png" });
 
-        await webhook.client.send({ embeds: [embed], components: [actionRow], files: [attachment] });
+        await webhook.client.send({ embeds: [embed], components: [actionRow], files: [attachment], allowedMentions: { parse: [] } });
     }
 }
 

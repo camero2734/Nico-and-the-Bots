@@ -1,7 +1,7 @@
-import { ActionRowBuilder, AttachmentBuilder, ChannelType, EmbedBuilder, Role, StringSelectMenuBuilder, TextChannel, roleMention } from "discord.js";
+import { ActionRowBuilder, ChannelType, EmbedBuilder, Role, StringSelectMenuBuilder, TextChannel, roleMention } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
-import { getDistrictWebhookClient } from "../../Helpers/district-webhooks";
+import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
 import F from "../../Helpers/funcs";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
@@ -13,6 +13,8 @@ interface District {
     name: keyof typeof channelIDs["districts"];
     role: Role;
     channel: TextChannel;
+    webhook: WebhookData;
+    imageUrl: string;
 }
 
 const emoji = (id: string) => `<:emoji:${id}>`;
@@ -27,14 +29,20 @@ export async function districtCron() {
             const roleId = roles.districts[name];
             const role = await guild.roles.fetch(roleId);
             const channel = await guild.channels.fetch(channelId);
+
             if (!role || !channel || channel.type !== ChannelType.GuildText) {
                 throw new Error(`Role or channel not found for ${name}`);
             }
 
+            const webhook = await getDistrictWebhookClient(name, channel);
+            const imageUrl = webhook.webhook.avatarURL({ size: 512, extension: "png" })!;
+
             return {
                 name,
                 role,
-                channel
+                channel,
+                webhook,
+                imageUrl
             };
         })
     );
@@ -44,27 +52,41 @@ export async function districtCron() {
         const district = districts[i];
         const nextDistrict = districts[(i + 1) % districts.length];
 
-        const webhook = await getDistrictWebhookClient(district.name, district.channel);
-
         // This will probably be randomized per day
         const currencyAmount = 50;
 
         const embed = new EmbedBuilder()
-            .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: webhook.webhook.avatarURL({ size: 512, extension: "png" })! })
+            .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: district.imageUrl })
+            .setTitle("024 03MOON 18")
             .setColor(district.role.color)
-            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
-            .addFields([
-                { name: "Apportionment votes", value: `${emoji(emojiIDs.quarters.i)} 20 votes ⇒ **ↁ10**\n${emoji(emojiIDs.quarters.ii)} 62 votes ⇒ **ↁ31**\n${emoji(emojiIDs.quarters.iii)} 7 votes ⇒ **ↁ4**\n${emoji(emojiIDs.quarters.iv)} 10 votes ⇒ **ↁ5**`, inline: true },
-                { name: "Defending against", value: `${roleMention(prevDistrict.role.id)}`, inline: true },
-                { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
-            ])
-            .setFooter({ text: "024 03MOON 18. See the pinned message in #glorious-vista for how to play" });
+            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits. (Results from yesterday)`)
+            .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
 
-        const selectMenu = new StringSelectMenuBuilder()
+        const defendingEmbed = new EmbedBuilder()
+            .setAuthor({ name: `Being raided by ${prevDistrict.name.toUpperCase()}`, iconURL: prevDistrict.imageUrl })
+            .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`)
+            .addFields([
+                { name: emoji(emojiIDs.quarters.i), value: "15 votes", inline: true },
+                { name: emoji(emojiIDs.quarters.ii), value: "46 votes", inline: true },
+                { name: emoji(emojiIDs.quarters.iii), value: "9 votes", inline: true },
+                { name: emoji(emojiIDs.quarters.iv), value: "65 votes", inline: true },
+            ]);
+
+        const attackingEmbed = new EmbedBuilder()
+            .setAuthor({ name: `Attacking ${nextDistrict.name.toUpperCase()}`, iconURL: nextDistrict.imageUrl })
+            .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`)
+            .addFields([
+                { name: emoji(emojiIDs.quarters.i), value: "20 votes ⇒ **ↁ10**", inline: true },
+                { name: emoji(emojiIDs.quarters.ii), value: "62 votes ⇒ **ↁ31**", inline: true },
+                { name: emoji(emojiIDs.quarters.iii), value: "7 votes ⇒ **ↁ4**", inline: true },
+                { name: emoji(emojiIDs.quarters.iv), value: "10 votes ⇒ **ↁ5**", inline: true },
+            ]);
+
+        const defendingMenu = new StringSelectMenuBuilder()
             .setCustomId(genQtrId({}))
             .setMaxValues(1)
             .setMinValues(1)
-            .setPlaceholder("Vote for a quarter to hide the credits in")
+            .setPlaceholder(`Pick a QTR to hide credits from ${prevDistrict.role.name.toUpperCase()}`)
             .setOptions([
                 { label: "QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
                 { label: "QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
@@ -72,12 +94,22 @@ export async function districtCron() {
                 { label: "QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
             ]);
 
-        const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(selectMenu);
+        const attackingMenu = new StringSelectMenuBuilder()
+            .setCustomId(genQtrId({}))
+            .setMaxValues(1)
+            .setMinValues(1)
+            .setPlaceholder(`Pick a QTR to search in ${nextDistrict.role.name.toUpperCase()}`)
+            .setOptions([
+                { label: "QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
+                { label: "QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
+                { label: "QTR III", value: "2", emoji: { id: emojiIDs.quarters.iii } },
+                { label: "QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
+            ]);
 
-        const arrayBuffer = await Bun.file("./src/Assets/qtrs.png").arrayBuffer();
-        const attachment = new AttachmentBuilder(Buffer.from(arrayBuffer), { name: "qtrs.png" });
+        const defendingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(defendingMenu);
+        const attackingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(attackingMenu);
 
-        await webhook.client.send({ embeds: [embed], components: [actionRow], files: [attachment], allowedMentions: { parse: [] } });
+        await district.webhook.client.send({ embeds: [embed, defendingEmbed, attackingEmbed], components: [defendingActionRow, attackingActionRow], allowedMentions: { parse: [] } });
     }
 }
 

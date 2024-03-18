@@ -36,7 +36,7 @@ async function createBishopImage(name: string, colorTo: [number, number, number]
     return [await uploadImageToCloudflareStorage(`bishop_${name}.png`, buffer), buffer];
 }
 
-interface WebhookData {
+export interface WebhookData {
     webhook: Webhook;
     client: WebhookClient;
 }

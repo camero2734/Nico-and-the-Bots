@@ -66,20 +66,20 @@ export async function districtCron() {
             .setAuthor({ name: `Being raided by ${prevDistrict.role.name.toUpperCase()}`, iconURL: prevDistrict.imageUrl })
             .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`)
             .addFields([
-                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "15 votes", inline: true },
-                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "46 votes", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "9 votes", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "65 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "20 votes ⇒ **ↁ10**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "62 votes ⇒ **ↁ31**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "7 votes ⇒ **ↁ4**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "10 votes ⇒ **ↁ5**", inline: true },
             ]);
 
         const attackingEmbed = new EmbedBuilder()
             .setAuthor({ name: `Attacking ${nextDistrict.role.name.toUpperCase()}`, iconURL: nextDistrict.imageUrl })
             .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`)
             .addFields([
-                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "20 votes ⇒ **ↁ10**", inline: true },
-                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "62 votes ⇒ **ↁ31**", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "7 votes ⇒ **ↁ4**", inline: true },
-                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "10 votes ⇒ **ↁ5**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "15 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "46 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "9 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "65 votes", inline: true },
             ]);
 
         const defendingMenu = new StringSelectMenuBuilder()

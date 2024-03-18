@@ -423,8 +423,10 @@ model DistrictBattleGuess {
 
   quarter Int
 
+  isAttackVote Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([dailyDistrictBattleId, userId])
+  @@unique([dailyDistrictBattleId, userId, isAttackVote])
 }

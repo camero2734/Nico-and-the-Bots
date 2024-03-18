@@ -27,7 +27,7 @@ interface QtrAlloc {
     iv: number;
 }
 
-async function getQtrAlloc(battleId: number, defender: BishopType): Promise<QtrAlloc> {
+async function getQtrAlloc(battleId: number, defender: BishopType, isAttack: boolean): Promise<QtrAlloc> {
     const battle = await prisma.districtBattle.findFirst({
         where: {
             battleGroupId: battleId,
@@ -38,7 +38,7 @@ async function getQtrAlloc(battleId: number, defender: BishopType): Promise<QtrA
     if (!battle) return { i: 0, ii: 0, iii: 0, iv: 0 };
 
     const votes = await prisma.districtBattleGuess.findMany({
-        where: { dailyDistrictBattleId: battle.id }
+        where: { dailyDistrictBattleId: battle.id, isAttackVote: isAttack }
     });
 
     const qtrVotes = { i: 0, ii: 0, iii: 0, iv: 0 };
@@ -52,6 +52,8 @@ async function getQtrAlloc(battleId: number, defender: BishopType): Promise<QtrA
 
 function calculateAllocatedCurrency(votes: QtrAlloc, currencyAmount: number): QtrAlloc {
     const totalVotes = votes.i + votes.ii + votes.iii + votes.iv;
+
+    if (totalVotes === 0) return { i: 0, ii: 0, iii: 0, iv: 0 };
 
     // Rough allocation
     const allocatedCurrency = {
@@ -138,8 +140,8 @@ export async function districtCron() {
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits. (Results from yesterday)`)
             .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
 
-        const defendingEmbed = await buildDefendingEmbed(district, currencyAmount, await getQtrAlloc(newBattleGroup.id, district.bishopType));
-        const attackingEmbed = await buildAttackEmbed(prevDistrict, await getQtrAlloc(newBattleGroup.id, nextDistrict.bishopType));
+        const defendingEmbed = await buildDefendingEmbed(district, currencyAmount, await getQtrAlloc(newBattleGroup.id, district.bishopType, false));
+        const attackingEmbed = await buildAttackEmbed(prevDistrict, await getQtrAlloc(newBattleGroup.id, nextDistrict.bishopType, true));
 
         const defendingMenu = new StringSelectMenuBuilder()
             .setCustomId(genDefendId({ districtBattleId: battle.id }))
@@ -181,9 +183,10 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
 
     const result = await prisma.districtBattleGuess.upsert({
         where: {
-            dailyDistrictBattleId_userId: {
+            dailyDistrictBattleId_userId_isAttackVote: {
                 dailyDistrictBattleId: args.districtBattleId,
-                userId: ctx.user.id
+                userId: ctx.user.id,
+                isAttackVote: true
             }
         },
         update: {
@@ -192,7 +195,8 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
         create: {
             dailyDistrictBattleId: args.districtBattleId,
             userId: ctx.user.id,
-            quarter: qtrIndex
+            quarter: qtrIndex,
+            isAttackVote: true,
         },
         select: {
             dailyDistrictBattle: true
@@ -204,7 +208,7 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     const beingAttacked = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
     if (!beingAttacked) throw new CommandError("District not found");
 
-    const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingAttacked.bishopType));
+    const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingAttacked.bishopType, true));
     await ctx.editReply({
         embeds: [newAttackEmbed]
     })
@@ -216,41 +220,43 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     });
 });
 
-const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["districtBattleId"], async (ctx) => {
+const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["districtBattleId"], async (ctx, args) => {
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
     const qtrIndex = parseInt(ctx.values[0]);
 
-    // const result = await prisma.districtBattleGuess.upsert({
-    //     where: {
-    //         dailyDistrictBattleId_userId: {
-    //             dailyDistrictBattleId: args.districtBattleId,
-    //             userId: ctx.user.id
-    //         }
-    //     },
-    //     update: {
-    //         quarter: qtrIndex,
-    //     },
-    //     create: {
-    //         dailyDistrictBattleId: args.districtBattleId,
-    //         userId: ctx.user.id,
-    //         quarter: qtrIndex
-    //     },
-    //     select: {
-    //         dailyDistrictBattle: true
-    //     }
-    // });
+    const result = await prisma.districtBattleGuess.upsert({
+        where: {
+            dailyDistrictBattleId_userId_isAttackVote: {
+                dailyDistrictBattleId: args.districtBattleId,
+                userId: ctx.user.id,
+                isAttackVote: false
+            }
+        },
+        update: {
+            quarter: qtrIndex,
+        },
+        create: {
+            dailyDistrictBattleId: args.districtBattleId,
+            userId: ctx.user.id,
+            quarter: qtrIndex,
+            isAttackVote: false
+        },
+        select: {
+            dailyDistrictBattle: true
+        }
+    });
 
-    // // Get District being attacked
-    // const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    // const beingDefended = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
-    // if (!beingDefended) throw new CommandError("District not found");
+    // Get District being attacked
+    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
+    const beingDefended = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
+    if (!beingDefended) throw new CommandError("District not found");
 
-    // const newDefendEmbed = await buildDefendingEmbed(beingDefended, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType));
-    // await ctx.editReply({
-    //     embeds: [newDefendEmbed]
-    // })
+    const newDefendEmbed = await buildDefendingEmbed(beingDefended, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType, false));
+    await ctx.editReply({
+        embeds: [newDefendEmbed]
+    })
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
     await ctx.followUp({

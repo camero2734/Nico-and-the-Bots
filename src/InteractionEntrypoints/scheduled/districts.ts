@@ -1,6 +1,6 @@
 import { ActionRowBuilder, AttachmentBuilder, ChannelType, EmbedBuilder, Role, StringSelectMenuBuilder, TextChannel, roleMention } from "discord.js";
 import { guild } from "../../../app";
-import { channelIDs, roles } from "../../Configuration/config";
+import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { getDistrictWebhookClient } from "../../Helpers/district-webhooks";
 import F from "../../Helpers/funcs";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
@@ -14,6 +14,8 @@ interface District {
     role: Role;
     channel: TextChannel;
 }
+
+const emoji = (id: string) => `<:emoji:${id}>`;
 
 export async function districtCron() {
     // Determine which districts face each other today
@@ -52,7 +54,7 @@ export async function districtCron() {
             .setColor(district.role.color)
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([
-                { name: "Apportionment votes", value: "`◱` 20 ⇒ **ↁ10**\n`◲` 62 ⇒ **ↁ31**\n`◰` 7 ⇒ **ↁ4**\n`◳`cc 10 ⇒ **ↁ5**", inline: true },
+                { name: "Apportionment votes", value: `${emoji(emojiIDs.quarters.i)} 20 votes ⇒ **ↁ10**\n${emoji(emojiIDs.quarters.ii)} 62 votes ⇒ **ↁ31**\n${emoji(emojiIDs.quarters.iii)} 7 votes ⇒ **ↁ4**\n${emoji(emojiIDs.quarters.iv)} 10 votes ⇒ **ↁ5**`, inline: true },
                 { name: "Defending against", value: `${roleMention(prevDistrict.role.id)}`, inline: true },
                 { name: "Raiding", value: roleMention(nextDistrict.role.id), inline: true },
             ])
@@ -64,10 +66,10 @@ export async function districtCron() {
             .setMinValues(1)
             .setPlaceholder("Vote for a quarter to hide the credits in")
             .setOptions([
-                { label: "QTR I", value: "0", emoji: { id: "1219348841082523648" } },
-                { label: "QTR II", value: "1", emoji: { id: "1219348839602065409" } },
-                { label: "QTR III", value: "2", emoji: { id: "1219348838129598615" } },
-                { label: "QTR IV", value: "3", emoji: { id: "1219348836473114826" } },
+                { label: "QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
+                { label: "QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
+                { label: "QTR III", value: "2", emoji: { id: emojiIDs.quarters.iii } },
+                { label: "QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
             ]);
 
         const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(selectMenu);

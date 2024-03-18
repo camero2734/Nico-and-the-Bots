@@ -170,7 +170,8 @@ export async function districtCron() {
         const defendingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(defendingMenu);
         const attackingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(attackingMenu);
 
-        await district.webhook.client.send({ embeds: [embed, defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
+        await district.webhook.client.send({ embeds: [embed], allowedMentions: { parse: [] } });
+        await district.webhook.client.send({ embeds: [defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
         await district.webhook.client.send({ embeds: [attackingEmbed], components: [attackingActionRow], allowedMentions: { parse: [] } });
     }
 }
@@ -250,10 +251,13 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
 
     // Get District being attacked
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
+    const raider = districts.find(b => b.bishopType === result.dailyDistrictBattle.attacker);
     const beingDefended = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
-    if (!beingDefended) throw new CommandError("District not found");
+    if (!beingDefended || !raider) throw new CommandError("District not found");
 
-    const newDefendEmbed = await buildDefendingEmbed(beingDefended, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType, false));
+
+
+    const newDefendEmbed = await buildDefendingEmbed(raider, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType, false));
     await ctx.editReply({
         embeds: [newDefendEmbed]
     })

@@ -95,7 +95,7 @@ export async function districtCron() {
             ]);
 
         const attackingMenu = new StringSelectMenuBuilder()
-            .setCustomId(genQtrId({}))
+            .setCustomId(genQtrId({}) + "2")
             .setMaxValues(1)
             .setMinValues(1)
             .setPlaceholder(`Pick a QTR to search in ${nextDistrict.role.name.toUpperCase()}`)

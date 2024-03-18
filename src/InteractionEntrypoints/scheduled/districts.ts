@@ -49,7 +49,6 @@ export async function districtCron() {
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: webhook.webhook.avatarURL({ size: 512, extension: "png" })! })
-            .setThumbnail("attachment://qtrs.png")
             .setColor(district.role.color)
             .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits.\n\nHowever, you must remain vigilant. Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.\n\nIn reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.\n\nGlory to Dema.`)
             .addFields([
@@ -65,10 +64,10 @@ export async function districtCron() {
             .setMinValues(1)
             .setPlaceholder("Vote for a quarter to hide the credits in")
             .setOptions([
-                { label: "QTR I", value: "0", emoji: { id: "1219344153742147605" } },
-                { label: "QTR II", value: "1", emoji: { id: "1219344152462888981" } },
-                { label: "QTR III", value: "2", emoji: { id: "1219344156380495934" } },
-                { label: "QTR IV", value: "3", emoji: { id: "1219344155373863014" } },
+                { label: "QTR I", value: "0", emoji: { id: "1219348841082523648" } },
+                { label: "QTR II", value: "1", emoji: { id: "1219348839602065409" } },
+                { label: "QTR III", value: "2", emoji: { id: "1219348838129598615" } },
+                { label: "QTR IV", value: "3", emoji: { id: "1219348836473114826" } },
             ]);
 
         const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(selectMenu);

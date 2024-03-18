@@ -85,7 +85,7 @@ async function buildDefendingEmbed(raider: District, currencyAmount: number, qtr
 
     for (const [qtr, votes] of F.entries(qtrVotes)) {
         embed.addFields({
-            name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${F.capitalize(qtr)}`,
+            name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${qtr.toUpperCase()}`,
             value: `${votes} vote${F.plural(votes)} ⇒ **ↁ${allocatedCurrency[qtr]}**`,
             inline: true
         });
@@ -101,7 +101,7 @@ async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Pr
 
     for (const [qtr, votes] of F.entries(qtrVotes)) {
         embed.addFields({
-            name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${F.capitalize(qtr)}`,
+            name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${qtr.toUpperCase()}`,
             value: `${votes} vote${F.plural(votes)}`,
             inline: true
         });

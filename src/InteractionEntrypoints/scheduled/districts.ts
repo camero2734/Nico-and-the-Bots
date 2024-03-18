@@ -87,7 +87,9 @@ const genQtrId = entrypoint.addInteractionListener("districtQtrSel", [], async (
 
     const qtrIndex = parseInt(ctx.values[0]);
 
-    await ctx.editReply(`You selected QTR ${["I", "II", "III", "IV"][qtrIndex]}`);
+    const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
+
+    await ctx.editReply(`You selected ${emoji(emojiId)} QTR ${["I", "II", "III", "IV"][qtrIndex]}`);
 });
 
 export default entrypoint;

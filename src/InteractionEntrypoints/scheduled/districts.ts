@@ -63,53 +63,54 @@ export async function districtCron() {
             .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
 
         const defendingEmbed = new EmbedBuilder()
-            .setAuthor({ name: `Being raided by ${prevDistrict.name.toUpperCase()}`, iconURL: prevDistrict.imageUrl })
+            .setAuthor({ name: `Being raided by ${prevDistrict.role.name.toUpperCase()}`, iconURL: prevDistrict.imageUrl })
             .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(prevDistrict.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`)
             .addFields([
-                { name: emoji(emojiIDs.quarters.i), value: "15 votes", inline: true },
-                { name: emoji(emojiIDs.quarters.ii), value: "46 votes", inline: true },
-                { name: emoji(emojiIDs.quarters.iii), value: "9 votes", inline: true },
-                { name: emoji(emojiIDs.quarters.iv), value: "65 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "15 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "46 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "9 votes", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "65 votes", inline: true },
             ]);
 
         const attackingEmbed = new EmbedBuilder()
-            .setAuthor({ name: `Attacking ${nextDistrict.name.toUpperCase()}`, iconURL: nextDistrict.imageUrl })
+            .setAuthor({ name: `Attacking ${nextDistrict.role.name.toUpperCase()}`, iconURL: nextDistrict.imageUrl })
             .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(nextDistrict.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`)
             .addFields([
-                { name: emoji(emojiIDs.quarters.i), value: "20 votes ⇒ **ↁ10**", inline: true },
-                { name: emoji(emojiIDs.quarters.ii), value: "62 votes ⇒ **ↁ31**", inline: true },
-                { name: emoji(emojiIDs.quarters.iii), value: "7 votes ⇒ **ↁ4**", inline: true },
-                { name: emoji(emojiIDs.quarters.iv), value: "10 votes ⇒ **ↁ5**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.i)} Qtr. I`, value: "20 votes ⇒ **ↁ10**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.ii)} Qtr. II`, value: "62 votes ⇒ **ↁ31**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iii)} Qtr. III`, value: "7 votes ⇒ **ↁ4**", inline: true },
+                { name: `${emoji(emojiIDs.quarters.iv)} Qtr. IV`, value: "10 votes ⇒ **ↁ5**", inline: true },
             ]);
 
         const defendingMenu = new StringSelectMenuBuilder()
             .setCustomId(genQtrId({}))
             .setMaxValues(1)
             .setMinValues(1)
-            .setPlaceholder(`Pick a QTR to hide credits from ${prevDistrict.role.name.toUpperCase()}`)
+            .setPlaceholder(`Vote for a QTR to hide credits from ${prevDistrict.role.name.toUpperCase()}`)
             .setOptions([
-                { label: "QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
-                { label: "QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
-                { label: "QTR III", value: "2", emoji: { id: emojiIDs.quarters.iii } },
-                { label: "QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
+                { label: "Hide in QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
+                { label: "Hide in QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
+                { label: "Hide in QTR III", value: "2", emoji: { id: emojiIDs.quarters.iii } },
+                { label: "Hide in QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
             ]);
 
         const attackingMenu = new StringSelectMenuBuilder()
             .setCustomId(genQtrId({}) + "2")
             .setMaxValues(1)
             .setMinValues(1)
-            .setPlaceholder(`Pick a QTR to search in ${nextDistrict.role.name.toUpperCase()}`)
+            .setPlaceholder(`Vote for a QTR to search in ${nextDistrict.role.name.toUpperCase()}`)
             .setOptions([
-                { label: "QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
-                { label: "QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
-                { label: "QTR III", value: "2", emoji: { id: emojiIDs.quarters.iii } },
-                { label: "QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
+                { label: "Attack QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
+                { label: "Attack QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
+                { label: "Attack QTR III", value: "2", emoji: { id: emojiIDs.quarters.iii } },
+                { label: "Attack QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
             ]);
 
         const defendingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(defendingMenu);
         const attackingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(attackingMenu);
 
-        await district.webhook.client.send({ embeds: [embed, defendingEmbed, attackingEmbed], components: [defendingActionRow, attackingActionRow], allowedMentions: { parse: [] } });
+        await district.webhook.client.send({ embeds: [embed, defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
+        await district.webhook.client.send({ embeds: [attackingEmbed], components: [attackingActionRow], allowedMentions: { parse: [] } });
     }
 }
 

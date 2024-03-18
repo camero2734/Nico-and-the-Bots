@@ -207,9 +207,11 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     // Get District being attacked
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
     const beingAttacked = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
-    if (!beingAttacked) throw new CommandError("District not found");
+    const raider = districts.find(b => b.bishopType === result.dailyDistrictBattle.attacker);
 
-    const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingAttacked.bishopType, true));
+    if (!beingAttacked || !raider) throw new CommandError("District not found");
+
+    const newAttackEmbed = await buildAttackEmbed(raider, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingAttacked.bishopType, true));
     await ctx.editReply({
         embeds: [newAttackEmbed]
     })
@@ -251,13 +253,10 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
 
     // Get District being attacked
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const raider = districts.find(b => b.bishopType === result.dailyDistrictBattle.attacker);
     const beingDefended = districts.find(b => b.bishopType === result.dailyDistrictBattle.defender);
-    if (!beingDefended || !raider) throw new CommandError("District not found");
+    if (!beingDefended) throw new CommandError("District not found");
 
-
-
-    const newDefendEmbed = await buildDefendingEmbed(raider, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType, false));
+    const newDefendEmbed = await buildDefendingEmbed(beingDefended, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, beingDefended.bishopType, false));
     await ctx.editReply({
         embeds: [newDefendEmbed]
     })

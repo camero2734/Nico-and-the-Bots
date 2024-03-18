@@ -1,22 +1,23 @@
 import { Faker, en } from "@faker-js/faker";
-import { startOfDay } from "date-fns";
-import F from "../../Helpers/funcs";
-import { channelIDs, roles } from "../../Configuration/config";
 import { ChannelType, Role, TextChannel } from "discord.js";
 import { guild } from "../../../app";
+import { channelIDs, roles } from "../../Configuration/config";
 import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
+import F from "../../Helpers/funcs";
+import { BishopType } from "@prisma/client";
 
 export interface District {
     name: keyof typeof channelIDs["districts"];
+    bishopType: BishopType;
     role: Role;
     channel: TextChannel;
     webhook: WebhookData;
     imageUrl: string;
 }
 
-export async function dailyDistrictOrder() {
+export async function dailyDistrictOrder(battleId: number) {
     const faker = new Faker({ locale: [en] });
-    faker.seed(startOfDay(new Date()).getTime());
+    faker.seed(F.hashToInt(`dist.battle.${battleId}`));
 
     // Determine which districts face each other today
     // 0 -> 1 -> 2 -> 3 -> ... -> 8 -> 9 -> 0
@@ -34,9 +35,11 @@ export async function dailyDistrictOrder() {
 
             const webhook = await getDistrictWebhookClient(name, channel);
             const imageUrl = webhook.webhook.avatarURL({ size: 512, extension: "png" })!;
+            const bishopType = F.capitalize(name) as BishopType;
 
             return {
                 name,
+                bishopType,
                 role,
                 channel,
                 webhook,

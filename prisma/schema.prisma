@@ -394,28 +394,31 @@ model UserMessageReport {
   @@unique([messageUrl, reportedByUserId])
 }
 
+model DistrictBattleGroup {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  battles DistrictBattle[]
+}
+
 model DistrictBattle {
   id String @id @default(uuid())
 
   attacker BishopType
   defender BishopType
 
-  battleIdx Int
+  battleGroup   DistrictBattleGroup @relation(fields: [battleGroupId], references: [id], onDelete: Cascade)
+  battleGroupId Int
 
-  createdAt DateTime @default(now())
-  credits   Int
-
+  credits Int
   guesses DistrictBattleGuess[]
-
-  @@unique([attacker, battleIdx])
-  @@unique([defender, battleIdx])
 }
 
 model DistrictBattleGuess {
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  dailyDistrictBattle   DistrictBattle? @relation(fields: [dailyDistrictBattleId], references: [id], onDelete: Cascade)
+  dailyDistrictBattle   DistrictBattle @relation(fields: [dailyDistrictBattleId], references: [id], onDelete: Cascade)
   dailyDistrictBattleId String
 
   quarter Int

@@ -30,7 +30,7 @@ const F = {
     lerp: (n: number, low: number, high: number): number => n * (high - low) + low,
     unlerp: (n: number, low: number, high: number): number => (n - low) / (high - low),
     // the default Object.entries function does not retain type information
-    entries: <T extends Record<string, T[keyof T]>>(obj: T): [keyof T, T[keyof T]][] =>
+    entries: <T extends { [K in any]: any }>(obj: T): [keyof T, T[keyof T]][] =>
         Object.entries(obj) as [keyof T, T[keyof T]][],
 
     keys: <T extends Record<string, unknown>>(obj: T): (keyof T)[] => Object.keys(obj) as (keyof T)[],

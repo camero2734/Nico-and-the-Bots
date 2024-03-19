@@ -1,12 +1,23 @@
-import { EmbedBuilder, roleMention } from "discord.js";
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { ApplicationCommandOptionType, EmbedBuilder, roleMention } from "discord.js";
+import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { districtCron } from "../../scheduled/districts";
 import F from "../../../Helpers/funcs";
 
 const command = new SlashCommand({
     description: "Test command",
-    options: []
+    options: [
+        {
+            name: "attack",
+            type: ApplicationCommandOptionType.String,
+            description: "Attack a district",
+            required: true,
+            choices: F.entries(emojiIDs.quarters).map(([key, _value]) => ({
+                name: `<:qtr1:1219348841082523648> QTR ${key}`,
+                value: key,
+            }))
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {

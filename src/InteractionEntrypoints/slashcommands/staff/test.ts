@@ -77,10 +77,10 @@ async function gloriousVista(ctx: (typeof SlashCommand)["GenericContextType"]) {
 
     let i = 1;
     for (const [_name, id] of randomOrder) {
-        const points = 10 - i;
+        const points = (10 - i) * 2;
         embed.addFields({
-            name: "\u200b",
-            value: `${i}. ${roleMention(id)}\n**${points} point${F.plural(points)}**`,
+            name: `1. ↁ${points}`,
+            value: roleMention(id),
             inline: true,
         });
         i++;

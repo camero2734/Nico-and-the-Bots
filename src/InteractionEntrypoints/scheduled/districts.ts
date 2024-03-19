@@ -106,7 +106,7 @@ async function buildDefendingEmbed(raider: District, currencyAmount: number, qtr
 
 async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Promise<EmbedBuilder> {
     const embed = new EmbedBuilder()
-        .setAuthor({ name: `Attacking ${beingAttacked.role.name}`, iconURL: beingAttacked.imageUrl })
+        .setAuthor({ name: `Searching ${beingAttacked.role.name}`, iconURL: beingAttacked.imageUrl })
         .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(beingAttacked.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`);
 
     const maxVotes = Math.max(...Object.values(qtrVotes));

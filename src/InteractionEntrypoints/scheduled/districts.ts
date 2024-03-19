@@ -79,6 +79,7 @@ function calculateAllocatedCurrency(votes: QtrAlloc, currencyAmount: number): Qt
 async function buildDefendingEmbed(raider: District, currencyAmount: number, qtrVotes: QtrAlloc): Promise<EmbedBuilder> {
     const embed = new EmbedBuilder()
         .setAuthor({ name: `Being raided by ${raider.role.name}`, iconURL: raider.imageUrl })
+        .setColor(raider.role.color)
         .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(raider.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`);
 
     const allocatedCurrency = calculateAllocatedCurrency(qtrVotes, currencyAmount);
@@ -107,6 +108,7 @@ async function buildDefendingEmbed(raider: District, currencyAmount: number, qtr
 async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Promise<EmbedBuilder> {
     const embed = new EmbedBuilder()
         .setAuthor({ name: `Searching ${beingAttacked.role.name}`, iconURL: beingAttacked.imageUrl })
+        .setColor(beingAttacked.role.color)
         .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(beingAttacked.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`);
 
     const maxVotes = Math.max(...Object.values(qtrVotes));

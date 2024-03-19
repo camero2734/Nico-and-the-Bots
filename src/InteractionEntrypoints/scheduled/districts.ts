@@ -82,11 +82,13 @@ async function buildDefendingEmbed(raider: District, currencyAmount: number, qtr
         .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(raider.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`);
 
     const allocatedCurrency = calculateAllocatedCurrency(qtrVotes, currencyAmount);
+    const maxAlloc = Math.max(...Object.values(allocatedCurrency));
 
     for (const [qtr, votes] of F.entries(qtrVotes)) {
+        const isMax = allocatedCurrency[qtr] === maxAlloc;
         embed.addFields({
             name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${qtr.toUpperCase()}`,
-            value: `${votes} vote${F.plural(votes)} ⇒ **ↁ${allocatedCurrency[qtr]}**`,
+            value: isMax ? `${votes} vote${F.plural(votes)} ⇒ **__ↁ${allocatedCurrency[qtr]}__**` : `${votes} vote${F.plural(votes)} ⇒ ↁ${allocatedCurrency[qtr]}`,
             inline: true
         });
     }
@@ -99,10 +101,13 @@ async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Pr
         .setAuthor({ name: `Attacking ${beingAttacked.role.name.toUpperCase()}`, iconURL: beingAttacked.imageUrl })
         .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(beingAttacked.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`);
 
+    const maxVotes = Math.max(...Object.values(qtrVotes));
+
     for (const [qtr, votes] of F.entries(qtrVotes)) {
+        const isMax = votes === maxVotes;
         embed.addFields({
             name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${qtr.toUpperCase()}`,
-            value: `${votes} vote${F.plural(votes)}`,
+            value: isMax ? `**__${votes}__** vote${F.plural(votes)}` : `${votes} vote${F.plural(votes)}`,
             inline: true
         });
     }

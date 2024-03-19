@@ -78,14 +78,16 @@ function calculateAllocatedCurrency(votes: QtrAlloc, currencyAmount: number): Qt
 
 async function buildDefendingEmbed(raider: District, currencyAmount: number, qtrVotes: QtrAlloc): Promise<EmbedBuilder> {
     const embed = new EmbedBuilder()
-        .setAuthor({ name: `Being raided by ${raider.role.name.toUpperCase()}`, iconURL: raider.imageUrl })
+        .setAuthor({ name: `Being raided by ${raider.role.name}`, iconURL: raider.imageUrl })
         .setDescription(`Rumors have reached my ear that a raiding party from ${roleMention(raider.role.id)} intends to test our resolve and seize our riches from us today; ensure those credits are wisely hidden among the four quarters of our district.`);
 
     const allocatedCurrency = calculateAllocatedCurrency(qtrVotes, currencyAmount);
     const maxAlloc = Math.max(...Object.values(allocatedCurrency));
+    const maxQtrs = [];
 
     for (const [qtr, votes] of F.entries(qtrVotes)) {
         const isMax = allocatedCurrency[qtr] === maxAlloc;
+        if (isMax) maxQtrs.push(qtr);
         embed.addFields({
             name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${qtr.toUpperCase()}`,
             value: isMax ? `${votes} vote${F.plural(votes)} ⇒ **__ↁ${allocatedCurrency[qtr]}__**` : `${votes} vote${F.plural(votes)} ⇒ ↁ${allocatedCurrency[qtr]}`,
@@ -93,23 +95,38 @@ async function buildDefendingEmbed(raider: District, currencyAmount: number, qtr
         });
     }
 
+    if (maxAlloc > 0) {
+        embed.setFooter({
+            text: `${raider.role.name} will win ↁ${maxAlloc} if they search in ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}. If they search elsewhere, you instead will win ↁ${maxAlloc}.`
+        })
+    }
+
     return embed;
 }
 
 async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Promise<EmbedBuilder> {
     const embed = new EmbedBuilder()
-        .setAuthor({ name: `Attacking ${beingAttacked.role.name.toUpperCase()}`, iconURL: beingAttacked.imageUrl })
+        .setAuthor({ name: `Attacking ${beingAttacked.role.name}`, iconURL: beingAttacked.imageUrl })
         .setDescription(`In reciprocity, I have deemed that the wealth harbored within ${roleMention(beingAttacked.role.id)} would better serve the Sacred Municipality of Dema under my stewardship. Thus, we shall embark on a raid upon one of their quarters at nightfall.`);
 
     const maxVotes = Math.max(...Object.values(qtrVotes));
+    const maxQtrs = [];
 
     for (const [qtr, votes] of F.entries(qtrVotes)) {
         const isMax = votes === maxVotes;
+        if (isMax) maxQtrs.push(qtr);
         embed.addFields({
             name: `${F.emoji(emojiIDs.quarters[qtr as keyof QtrAlloc])} Qtr. ${qtr.toUpperCase()}`,
             value: isMax ? `**__${votes}__** vote${F.plural(votes)}` : `${votes} vote${F.plural(votes)}`,
             inline: true
         });
+    }
+
+    if (maxVotes > 0) {
+        const randomly = maxQtrs.length > 1 ? " (randomly) " : " ";
+        embed.setFooter({
+            text: `You will search ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}${randomly}in ${beingAttacked.role.name}. If it has the most credits, you will win the credits hidden there.`
+        })
     }
 
     return embed;

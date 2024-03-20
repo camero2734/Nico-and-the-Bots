@@ -260,7 +260,7 @@ export async function districtCron() {
 
             const won = defense.credits > 0;
             if (won) {
-                const searchedIn = defense.attackedQtr ? `They unsuccessfully searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}` : "They did not select a quarter to attack.";
+                const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}` : "They did not select a quarter to attack.";
                 return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. ${searchedIn}`;
             } else {
                 return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${defense.credits}** credits from QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}. You have failed me.`
@@ -272,7 +272,7 @@ export async function districtCron() {
             if (!offense || offense.credits === 0) return "_Nothing happened yesterday_";
 
             const won = offense.credits > 0;
-            if (offense.attackedQtr === undefined) {
+            if (offense.attackedQtr < 0) {
                 return `We did not select a quarter to attack, so we lost all **ↁ${Math.abs(offense.credits)}** credits. You have failed me.`
             } else if (won) {
                 return `We successfully seized **ↁ${offense.credits}** credits from QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of DST. ${offense.defender.toUpperCase()}.`;

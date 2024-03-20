@@ -54,7 +54,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
 
         // Choose a random quarter if there are multiple
         // If no votes were cast, no attack is made.
-        const attackedQtr = maxAttackVotes === 0 ? -1 : faker.helpers.arrayElement(maxAttackQtrs);
+        const attackedQtr = maxAttackVotes <= 0 ? -1 : faker.helpers.arrayElement(maxAttackQtrs);
 
         // Tally the votes for the defender
         const defenseVotes = battle.guesses.filter(g => !g.isAttackVote);
@@ -72,7 +72,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
         const attackSuccess = defenseQtrs.includes(attackedQtr);
         const creditAlloc = calculateAllocatedCurrency({ i: defenseTally[0], ii: defenseTally[1], iii: defenseTally[2], iv: defenseTally[3] }, battle.credits);
         // If defender cast no votes, they lose all credits to the attacker
-        let creditsWon = maxDefenseVotes === 0 ? battle.credits : Math.max(...Object.values(creditAlloc));
+        let creditsWon = maxDefenseVotes <= 0 ? battle.credits : Math.max(...Object.values(creditAlloc));
 
         // If neither side cast votes, no one wins anything.
         if (maxAttackVotes <= 0 && maxDefenseVotes <= 0) creditsWon = 0;
@@ -260,7 +260,8 @@ export async function districtCron() {
 
             const won = defense.credits > 0;
             if (won) {
-                return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. They unsuccessfully searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}.`;
+                const searchedIn = defense.attackedQtr ? `They unsuccessfully searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}` : "They did not select a quarter to attack.";
+                return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. ${searchedIn}`;
             } else {
                 return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${defense.credits}** credits from QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}. You have failed me.`
             }
@@ -271,7 +272,9 @@ export async function districtCron() {
             if (!offense || offense.credits === 0) return "_Nothing happened yesterday_";
 
             const won = offense.credits > 0;
-            if (won) {
+            if (offense.attackedQtr === undefined) {
+                return `We did not select a quarter to attack, so we lost all **ↁ${Math.abs(offense.credits)}** credits. You have failed me.`
+            } else if (won) {
                 return `We successfully seized **ↁ${offense.credits}** credits from QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of DST. ${offense.defender.toUpperCase()}.`;
             } else {
                 return `We searched in QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in QTR ${["I", "II", "III", "IV"][offense.defenseQtrs[0]]}. You have failed me.`

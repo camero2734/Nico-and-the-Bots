@@ -41,7 +41,7 @@ export function numeral(idx: number) {
 }
 
 export function qtrEmoji(idx: number) {
-    return emojiIDs.quarters[numeral(idx)];
+    return F.emoji(emojiIDs.quarters[numeral(idx)]);
 }
 
 export async function dailyDistrictOrder(battleId: number) {

@@ -75,7 +75,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
         let creditsWon = maxDefenseVotes === 0 ? battle.credits : Math.max(...Object.values(creditAlloc));
 
         // If neither side cast votes, no one wins anything.
-        if (maxAttackVotes === 0 && maxDefenseVotes === 0) creditsWon = 0;
+        if (maxAttackVotes <= 0 && maxDefenseVotes <= 0) creditsWon = 0;
 
         if (!results[attacker]) results[attacker] = {} as any;
         if (!results[defender]) results[defender] = {} as any;
@@ -256,7 +256,7 @@ export async function districtCron() {
 
         const defenseResults = (() => {
             const defense = districtResults?.defense;
-            if (!defense) return "_Nothing happened yesterday_";
+            if (!defense || defense.credits === 0) return "_Nothing happened yesterday_";
 
             const won = defense.credits > 0;
             if (won) {
@@ -268,7 +268,7 @@ export async function districtCron() {
 
         const offenseResults = (() => {
             const offense = districtResults?.offense;
-            if (!offense) return "_Nothing happened yesterday_";
+            if (!offense || offense.credits === 0) return "_Nothing happened yesterday_";
 
             const won = offense.credits > 0;
             if (won) {

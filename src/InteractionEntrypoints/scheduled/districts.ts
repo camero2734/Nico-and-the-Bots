@@ -12,12 +12,92 @@ const entrypoint = new ManualEntrypoint();
 
 // const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
-export async function concludePreviousBattle(): Promise<void> {
-    // const latestBattle = await prisma.districtBattleGroup.findFirst({
-    //     orderBy: { createdAt: "desc" }
-    // });
+interface BattleResult {
+    attackedQtr: number;
+    defenseQtrs: number[]; // Ties are possible and count in favor of the attacker
+    credits: number;
+    attacker: BishopType;
+    defender: BishopType;
+}
 
-    // TODO: Do something...
+type DistrictResults = Partial<Record<BishopType, {
+    offense: BattleResult;
+    defense: BattleResult;
+}>>;
+
+export async function concludePreviousBattle(): Promise<DistrictResults> {
+    const latestBattle = await prisma.districtBattleGroup.findFirst({
+        orderBy: { createdAt: "desc" },
+        include: { battles: { include: { guesses: true } } },
+    });
+
+    if (!latestBattle) return {};
+
+    const results: DistrictResults = {};
+
+    for (const battle of latestBattle.battles) {
+        const faker = F.isolatedFaker(`battle:${battle.id}`);
+
+        // Tally the votes for the attacker
+        const { attacker, defender } = battle;
+        const attackVotes = battle.guesses.filter(g => g.isAttackVote);
+
+        const attackTally = [0, 0, 0, 0];
+        for (const vote of attackVotes) {
+            const qtr = vote.quarter;
+            attackTally[qtr]++;
+        }
+
+        const maxAttackVotes = Math.max(...attackTally);
+        // There can be multiple, but only one will be chosen
+        const maxAttackQtrs = Object.keys(attackTally).filter(qtr => attackTally[+qtr] === maxAttackVotes).map(parseInt);
+
+        // Choose a random quarter if there are multiple
+        // If no votes were cast, no attack is made.
+        const attackedQtr = maxAttackVotes === 0 ? -1 : faker.helpers.arrayElement(maxAttackQtrs);
+
+        // Tally the votes for the defender
+        const defenseVotes = battle.guesses.filter(g => !g.isAttackVote);
+
+        const defenseTally = [0, 0, 0, 0];
+        for (const vote of defenseVotes) {
+            const qtr = vote.quarter;
+            defenseTally[qtr]++;
+        }
+
+        const maxDefenseVotes = Math.max(...defenseTally);
+        // Ties are bad for the defender; any of the tied quarters will be considered a win for the attacker
+        const defenseQtrs = Object.keys(defenseTally).filter(qtr => defenseTally[+qtr] === maxDefenseVotes).map(parseInt);
+
+        const attackSuccess = defenseQtrs.includes(attackedQtr);
+        const creditAlloc = calculateAllocatedCurrency({ i: defenseTally[0], ii: defenseTally[1], iii: defenseTally[2], iv: defenseTally[3] }, battle.credits);
+        // If defender cast no votes, they lose all credits to the attacker
+        let creditsWon = maxDefenseVotes === 0 ? battle.credits : Math.max(...Object.values(creditAlloc));
+
+        // If neither side cast votes, no one wins anything.
+        if (maxAttackVotes === 0 && maxDefenseVotes === 0) creditsWon = 0;
+
+        if (!results[attacker]) results[attacker] = {} as any;
+        if (!results[defender]) results[defender] = {} as any;
+
+        results[attacker]!.offense = {
+            attackedQtr,
+            defenseQtrs,
+            credits: attackSuccess ? creditsWon : 0,
+            attacker: attacker,
+            defender
+        };
+
+        results[defender]!.defense = {
+            attackedQtr,
+            defenseQtrs,
+            credits: attackSuccess ? 0 : creditsWon,
+            attacker: attacker,
+            defender
+        };
+    }
+
+    return results;
 }
 
 interface QtrAlloc {
@@ -135,7 +215,7 @@ async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Pr
 }
 
 export async function districtCron() {
-    await concludePreviousBattle();
+    const results = await concludePreviousBattle();
 
     const newBattleGroup = await prisma.districtBattleGroup.create({ data: {} });
     const districts = await dailyDistrictOrder(newBattleGroup.id);
@@ -143,7 +223,7 @@ export async function districtCron() {
     // This will probably be randomized per day
     const currencyAmount = 50;
 
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < districts.length; i++) {
         const prevDistrict = districts.at(i - 1)!;
         const district = districts[i];
         const nextDistrict = districts[(i + 1) % districts.length];
@@ -157,11 +237,47 @@ export async function districtCron() {
             }
         });
 
+        const districtResults = results[district.bishopType];
+
+        const defenseResults = (() => {
+            const defense = districtResults?.defense;
+            if (!defense) return "_Nothing happened yesterday_";
+
+            const won = defense.credits > 0;
+            if (won) {
+                return `**${defense.credits}** credits were successfully defended from the raiding party from ${roleMention(defense.attacker)}. They searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}, but found nothing.`;
+            } else {
+                return `The raiding party from ${roleMention(defense.attacker)} successfully seized all **${defense.credits}** credits from QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}.`;
+            }
+        })();
+
+        const offenseResults = (() => {
+            const offense = districtResults?.offense;
+            if (!offense) return "_Nothing happened yesterday_";
+
+            const won = offense.credits > 0;
+            if (won) {
+                return `We successfully seized **${offense.credits}** credits from QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of ${roleMention(offense.defender)}.`;
+            } else {
+                return `We searched in QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of ${roleMention(offense.defender)}, but found nothing. It seems they hid their credits in QTR ${["I", "II", "III", "IV"][offense.defenseQtrs[0]]}.`;
+            }
+        })();
+
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: district.imageUrl })
             .setTitle(format(new Date(), "YYY MM'MOON' dd"))
             .setColor(district.role.color)
-            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits. (Results from yesterday)`)
+            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits.`)
+            .addFields([
+                {
+                    name: "Yesterday's Defense",
+                    value: defenseResults
+                },
+                {
+                    name: "Yesterday's Offense",
+                    value: offenseResults
+                }
+            ])
             .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
 
         const defendingEmbed = await buildDefendingEmbed(prevDistrict, currencyAmount, await getQtrAlloc(newBattleGroup.id, district.bishopType, false));

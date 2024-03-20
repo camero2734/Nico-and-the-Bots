@@ -5,6 +5,7 @@ import { BaseMessageOptions, Guild, GuildMember, Message, Role, Snowflake, TextC
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import { channelIDs, roles } from "../Configuration/config";
+import { Faker, en } from "@faker-js/faker";
 /**
  * Just some commonly used short functions
  */
@@ -210,6 +211,14 @@ const F = {
         const b = int & 255;
         return [r, g, b];
     },
+    isolatedFaker(seed: number | string) {
+        const faker = new Faker({ locale: [en] });
+
+        const fakerSeed = typeof seed === "string" ? F.hashToInt(seed) : seed;
+        faker.seed(fakerSeed);
+
+        return faker;
+    }
 };
 
 export default F;

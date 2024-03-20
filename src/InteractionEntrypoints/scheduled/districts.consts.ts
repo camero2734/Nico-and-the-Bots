@@ -36,11 +36,15 @@ interface QtrAlloc {
     iv: number;
 }
 
+export function numeral(idx: number) {
+    return (<const>["i", "ii", "iii", "iv"])[idx];
+}
+
 export async function dailyDistrictOrder(battleId: number) {
     const faker = new Faker({ locale: [en] });
     faker.seed(F.hashToInt(`dist.battle.${battleId}`));
 
-    // Determine which districts face each other today
+    // Determine which districts attack each other today. Forms a cycle.
     // 0 -> 1 -> 2 -> 3 -> ... -> 8 -> 9 -> 0
     const ranDistricts = faker.helpers.shuffle(F.entries(channelIDs.districts));
 
@@ -167,7 +171,7 @@ export async function getQtrAlloc(battleId: number, defender: BishopType, isAtta
 
     const qtrVotes = { i: 0, ii: 0, iii: 0, iv: 0 };
     for (const vote of votes) {
-        const qtr = (<const>["i", "ii", "iii", "iv"])[vote.quarter];
+        const qtr = numeral(vote.quarter);
         qtrVotes[qtr]++;
     }
 

@@ -5,7 +5,7 @@ import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDistrictOrder, getQtrAlloc, numeral } from "./districts.consts";
+import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDistrictOrder, getQtrAlloc, numeral, qtrEmoji } from "./districts.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -53,10 +53,10 @@ export async function districtCron() {
 
             const won = defense.credits > 0;
             if (won) {
-                const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in QTR ${numeral(defense.attackedQtr).toUpperCase()}` : "They did not select a quarter to attack.";
+                const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}` : "They did not select a quarter to attack.";
                 return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. ${searchedIn}`;
             } else {
-                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${defense.credits}** credits from QTR ${numeral(defense.attackedQtr).toUpperCase()}. You have failed me.`
+                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${defense.credits}** credits from ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}. You have failed me.`
             }
         })();
 
@@ -68,17 +68,22 @@ export async function districtCron() {
             if (offense.attackedQtr < 0) {
                 return `We did not select a quarter to attack, so we lost all **ↁ${Math.abs(offense.credits)}** credits. You have failed me.`
             } else if (won) {
-                return `We successfully seized **ↁ${offense.credits}** credits from QTR ${numeral(offense.attackedQtr).toUpperCase()} of DST. ${offense.defender.toUpperCase()}.`;
+                return `We successfully seized **ↁ${offense.credits}** credits from ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr).toUpperCase()} of DST. ${offense.defender.toUpperCase()}.`;
             } else {
-                return `We searched in QTR ${numeral(offense.attackedQtr).toUpperCase()} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in QTR ${numeral(offense.defenseQtrs[0]).toUpperCase()}. You have failed me.`
+                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr).toUpperCase()} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in ${qtrEmoji(offense.defenseQtrs[0])} QTR ${numeral(offense.defenseQtrs[0]).toUpperCase()}. You have failed me.`
             }
         })();
+
+        const creditsWon = Math.max(districtResults?.offense.credits || 0, 0) + Math.max(districtResults?.defense.credits || 0, 0);
+        const creditsMsg = creditsWon === 0
+            ? "You have failed me."
+            : creditsWon > 50 ? "You have surpassed my expectations." : "You have done adequately.";
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: district.imageUrl })
             .setTitle(format(new Date(), "YYY MM'MOON' dd"))
             .setColor(district.role.color)
-            .setDescription(`Good morning, my faithful citizens. Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits.`)
+            .setDescription(`Good morning, my faithful citizens. Yesterday, you managed to secure **ↁ${creditsWon}** credit${F.plural(creditsWon)}. ${creditsMsg}`)
             .addFields([
                 {
                     name: "Yesterday's Defense",
@@ -87,6 +92,10 @@ export async function districtCron() {
                 {
                     name: "Yesterday's Offense",
                     value: offenseResults
+                },
+                {
+                    name: "Today's Blessing",
+                    value: `Today, I bestow upon you a blessing of **ↁ${currencyAmount}** in credits. Protect it with your lives.`
                 }
             ])
             .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });

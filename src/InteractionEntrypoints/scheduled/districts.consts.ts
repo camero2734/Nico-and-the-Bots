@@ -40,6 +40,10 @@ export function numeral(idx: number) {
     return (<const>["i", "ii", "iii", "iv"])[idx];
 }
 
+export function qtrEmoji(idx: number) {
+    return emojiIDs.quarters[numeral(idx)];
+}
+
 export async function dailyDistrictOrder(battleId: number) {
     const faker = new Faker({ locale: [en] });
     faker.seed(F.hashToInt(`dist.battle.${battleId}`));

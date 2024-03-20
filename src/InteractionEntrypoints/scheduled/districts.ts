@@ -83,7 +83,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
         results[attacker]!.offense = {
             attackedQtr,
             defenseQtrs,
-            credits: attackSuccess ? creditsWon : 0,
+            credits: attackSuccess ? creditsWon : -creditsWon,
             attacker: attacker,
             defender
         };
@@ -91,7 +91,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
         results[defender]!.defense = {
             attackedQtr,
             defenseQtrs,
-            credits: attackSuccess ? 0 : creditsWon,
+            credits: attackSuccess ? -creditsWon : creditsWon,
             attacker: attacker,
             defender
         };
@@ -180,6 +180,8 @@ async function buildDefendingEmbed(raider: District, currencyAmount: number, qtr
         embed.setFooter({
             text: `${raider.role.name} will win ↁ${maxAlloc} if they search in ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}. If they search elsewhere, you instead will win ↁ${maxAlloc}.`
         })
+    } else {
+        embed.setFooter({ text: `No votes cast; no credits will be hidden. The attacker will take all ↁ${currencyAmount}.` })
     }
 
     return embed;
@@ -209,6 +211,8 @@ async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAlloc): Pr
         embed.setFooter({
             text: `You will search ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}${randomly}in ${beingAttacked.role.name}. If it has the most credits, you will win the credits hidden there.`
         })
+    } else {
+        embed.setFooter({ text: `No votes cast; no search will be made. The defender will keep all of their credits.` })
     }
 
     return embed;
@@ -223,10 +227,10 @@ export async function districtCron() {
     // This will probably be randomized per day
     const currencyAmount = 50;
 
+    const battles = [];
     for (let i = 0; i < districts.length; i++) {
         const prevDistrict = districts.at(i - 1)!;
         const district = districts[i];
-        const nextDistrict = districts[(i + 1) % districts.length];
 
         const battle = await prisma.districtBattle.create({
             data: {
@@ -237,6 +241,17 @@ export async function districtCron() {
             }
         });
 
+        battles.push(battle);
+    }
+
+    for (let i = 0; i < districts.length; i++) {
+        const prevDistrict = districts.at(i - 1)!;
+        const district = districts[i];
+        const nextDistrict = districts[(i + 1) % districts.length];
+
+        const battleWhereDefending = battles[i];
+        const battleWhereAttacking = battles[(i + 1) % districts.length];
+
         const districtResults = results[district.bishopType];
 
         const defenseResults = (() => {
@@ -245,9 +260,9 @@ export async function districtCron() {
 
             const won = defense.credits > 0;
             if (won) {
-                return `**${defense.credits}** credits were successfully defended from the raiding party from ${roleMention(defense.attacker)}. They searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}, but found nothing.`;
+                return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. They unsuccessfully searched in QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}.`;
             } else {
-                return `The raiding party from ${roleMention(defense.attacker)} successfully seized all **${defense.credits}** credits from QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}.`;
+                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${defense.credits}** credits from QTR ${["I", "II", "III", "IV"][defense.attackedQtr]}. You have failed me.`
             }
         })();
 
@@ -257,9 +272,9 @@ export async function districtCron() {
 
             const won = offense.credits > 0;
             if (won) {
-                return `We successfully seized **${offense.credits}** credits from QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of ${roleMention(offense.defender)}.`;
+                return `We successfully seized **ↁ${offense.credits}** credits from QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of DST. ${offense.defender.toUpperCase()}.`;
             } else {
-                return `We searched in QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of ${roleMention(offense.defender)}, but found nothing. It seems they hid their credits in QTR ${["I", "II", "III", "IV"][offense.defenseQtrs[0]]}.`;
+                return `We searched in QTR ${["I", "II", "III", "IV"][offense.attackedQtr]} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in QTR ${["I", "II", "III", "IV"][offense.defenseQtrs[0]]}. You have failed me.`
             }
         })();
 
@@ -284,7 +299,7 @@ export async function districtCron() {
         const attackingEmbed = await buildAttackEmbed(nextDistrict, await getQtrAlloc(newBattleGroup.id, nextDistrict.bishopType, true));
 
         const defendingMenu = new StringSelectMenuBuilder()
-            .setCustomId(genDefendId({ districtBattleId: battle.id }))
+            .setCustomId(genDefendId({ districtBattleId: battleWhereDefending.id }))
             .setMaxValues(1)
             .setMinValues(1)
             .setPlaceholder(`Vote for a QTR to hide credits from ${prevDistrict.role.name.toUpperCase()}`)
@@ -295,8 +310,9 @@ export async function districtCron() {
                 { label: "Hide in QTR IV", value: "3", emoji: { id: emojiIDs.quarters.iv } }
             ]);
 
+
         const attackingMenu = new StringSelectMenuBuilder()
-            .setCustomId(genAttackId({ districtBattleId: battle.id }))
+            .setCustomId(genAttackId({ districtBattleId: battleWhereAttacking.id }))
             .setMaxValues(1)
             .setMinValues(1)
             .setPlaceholder(`Vote for a QTR to search in ${nextDistrict.role.name.toUpperCase()}`)

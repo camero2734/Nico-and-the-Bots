@@ -69,10 +69,14 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
         // Ties are bad for the defender; any of the tied quarters will be considered a win for the attacker
         const defenseQtrs = Object.keys(defenseTally).filter(qtr => defenseTally[+qtr] === maxDefenseVotes).map(parseInt);
 
-        const attackSuccess = defenseQtrs.includes(attackedQtr);
         const creditAlloc = calculateAllocatedCurrency({ i: defenseTally[0], ii: defenseTally[1], iii: defenseTally[2], iv: defenseTally[3] }, battle.credits);
+        let attackSuccess = defenseQtrs.includes(attackedQtr);
+        let creditsWon = Math.max(...Object.values(creditAlloc));
         // If defender cast no votes, they lose all credits to the attacker
-        let creditsWon = maxDefenseVotes <= 0 ? battle.credits : Math.max(...Object.values(creditAlloc));
+        if (maxDefenseVotes <= 0) {
+            attackSuccess = true;
+            creditsWon = battle.credits;
+        }
 
         // If neither side cast votes, no one wins anything.
         if (maxAttackVotes <= 0 && maxDefenseVotes <= 0) creditsWon = 0;
@@ -84,7 +88,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
             attackedQtr,
             defenseQtrs,
             credits: attackSuccess ? creditsWon : -creditsWon,
-            attacker: attacker,
+            attacker,
             defender
         };
 
@@ -92,7 +96,7 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
             attackedQtr,
             defenseQtrs,
             credits: attackSuccess ? -creditsWon : creditsWon,
-            attacker: attacker,
+            attacker,
             defender
         };
     }

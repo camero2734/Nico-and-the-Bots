@@ -94,6 +94,7 @@ export const albums = [
             { name: "Guns for Hands" },
             { name: "Trees" },
             { name: "Truce" },
+            { name: "Lovely (Bonus Track Version)" }
         ]
     },
     {

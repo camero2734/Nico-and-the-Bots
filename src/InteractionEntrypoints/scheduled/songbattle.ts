@@ -15,6 +15,33 @@ const entrypoint = new ManualEntrypoint();
 
 const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
+// Enable slowmode in the old thread after a while
+Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
+    // Get song battle channel
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+    // Get the latest poll
+    const poll = await prisma.poll.findMany({
+        where: {
+            name: { startsWith: PREFIX },
+        },
+        orderBy: { id: "desc" },
+        take: 2,
+    });
+
+    if (!poll) return;
+
+    const [_, previousPoll] = poll;
+
+    const message = await channel.messages.fetch(previousPoll.options[2]);
+
+    if (message) {
+        const thread = message.thread;
+        if (thread) await thread.setRateLimitPerUser(minutesToSeconds(5));
+    }
+});
+
 export async function songBattleCron() {
     // Get song battle channel
     const channel = await guild.channels.fetch(channelIDs.songbattles);
@@ -62,10 +89,6 @@ export async function songBattleCron() {
             actionRow.components.forEach(c => c.disabled = true);
 
             await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
-
-            // Enable slowmode in the thread
-            const thread = previousMessage.thread;
-            if (thread) await thread.setRateLimitPerUser(minutesToSeconds(5));
         }
     }
 

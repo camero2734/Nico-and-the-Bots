@@ -43,6 +43,7 @@ export async function districtCron() {
         const nextDistrict = districts[(i + 1) % districts.length];
 
         // TEMP to avoid spamming all channels
+        console.log(`|${district.bishopType}| != |Nico|`, district.bishopType !== "Nico");
         if (district.bishopType !== "Nico") continue;
 
         const battleWhereDefending = battles[i];
@@ -59,7 +60,7 @@ export async function districtCron() {
                 const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}` : "They did not select a quarter to attack.";
                 return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. ${searchedIn}`;
             } else {
-                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${defense.credits}** credits from ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}. You have failed me.`
+                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${Math.abs(defense.credits)}** credits from ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}. You have failed me.`
             }
         })();
 

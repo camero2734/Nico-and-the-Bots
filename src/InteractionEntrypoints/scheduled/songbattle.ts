@@ -9,6 +9,7 @@ import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { IMAGE_SIZE, PREFIX, Result, buttonColors, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 import { Cron } from "croner";
+import { minutesToSeconds } from "date-fns";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -61,6 +62,10 @@ export async function songBattleCron() {
             actionRow.components.forEach(c => c.disabled = true);
 
             await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
+
+            // Enable slowmode in the thread
+            const thread = previousMessage.thread;
+            if (thread) await thread.setRateLimitPerUser(minutesToSeconds(5));
         }
     }
 

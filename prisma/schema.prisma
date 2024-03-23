@@ -394,6 +394,14 @@ model UserMessageReport {
   @@unique([messageUrl, reportedByUserId])
 }
 
+model District {
+  name    BishopType @id @unique
+  credits Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model DistrictBattleGroup {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())

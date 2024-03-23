@@ -156,7 +156,61 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
         };
     }
 
+    // Update the district balances
+    for (const [bishop, result] of F.entries(results)) {
+        const { offense, defense } = result || {};
+        if (!offense || !defense) continue;
+
+        const amount = (am: number) => am > 0 ? am : 0;
+
+        await prisma.district.upsert({
+            where: { name: bishop },
+            update: {
+                credits: {
+                    increment: amount(offense.credits) + amount(defense.credits)
+                }
+            },
+            create: {
+                name: bishop,
+                credits: amount(offense.credits) + amount(defense.credits)
+            }
+        });
+    }
+
+    // Send leaderboard update
+    await sendLeaderboardUpdate();
+
     return results;
+}
+
+async function sendLeaderboardUpdate() {
+    const channel = await guild.channels.fetch(channelIDs.gloriousVista);
+    if (!channel?.isTextBased()) return;
+
+    const botMember = await guild.members.fetch(guild.client.user.id);
+    if (!botMember) return;
+
+    const embed = new EmbedBuilder()
+        .setTitle("Glorious Vista Daily Standings")
+        .setDescription("Thank you to all loyal citizens for their hard work yesterday. Here are the standings:")
+        .setColor(botMember.displayColor);
+
+    const districts = await prisma.district.findMany({
+        orderBy: { credits: "desc" }
+    });
+
+    for (let i = 0; i < districts.length; i++) {
+        const { name, credits } = districts[i];
+        const bishopName = name.toLowerCase() as keyof typeof roles["districts"];
+
+        embed.addFields({
+            name: `${i + 1}. ↁ${credits}`,
+            value: roleMention(roles.districts[bishopName]),
+            inline: true,
+        });
+    }
+
+    await channel.send({ embeds: [embed] });
 }
 
 export async function getQtrAlloc(battleId: number, defender: BishopType, isAttack: boolean): Promise<QtrAlloc> {

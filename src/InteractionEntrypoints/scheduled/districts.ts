@@ -135,9 +135,6 @@ export async function districtCron() {
         const defendingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(defendingMenu);
         const attackingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(attackingMenu);
 
-        // await district.webhook.client.send({ embeds: [embed], allowedMentions: { parse: [] } });
-        // await district.webhook.client.send({ embeds: [defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
-
         const lastApiMsg = await district.webhook.client.send({ embeds: [embed, attackingEmbed, defendingEmbed], components: [attackingActionRow, defendingActionRow], allowedMentions: { parse: [] } });
         const lastMsg = await district.webhook.webhook.fetchMessage(lastApiMsg.id);
 
@@ -190,9 +187,10 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     const beingAttacked = districts[(thisDistrictIndex + 1) % districts.length];
 
     const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, true));
-    await ctx.editReply({
-        embeds: [newAttackEmbed]
-    })
+
+    const embeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
+    embeds.splice(1, 1, newAttackEmbed);
+    await ctx.editReply({ embeds });
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
     await ctx.followUp({
@@ -240,9 +238,9 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     if (!thisDistrict || !raider) throw new CommandError("District not found");
 
     const newDefendEmbed = await buildDefendingEmbed(raider, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, false));
-    await ctx.editReply({
-        embeds: [newDefendEmbed]
-    })
+    const embeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
+    embeds.splice(2, 1, newDefendEmbed);
+    await ctx.editReply({ embeds });
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
     await ctx.followUp({

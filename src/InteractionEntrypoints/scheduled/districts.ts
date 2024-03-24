@@ -42,10 +42,6 @@ export async function districtCron() {
         const district = districts[i];
         const nextDistrict = districts[(i + 1) % districts.length];
 
-        // TEMP to avoid spamming all channels
-        console.log(`|${district.bishopType}| != |Nico|`, district.bishopType !== "Nico");
-        if (district.bishopType !== "Nico") continue;
-
         const battleWhereDefending = battles[i];
         const battleWhereAttacking = battles[(i + 1) % districts.length];
 

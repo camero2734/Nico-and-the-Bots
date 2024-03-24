@@ -3,7 +3,7 @@ import { CommandError } from "../Configuration/definitions";
 import { nanoid } from "nanoid";
 
 const getReplyMethod = async (ctx: CommandInteraction) => {
-    if (!ctx.isRepliable()) return ctx.followUp;
+    if (!ctx.isRepliable() || !ctx.isChatInputCommand()) return ctx.followUp;
 
     if (!ctx.deferred && !ctx.replied) await ctx.deferReply({ ephemeral: true });
     return ctx.editReply;

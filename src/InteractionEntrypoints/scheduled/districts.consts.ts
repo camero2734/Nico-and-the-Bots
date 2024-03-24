@@ -38,6 +38,7 @@ interface QtrAlloc {
 }
 
 export function numeral(idx: number) {
+    if (idx < 0 || idx > 3) throw new Error(`Invalid quarter index: ${idx}`);
     return (<const>["i", "ii", "iii", "iv"])[idx];
 }
 

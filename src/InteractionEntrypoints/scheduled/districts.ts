@@ -142,7 +142,7 @@ export async function districtCron() {
         const lastMsg = await district.webhook.webhook.fetchMessage(lastApiMsg.id);
 
         const thread = await lastMsg.startThread({
-            name: `District Battle: ${prevDistrict.role.name} vs ${district.role.name}`,
+            name: `${format(new Date(), "YYY MM'MOON' dd")} 🛡️ ${prevDistrict.role.name} / ⚔️ ${nextDistrict.role.name}`,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
         });
 

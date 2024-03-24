@@ -1,11 +1,12 @@
 import { Faker, en } from "@faker-js/faker";
-import { ChannelType, EmbedBuilder, Role, TextChannel, roleMention } from "discord.js";
+import { ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, roleMention } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
 import F from "../../Helpers/funcs";
 import { BishopType } from "@prisma/client";
 import { prisma } from "../../Helpers/prisma-init";
+import { format } from "date-fns";
 
 export interface District {
     name: keyof typeof channelIDs["districts"];
@@ -210,7 +211,12 @@ async function sendLeaderboardUpdate() {
         });
     }
 
-    await channel.send({ embeds: [embed] });
+    const msg = await channel.send({ embeds: [embed] });
+
+    await msg.startThread({
+        name: `District Standings ${format(new Date(), "YYY MM'MOON' dd")}`,
+        autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
+    });
 }
 
 export async function getQtrAlloc(battleId: number, defender: BishopType, isAttack: boolean): Promise<QtrAlloc> {

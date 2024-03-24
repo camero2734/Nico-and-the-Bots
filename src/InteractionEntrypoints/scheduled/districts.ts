@@ -111,7 +111,7 @@ export async function districtCron() {
             .setCustomId(genDefendId({ districtBattleId: battleWhereDefending.id }))
             .setMaxValues(1)
             .setMinValues(1)
-            .setPlaceholder(`Vote for a QTR to hide credits from ${prevDistrict.role.name.toUpperCase()}`)
+            .setPlaceholder(`🛡️ Hide from ${prevDistrict.role.name.toUpperCase()}`)
             .setOptions([
                 { label: "Hide in QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
                 { label: "Hide in QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
@@ -124,7 +124,7 @@ export async function districtCron() {
             .setCustomId(genAttackId({ districtBattleId: battleWhereAttacking.id }))
             .setMaxValues(1)
             .setMinValues(1)
-            .setPlaceholder(`Vote for a QTR to search in ${nextDistrict.role.name.toUpperCase()}`)
+            .setPlaceholder(`⚔️ Search in ${nextDistrict.role.name.toUpperCase()}`)
             .setOptions([
                 { label: "Attack QTR I", value: "0", emoji: { id: emojiIDs.quarters.i } },
                 { label: "Attack QTR II", value: "1", emoji: { id: emojiIDs.quarters.ii } },
@@ -135,9 +135,10 @@ export async function districtCron() {
         const defendingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(defendingMenu);
         const attackingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(attackingMenu);
 
-        await district.webhook.client.send({ embeds: [embed], allowedMentions: { parse: [] } });
-        await district.webhook.client.send({ embeds: [defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
-        const lastApiMsg = await district.webhook.client.send({ embeds: [attackingEmbed], components: [attackingActionRow], allowedMentions: { parse: [] } });
+        // await district.webhook.client.send({ embeds: [embed], allowedMentions: { parse: [] } });
+        // await district.webhook.client.send({ embeds: [defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
+
+        const lastApiMsg = await district.webhook.client.send({ embeds: [embed, attackingEmbed, defendingEmbed], components: [attackingActionRow, defendingActionRow], allowedMentions: { parse: [] } });
         const lastMsg = await district.webhook.webhook.fetchMessage(lastApiMsg.id);
 
         const thread = await lastMsg.startThread({

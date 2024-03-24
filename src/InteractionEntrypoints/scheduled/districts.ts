@@ -57,10 +57,10 @@ export async function districtCron() {
 
             const won = defense.credits > 0;
             if (won) {
-                const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}` : "They did not select a quarter to attack.";
+                const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}` : "They did not select a quarter to attack.";
                 return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. ${searchedIn}`;
             } else {
-                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${Math.abs(defense.credits)}** credits from ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr).toUpperCase()}. You have failed me.`
+                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${Math.abs(defense.credits)}** credits from ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have failed me.`
             }
         })();
 
@@ -72,9 +72,9 @@ export async function districtCron() {
             if (offense.attackedQtr < 0) {
                 return `We did not select a quarter to attack, so we lost all **ↁ${Math.abs(offense.credits)}** credits. You have failed me.`
             } else if (won) {
-                return `We successfully seized **ↁ${offense.credits}** credits from ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr).toUpperCase()} of DST. ${offense.defender.toUpperCase()}.`;
+                return `We successfully seized **ↁ${offense.credits}** credits from ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of DST. ${offense.defender.toUpperCase()}.`;
             } else {
-                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr).toUpperCase()} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in ${qtrEmoji(offense.defenseQtrs[0])} QTR ${numeral(offense.defenseQtrs[0]).toUpperCase()}. You have failed me.`
+                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in ${qtrEmoji(offense.defenseQtrs[0])} QTR ${numeral(offense.defenseQtrs[0])?.toUpperCase()}. You have failed me.`
             }
         })();
 
@@ -194,7 +194,7 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
     await ctx.followUp({
-        content: `You selected ${F.emoji(emojiId)} QTR ${numeral(qtrIndex).toUpperCase()}`,
+        content: `You selected ${F.emoji(emojiId)} QTR ${numeral(qtrIndex)?.toUpperCase()}`,
         ephemeral: true
     });
 });
@@ -244,7 +244,7 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
     await ctx.followUp({
-        content: `You selected ${F.emoji(emojiId)} QTR ${numeral(qtrIndex).toUpperCase()}`,
+        content: `You selected ${F.emoji(emojiId)} QTR ${numeral(qtrIndex)?.toUpperCase()}`,
         ephemeral: true
     });
 });

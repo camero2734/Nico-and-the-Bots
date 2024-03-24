@@ -38,12 +38,14 @@ interface QtrAlloc {
 }
 
 export function numeral(idx: number) {
-    if (idx < 0 || idx > 3) throw new Error(`Invalid quarter index: ${idx}`);
-    return (<const>["i", "ii", "iii", "iv"])[idx];
+    return (<const>["i", "ii", "iii", "iv"]).at(idx);
 }
 
 export function qtrEmoji(idx: number) {
-    return F.emoji(emojiIDs.quarters[numeral(idx)]);
+    const num = numeral(idx);
+    if (!num) return "";
+
+    return F.emoji(emojiIDs.quarters[num]);
 }
 
 export async function dailyDistrictOrder(battleId: number) {
@@ -239,6 +241,7 @@ export async function getQtrAlloc(battleId: number, defender: BishopType, isAtta
     const qtrVotes = { i: 0, ii: 0, iii: 0, iv: 0 };
     for (const vote of votes) {
         const qtr = numeral(vote.quarter);
+        if (!qtr) throw new Error("Invalid quarter vote");
         qtrVotes[qtr]++;
     }
 

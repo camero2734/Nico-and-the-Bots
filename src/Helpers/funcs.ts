@@ -6,6 +6,7 @@ import radix64Setup from "radix-64";
 import * as R from "ramda";
 import { channelIDs, roles } from "../Configuration/config";
 import { Faker, en } from "@faker-js/faker";
+import { BishopType } from "@prisma/client";
 /**
  * Just some commonly used short functions
  */
@@ -198,11 +199,11 @@ const F = {
     capitalize(text: string): string {
         return text.charAt(0).toUpperCase() + text.slice(1);
     },
-    userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role } | undefined {
+    userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role, bishop: BishopType } | undefined {
         const keys = F.entries(roles.districts);
         for (const [bishop, roleId] of keys) {
             const role = member.roles.cache.get(roleId);
-            if (role) return { name: bishop, role };
+            if (role) return { name: bishop, role, bishop: F.capitalize(bishop) as BishopType };
         }
     },
     intColorToRGB(int: number): [number, number, number] {

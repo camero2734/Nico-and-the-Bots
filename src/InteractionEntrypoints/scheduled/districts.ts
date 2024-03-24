@@ -6,6 +6,7 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDistrictOrder, getQtrAlloc, numeral, qtrEmoji } from "./districts.consts";
+import { guild } from "../../../app";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -135,9 +136,18 @@ export async function districtCron() {
         const defendingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(defendingMenu);
         const attackingActionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(attackingMenu);
 
-        await district.webhook.client.send({ embeds: [embed], allowedMentions: { parse: [] } });
+        const apiMsg = await district.webhook.client.send({ embeds: [embed], allowedMentions: { parse: [] } });
         await district.webhook.client.send({ embeds: [defendingEmbed], components: [defendingActionRow], allowedMentions: { parse: [] } });
         await district.webhook.client.send({ embeds: [attackingEmbed], components: [attackingActionRow], allowedMentions: { parse: [] } });
+
+        const chan = await guild.channels.fetch(apiMsg.channel_id);
+        if (!chan?.isTextBased()) continue;
+
+        const pinned = await chan.messages.fetchPinned();
+        // Unpin all messages from the bot
+        await Promise.all(pinned.filter(m => m.author.id === guild.client.user.id).map(m => m.unpin()));
+        // Now pin this one
+        await chan.messages.pin(apiMsg.id);
     }
 }
 

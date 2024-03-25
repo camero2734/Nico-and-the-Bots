@@ -1,4 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { Cron } from "croner";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
@@ -8,12 +9,12 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { IMAGE_SIZE, PREFIX, Result, buttonColors, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
-import { Cron } from "croner";
-import { minutesToSeconds } from "date-fns";
 
 const entrypoint = new ManualEntrypoint();
 
 const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+
+const SLOWMODE_SECONDS = 30;
 
 // Enable slowmode in the old thread after a while
 Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
@@ -38,7 +39,7 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
 
     if (message) {
         const thread = message.thread;
-        if (thread) await thread.setRateLimitPerUser(minutesToSeconds(5));
+        if (thread) await thread.setRateLimitPerUser(SLOWMODE_SECONDS);
     }
 });
 

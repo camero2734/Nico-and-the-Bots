@@ -211,7 +211,7 @@ class ConcertChannelManager {
         }
 
         console.log(`[Concert Channels] Registering ${toAdd.venueId}`);
-        await this.guild.roles.create({
+        const role = await this.guild.roles.create({
             name: toAdd.roleName,
             color: ROLE_HEX,
             position: referenceRole.position + 1
@@ -237,6 +237,14 @@ class ConcertChannelManager {
             );
         }
 
+        actionRow.addComponents(
+            new ButtonBuilder()
+                .setLabel("Get Role")
+                .setEmoji("🎫")
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId(`TBABTABTATBABA-${role.id}`)
+        )
+
         const forumPost = await this.#forumChannel.threads.create({
             name: toAdd.threadName,
             message: { content: initialMessage, components: [actionRow] },
@@ -245,6 +253,17 @@ class ConcertChannelManager {
 
         const threadTags = await toAdd.threadTags(this.#forumChannel);
         if (threadTags) await forumPost.setAppliedTags(threadTags.map(t => t.id));
+
+        // await prisma.concert.create({
+        //     data: {
+        //         id: toAdd.id,
+        //         channelId: forumPost.id,
+        //         roleId: role.id,
+        //         warnedForDeletion: null,
+        //         venue: toAdd.concert.venue.name
+        //     }
+        // });
+
     }
 
     async #unregisterConcert(toArchive: ThreadChannel, role: Role, warnedAt: Date | null): Promise<boolean> {

@@ -104,6 +104,13 @@ class ConcertChannel {
         return F.isoCountryToEmoji(code);
     }
 
+    get continent() {
+        const code = F.countryNameToCode(this.country);
+        if (!code) return;
+
+        return F.isoCountryToContinent(this.country);
+    }
+
     async threadTags(forumChannel: ForumChannel) {
         const tags = [];
         const hasMultipleDates = this.concerts.length > 1;
@@ -219,7 +226,7 @@ class ConcertChannelManager {
             position: referenceRole.position + 1
         });
 
-        const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}\nFeel free to discuss the concert, tickets, share pictures, etc.\n\n:warning: This channel will be archived 3 days after the concert ends.`
+        const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the concert, tickets, share pictures, etc.\n\n:warning: This channel will be archived 3 days after the concert ends.`
 
         const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()

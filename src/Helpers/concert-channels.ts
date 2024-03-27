@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { addDays, format, isPast } from "date-fns";
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -91,7 +91,7 @@ class ConcertChannel {
     }
 
     get threadName() {
-        return `${this.concert.venue.name} - ${this.datesFormatted}`
+        return `${this.concert.venue.name} - ${this.location} - ${this.datesFormatted}`
     }
 
     get roleName() {
@@ -126,7 +126,7 @@ class ConcertChannelManager {
             const noDupes = [];
             let lastChannel: ConcertChannel = chans[0];
 
-            for (const chan of chans) {
+            for (const chan of chans.slice(1)) {
                 if (lastChannel.venueId === chan.venueId) {
                     lastChannel.addConcertsFrom(chan);
                 } else {
@@ -222,25 +222,28 @@ class ConcertChannelManager {
 
         await this.#forumChannel.threads.create({
             name: toAdd.threadName,
-            autoArchiveDuration: 4320,
             message: { content: initialMessage, components: [actionRow] },
             reason: "Concert thread",
         });
     }
 
-    async #unregisterConcert(toArchive: ThreadChannel, role: Role, warnedAlready: boolean): Promise<boolean> {
+    async #unregisterConcert(toArchive: ThreadChannel, role: Role, warnedAt: Date | null): Promise<boolean> {
+        if (toArchive.parentId !== channelIDs.concertsForum) return false;
+
         // Send message to channel that it will be deleted in 3 days
-        if (!warnedAlready) {
+        if (!warnedAt) {
             await toArchive.send("# This channel (and the corresponding role) will be archived in 3 days. Please save any important information.");
-            await prisma.concert.update({ where: { id: toArchive.id }, data: { warnedForDeletion: true } });
+            await prisma.concert.update({ where: { id: toArchive.id }, data: { warnedForDeletion: new Date() } });
             return false;
         }
 
-        if (toArchive.parentId !== channelIDs.concertsForum) return false;
+        if (isPast(addDays(warnedAt, 3))) {
+            await toArchive.setArchived(true, "Concert ended three days ago");
+            await role.delete();
+            return true;
+        }
 
-        await toArchive.setArchived(true, "Concert ended three days ago");
-        await role.delete();
-        return true;
+        return false;
     }
 }
 

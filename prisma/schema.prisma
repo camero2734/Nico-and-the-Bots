@@ -450,7 +450,7 @@ model Concert {
   roleId    String
   channelId String
 
-  warnedForDeletion Boolean @default(false)
+  warnedForDeletion DateTime?
 
   createdAt DateTime @default(now())
 }

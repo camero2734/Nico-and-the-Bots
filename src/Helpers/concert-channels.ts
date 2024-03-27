@@ -1,12 +1,16 @@
 import { format } from "date-fns";
 import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ChannelType,
     ForumChannel,
     Guild,
-    TextChannel,
-    ThreadChannel,
-    userMention
+    Role,
+    ThreadChannel
 } from "discord.js";
-import { channelIDs, roles, userIDs } from "../Configuration/config";
+import { channelIDs, roles } from "../Configuration/config";
+import { prisma } from "./prisma-init";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
 const ROLE_HEX = "#ffc6d5";
@@ -43,24 +47,29 @@ export interface ConcertEntry {
 }
 
 class ConcertChannel {
-    // something-arena-chicago
-    public channelName: string;
     public concerts: ConcertEntry[] = [];
-    constructor(public concert: ConcertEntry, private guild: Guild) {
-        const { venue } = concert;
-        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/);
-        this.channelName = [s(this.name), s(venue.city)].flat().filter(a => a).join("-");
+    constructor(public concert: ConcertEntry) {
         this.concerts.push(concert);
     }
 
     addConcertsFrom(concert: ConcertChannel): boolean {
-        if (this.channelName !== concert.channelName) return false;
+        if (this.venueId !== concert.venueId) return false;
         this.concerts.push(...concert.concerts);
         return true;
     }
 
     get name() {
         return this.concert.title || this.concert.venue.name;
+    }
+
+    get id() {
+        return this.concert.id;
+    }
+
+    get venueId() {
+        const { venue } = this.concert;
+        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/);
+        return [s(this.name), s(venue.city)].flat().filter(a => a).join("-");
     }
 
     get country() {
@@ -73,14 +82,24 @@ class ConcertChannel {
         );
     }
 
-    get channel() {
-        return this.guild.channels.cache.find((c) => c.name === this.channelName) as TextChannel | undefined;
+    get datesFormatted() {
+        return this.concerts.map((c) => format(new Date(c.datetime), "d MMMM yyyy")).join(", ");
     }
 
-    async getAssociatedRole() {
-        const roles = await this.guild.roles.fetch();
-        const role = roles.find((r) => r.name === this.channel?.name);
-        return role;
+    get location() {
+        return this.concert.venue.location;
+    }
+
+    get threadName() {
+        return `${this.concert.venue.name} - ${this.datesFormatted}`
+    }
+
+    get roleName() {
+        return this.venueId;
+    }
+
+    get presaleUrl() {
+        return this.concert.offers.find((o) => o.type === "Presale")?.url;
     }
 }
 
@@ -91,7 +110,8 @@ class ConcertChannelManager {
     #forumChannel: ForumChannel | undefined;
 
     async initialize(numToFetch: number): Promise<boolean> {
-        this.#forumChannel = await this.guild.channels.fetch(channelIDs.concertsForum) as ForumChannel;
+        const channel = await this.guild.channels.fetch(channelIDs.concertsForum);
+        if (channel?.type === ChannelType.GuildForum) this.#forumChannel = channel;
 
         try {
             const res = await fetch(CONCERT_URL);
@@ -99,20 +119,22 @@ class ConcertChannelManager {
             const json = (await res.json()) as ConcertEntry[];
             if (!json || !Array.isArray(json)) throw new Error("Not a valid array");
 
-            const chans = json.slice(0, numToFetch).map((c) => new ConcertChannel(c, this.guild));
+            const chans = json.slice(0, numToFetch).map((c) => new ConcertChannel(c));
             if (chans.length === 0) return false;
 
             // Some concerts are multiple days, compress them into one channel to avoid confusion
             const noDupes = [];
             let lastChannel: ConcertChannel = chans[0];
-            for (let i = 1; i < chans.length - 1; i++) {
-                if (chans[i].channelName === lastChannel.channelName) {
-                    lastChannel.addConcertsFrom(chans[i]);
+
+            for (const chan of chans) {
+                if (lastChannel.venueId === chan.venueId) {
+                    lastChannel.addConcertsFrom(chan);
                 } else {
                     noDupes.push(lastChannel);
-                    lastChannel = chans[i];
+                    lastChannel = chan;
                 }
             }
+
             noDupes.push(lastChannel);
 
             this.concertChannels = noDupes;
@@ -128,16 +150,10 @@ class ConcertChannelManager {
 
     async checkChannels(): Promise<boolean> {
         try {
-            // this.concertChannels = [];
-            if (!this.#forumChannel) {
-                console.log(`[Concert Channels] Forum channel not found`);
-                return false;
-            }
-            const channelsCollection = await this.#forumChannel.threads.fetchActive();
-            const threads = [...channelsCollection.threads.values()];
-
             // Channels in JSON list that don't have a channel
-            const toAdd = this.concertChannels.filter((c) => !threads.some((c2) => c.channelName === c2.name));
+            const existingChannelIds = await prisma.concert.findMany({ select: { id: true, channelId: true, roleId: true, warnedForDeletion: true } });
+
+            const toAdd = this.concertChannels.filter((c) => !existingChannelIds.some((c2) => c2.id === c.id));
 
             console.log(`[Concert Channels] Adding ${toAdd.length} channels`);
 
@@ -146,12 +162,15 @@ class ConcertChannelManager {
             }
 
             // Channels that exist, but are no longer in the JSON list
-            const toRemove = threads.filter((c) => !this.concertChannels.some((c2) => c2.channelName === c.name));
+            const toRemove = existingChannelIds.filter((c) => !this.concertChannels.some((c2) => c2.id === c.id));
 
             console.log(`[Concert Channels] Removing ${toAdd.length} channels`);
 
             for (const c of toRemove) {
-                await this.#unregisterConcert(c);
+                const channel = await this.guild.channels.fetch(c.channelId);
+                const role = await this.guild.roles.fetch(c.roleId);
+                if (!channel || !role || !channel.isThread()) continue;
+                await this.#unregisterConcert(channel, role, c.warnedForDeletion);
             }
 
             console.log(`[Concert Channels] Add ${toAdd.length} channels and removed ${toRemove.length} channels`);
@@ -174,33 +193,46 @@ class ConcertChannelManager {
             return;
         }
 
-        console.log(`[Concert Channels] Registering ${toAdd.channelName}`);
+        console.log(`[Concert Channels] Registering ${toAdd.venueId}`);
         await this.guild.roles.create({
-            name: toAdd.channelName,
+            name: toAdd.roleName,
             color: ROLE_HEX,
             position: referenceRole.position + 1
         });
 
-        const dates = toAdd.concerts.map((c) => format(new Date(c.datetime), "d MMMM yyyy")).join(", ");
-        const topic = `${dates} | Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel! Feel free to discuss the concert, tickets, share pictures, etc. This channel will be archived 3 days after the concert ends.`
+        const initialMessage = `**Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel!**\n📍 ${toAdd.location}\nFeel free to discuss the concert, tickets, share pictures, etc. This channel will be archived 3 days after the concert ends.`
+
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setLabel("Tickets")
+                .setEmoji("🎟️")
+                .setStyle(ButtonStyle.Link)
+                .setURL(toAdd.concert.url)
+        )
+
+        if (toAdd.presaleUrl) {
+            actionRow.addComponents(
+                new ButtonBuilder()
+                    .setLabel("Presale")
+                    .setEmoji("⚡")
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(toAdd.presaleUrl)
+            );
+        }
 
         await this.#forumChannel.threads.create({
-            name: toAdd.channelName,
+            name: toAdd.threadName,
             autoArchiveDuration: 4320,
-            message: { content: topic },
+            message: { content: initialMessage, components: [actionRow] },
             reason: "Concert thread",
         });
     }
 
-    async #unregisterConcert(toArchive: ThreadChannel): Promise<boolean> {
-        const roles = await toArchive.guild.roles.fetch();
-        const role = roles.find((r) => r.name === toArchive.name && r.hexColor === ROLE_HEX);
-
-        if (!role) {
-            const devChannel = toArchive.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
-            await devChannel.send(
-                `${userMention(userIDs.me)} Unable to find associated role for ${toArchive} to delete. Not deleting.`
-            );
+    async #unregisterConcert(toArchive: ThreadChannel, role: Role, warnedAlready: boolean): Promise<boolean> {
+        // Send message to channel that it will be deleted in 3 days
+        if (!warnedAlready) {
+            await toArchive.send("# This channel (and the corresponding role) will be archived in 3 days. Please save any important information.");
+            await prisma.concert.update({ where: { id: toArchive.id }, data: { warnedForDeletion: true } });
             return false;
         }
 

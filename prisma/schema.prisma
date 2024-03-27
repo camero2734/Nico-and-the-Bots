@@ -441,3 +441,16 @@ model DistrictBattleGuess {
 
   @@unique([dailyDistrictBattleId, userId, isAttackVote])
 }
+
+model Concert {
+  id String @id
+
+  venue String
+
+  roleId    String
+  channelId String
+
+  warnedForDeletion Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}

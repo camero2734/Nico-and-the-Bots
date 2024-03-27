@@ -1,12 +1,16 @@
+import { ApplicationCommandOptionType } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
-import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { cron, songBattleCron } from "../../scheduled/songbattle";
+import { getConcertChannelManager } from "../../../Helpers/concert-channels";
 
 const command = new SlashCommand({
     description: "Test command",
-    options: []
+    options: [{
+        name: "num",
+        description: "Number of times to test",
+        required: true,
+        type: ApplicationCommandOptionType.Integer
+    }]
 });
 
 command.setHandler(async (ctx) => {
@@ -16,12 +20,12 @@ command.setHandler(async (ctx) => {
 
     await ctx.deferReply({ ephemeral: true });
 
-    const run = cron.nextRun();
-    if (!run) throw new CommandError("No next run found");
+    // Concert channels
+    const concertManager = getConcertChannelManager(ctx.guild);
+    await concertManager.fetchConcerts(ctx.opts.num);
+    await concertManager.checkChannels();
 
-    await ctx.editReply(`Next run: ${F.discordTimestamp(run, "relative")}`);
-
-    await songBattleCron();
+    await ctx.editReply("Done");
 });
 
 export default command;

@@ -1,15 +1,12 @@
 import { format } from "date-fns";
 import {
-    CategoryChannel,
     ChannelType,
-    Collection,
     Guild,
-    GuildChannel,
-    OverwriteData,
-    TextChannel
+    TextChannel,
+    ThreadChannel,
+    userMention
 } from "discord.js";
-import fetch from "node-fetch";
-import { categoryIDs, channelIDs, guildID, roles, userIDs } from "../Configuration/config";
+import { channelIDs, roles, userIDs } from "../Configuration/config";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
 const ROLE_HEX = "#ffc6d5";
@@ -50,9 +47,9 @@ class ConcertChannel {
     public channelName: string;
     public concerts: ConcertEntry[] = [];
     constructor(public concert: ConcertEntry, private guild: Guild) {
-        const { venue, title } = concert;
-        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/); // prettier-ignore
-        this.channelName = [s(title || venue.name), s(venue.city)].flat().filter(a => a).join("-"); // prettier-ignore
+        const { venue } = concert;
+        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/);
+        this.channelName = [s(this.name), s(venue.city)].flat().filter(a => a).join("-");
         this.concerts.push(concert);
     }
 
@@ -89,19 +86,22 @@ class ConcertChannel {
 
 class ConcertChannelManager {
     public concertChannels: ConcertChannel[] = [];
-    private concertCategory: CategoryChannel;
+    private forumChannel: TextChannel | undefined;
     constructor(private guild: Guild) {
-        this.concertCategory = guild.channels.cache.get(categoryIDs.concerts) as CategoryChannel;
+        const channel = guild.channels.cache.get(channelIDs.concertsForum);
+        if (channel?.type === ChannelType.GuildText) this.forumChannel = channel;
     }
 
-    async fetchConcerts(): Promise<boolean> {
+    async fetchConcerts(numToFetch: number): Promise<boolean> {
         try {
             const res = await fetch(CONCERT_URL);
 
             const json = (await res.json()) as ConcertEntry[];
             if (!json || !Array.isArray(json)) throw new Error("Not a valid array");
 
-            const chans = json.map((c) => new ConcertChannel(c, this.guild));
+
+
+            const chans = json.slice(0, numToFetch).map((c) => new ConcertChannel(c, this.guild));
             if (chans.length === 0) return false;
 
             // Some concerts are multiple days, compress them into one channel to avoid confusion
@@ -119,6 +119,8 @@ class ConcertChannelManager {
 
             this.concertChannels = noDupes;
 
+            console.log(this.concertChannels, /CHANS/);
+
             return true;
         } catch (e) {
             console.warn(`Failed to fetch concerts`, e);
@@ -129,23 +131,22 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
-            if (!this.concertCategory) return false;
-            const channelsCollection = this.concertCategory.children.cache as Collection<string, GuildChannel>;
-            channelsCollection.delete(channelIDs.tourhelp);
-            const channels = [...channelsCollection.values()];
+            if (!this.forumChannel) return false;
+            const channelsCollection = await this.forumChannel.threads.fetchActive();
+            const threads = [...channelsCollection.threads.values()];
 
             // Channels in JSON list that don't have a channel
-            const toAdd = this.concertChannels.filter((c) => !channels.some((c2) => c.channelName === c2.name));
+            const toAdd = this.concertChannels.filter((c) => !threads.some((c2) => c.channelName === c2.name));
 
             for (const t of toAdd) {
-                await this.#addChannel(t);
+                await this.#registerConcert(t);
             }
 
             // Channels that exist, but are no longer in the JSON list
-            const toRemove = channels.filter((c) => !this.concertChannels.some((c2) => c2.channelName === c.name));
+            const toRemove = threads.filter((c) => !this.concertChannels.some((c2) => c2.channelName === c.name));
 
             for (const c of toRemove) {
-                await this.#deleteChannel(c);
+                await this.#unregisterConcert(c);
             }
 
             console.log(`[Concert Channels] Add ${toAdd.length} channels and removed ${toRemove.length} channels`);
@@ -157,74 +158,52 @@ class ConcertChannelManager {
         }
     }
 
-    async #addChannel(toAdd: ConcertChannel): Promise<void> {
+    async #registerConcert(toAdd: ConcertChannel): Promise<void> {
         const referenceRole = await this.guild.roles.fetch(roles.topfeed.divider);
         if (!referenceRole) return;
 
-        const role = await this.guild.roles.create({
+        const forumChannel = await this.guild.channels.fetch(channelIDs.concertsForum);
+        if (forumChannel?.type !== ChannelType.GuildText) return;
+
+        await this.guild.roles.create({
             name: toAdd.channelName,
             color: ROLE_HEX,
             position: referenceRole.position + 1
         });
 
-        const permissionOverwrites: OverwriteData[] = [
-            {
-                deny: ["ViewChannel"],
-                id: guildID
-            },
-            {
-                allow: ["ViewChannel", "SendMessages"],
-                id: roles.staff // Staff
-            },
-            {
-                allow: ["ViewChannel"],
-                id: role.id // The role that was just created
-            },
-            {
-                allow: ["ViewChannel", "SendMessages", "ManageChannels"],
-                id: roles.bots // Bots
-            },
-            {
-                deny: ["SendMessages"],
-                id: roles.muted // Muted
-            }
-        ];
-
         const dates = toAdd.concerts.map((c) => format(new Date(c.datetime), "d MMMM yyyy")).join(", ");
-        // prettier-ignore
-        const topic = `${dates} | Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel! Feel free to discuss the concert, tickets, share pictures, etc. This channel will be deleted 3 days after the concert ends.`
+        const topic = `${dates} | Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel! Feel free to discuss the concert, tickets, share pictures, etc. This channel will be archived 3 days after the concert ends.`
 
-        const channel = await this.guild.channels.create({
+
+        await forumChannel.threads.create({
             name: toAdd.channelName,
-            permissionOverwrites,
-            type: ChannelType.GuildText,
-            topic
+            autoArchiveDuration: 4320,
+            startMessage: topic,
+            reason: "Concert thread",
         });
-        await channel.setParent(categoryIDs.concerts, { lockPermissions: false });
     }
 
-    async #deleteChannel(toDelete: GuildChannel): Promise<boolean> {
-        const roles = await toDelete.guild.roles.fetch();
-        const role = roles.find((r) => r.name === toDelete.name && r.hexColor === ROLE_HEX);
+    async #unregisterConcert(toArchive: ThreadChannel): Promise<boolean> {
+        const roles = await toArchive.guild.roles.fetch();
+        const role = roles.find((r) => r.name === toArchive.name && r.hexColor === ROLE_HEX);
 
         if (!role) {
-            const devChannel = toDelete.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
+            const devChannel = toArchive.guild.channels.cache.get(channelIDs.bottest) as TextChannel;
             await devChannel.send(
-                `<@${userIDs.me}> Unable to find associated role for ${toDelete} to delete. Not deleting.`
+                `${userMention(userIDs.me)} Unable to find associated role for ${toArchive} to delete. Not deleting.`
             );
             return false;
         }
 
-        if (toDelete.parentId !== categoryIDs.concerts) return false;
+        if (toArchive.parentId !== channelIDs.concertsForum) return false;
 
-        await toDelete.delete();
+        await toArchive.setArchived(true, "Concert ended three days ago");
         await role.delete();
         return true;
     }
 }
 
 let concertChannelManager: ConcertChannelManager;
-
 export const getConcertChannelManager = function (guild: Guild) {
     if (!concertChannelManager) concertChannelManager = new ConcertChannelManager(guild);
 

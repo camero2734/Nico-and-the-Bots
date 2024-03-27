@@ -78,6 +78,7 @@ export const channelIDs = <const>{
     tourhelp: "857258422293757972",
     cliqueartfriday: "689548218828455967",
     artevents: "940391413194047558",
+    concertsForum: "1222170861344133160",
     logs: {
         ban: "689685441485733952",
         staffCommands: "488076541499277333",
@@ -108,7 +109,6 @@ export const channelIDs = <const>{
 
 export const categoryIDs = <const>{
     chilltown: "625524136785215498",
-    concerts: "857342116005937212"
 };
 
 export const userIDs = <const>{

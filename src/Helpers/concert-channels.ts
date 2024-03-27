@@ -11,6 +11,7 @@ import {
 } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import { prisma } from "./prisma-init";
+import F from "./funcs";
 
 const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
 const ROLE_HEX = "#ffc6d5";
@@ -73,13 +74,7 @@ class ConcertChannel {
     }
 
     get country() {
-        return (
-            this.concert?.venue?.country
-                .toLowerCase()
-                .replace(/ +/g, "-")
-                .replace(/[^\w-]/g, "")
-                .substring(0, 32) || "other"
-        );
+        return this.concert?.venue?.country;
     }
 
     get datesFormatted() {
@@ -91,7 +86,7 @@ class ConcertChannel {
     }
 
     get threadName() {
-        return `${this.concert.venue.name} - ${this.location} - ${this.datesFormatted}`
+        return `${this.concert.venue.name} - ${this.flagEmoji} ${this.location}, ${this.country} - ${this.datesFormatted}`
     }
 
     get roleName() {
@@ -102,6 +97,13 @@ class ConcertChannel {
         return this.concert.offers.find((o) => o.type === "Presale")?.url;
     }
 
+    get flagEmoji() {
+        const code = F.countryNameToCode(this.country);
+        if (!code) return;
+
+        return F.isoCountryToEmoji(code);
+    }
+
     async threadTags(forumChannel: ForumChannel) {
         const tags = [];
         const hasMultipleDates = this.concerts.length > 1;
@@ -110,7 +112,7 @@ class ConcertChannel {
             if (tag) tags.push(tag);
         }
 
-        const country = this.concert?.venue?.country?.toLowerCase();
+        const country = this.country?.toLowerCase();
         if (country) {
             const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes(country));
             if (tag) tags.push(tag);

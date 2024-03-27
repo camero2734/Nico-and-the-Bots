@@ -94,6 +94,7 @@ export const albums = [
             { name: "Guns for Hands" },
             { name: "Trees" },
             { name: "Truce" },
+            { name: "Lovely (Bonus Track Version)" }
         ]
     },
     {
@@ -218,15 +219,7 @@ export enum Result {
     Tie
 }
 
-export async function determineNextMatchup(): Promise<{
-    song1: SongContender;
-    song2: SongContender;
-    album1: Album;
-    album2: Album;
-    nextBattleNumber: number;
-    result?: Result;
-    totalMatches: number;
-}> {
+export async function calculateHistory() {
     const previousBattlesRaw = await prisma.poll.findMany({
         where: {
             name: { startsWith: PREFIX }
@@ -284,6 +277,21 @@ export async function determineNextMatchup(): Promise<{
     // This approximates a tournament bracket w/o having to store the entire bracket
     const eligibleSongs = Array.from(histories.entries()).filter(([_, h]) => !h.eliminated);
     const sorted = F.shuffle(eligibleSongs).sort((a, b) => a[1].rounds - b[1].rounds);
+
+    return { histories, sorted, numTies, previousBattlesRaw, result };
+}
+
+export async function determineNextMatchup(): Promise<{
+    song1: SongContender;
+    song2: SongContender;
+    album1: Album;
+    album2: Album;
+    nextBattleNumber: number;
+    result?: Result;
+    totalMatches: number;
+}> {
+    const { sorted, histories, numTies, previousBattlesRaw, result } = await calculateHistory();
+
     const [song1Id, song2Id] = sorted.slice(0, 2).map(s => s[0]);
 
     const { song: song1, album: album1 } = fromSongId(song1Id);

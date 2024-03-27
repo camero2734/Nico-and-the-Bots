@@ -5,6 +5,8 @@ import { BaseMessageOptions, Guild, GuildMember, Message, Role, Snowflake, TextC
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import { channelIDs, roles } from "../Configuration/config";
+import { Faker, en } from "@faker-js/faker";
+import { BishopType } from "@prisma/client";
 /**
  * Just some commonly used short functions
  */
@@ -25,11 +27,12 @@ const timestampTypes = <const>{
 };
 
 const F = {
+    emoji: (id: string) => `<:emoji:${id}>`,
     titleCase: (str: string) => str.split(" ").map(a => `${a[0].toUpperCase()}${a.slice(1).toLowerCase()}`).join(" "), // prettier-ignore
     lerp: (n: number, low: number, high: number): number => n * (high - low) + low,
     unlerp: (n: number, low: number, high: number): number => (n - low) / (high - low),
     // the default Object.entries function does not retain type information
-    entries: <T extends Record<string, T[keyof T]>>(obj: T): [keyof T, T[keyof T]][] =>
+    entries: <T extends { [K in any]: any }>(obj: T): [keyof T, T[keyof T]][] =>
         Object.entries(obj) as [keyof T, T[keyof T]][],
 
     keys: <T extends Record<string, unknown>>(obj: T): (keyof T)[] => Object.keys(obj) as (keyof T)[],
@@ -196,11 +199,11 @@ const F = {
     capitalize(text: string): string {
         return text.charAt(0).toUpperCase() + text.slice(1);
     },
-    userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role } | undefined {
+    userBishop(member: GuildMember): { name: keyof typeof roles["districts"], role: Role, bishop: BishopType } | undefined {
         const keys = F.entries(roles.districts);
         for (const [bishop, roleId] of keys) {
             const role = member.roles.cache.get(roleId);
-            if (role) return { name: bishop, role };
+            if (role) return { name: bishop, role, bishop: F.capitalize(bishop) as BishopType };
         }
     },
     intColorToRGB(int: number): [number, number, number] {
@@ -208,6 +211,14 @@ const F = {
         const g = (int >> 8) & 255;
         const b = int & 255;
         return [r, g, b];
+    },
+    isolatedFaker(seed: number | string) {
+        const faker = new Faker({ locale: [en] });
+
+        const fakerSeed = typeof seed === "string" ? F.hashToInt(seed) : seed;
+        faker.seed(fakerSeed);
+
+        return faker;
     }
 };
 

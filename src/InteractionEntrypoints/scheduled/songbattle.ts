@@ -1,4 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { Cron } from "croner";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
@@ -8,11 +9,39 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { IMAGE_SIZE, PREFIX, Result, buttonColors, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
-import { Cron } from "croner";
 
 const entrypoint = new ManualEntrypoint();
 
-const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+
+const SLOWMODE_SECONDS = 30;
+
+// Enable slowmode in the old thread after a while
+Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
+    // Get song battle channel
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+    // Get the latest poll
+    const poll = await prisma.poll.findMany({
+        where: {
+            name: { startsWith: PREFIX },
+        },
+        orderBy: { id: "desc" },
+        take: 2,
+    });
+
+    if (!poll) return;
+
+    const [_, previousPoll] = poll;
+
+    const message = await channel.messages.fetch(previousPoll.options[2]);
+
+    if (message) {
+        const thread = message.thread;
+        if (thread) await thread.setRateLimitPerUser(SLOWMODE_SECONDS);
+    }
+});
 
 export async function songBattleCron() {
     // Get song battle channel

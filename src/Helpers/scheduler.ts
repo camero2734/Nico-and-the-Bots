@@ -3,16 +3,10 @@
  */
 
 import {
-    addMilliseconds,
-    compareAsc,
     differenceInHours,
-    format,
-    hoursToMilliseconds,
     secondsToMilliseconds,
-    startOfDay,
     subDays
 } from "date-fns";
-import { isBefore } from "date-fns/fp";
 import {
     ChannelType,
     Client,
@@ -25,8 +19,7 @@ import {
     VoiceChannel
 } from "discord.js";
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import SeedRandom from "seed-random";
-import { dropEmojiGuildId, guildID, roles } from "../Configuration/config";
+import { guildID, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
@@ -68,9 +61,6 @@ export default async function (client: Client): Promise<void> {
     }
 
     async function every60Seconds() {
-        await safeCheck(checkDropTrigger());
-        await safeCheck(deleteOldDrops(guild));
-
         await F.wait(secondsToMilliseconds(60));
         every60Seconds();
     }
@@ -240,51 +230,3 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
     }
 }
 
-async function deleteOldDrops(guild: Guild): Promise<void> {
-    // Delete drops from yesterday
-    const cutoff = startOfDay(new Date());
-    const { count: deletedCount } = await prisma.randomDrop.deleteMany({ where: { createdAt: { lte: cutoff } } });
-
-    if (deletedCount > 0) {
-        // Delete previous day emojis
-        const emojiGuild = await guild.client.guilds.fetch(dropEmojiGuildId);
-        const emojis = await emojiGuild.emojis.fetch();
-        for (const emoji of emojis.values()) {
-            if (emoji.name?.startsWith("drop")) {
-                await emoji.delete();
-                await F.wait(750);
-            }
-        }
-    }
-}
-
-async function checkDropTrigger(): Promise<void> {
-    const NUM_DROPS = 3;
-
-    const now = new Date();
-    const epoch = startOfDay(now);
-    const rand = SeedRandom(`${secrets.randomSeedPrefix}${epoch}`);
-
-    const timeOffset = () => rand() * hoursToMilliseconds(16) + hoursToMilliseconds(6); // 06:00 - 22:00 CT
-
-    const todaysDropsOffsets = F.indexArray(NUM_DROPS).map(timeOffset);
-    const todaysDrops = todaysDropsOffsets.map((ms) => addMilliseconds(epoch, ms)).sort(compareAsc);
-
-    const expectedPreviousDrops = todaysDrops.filter(isBefore(now)).length;
-
-    const actualPreviousDrops = await prisma.randomDrop.count({
-        where: {
-            createdAt: {
-                lte: now,
-                gte: epoch
-            }
-        }
-    });
-
-    if (actualPreviousDrops >= NUM_DROPS) return;
-
-    if (actualPreviousDrops < expectedPreviousDrops) {
-        console.log(todaysDrops.map((d) => format(d, "d MMMM yyyy HH:mm:ss")));
-        console.log({ expectedPreviousDrops, actualPreviousDrops });
-    }
-}

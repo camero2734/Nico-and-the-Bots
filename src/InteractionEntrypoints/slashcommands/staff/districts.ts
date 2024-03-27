@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, roleMention } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -28,7 +28,7 @@ command.setHandler(async (ctx) => {
         embed.addFields([
             {
                 name: name,
-                value: population.toString(),
+                value: `${roleMention(role.id)}\n${population}`,
                 inline: true
             }
         ])

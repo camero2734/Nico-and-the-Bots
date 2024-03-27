@@ -4,8 +4,7 @@ USER root
 WORKDIR /code
 
 # System dependencies
-RUN apt update
-RUN apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
+RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
 
 # NPM packages
 COPY bun.lockb package.json ./

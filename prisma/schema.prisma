@@ -4,7 +4,7 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model DailyBox {
@@ -33,32 +33,32 @@ model User {
   lastCreationUpload DateTime?
 
   // Relations
-  dailyBox                 DailyBox?
-  lastFM                   UserLastFM?
-  verifiedQuiz             VerifiedQuiz?
-  tags                     Tag[]
-  messageHistory           MessageHistory[]
-  perks                    Perk[]
-  givenGolds               Gold[]                    @relation("Gold_fromUser")
-  golds                    Gold[]                    @relation("Gold_toUser")
-  polls                    Poll[]
-  votesCasted              Vote[]
-  colorRoles               ColorRole[]
-  songRoles                SongRole[]
-  warnings                 Warning[]                 @relation("Warning_warnedUser")
-  issuedWarnings           Warning[]                 @relation("Warning_issuedByUser")
-  mutes                    Mute[]                    @relation("Mute_mutedUser")
-  issuedMutes              Mute[]                    @relation("Mute_issuedByUser")
-  userMessageReports       UserMessageReport[]       @relation("UMR_reportedUser")
-  issuedUserMessageReports UserMessageReport[]       @relation("UMR_reportedByUser")
-  submittedInterviews      SubmittedInterview[]
-  reminders                Reminder[]
-  verifiedQuizAnswers      VerifiedQuizAnswer[]
-  violationNotices         ViolationNotice[]
-  commandsUsed             CommandUsed[]
-  badges                   Badge[]
-  firebreatherApplications FirebreatherApplication[]
-  randomDropGuesses        RandomDropGuess[]
+  dailyBox                   DailyBox?
+  lastFM                     UserLastFM?
+  verifiedQuiz               VerifiedQuiz?
+  tags                       Tag[]
+  messageHistory             MessageHistory[]
+  perks                      Perk[]
+  givenGolds                 Gold[]                    @relation("Gold_fromUser")
+  golds                      Gold[]                    @relation("Gold_toUser")
+  polls                      Poll[]
+  votesCasted                Vote[]
+  colorRoles                 ColorRole[]
+  songRoles                  SongRole[]
+  warnings                   Warning[]                 @relation("Warning_warnedUser")
+  issuedWarnings             Warning[]                 @relation("Warning_issuedByUser")
+  mutes                      Mute[]                    @relation("Mute_mutedUser")
+  issuedMutes                Mute[]                    @relation("Mute_issuedByUser")
+  userMessageReports         UserMessageReport[]       @relation("UMR_reportedUser")
+  issuedUserMessageReports   UserMessageReport[]       @relation("UMR_reportedByUser")
+  submittedInterviews        SubmittedInterview[]
+  reminders                  Reminder[]
+  verifiedQuizAnswers        VerifiedQuizAnswer[]
+  violationNotices           ViolationNotice[]
+  commandsUsed               CommandUsed[]
+  badges                     Badge[]
+  firebreatherApplications   FirebreatherApplication[]
+  dailyDistrictBattleGuesses DistrictBattleGuess[]
 }
 
 model Tag {
@@ -232,7 +232,7 @@ model VerifiedQuiz {
 }
 
 model VerifiedQuizAnswer {
-  id         Int @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   questionId String
 
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -394,25 +394,50 @@ model UserMessageReport {
   @@unique([messageUrl, reportedByUserId])
 }
 
-model RandomDrop {
-  id String @id @default(uuid())
+model District {
+  name    BishopType @id @unique
+  credits Int
 
   createdAt DateTime @default(now())
-  prize     Json
-
-  guesses           RandomDropGuess[]
-  maxGuessesPerUser Int
-  winningIndices    Int[]
+  updatedAt DateTime @updatedAt
 }
 
-model RandomDropGuess {
+model DistrictBattleGroup {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  battles DistrictBattle[]
+}
+
+model DistrictBattle {
+  id String @id @default(uuid())
+
+  attacker BishopType
+  defender BishopType
+
+  battleGroup   DistrictBattleGroup @relation(fields: [battleGroupId], references: [id], onDelete: Cascade)
+  battleGroupId Int
+
+  credits Int
+  guesses DistrictBattleGuess[]
+
+  @@unique([battleGroupId, attacker])
+  @@unique([battleGroupId, defender])
+}
+
+model DistrictBattleGuess {
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  randomDrop   RandomDrop? @relation(fields: [randomDropId], references: [id], onDelete: Cascade)
-  randomDropId String
+  dailyDistrictBattle   DistrictBattle @relation(fields: [dailyDistrictBattleId], references: [id], onDelete: Cascade)
+  dailyDistrictBattleId String
 
-  idx Int
+  quarter Int
 
-  @@unique([randomDropId, idx])
+  isAttackVote Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([dailyDistrictBattleId, userId, isAttackVote])
 }

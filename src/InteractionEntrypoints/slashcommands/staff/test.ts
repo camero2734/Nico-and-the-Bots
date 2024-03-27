@@ -1,46 +1,27 @@
-import { ViolationType } from "@prisma/client";
 import { userIDs } from "../../../Configuration/config";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { cron, songBattleCron } from "../../scheduled/songbattle";
 
 const command = new SlashCommand({
     description: "Test command",
     options: []
 });
 
-// const MODAL_FIELDS = <const>{
-//     TV_FIELD: "tv_field"
-// };
-
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    // const embed = new EmbedBuilder().setDescription("i don't remember discord.js at all lol");
-    // await ctx.send({ embeds: [embed] });
+    // await districtCron();
 
-    const member = await ctx.guild.members.fetch(userIDs.myAlt);
+    await ctx.deferReply({ ephemeral: true });
 
-    await sendViolationNotice(member, { violation: ViolationType.ConspiracyAndTreason, issuingBishop: "Nico" });
+    const run = cron.nextRun();
+    if (!run) throw new CommandError("No next run found");
 
-    // const modal = new ModalBuilder().setTitle("My Awesome Form").setCustomId(genModalId({}));
+    await ctx.editReply(`Next run: ${F.discordTimestamp(run, "relative")}`);
 
-    // const inputComponent = new TextInputBuilder()
-    //     .setCustomId(`${MODAL_FIELDS.TV_FIELD}`)
-    //     .setLabel("Say something")
-    //     .setStyle(TextInputStyle.Short);
-
-    // modal.setComponents([new ActionRowBuilder<TextInputBuilder>().addComponents([inputComponent])]);
-
-    // ctx.showModal(modal);
+    await songBattleCron();
 });
-
-// const genModalId = command.addInteractionListener("myForm", [], async (ctx) => {
-//     if (!ctx.isModalSubmit()) return;
-
-//     const inputField = ctx.fields.getTextInputValue(MODAL_FIELDS.TV_FIELD);
-
-//     console.log("Got a response from the modal!");
-//     ctx.reply(`Thank you for saying ${inputField}`);
-// });
 
 export default command;

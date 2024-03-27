@@ -8,7 +8,7 @@ import { channelIDs, roles } from "../Configuration/config";
 import { Faker, en } from "@faker-js/faker";
 import { BishopType } from "@prisma/client";
 import countries from 'iso-3166-1-alpha-2';
-import { TCountryCode, getCountryData } from 'countries-list';
+import { TCountryCode, continents, getCountryData } from 'countries-list';
 /**
  * Just some commonly used short functions
  */
@@ -227,7 +227,8 @@ const F = {
         return String.fromCodePoint(...codePoints);
     },
     isoCountryToContinent(country: string): string {
-        return getCountryData(country as TCountryCode).continent;
+        const code = getCountryData(country as TCountryCode).continent;
+        return continents[code];
     },
     countryNameToCode(name: string) {
         return countries.getCode(name);

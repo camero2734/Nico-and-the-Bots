@@ -119,9 +119,9 @@ class ConcertChannel {
             if (tag) tags.push(tag);
         }
 
-        const country = this.country?.toLowerCase();
-        if (country) {
-            const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes(country));
+        const continent = this.continent?.toLowerCase();
+        if (continent) {
+            const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes(continent));
             if (tag) tags.push(tag);
         }
 

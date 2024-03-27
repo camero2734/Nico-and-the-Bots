@@ -86,20 +86,18 @@ class ConcertChannel {
 
 class ConcertChannelManager {
     public concertChannels: ConcertChannel[] = [];
-    private forumChannel: TextChannel | undefined;
-    constructor(private guild: Guild) {
-        const channel = guild.channels.cache.get(channelIDs.concertsForum);
-        if (channel?.type === ChannelType.GuildText) this.forumChannel = channel;
-    }
+    constructor(private guild: Guild) { }
 
-    async fetchConcerts(numToFetch: number): Promise<boolean> {
+    #forumChannel: TextChannel | undefined;
+
+    async initialize(numToFetch: number): Promise<boolean> {
+        this.#forumChannel = await this.guild.channels.fetch(channelIDs.concertsForum) as TextChannel;
+
         try {
             const res = await fetch(CONCERT_URL);
 
             const json = (await res.json()) as ConcertEntry[];
             if (!json || !Array.isArray(json)) throw new Error("Not a valid array");
-
-
 
             const chans = json.slice(0, numToFetch).map((c) => new ConcertChannel(c, this.guild));
             if (chans.length === 0) return false;
@@ -131,11 +129,11 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
-            if (!this.forumChannel) {
+            if (!this.#forumChannel) {
                 console.log(`[Concert Channels] Forum channel not found`);
                 return false;
             }
-            const channelsCollection = await this.forumChannel.threads.fetchActive();
+            const channelsCollection = await this.#forumChannel.threads.fetchActive();
             const threads = [...channelsCollection.threads.values()];
 
             // Channels in JSON list that don't have a channel

@@ -22,7 +22,7 @@ command.setHandler(async (ctx) => {
 
     // Concert channels
     const concertManager = getConcertChannelManager(ctx.guild);
-    await concertManager.fetchConcerts(ctx.opts.num);
+    await concertManager.initialize(ctx.opts.num);
     await concertManager.checkChannels();
 
     await ctx.editReply("Done");

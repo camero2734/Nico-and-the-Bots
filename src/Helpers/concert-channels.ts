@@ -119,7 +119,7 @@ class ConcertChannelManager {
 
             this.concertChannels = noDupes;
 
-            console.log(this.concertChannels, /CHANS/);
+            console.log(this.concertChannels.map(x => x.concert), /CHANS/);
 
             return true;
         } catch (e) {
@@ -131,12 +131,17 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // this.concertChannels = [];
-            if (!this.forumChannel) return false;
+            if (!this.forumChannel) {
+                console.log(`[Concert Channels] Forum channel not found`);
+                return false;
+            }
             const channelsCollection = await this.forumChannel.threads.fetchActive();
             const threads = [...channelsCollection.threads.values()];
 
             // Channels in JSON list that don't have a channel
             const toAdd = this.concertChannels.filter((c) => !threads.some((c2) => c.channelName === c2.name));
+
+            console.log(`[Concert Channels] Adding ${toAdd.length} channels`);
 
             for (const t of toAdd) {
                 await this.#registerConcert(t);
@@ -144,6 +149,8 @@ class ConcertChannelManager {
 
             // Channels that exist, but are no longer in the JSON list
             const toRemove = threads.filter((c) => !this.concertChannels.some((c2) => c2.channelName === c.name));
+
+            console.log(`[Concert Channels] Removing ${toAdd.length} channels`);
 
             for (const c of toRemove) {
                 await this.#unregisterConcert(c);

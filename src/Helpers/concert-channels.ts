@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import {
+    ForumChannel,
     Guild,
-    MessageResolvable,
     TextChannel,
     ThreadChannel,
     userMention
@@ -88,10 +88,10 @@ class ConcertChannelManager {
     public concertChannels: ConcertChannel[] = [];
     constructor(private guild: Guild) { }
 
-    #forumChannel: TextChannel | undefined;
+    #forumChannel: ForumChannel | undefined;
 
     async initialize(numToFetch: number): Promise<boolean> {
-        this.#forumChannel = await this.guild.channels.fetch(channelIDs.concertsForum) as TextChannel;
+        this.#forumChannel = await this.guild.channels.fetch(channelIDs.concertsForum) as ForumChannel;
 
         try {
             const res = await fetch(CONCERT_URL);
@@ -187,7 +187,7 @@ class ConcertChannelManager {
         await this.#forumChannel.threads.create({
             name: toAdd.channelName,
             autoArchiveDuration: 4320,
-            startMessage: { content: topic } as MessageResolvable,
+            message: { content: topic },
             reason: "Concert thread",
         });
     }

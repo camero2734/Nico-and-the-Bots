@@ -101,6 +101,23 @@ class ConcertChannel {
     get presaleUrl() {
         return this.concert.offers.find((o) => o.type === "Presale")?.url;
     }
+
+    async threadTags(forumChannel: ForumChannel) {
+        const tags = [];
+        const hasMultipleDates = this.concerts.length > 1;
+        if (hasMultipleDates) {
+            const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes("multiple shows"));
+            if (tag) tags.push(tag);
+        }
+
+        const country = this.concert?.venue?.country?.toLowerCase();
+        if (country) {
+            const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes(country));
+            if (tag) tags.push(tag);
+        }
+
+        return tags;
+    }
 }
 
 class ConcertChannelManager {
@@ -200,7 +217,7 @@ class ConcertChannelManager {
             position: referenceRole.position + 1
         });
 
-        const initialMessage = `**Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel!**\n📍 ${toAdd.location}\nFeel free to discuss the concert, tickets, share pictures, etc. This channel will be archived 3 days after the concert ends.`
+        const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}\nFeel free to discuss the concert, tickets, share pictures, etc.\n\n:warning: This channel will be archived 3 days after the concert ends.`
 
         const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
@@ -220,11 +237,14 @@ class ConcertChannelManager {
             );
         }
 
-        await this.#forumChannel.threads.create({
+        const forumPost = await this.#forumChannel.threads.create({
             name: toAdd.threadName,
             message: { content: initialMessage, components: [actionRow] },
             reason: "Concert thread",
         });
+
+        const threadTags = await toAdd.threadTags(this.#forumChannel);
+        if (threadTags) await forumPost.setAppliedTags(threadTags.map(t => t.id));
     }
 
     async #unregisterConcert(toArchive: ThreadChannel, role: Role, warnedAt: Date | null): Promise<boolean> {

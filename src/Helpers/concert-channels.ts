@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import {
-    ChannelType,
     Guild,
+    MessageResolvable,
     TextChannel,
     ThreadChannel,
     userMention
@@ -165,11 +165,16 @@ class ConcertChannelManager {
 
     async #registerConcert(toAdd: ConcertChannel): Promise<void> {
         const referenceRole = await this.guild.roles.fetch(roles.topfeed.divider);
-        if (!referenceRole) return;
+        if (!referenceRole) {
+            console.log(`[Concert Channels] Reference role not found`);
+            return;
+        }
+        if (!this.#forumChannel) {
+            console.log(`[Concert Channels] Forum channel not found`);
+            return;
+        }
 
-        const forumChannel = await this.guild.channels.fetch(channelIDs.concertsForum);
-        if (forumChannel?.type !== ChannelType.GuildText) return;
-
+        console.log(`[Concert Channels] Registering ${toAdd.channelName}`);
         await this.guild.roles.create({
             name: toAdd.channelName,
             color: ROLE_HEX,
@@ -179,11 +184,10 @@ class ConcertChannelManager {
         const dates = toAdd.concerts.map((c) => format(new Date(c.datetime), "d MMMM yyyy")).join(", ");
         const topic = `${dates} | Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert channel! Feel free to discuss the concert, tickets, share pictures, etc. This channel will be archived 3 days after the concert ends.`
 
-
-        await forumChannel.threads.create({
+        await this.#forumChannel.threads.create({
             name: toAdd.channelName,
             autoArchiveDuration: 4320,
-            startMessage: topic,
+            startMessage: { content: topic } as MessageResolvable,
             reason: "Concert thread",
         });
     }

@@ -12,7 +12,7 @@ import { IMAGE_SIZE, PREFIX, Result, buttonColors, determineNextMatchup, embedFo
 
 const entrypoint = new ManualEntrypoint();
 
-const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 const SLOWMODE_SECONDS = 30;
 

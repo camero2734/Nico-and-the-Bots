@@ -376,7 +376,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
         await dm.send({ embeds: [embed], files: [attachment] });
     }
 
-    await chan.delete();
+    // await chan.delete();
 }
 
 function fixEmojis(text: string) {

@@ -7,6 +7,8 @@ import * as R from "ramda";
 import { channelIDs, roles } from "../Configuration/config";
 import { Faker, en } from "@faker-js/faker";
 import { BishopType } from "@prisma/client";
+import countries from 'iso-3166-1-alpha-2';
+import { TCountryCode, continents, getCountryData } from 'countries-list';
 /**
  * Just some commonly used short functions
  */
@@ -219,6 +221,17 @@ const F = {
         faker.seed(fakerSeed);
 
         return faker;
+    },
+    isoCountryToEmoji(country: string): string {
+        const codePoints = country.toUpperCase().split("").map((c) => c.codePointAt(0)! - 65 + 0x1F1E6);
+        return String.fromCodePoint(...codePoints);
+    },
+    isoCountryToContinent(country: string): string {
+        const code = getCountryData(country as TCountryCode).continent;
+        return continents[code];
+    },
+    countryNameToCode(name: string) {
+        return countries.getCode(name);
     }
 };
 

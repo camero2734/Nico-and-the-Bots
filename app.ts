@@ -8,7 +8,6 @@ import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
-import { getConcertChannelManager } from "./src/Helpers/concert-channels";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
@@ -190,7 +189,7 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 async function setup() {
-    const guild = await client.guilds.fetch(guildID);
+    // const guild = await client.guilds.fetch(guildID);
 
     GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
     GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
@@ -200,10 +199,10 @@ async function setup() {
     topfeedBot.registerChecks();
     logEntrypointEvents();
 
-    // Concert channels
-    const concertManager = getConcertChannelManager(guild);
-    await concertManager.fetchConcerts();
-    await concertManager.checkChannels();
+    // // Concert channels
+    // const concertManager = getConcertChannelManager(guild);
+    // await concertManager.fetchConcerts();
+    // await concertManager.checkChannels();
 }
 
 function startPingServer() {

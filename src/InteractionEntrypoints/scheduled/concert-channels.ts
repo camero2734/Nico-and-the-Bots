@@ -202,9 +202,16 @@ const genBtnId = entrypoint.addInteractionListener("getConcertRole", ["roleId"],
     }
 });
 
-export const concertChannelManager = new ConcertChannelManager(guild);
+let concertChannelManager: ConcertChannelManager;
+export const getConcertChannelManager = function (guild: Guild) {
+    if (!concertChannelManager) concertChannelManager = new ConcertChannelManager(guild);
+
+    return concertChannelManager;
+};
+
 
 // new Cron("0 0 0 * * *", async () => {
+//     if (!guild) return;
 //     await concertChannelManager.initialize();
 //     await concertChannelManager.checkChannels();
 // });

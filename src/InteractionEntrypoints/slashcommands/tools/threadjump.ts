@@ -24,12 +24,12 @@ command.setHandler(async (ctx) => {
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder()
-            .setLabel("Jump to thread")
+            .setLabel("Jump to message")
             .setURL(msg.url)
             .setStyle(ButtonStyle.Link)
     );
 
-    await ctx.editReply({ content: "Here's the link to the thread's first message", components: [actionRow] });
+    await ctx.editReply({ content: "Here's the link to the first message in this thread", components: [actionRow] });
 });
 
 export default command;

@@ -34,7 +34,8 @@ command.setHandler(async (ctx) => {
         const concertChannelManager = getConcertChannelManager(ctx.guild);
         await concertChannelManager.initialize();
         await concertChannelManager.checkChannels();
-    } {
+        await ctx.editReply("Done checking concert channels");
+    } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 
         await ctx.editReply(msg);

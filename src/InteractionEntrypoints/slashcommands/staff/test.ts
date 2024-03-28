@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { getConcertChannelManager } from "../../scheduled/concert-channels";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -20,9 +21,6 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     // Concert channels
-    // const concertChannelManager = getConcertChannelManager(ctx.guild);
-    // await concertChannelManager.initialize(ctx.opts.num);
-    // await concertChannelManager.checkChannels();
 
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
@@ -32,7 +30,11 @@ command.setHandler(async (ctx) => {
         }
 
         await ctx.editReply("Done");
-    } else {
+    } else if (ctx.opts.num === 69) {
+        const concertChannelManager = getConcertChannelManager(ctx.guild);
+        await concertChannelManager.initialize();
+        await concertChannelManager.checkChannels();
+    } {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 
         await ctx.editReply(msg);

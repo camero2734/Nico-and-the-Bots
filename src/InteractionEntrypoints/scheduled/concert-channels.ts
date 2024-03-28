@@ -11,6 +11,7 @@ import { channelIDs, roles } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONCERT_URL, ConcertChannel, ConcertEntry, ROLE_HEX } from "./concert-channels.consts";
+import Cron from "croner";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -20,7 +21,7 @@ class ConcertChannelManager {
 
     #forumChannel: ForumChannel | undefined;
 
-    async initialize(numToFetch: number): Promise<boolean> {
+    async initialize(): Promise<boolean> {
         const channel = await this.guild.channels.fetch(channelIDs.concertsForum);
         if (channel?.type === ChannelType.GuildForum) this.#forumChannel = channel;
 
@@ -30,7 +31,7 @@ class ConcertChannelManager {
             const json = (await res.json()) as ConcertEntry[];
             if (!json || !Array.isArray(json)) throw new Error("Not a valid array");
 
-            const chans = json.slice(0, numToFetch).map((c) => new ConcertChannel(c));
+            const chans = json.toReversed().map((c) => new ConcertChannel(c));
             if (chans.length === 0) return false;
 
             // Some concerts are multiple days, compress them into one channel to avoid confusion
@@ -136,16 +137,14 @@ class ConcertChannelManager {
         const threadTags = await toAdd.threadTags(this.#forumChannel);
         if (threadTags) await forumPost.setAppliedTags(threadTags.map(t => t.id));
 
-        // await prisma.concert.create({
-        //     data: {
-        //         id: toAdd.id,
-        //         channelId: forumPost.id,
-        //         roleId: role.id,
-        //         warnedForDeletion: null,
-        //         venue: toAdd.concert.venue.name
-        //     }
-        // });
-
+        await prisma.concert.create({
+            data: {
+                id: toAdd.id,
+                channelId: forumPost.id,
+                roleId: role.id,
+                venue: toAdd.concert.venue.name
+            }
+        });
     }
 }
 
@@ -177,8 +176,8 @@ export const getConcertChannelManager = function (guild: Guild) {
 
 export default entrypoint;
 
-// new Cron("0 0 0 * * *", async () => {
-//     if (!guild) return;
-//     await concertChannelManager.initialize();
-//     await concertChannelManager.checkChannels();
-// });
+new Cron("44 1 * * *", async () => {
+    if (!guild) return;
+    await concertChannelManager.initialize();
+    await concertChannelManager.checkChannels();
+});

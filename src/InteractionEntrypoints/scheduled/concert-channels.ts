@@ -1,4 +1,4 @@
-import { addDays, format, isPast } from "date-fns";
+import { addDays, isPast } from "date-fns";
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -9,125 +9,13 @@ import {
     Role,
     ThreadChannel
 } from "discord.js";
-import { channelIDs, roles } from "../Configuration/config";
-import { prisma } from "./prisma-init";
-import F from "./funcs";
+import { guild } from "../../../app";
+import { channelIDs, roles } from "../../Configuration/config";
+import { prisma } from "../../Helpers/prisma-init";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
+import { CONCERT_URL, ConcertChannel, ConcertEntry, ROLE_HEX } from "./concert-channels.consts";
 
-const CONCERT_URL = "https://rest.bandsintown.com/V3.1/artists/twenty%20one%20pilots/events/?app_id=js_127.0.0.1";
-const ROLE_HEX = "#ffc6d5";
-
-export interface Offer {
-    type: string;
-    url: string;
-    status: string;
-}
-
-export interface Venue {
-    country: string;
-    city: string;
-    latitude: string;
-    name: string;
-    location: string;
-    region: string;
-    longitude: string;
-}
-
-export interface ConcertEntry {
-    offers: Offer[];
-    venue: Venue;
-    datetime: Date;
-    artist: Record<string, unknown>;
-    on_sale_datetime: string;
-    description: string;
-    lineup: string[];
-    bandsintown_plus: boolean;
-    id: string;
-    title: string;
-    artist_id: string;
-    url: string;
-}
-
-class ConcertChannel {
-    public concerts: ConcertEntry[] = [];
-    constructor(public concert: ConcertEntry) {
-        this.concerts.push(concert);
-    }
-
-    addConcertsFrom(concert: ConcertChannel): boolean {
-        if (this.venueId !== concert.venueId) return false;
-        this.concerts.push(...concert.concerts);
-        return true;
-    }
-
-    get name() {
-        return this.concert.title || this.concert.venue.name;
-    }
-
-    get id() {
-        return this.concert.id;
-    }
-
-    get venueId() {
-        const { venue } = this.concert;
-        const s = (str: string) => str.toLowerCase().normalize("NFKC").replace(/\p{Diacritic}/gu, "").replace(/[^A-z0-9]/g, " ").split(/ +/);
-        return [s(this.name), s(venue.city)].flat().filter(a => a).join("-");
-    }
-
-    get country() {
-        return this.concert?.venue?.country;
-    }
-
-    get datesFormatted() {
-        return this.concerts.map((c) => format(new Date(c.datetime), "d MMMM yyyy")).join(", ");
-    }
-
-    get location() {
-        return this.concert.venue.location;
-    }
-
-    get threadName() {
-        return `${this.concert.venue.name} - ${this.flagEmoji} ${this.location}, ${this.country} - ${this.datesFormatted}`
-    }
-
-    get roleName() {
-        return this.venueId;
-    }
-
-    get presaleUrl() {
-        return this.concert.offers.find((o) => o.type === "Presale")?.url;
-    }
-
-    get flagEmoji() {
-        const code = F.countryNameToCode(this.country);
-        if (!code) return;
-
-        return F.isoCountryToEmoji(code);
-    }
-
-    get continent() {
-        const code = F.countryNameToCode(this.country);
-        if (!code) return;
-
-        return F.isoCountryToContinent(this.country);
-    }
-
-    async threadTags(forumChannel: ForumChannel) {
-        const tags = [];
-        const hasMultipleDates = this.concerts.length > 1;
-        if (hasMultipleDates) {
-            const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes("multiple shows"));
-            if (tag) tags.push(tag);
-        }
-
-        const continent = this.continent?.toLowerCase();
-        if (continent) {
-            const tag = forumChannel.availableTags.find((t) => t.name.toLowerCase().includes(continent));
-            if (tag) tags.push(tag);
-        }
-
-        return tags;
-    }
-}
+const entrypoint = new ManualEntrypoint();
 
 class ConcertChannelManager {
     public concertChannels: ConcertChannel[] = [];
@@ -251,7 +139,7 @@ class ConcertChannelManager {
                 .setLabel("Get Role")
                 .setEmoji("🎫")
                 .setStyle(ButtonStyle.Primary)
-                .setCustomId(`TBABTABTATBABA-${role.id}`)
+                .setCustomId(genBtnId({ roleId: role.id }))
         )
 
         const forumPost = await this.#forumChannel.threads.create({
@@ -295,9 +183,28 @@ class ConcertChannelManager {
     }
 }
 
-let concertChannelManager: ConcertChannelManager;
-export const getConcertChannelManager = function (guild: Guild) {
-    if (!concertChannelManager) concertChannelManager = new ConcertChannelManager(guild);
+const genBtnId = entrypoint.addInteractionListener("getConcertRole", ["roleId"], async (ctx, args) => {
+    await ctx.deferReply({ ephemeral: true });
 
-    return concertChannelManager;
-};
+    const role = await guild.roles.fetch(args.roleId);
+    if (!role) {
+        ctx.editReply("Role not found");
+        return;
+    }
+
+    if (ctx.member.roles.cache.has(role.id)) {
+        await ctx.member.roles.remove(role);
+        await ctx.editReply("🎫 Concert Role removed!");
+
+    } else {
+        await ctx.member.roles.add(role);
+        await ctx.editReply("🎫 Concert Role added!");
+    }
+});
+
+export const concertChannelManager = new ConcertChannelManager(guild);
+
+// new Cron("0 0 0 * * *", async () => {
+//     await concertChannelManager.initialize();
+//     await concertChannelManager.checkChannels();
+// });

@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { getConcertChannelManager } from "../../../Helpers/concert-channels";
+import { concertChannelManager } from "../../scheduled/concert-channels";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -21,9 +21,8 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     // Concert channels
-    const concertManager = getConcertChannelManager(ctx.guild);
-    await concertManager.initialize(ctx.opts.num);
-    await concertManager.checkChannels();
+    await concertChannelManager.initialize(ctx.opts.num);
+    await concertChannelManager.checkChannels();
 
     await ctx.editReply("Done");
 });

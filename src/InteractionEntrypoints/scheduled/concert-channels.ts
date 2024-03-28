@@ -1,13 +1,10 @@
-import { addDays, isPast } from "date-fns";
 import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
     ChannelType,
     ForumChannel,
-    Guild,
-    Role,
-    ThreadChannel
+    Guild
 } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -65,7 +62,7 @@ class ConcertChannelManager {
     async checkChannels(): Promise<boolean> {
         try {
             // Channels in JSON list that don't have a channel
-            const existingChannelIds = await prisma.concert.findMany({ select: { id: true, channelId: true, roleId: true, warnedForDeletion: true } });
+            const existingChannelIds = await prisma.concert.findMany({ select: { id: true, channelId: true, roleId: true } });
 
             const toAdd = this.concertChannels.filter((c) => !existingChannelIds.some((c2) => c2.id === c.id));
 
@@ -75,19 +72,7 @@ class ConcertChannelManager {
                 await this.#registerConcert(t);
             }
 
-            // Channels that exist, but are no longer in the JSON list
-            const toRemove = existingChannelIds.filter((c) => !this.concertChannels.some((c2) => c2.id === c.id));
-
-            console.log(`[Concert Channels] Removing ${toAdd.length} channels`);
-
-            for (const c of toRemove) {
-                const channel = await this.guild.channels.fetch(c.channelId);
-                const role = await this.guild.roles.fetch(c.roleId);
-                if (!channel || !role || !channel.isThread()) continue;
-                await this.#unregisterConcert(channel, role, c.warnedForDeletion);
-            }
-
-            console.log(`[Concert Channels] Add ${toAdd.length} channels and removed ${toRemove.length} channels`);
+            console.log(`[Concert Channels] Add ${toAdd.length} channels`);
 
             return true;
         } catch (e) {
@@ -114,7 +99,7 @@ class ConcertChannelManager {
             position: referenceRole.position + 1
         });
 
-        const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the concert, tickets, share pictures, etc.\n\n:warning: This channel will be archived 3 days after the concert ends.`
+        const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the concert, tickets, share pictures, etc.`
 
         const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
@@ -161,25 +146,6 @@ class ConcertChannelManager {
         //     }
         // });
 
-    }
-
-    async #unregisterConcert(toArchive: ThreadChannel, role: Role, warnedAt: Date | null): Promise<boolean> {
-        if (toArchive.parentId !== channelIDs.concertsForum) return false;
-
-        // Send message to channel that it will be deleted in 3 days
-        if (!warnedAt) {
-            await toArchive.send("# This channel (and the corresponding role) will be archived in 3 days. Please save any important information.");
-            await prisma.concert.update({ where: { id: toArchive.id }, data: { warnedForDeletion: new Date() } });
-            return false;
-        }
-
-        if (isPast(addDays(warnedAt, 3))) {
-            await toArchive.setArchived(true, "Concert ended three days ago");
-            await role.delete();
-            return true;
-        }
-
-        return false;
     }
 }
 

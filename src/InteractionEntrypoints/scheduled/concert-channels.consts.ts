@@ -81,7 +81,7 @@ export class ConcertChannel {
     }
 
     get roleName() {
-        return `🎟️ ${this.concert.venue.name} ${this.location}`;
+        return `🎟️ ${this.concert.venue.name} - ${this.location}`;
     }
 
     get presaleUrl() {

@@ -81,7 +81,7 @@ export class ConcertChannel {
     }
 
     get roleName() {
-        return this.venueId;
+        return `🎟️ ${this.concert.venue.name} ${this.location}`;
     }
 
     get presaleUrl() {
@@ -99,7 +99,7 @@ export class ConcertChannel {
         const code = F.countryNameToCode(this.country);
         if (!code) return;
 
-        return F.isoCountryToContinent(this.country);
+        return F.isoCountryToContinent(code);
     }
 
     async threadTags(forumChannel: ForumChannel) {

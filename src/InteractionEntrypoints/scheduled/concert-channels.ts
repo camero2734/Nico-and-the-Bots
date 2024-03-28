@@ -209,6 +209,7 @@ export const getConcertChannelManager = function (guild: Guild) {
     return concertChannelManager;
 };
 
+export default entrypoint;
 
 // new Cron("0 0 0 * * *", async () => {
 //     if (!guild) return;

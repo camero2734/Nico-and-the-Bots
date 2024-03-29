@@ -295,7 +295,7 @@ async function buildEmbeds(previousEmbeds: EmbedBuilder[], district: BishopType,
 
     if (!raider || !thisDistrict || !defender) throw new CommandError("District not found");
 
-    const attackingEmbed = await buildAttackEmbed(defender, await getQtrAlloc(battleGroupId, district, true));
+    const attackingEmbed = await buildAttackEmbed(defender, await getQtrAlloc(battleGroupId, defender.bishopType, true));
     const defendingEmbed = await buildDefendingEmbed(raider, 0, await getQtrAlloc(battleGroupId, district, false));
 
     embeds.push(attackingEmbed, defendingEmbed);

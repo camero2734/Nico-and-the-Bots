@@ -158,12 +158,12 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
         };
 
         // Update the previous message
-        const channel = await guild.channels.fetch(channelIDs.districts[defender.toLowerCase() as keyof typeof channelIDs["districts"]]);
-        if (!channel?.isTextBased()) continue;
-        const msg = await channel.messages.fetch(battle.messageId);
-        if (!msg) continue;
+        const bishopName = defender.toLowerCase() as keyof typeof channelIDs["districts"];
+        const channel = await guild.channels.fetch(channelIDs.districts[bishopName]);
+        if (channel?.type !== ChannelType.GuildText) continue;
 
-        await msg.edit({ components: [] });
+        const webhookClient = await getDistrictWebhookClient(bishopName, channel);
+        await webhookClient.client.editMessage(battle.messageId, { components: [] });
     }
 
     // Update the district balances

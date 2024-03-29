@@ -166,9 +166,9 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
-    // Staff can't vote
-    if (ctx.member.roles.cache.has(roles.staff) && ctx.user.id !== userIDs.me) {
-        throw new CommandError("Staff cannot vote in district battles.");
+    // Admins can't vote
+    if (ctx.member.roles.cache.has(roles.admin) && ctx.user.id !== userIDs.me) {
+        throw new CommandError("Admins cannot vote in district battles.");
     }
 
     const districtBattle = await prisma.districtBattle.findUnique({
@@ -234,9 +234,9 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
-    // Staff can't vote
-    if (ctx.member.roles.cache.has(roles.staff) && ctx.user.id !== userIDs.me) {
-        throw new CommandError("Staff cannot vote in district battles.");
+    // Admins can't vote
+    if (ctx.member.roles.cache.has(roles.admin) && ctx.user.id !== userIDs.me) {
+        throw new CommandError("Admins cannot vote in district battles.");
     }
 
     const districtBattle = await prisma.districtBattle.findUnique({

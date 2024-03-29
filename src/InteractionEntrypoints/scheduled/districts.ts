@@ -147,6 +147,20 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
+    const districtBattle = await prisma.districtBattle.findUnique({
+        where: {
+            id: args.districtBattleId
+        }
+    });
+
+    if (!districtBattle) throw new CommandError("District battle not found");
+
+    // Make sure they actually belong to the district
+    const thisDistrictBishop = districtBattle.attacker;
+    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
+    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
+
+    // Record the vote
     const qtrIndex = parseInt(ctx.values[0]);
 
     const result = await prisma.districtBattleGuess.upsert({
@@ -171,12 +185,6 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
         }
     });
 
-    // The user's district is the defender in the battle group returned above
-    const thisDistrictBishop = result.dailyDistrictBattle.defender;
-
-    // Make sure they actually belong to the district
-    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
-    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
 
     // We want to find the battle in which the user's district is the attacker
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
@@ -203,8 +211,23 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
-    const qtrIndex = parseInt(ctx.values[0]);
+    const districtBattle = await prisma.districtBattle.findUnique({
+        where: {
+            id: args.districtBattleId
+        }
+    });
 
+    if (!districtBattle) throw new CommandError("District battle not found");
+
+    const thisDistrictBishop = districtBattle.defender;
+    const raiderBishop = districtBattle.attacker;
+
+    // Make sure they actually belong to the district
+    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
+    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
+
+    // Record the vote
+    const qtrIndex = parseInt(ctx.values[0]);
     const result = await prisma.districtBattleGuess.upsert({
         where: {
             dailyDistrictBattleId_userId_isAttackVote: {
@@ -226,14 +249,6 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
             dailyDistrictBattle: true
         }
     });
-
-    // The user's district is the defender in the battle group returned above
-    const thisDistrictBishop = result.dailyDistrictBattle.defender;
-    const raiderBishop = result.dailyDistrictBattle.attacker;
-
-    // Make sure they actually belong to the district
-    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
-    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
 
     // Get District being defended (user's district)
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);

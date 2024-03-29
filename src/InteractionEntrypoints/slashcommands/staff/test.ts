@@ -2,6 +2,7 @@ import { ApplicationCommandOptionType, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
+import { districtCron } from "../../scheduled/districts";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -35,6 +36,9 @@ command.setHandler(async (ctx) => {
         await concertChannelManager.initialize();
         await concertChannelManager.checkChannels();
         await ctx.editReply("Done checking concert channels");
+    } else if (ctx.opts.num === 74) {
+        await districtCron();
+        await ctx.editReply("Done with districtCron");
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

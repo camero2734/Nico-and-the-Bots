@@ -197,7 +197,8 @@ async function sendLeaderboardUpdate() {
     const embed = new EmbedBuilder()
         .setTitle("Glorious Vista Daily Standings")
         .setDescription("Thank you to all loyal citizens for their hard work yesterday. Here are the standings:")
-        .setColor(botMember.displayColor);
+        .setColor(botMember.displayColor)
+        .setFooter({ text: "Glory to Dema." })
 
     const districts = await prisma.district.findMany({
         orderBy: { credits: "desc" }

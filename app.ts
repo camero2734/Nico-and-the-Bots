@@ -189,8 +189,6 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 async function setup() {
-    // const guild = await client.guilds.fetch(guildID);
-
     GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
     GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
     GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
@@ -198,11 +196,6 @@ async function setup() {
     Scheduler(client);
     topfeedBot.registerChecks();
     logEntrypointEvents();
-
-    // // Concert channels
-    // const concertManager = getConcertChannelManager(guild);
-    // await concertManager.fetchConcerts();
-    // await concertManager.checkChannels();
 }
 
 function startPingServer() {

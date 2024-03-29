@@ -10,7 +10,7 @@ import Cron from "croner";
 
 const entrypoint = new ManualEntrypoint();
 
-Cron("0 20 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
+Cron("0 21 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
 export async function districtCron() {
     const [results, thread] = await concludePreviousBattle();

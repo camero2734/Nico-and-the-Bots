@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
+import { ActionRowBuilder, Colors, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
 import { emojiIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -12,13 +12,17 @@ const entrypoint = new ManualEntrypoint();
 // const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
 export async function districtCron() {
-    const results = await concludePreviousBattle();
+    const [results, thread] = await concludePreviousBattle();
 
     const newBattleGroup = await prisma.districtBattleGroup.create({ data: {} });
     const districts = await dailyDistrictOrder(newBattleGroup.id);
 
     // This will probably be randomized per day
     const currencyAmount = 50;
+
+    const battlesEmbed = new EmbedBuilder()
+        .setTitle("Today's Battles")
+        .setColor(Colors.Blurple)
 
     const battles = [];
     for (let i = 0; i < districts.length; i++) {
@@ -34,8 +38,15 @@ export async function districtCron() {
             }
         });
 
+        battlesEmbed.addFields({
+            name: `⚔️ ${prevDistrict.role.name.toUpperCase()}`,
+            value: `🛡️ ${district.role.name.toUpperCase()}`
+        });
+
         battles.push(battle);
     }
+
+    if (thread) await thread.send({ embeds: [battlesEmbed] });
 
     for (let i = 0; i < districts.length; i++) {
         const prevDistrict = districts.at(i - 1)!;
@@ -184,7 +195,6 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
             dailyDistrictBattle: true
         }
     });
-
 
     // We want to find the battle in which the user's district is the attacker
     const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);

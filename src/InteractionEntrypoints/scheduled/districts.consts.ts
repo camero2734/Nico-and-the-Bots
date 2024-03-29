@@ -1,5 +1,5 @@
 import { Faker, en } from "@faker-js/faker";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, ThreadChannel, roleMention } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
@@ -84,13 +84,11 @@ export async function dailyDistrictOrder(battleId: number) {
     return districts;
 }
 
-export async function concludePreviousBattle(): Promise<DistrictResults> {
+export async function concludePreviousBattle(): Promise<[DistrictResults, ThreadChannel | undefined]> {
     const latestBattle = await prisma.districtBattleGroup.findFirst({
         orderBy: { createdAt: "desc" },
         include: { battles: { include: { guesses: true } } },
-    });
-
-    if (!latestBattle) return {};
+    }) || { battles: [] };
 
     const results: DistrictResults = {};
 
@@ -182,9 +180,9 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
     }
 
     // Send leaderboard update
-    await sendLeaderboardUpdate();
+    const thread = await sendLeaderboardUpdate();
 
-    return results;
+    return [results, thread];
 }
 
 async function sendLeaderboardUpdate() {
@@ -231,6 +229,8 @@ async function sendLeaderboardUpdate() {
     });
 
     await thread.send("Feel free to publicly discuss the standings or upcoming battle here. Do not share information about your district's strategy.");
+
+    return thread;
 }
 
 export async function getQtrAlloc(battleId: number, defender: BishopType, isAttack: boolean): Promise<QtrAlloc> {

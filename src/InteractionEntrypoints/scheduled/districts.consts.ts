@@ -156,6 +156,14 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
             attacker,
             defender
         };
+
+        // Update the previous message
+        const channel = await guild.channels.fetch(channelIDs.districts[defender.toLowerCase() as keyof typeof channelIDs["districts"]]);
+        if (!channel?.isTextBased()) continue;
+        const msg = await channel.messages.fetch(battle.messageId);
+        if (!msg) continue;
+
+        await msg.edit({ components: [] });
     }
 
     // Update the district balances
@@ -174,7 +182,7 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
             },
             create: {
                 name: bishop,
-                credits: amount(offense.credits) + amount(defense.credits)
+                credits: amount(offense.credits) + amount(defense.credits),
             }
         });
     }

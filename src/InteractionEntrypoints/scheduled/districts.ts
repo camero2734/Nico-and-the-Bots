@@ -1,16 +1,17 @@
 import { format } from "date-fns";
 import { ActionRowBuilder, Colors, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
-import { emojiIDs, roles } from "../../Configuration/config";
+import { emojiIDs, roles, userIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDistrictOrder, getQtrAlloc, numeral, qtrEmoji } from "./districts.consts";
 import Cron from "croner";
+import { faker } from "@faker-js/faker";
 
 const entrypoint = new ManualEntrypoint();
 
-Cron("0 21 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
+Cron("0 22 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
 export async function districtCron() {
     const [results, thread] = await concludePreviousBattle();
@@ -18,8 +19,7 @@ export async function districtCron() {
     const newBattleGroup = await prisma.districtBattleGroup.create({ data: {} });
     const districts = await dailyDistrictOrder(newBattleGroup.id);
 
-    // This will probably be randomized per day
-    const currencyAmount = 50;
+    const currencyAmount = faker.number.int({ min: 3, max: 7 }) * 10;
 
     const battlesEmbed = new EmbedBuilder()
         .setTitle("Today's Battles")
@@ -36,6 +36,7 @@ export async function districtCron() {
                 attacker: prevDistrict.bishopType,
                 defender: district.bishopType,
                 credits: currencyAmount,
+                messageId: "",
             }
         });
 
@@ -146,6 +147,12 @@ export async function districtCron() {
         const lastApiMsg = await district.webhook.client.send({ embeds: [embed, attackingEmbed, defendingEmbed], components: [attackingActionRow, defendingActionRow], allowedMentions: { parse: [] } });
         const lastMsg = await district.webhook.webhook.fetchMessage(lastApiMsg.id);
 
+        // Update DB w/ message ID
+        await prisma.districtBattle.update({
+            where: { id: battleWhereDefending.id },
+            data: { messageId: lastMsg.id }
+        });
+
         const thread = await lastMsg.startThread({
             name: `${format(new Date(), "YYY MM'MOON' dd")} 🛡️ ${prevDistrict.role.name} / ⚔️ ${nextDistrict.role.name}`,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
@@ -160,7 +167,7 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     await ctx.deferUpdate();
 
     // Staff can't vote
-    if (ctx.member.roles.cache.has(roles.staff)) {
+    if (ctx.member.roles.cache.has(roles.staff) && ctx.user.id !== userIDs.me) {
         throw new CommandError("Staff cannot vote in district battles.");
     }
 
@@ -228,7 +235,7 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     await ctx.deferUpdate();
 
     // Staff can't vote
-    if (ctx.member.roles.cache.has(roles.staff)) {
+    if (ctx.member.roles.cache.has(roles.staff) && ctx.user.id !== userIDs.me) {
         throw new CommandError("Staff cannot vote in district battles.");
     }
 

@@ -1,5 +1,5 @@
 import { Faker, en } from "@faker-js/faker";
-import { ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, roleMention } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
@@ -214,7 +214,15 @@ async function sendLeaderboardUpdate() {
         });
     }
 
-    const msg = await channel.send({ embeds: [embed] });
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+        new ButtonBuilder()
+            .setLabel("How does this work?")
+            .setEmoji("❓")
+            .setStyle(ButtonStyle.Link)
+            .setURL("https://discord.com/channels/269657133673349120/1218877052199895180/1221536400596533318")
+    );
+
+    const msg = await channel.send({ embeds: [embed], components: [actionRow] });
 
     const thread = await msg.startThread({
         name: `${format(new Date(), "YYY MM'MOON' dd")} District Standings`,

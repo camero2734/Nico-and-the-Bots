@@ -283,7 +283,7 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
 
 async function buildEmbeds(previousEmbeds: EmbedBuilder[], district: BishopType, battleGroupId: number): Promise<EmbedBuilder[]> {
     const embeds = [];
-    const announcement = previousEmbeds.find(x => x.data.title?.includes("Announcement from"));
+    const announcement = previousEmbeds.find(x => x.data.author?.name?.includes("Announcement"));
     if (announcement) embeds.push(announcement);
 
     const { credits } = await prisma.districtBattle.findFirstOrThrow({

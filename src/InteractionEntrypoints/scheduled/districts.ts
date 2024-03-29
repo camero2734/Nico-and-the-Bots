@@ -175,6 +175,7 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     const thisDistrictBishop = result.dailyDistrictBattle.defender;
 
     // Make sure they actually belong to the district
+    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
     if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
 
     // We want to find the battle in which the user's district is the attacker
@@ -231,6 +232,7 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     const raiderBishop = result.dailyDistrictBattle.attacker;
 
     // Make sure they actually belong to the district
+    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
     if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
 
     // Get District being defended (user's district)

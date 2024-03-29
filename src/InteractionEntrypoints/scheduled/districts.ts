@@ -1,15 +1,16 @@
 import { format } from "date-fns";
 import { ActionRowBuilder, Colors, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
-import { emojiIDs } from "../../Configuration/config";
+import { emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDistrictOrder, getQtrAlloc, numeral, qtrEmoji } from "./districts.consts";
+import Cron from "croner";
 
 const entrypoint = new ManualEntrypoint();
 
-// const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
+Cron("0 20 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
 export async function districtCron() {
     const [results, thread] = await concludePreviousBattle();
@@ -158,6 +159,11 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
+    // Staff can't vote
+    if (ctx.member.roles.cache.has(roles.staff)) {
+        throw new CommandError("Staff cannot vote in district battles.");
+    }
+
     const districtBattle = await prisma.districtBattle.findUnique({
         where: {
             id: args.districtBattleId
@@ -220,6 +226,11 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
 const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["districtBattleId"], async (ctx, args) => {
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
+
+    // Staff can't vote
+    if (ctx.member.roles.cache.has(roles.staff)) {
+        throw new CommandError("Staff cannot vote in district battles.");
+    }
 
     const districtBattle = await prisma.districtBattle.findUnique({
         where: {

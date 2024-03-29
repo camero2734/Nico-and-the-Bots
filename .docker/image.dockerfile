@@ -1,23 +1,10 @@
-FROM debian:bullseye-slim
+FROM oven/bun:1.0-debian
 
 USER root
 WORKDIR /code
 
 # System dependencies
-RUN apt update
-RUN apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
-
-# Node for Prisma
-ARG NODE_VERSION=20
-RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n \
-    && bash n $NODE_VERSION \
-    && rm n \
-    && npm install -g n
-
-# Copy patched bun binary
-# See https://github.com/oven-sh/bun/issues/7864
-COPY ./bun-patched /usr/local/bin/bun
-RUN ln -s /usr/local/bin/bun /usr/local/bin/bunx
+RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
 
 # NPM packages
 COPY bun.lockb package.json ./

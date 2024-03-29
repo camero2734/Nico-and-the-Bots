@@ -11,7 +11,7 @@ All commands follow the same base structure:
 ```ts
 import { SlashCommand } from "../helpers/slash-command";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Checks the bot's ping",
     options: [
         {

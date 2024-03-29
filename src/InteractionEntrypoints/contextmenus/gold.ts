@@ -8,9 +8,9 @@ import { prisma } from "../../Helpers/prisma-init";
 import { ContextMenu, MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 import { TimedInteractionListener } from "../../Structures/TimedInteractionListener";
 
-const GOLD_COST = 1000;
-const ADDITIONAL_GOLD_COST = 500;
-export const NUM_GOLDS_FOR_CERTIFICATION = 2;
+const GOLD_COST = 2500;
+const ADDITIONAL_GOLD_COST = 1000;
+export const NUM_GOLDS_FOR_CERTIFICATION = 3;
 export const NUM_DAYS_FOR_CERTIFICATION = 1;
 const NOT_CERTIFIED_FIELD = "⚠️ Not certified!";
 
@@ -48,7 +48,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
 const genAdditionalGoldId = ctxMenu.addInteractionListener(
     "additionalGold",
-    <const>["originalUserId", "originalMessageId", "originalChannelId"],
+    ["originalUserId", "originalMessageId", "originalChannelId"],
     async (ctx, args) => {
         await ctx.deferReply({ ephemeral: true });
         await handleGold(

@@ -4,8 +4,8 @@ import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
-    description: "Deletes a certain number of messages",
+const command = new SlashCommand({
+    description: "Shows the number of users that have joined in the time period specified",
     options: [
         {
             name: "hours",

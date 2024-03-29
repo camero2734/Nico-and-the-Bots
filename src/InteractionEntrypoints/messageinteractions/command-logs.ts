@@ -2,10 +2,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, TextChannel } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
-import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { EntrypointEvents } from "../../Structures/Events";
 
-const msgInt = new MessageInteraction();
+const msgInt = new ManualEntrypoint();
 
 const args = <const>["title"];
 const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", args, async (ctx, args) => {

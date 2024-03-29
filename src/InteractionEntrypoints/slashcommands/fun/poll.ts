@@ -18,7 +18,7 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Creates a message that users can react to to receive a role",
     options: [
         {
@@ -62,7 +62,7 @@ command.setHandler(async (ctx) => {
 
     if (!option1 || !option2) throw new Error("First two options should be required");
 
-    const options: string[] = [option1, option2, ...Object.values(optDict).filter((a): a is string | number => a !== undefined)].map((o) => o?.toString().trim());
+    const options: string[] = [option1, option2, ...Object.values(optDict).filter((a): a is string => a !== undefined)].map((o) => o?.toString().trim());
 
     const discordEmojiRegex = /<a{0,1}:(?<name>.*?):(?<id>\d+)>/;
 
@@ -135,7 +135,7 @@ command.setHandler(async (ctx) => {
     }
 });
 
-const genPollResId = command.addInteractionListener("pollresponse", <const>["pollId"], async (ctx, args) => {
+const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], async (ctx, args) => {
     if (!ctx.isSelectMenu()) return;
     const { pollId } = args;
     const indices = ctx.values?.map((n) => parseInt(n)).filter((n) => n >= 0 && !isNaN(n));

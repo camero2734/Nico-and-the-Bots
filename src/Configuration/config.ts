@@ -9,6 +9,8 @@ export const guildID = "269657133673349120";
 export const dropEmojiGuildId = "901909949821648936";
 
 export const channelIDs = <const>{
+    demadistricting: "1217952001317666926",
+    songbattles: "1211412086442426429",
     commands: "940341308696965120",
     memes: "470335805697556480",
     staffcommandlog: "488076541499277333",
@@ -21,7 +23,7 @@ export const channelIDs = <const>{
     submittedsuggestions: "470406723572596746",
     artistsubmissions: "584215214468104194",
     leakstheories: "940390927661412353",
-    suggestions: "470421876976517141",
+    suggestions: "1059818853066084404",
     fairlylog: "470423228679192576",
     lyrics: "470425013770649600",
     staffventing: "470452236531531786",
@@ -76,6 +78,7 @@ export const channelIDs = <const>{
     tourhelp: "857258422293757972",
     cliqueartfriday: "689548218828455967",
     artevents: "940391413194047558",
+    concertsForum: "1222170861344133160",
     logs: {
         ban: "689685441485733952",
         staffCommands: "488076541499277333",
@@ -88,12 +91,24 @@ export const channelIDs = <const>{
         josh: "534882732820529174",
         band: "534882758770688031",
         dmaorg: "534882770619465731"
+    },
+    ticketSupport: "1214992264829599754",
+    gloriousVista: "1218877052199895180",
+    districts: {
+        keons: "1218876634732560465",
+        lisden: "1218876421120987187",
+        andre: "1218876684866945175",
+        sacarver: "1218876723916177430",
+        reisdro: "1218876869294952478",
+        nico: "1218876888014127104",
+        listo: "1218876909207949352",
+        vetomo: "1218876930778992720",
+        nills: "1218876943945039932"
     }
 };
 
 export const categoryIDs = <const>{
     chilltown: "625524136785215498",
-    concerts: "857342116005937212"
 };
 
 export const userIDs = <const>{
@@ -119,6 +134,21 @@ export const emojiIDs = <const>{
         filled: "871795752760918018",
         empty: "871795753251639306",
         end: "871795752786071693"
+    },
+    albums: {
+        selfTitled: "833129307055456256",
+        regionalAtBest: "833129752021827594",
+        vessel: "833130006413574204",
+        blurryface: "833130087943634944",
+        trench: "833130193568530483",
+        scaledAndIcy: "840759270625771521",
+        clancy: "1214045012879343658"
+    },
+    quarters: {
+        i: "1219348841082523648",
+        ii: "1219348839602065409",
+        iii: "1219348838129598615",
+        iv: "1219348836473114826",
     }
 };
 
@@ -139,6 +169,8 @@ export const roles = <const>{
     dema: "451217741584793601",
     common: "332021614256455690",
     vc: "465268535543988224",
+    staffSupport: "1215033226674839582",
+    songBattles: "1216123368613351594",
     albums: {
         SAI: "849825119337840680",
         TRENCH: "466627343520104449",
@@ -212,6 +244,17 @@ export const roles = <const>{
             "Ode to Pink": "692990523014774874",
             "Bandito Yellow": "693151392780517397"
         }
+    },
+    districts: {
+        keons: "1217561582574374943",
+        lisden: "1217562330548666418",
+        andre: "1217562633763291196",
+        sacarver: "1217562734443495545",
+        reisdro: "1217562900869419098",
+        nico: "1217563151394930789",
+        listo: "1217563263072604290",
+        vetomo: "1217563335801966716",
+        nills: "1217563448486137896"
     }
 };
 

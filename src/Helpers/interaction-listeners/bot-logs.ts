@@ -1,7 +1,7 @@
 import { EmbedBuilder } from "discord.js";
 import { createInteractionListener } from "../../Structures/ListenerInteraction";
 
-const [name, interaction, genCustomId] = createInteractionListener("botLog", <const>[], async (ctx) => {
+const [name, interaction, genCustomId] = createInteractionListener("botLog", [], async (ctx) => {
     await ctx.editReply({ components: [] });
 
     const thread = await ctx.message.startThread({

@@ -8,7 +8,7 @@ enum ActionTypes {
     Remove
 }
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Creates a message that users can react to to receive a role",
     options: [
         {
@@ -65,7 +65,7 @@ command.setHandler(async (ctx) => {
     await ctx.send({ embeds: [embed], components: [actionRow] });
 });
 
-const genActionId = command.addInteractionListener("reactForRole", <const>["roleId", "action"], async (ctx, args) => {
+const genActionId = command.addInteractionListener("reactForRole", ["roleId", "action"], async (ctx, args) => {
     const roleId = args.roleId.toSnowflake();
     const action = +args.action;
 

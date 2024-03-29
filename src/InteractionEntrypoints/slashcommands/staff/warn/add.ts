@@ -10,7 +10,7 @@ import JailCommand from "./../jail";
 
 const rules = Object.values(WarningType);
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Submits a warning for a user",
     options: [
         { name: "user", description: "The user to warn", required: true, type: ApplicationCommandOptionType.User },

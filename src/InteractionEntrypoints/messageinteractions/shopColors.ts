@@ -5,7 +5,7 @@ import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
 import F from "../../Helpers/funcs";
 import { prisma, queries } from "../../Helpers/prisma-init";
-import { MessageInteraction } from "../../Structures/EntrypointMessageInteraction";
+import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts.shopColors";
 
 enum ActionTypes {
@@ -14,7 +14,7 @@ enum ActionTypes {
     // Delete
 }
 
-const msgInt = new MessageInteraction();
+const msgInt = new ManualEntrypoint();
 
 export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
@@ -24,7 +24,7 @@ export const GenBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async
 });
 
 // Main Menu
-const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", <const>[], async (ctx) => {
+const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", [], async (ctx) => {
     await ctx.deferUpdate();
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);
@@ -32,7 +32,7 @@ const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", <const>[], 
 });
 
 // Category submenu
-const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["categoryId"], async (ctx, args) => {
+const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categoryId"], async (ctx, args) => {
     const categories = getColorRoleCategories(ctx.guild.roles);
     const [name, category] = Object.entries(categories).find(([_id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
@@ -79,7 +79,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", <const>["
 });
 
 // Viewing a specific item
-const genItemId = msgInt.addInteractionListener("shopColorItem", <const>["itemId", "action"], async (ctx, args) => {
+const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "action"], async (ctx, args) => {
     const actionType = +args.action;
 
     const categories = getColorRoleCategories(ctx.guild.roles);

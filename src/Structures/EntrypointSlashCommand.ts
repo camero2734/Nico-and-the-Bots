@@ -41,7 +41,7 @@ type SlashCommandInteraction<T extends CommandOptions = []> = ChatInputCommandIn
 };
 type SlashCommandHandler<T extends CommandOptions = []> = (ctx: SlashCommandInteraction<T>) => Promise<unknown>;
 
-export class SlashCommand<T extends CommandOptions = []> extends InteractionEntrypoint<
+export class SlashCommand<const T extends CommandOptions = []> extends InteractionEntrypoint<
     SlashCommandHandler<T>,
     [OptsType<SlashCommandData<T>>]
 > {
@@ -142,7 +142,7 @@ export class SlashCommand<T extends CommandOptions = []> extends InteractionEntr
     }
 
     upvoteDownVoteListener(name: string) {
-        const gen = this.addInteractionListener(`${name}&updn`, <const>["isUpvote", "pollID"], async (ctx, args) => {
+        const gen = this.addInteractionListener(`${name}&updn`, ["isUpvote", "pollID"], async (ctx, args) => {
             if (!ctx.isButton()) return;
 
             await ctx.deferUpdate();

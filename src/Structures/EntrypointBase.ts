@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationCommandData, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
-import { channelIDs, roles } from "../Configuration/config";
+import { ApplicationCommandData, Client, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
+import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ErrorHandler } from "./Errors";
 import { EntrypointEvents } from "./Events";
 import { InteractionListener, ListenerCustomIdGenerator, createInteractionListener } from "./ListenerInteraction";
 import { ReactionListener } from "./ListenerReaction";
 import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
+
+type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 
 export abstract class InteractionEntrypoint<
     HandlerType extends (...args: any[]) => Promise<unknown>,
@@ -20,6 +22,8 @@ export abstract class InteractionEntrypoint<
     public abstract commandData: ApplicationCommandData;
 
     private commandPermissions = new Collection<Snowflake, boolean>([[roles.staff, true]]);
+
+    private onBotReadyFuncs: Array<OnBotReadyFunc> = [];
 
     public getPermissions() {
         return this.commandPermissions.clone();
@@ -38,7 +42,7 @@ export abstract class InteractionEntrypoint<
         return this;
     }
 
-    addInteractionListener<T extends Readonly<string[]>>(
+    addInteractionListener<const T extends Readonly<string[]>>(
         name: string,
         args: T,
         interactionHandler: ListenerCustomIdGenerator<T>
@@ -61,32 +65,9 @@ export abstract class InteractionEntrypoint<
             const member = ctx.member as GuildMember;
             if (!member) throw new Error(`No member`);
 
-            const allowedAnywhere = ["tags", "fm"];
-
-            if (ctx.isChatInputCommand()) {
-                if (!member.roles.cache.has(roles.staff)) {
-                    if (
-                        ctx.commandName === "staff" ||
-                        (ctx.channelId !== channelIDs.commands && !allowedAnywhere.includes(ctx.commandName))
-                    ) {
-                        throw new CommandError("You don't have permission to use this command!");
-                    }
-                }
-            } else {
-                // Check permissions
-                const permissions = this.getPermissions();
-                let canUse = false;
-                let canUseBy: "USER" | "ROLE" | undefined = undefined;
-                for (const [id, value] of permissions.entries()) {
-                    if (member.id === id) {
-                        canUseBy = "USER";
-                        canUse = value;
-                    } else if (member.roles.cache.has(id) && canUseBy !== "USER") {
-                        canUseBy = "ROLE";
-                        canUse = value;
-                    }
-                }
-                if (!canUse) throw new CommandError("You don't have permission to use this command!");
+            const isStaffCommand = ctx.isChatInputCommand() && ctx.commandName === "staff";
+            if (isStaffCommand && !member.roles.cache.has(roles.staff)) {
+                throw new CommandError("You don't have permission to use this command!");
             }
 
             EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx });
@@ -96,6 +77,14 @@ export abstract class InteractionEntrypoint<
             EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx });
             ErrorHandler(ctx, e);
         }
+    }
+
+    async onBotReady(func: OnBotReadyFunc): Promise<void> {
+        this.onBotReadyFuncs.push(func);
+    }
+
+    async runOnBotReady(guild: Guild, client: Client): Promise<void> {
+        await Promise.all(this.onBotReadyFuncs.map((func) => func(guild, client)));
     }
 
     protected abstract _register(path: string[]): string;

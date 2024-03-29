@@ -1,10 +1,11 @@
 import { EmbedBuilder, Snowflake, ApplicationCommandOptionType } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import F from "../../../Helpers/funcs";
 
 const names = <const>["role1", "role2", "role3", "role4", "role5"];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Retrieves information for a role",
     options: names.map(
         (name, idx) =>
@@ -26,13 +27,14 @@ command.setHandler(async (ctx) => {
     await ctx.guild.members.fetch();
 
     for (const roleID of roles) {
-        const role = await ctx.channel.guild.roles.fetch(roleID);
+        const role = await ctx.channel.guild.roles.fetch(roleID, { force: true });
         if (!role) continue;
 
         const embed = new EmbedBuilder();
         embed.setTitle(role.name);
         embed.setColor(role.color);
         embed.addFields([{ name: "Hex", value: role.hexColor }]);
+        embed.addFields([{ name: "RGB", value: `(${F.intColorToRGB(role.color).join(", ")})` }]);
         embed.addFields([{ name: "Members", value: `${role.members.size}` }]);
         embed.addFields([{ name: "Created", value: `${role.createdAt}` }]);
         embed.addFields([{ name: "ID", value: role.id }]);

@@ -10,7 +10,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { sendToStaff } from "./firebreathers";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Test command",
     options: []
 });
@@ -106,7 +106,7 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
     return { components: [actionRow], embeds: [embed], ephemeral: true };
 }
 
-const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"], async (ctx) => {
+const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async (ctx) => {
     if (!ctx.isButton() || !ctx.component.label) return;
 
     const formPart = FORM[ctx.component.label];
@@ -134,7 +134,7 @@ const genOpenModalId = command.addInteractionListener("openFBA", <const>["idx"],
     ctx.showModal(modal);
 });
 
-const genSubmitModalId = command.addInteractionListener("modalCloseFBA", <const>["name"], async (ctx, args) => {
+const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"], async (ctx, args) => {
     if (!ctx.isModalSubmit()) return;
 
     const formPart = FORM[args.name];

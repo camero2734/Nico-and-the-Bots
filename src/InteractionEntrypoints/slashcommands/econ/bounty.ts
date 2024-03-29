@@ -6,8 +6,9 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
+import { BishopType } from "@prisma/client";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Reaps bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
     options: [
         {
@@ -44,15 +45,15 @@ command.setHandler(async (ctx) => {
                     name: "📑 Bounties",
                     value: `${steals} bount${steals === 1 ? "y" : "ies"} available`,
                     inline: true
-                }, 
+                },
                 {
                     name: "<:jumpsuit:860724950070984735> Jumpsuits",
                     value: `${blocks} jumpsuit${blocks === 1 ? "" : "s"} available`,
                     inline: true
                 },
-                { 
-                    name: "Current bounty value", 
-                    value: `${BOUNTY_NUM_CREDITS} credits` 
+                {
+                    name: "Current bounty value",
+                    value: `${BOUNTY_NUM_CREDITS} credits`
                 }
             ])
             .setFooter({
@@ -124,7 +125,7 @@ command.setHandler(async (ctx) => {
 
         sendViolationNotice(member, {
             violation: "FailedPerimeterEscape",
-            issuingBishop: assignedBishop.bishop
+            issuingBishop: F.capitalize(assignedBishop.bishop) as BishopType
         });
 
         await ctx.editReply({ embeds: [winEmbed.toJSON()] });

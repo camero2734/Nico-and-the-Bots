@@ -14,7 +14,7 @@ const wiki = WikiJS({
     }
 });
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Grabs the summary of something from Wikipedia",
     options: [
         {

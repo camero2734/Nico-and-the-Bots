@@ -7,7 +7,7 @@ const EditTypes = <const>["REPLACE", "ADD"];
 
 const inputs = <const>["credits", "score", "tokens", "steals", "blocks", "dailycount"];
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Edits a user's economy",
     options: [
         {

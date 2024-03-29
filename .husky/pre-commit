@@ -3,5 +3,5 @@
 
 echo "Typescript check running"
 echo "> tsc --noEmit"
-npx tsc --noEmit
+bunx tsc --noEmit
 echo "Typescript check passed"

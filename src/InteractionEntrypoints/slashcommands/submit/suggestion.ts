@@ -2,7 +2,7 @@ import { channelIDs } from "../../../Configuration/config";
 import { EmbedBuilder, TextChannel, ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const command = new SlashCommand(<const>{
+const command = new SlashCommand({
     description: "Submits a suggestion to the staff",
     options: [
         {

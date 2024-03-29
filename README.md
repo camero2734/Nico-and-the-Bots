@@ -32,6 +32,6 @@ When a user joins, they are greeted with a list of helpful channels to check out
 
 ### Topfeed
 
-This is a system that primarily watches for changes in websites related to the band (mostly https://dmaorg.info).
+This is a system that primarily watches for changes in websites related to the band (mostly https://dmaorg.info)
 
 ![Topfeed example](https://i.imgur.com/RVSj7iq.png)

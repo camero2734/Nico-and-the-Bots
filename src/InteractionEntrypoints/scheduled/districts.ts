@@ -90,7 +90,7 @@ export async function districtCron() {
         const creditsWon = Math.max(districtResults?.offense.credits || 0, 0) + Math.max(districtResults?.defense.credits || 0, 0);
         const creditsMsg = creditsWon === 0
             ? "You have failed me."
-            : creditsWon > 50 ? "You have surpassed my expectations." : "You have done adequately.";
+            : creditsWon > battleWhereAttacking.credits ? "You have surpassed my expectations." : "You have done adequately.";
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: district.imageUrl })

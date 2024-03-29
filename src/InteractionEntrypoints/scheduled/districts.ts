@@ -1,3 +1,6 @@
+import { faker } from "@faker-js/faker";
+import { BishopType } from "@prisma/client";
+import Cron from "croner";
 import { format } from "date-fns";
 import { ActionRowBuilder, Colors, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
 import { emojiIDs, roles, userIDs } from "../../Configuration/config";
@@ -6,8 +9,6 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDistrictOrder, getQtrAlloc, numeral, qtrEmoji } from "./districts.consts";
-import Cron from "croner";
-import { faker } from "@faker-js/faker";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -209,18 +210,9 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
         }
     });
 
-    // We want to find the battle in which the user's district is the attacker
-    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const thisDistrictIndex = districts.findIndex(b => b.bishopType === thisDistrictBishop);
-    if (thisDistrictIndex === -1) throw new CommandError("District not found");
+    const previousEmbeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
+    const embeds = await buildEmbeds(previousEmbeds, thisDistrictBishop, result.dailyDistrictBattle.battleGroupId);
 
-    const thisDistrict = districts[thisDistrictIndex];
-    const beingAttacked = districts[(thisDistrictIndex + 1) % districts.length];
-
-    const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, true));
-
-    const embeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
-    embeds.splice(1, 1, newAttackEmbed);
     await ctx.editReply({ embeds });
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
@@ -248,7 +240,6 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     if (!districtBattle) throw new CommandError("District battle not found");
 
     const thisDistrictBishop = districtBattle.defender;
-    const raiderBishop = districtBattle.attacker;
 
     // Make sure they actually belong to the district
     console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
@@ -278,15 +269,9 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
         }
     });
 
-    // Get District being defended (user's district)
-    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const thisDistrict = districts.find(b => b.bishopType === thisDistrictBishop);
-    const raider = districts.find(b => b.bishopType === raiderBishop);
-    if (!thisDistrict || !raider) throw new CommandError("District not found");
+    const previousEmbeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
+    const embeds = await buildEmbeds(previousEmbeds, thisDistrictBishop, result.dailyDistrictBattle.battleGroupId);
 
-    const newDefendEmbed = await buildDefendingEmbed(raider, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, false));
-    const embeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
-    embeds.splice(2, 1, newDefendEmbed);
     await ctx.editReply({ embeds });
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
@@ -295,5 +280,27 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
         ephemeral: true
     });
 });
+
+async function buildEmbeds(previousEmbeds: EmbedBuilder[], district: BishopType, battleGroupId: number): Promise<EmbedBuilder[]> {
+    const embeds = [];
+    const announcement = previousEmbeds.find(x => x.data.title?.includes("Announcement from"));
+    if (announcement) embeds.push(announcement);
+
+    const districts = await dailyDistrictOrder(battleGroupId);
+    const thisDistrictIdx = districts.findIndex(b => b.bishopType === district);
+
+    const thisDistrict = districts[thisDistrictIdx];
+    const raider = districts.at(thisDistrictIdx - 1);
+    const defender = districts.at((thisDistrictIdx + 1) % districts.length);
+
+    if (!raider || !thisDistrict || !defender) throw new CommandError("District not found");
+
+    const attackingEmbed = await buildAttackEmbed(defender, await getQtrAlloc(battleGroupId, district, true));
+    const defendingEmbed = await buildDefendingEmbed(raider, 0, await getQtrAlloc(battleGroupId, district, false));
+
+    embeds.push(attackingEmbed, defendingEmbed);
+
+    return embeds;
+}
 
 export default entrypoint;

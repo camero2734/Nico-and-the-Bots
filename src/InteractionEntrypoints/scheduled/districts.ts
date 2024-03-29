@@ -286,6 +286,11 @@ async function buildEmbeds(previousEmbeds: EmbedBuilder[], district: BishopType,
     const announcement = previousEmbeds.find(x => x.data.title?.includes("Announcement from"));
     if (announcement) embeds.push(announcement);
 
+    const { credits } = await prisma.districtBattle.findFirstOrThrow({
+        where: { battleGroupId },
+        select: { credits: true }
+    });
+
     const districts = await dailyDistrictOrder(battleGroupId);
     const thisDistrictIdx = districts.findIndex(b => b.bishopType === district);
 
@@ -296,7 +301,7 @@ async function buildEmbeds(previousEmbeds: EmbedBuilder[], district: BishopType,
     if (!raider || !thisDistrict || !defender) throw new CommandError("District not found");
 
     const attackingEmbed = await buildAttackEmbed(defender, await getQtrAlloc(battleGroupId, defender.bishopType, true));
-    const defendingEmbed = await buildDefendingEmbed(raider, 0, await getQtrAlloc(battleGroupId, district, false));
+    const defendingEmbed = await buildDefendingEmbed(raider, credits, await getQtrAlloc(battleGroupId, district, false));
 
     embeds.push(attackingEmbed, defendingEmbed);
 

@@ -164,6 +164,11 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
 
         const webhookClient = await getDistrictWebhookClient(bishopName, channel);
         await webhookClient.client.editMessage(battle.messageId, { components: [] });
+
+        const msg = await channel.messages.fetch(battle.messageId);
+        if (!msg?.thread) continue;
+        await msg.thread.setLocked(true);
+        await msg.thread.setArchived(true);
     }
 
     // Update the district balances

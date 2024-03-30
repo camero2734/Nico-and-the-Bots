@@ -1,4 +1,9 @@
-import F from "../src/Helpers/funcs";
+const name = "test";
 
+const a = {
+    [name]() {
+        console.log("test");
+    }
+}
 
-console.log(F.isoCountryToContinent("PE"));
+a.test();

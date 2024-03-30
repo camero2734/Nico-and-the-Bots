@@ -153,6 +153,7 @@ export const emojiIDs = <const>{
 };
 
 export const roles = <const>{
+    admin: "269660563368312833",
     staff: "330877657132564480",
     muted: "278225702455738368",
     banditos: "269660541738418176",

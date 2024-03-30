@@ -1,5 +1,5 @@
 import { Faker, en } from "@faker-js/faker";
-import { ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Role, TextChannel, ThreadAutoArchiveDuration, ThreadChannel, roleMention } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { WebhookData, getDistrictWebhookClient } from "../../Helpers/district-webhooks";
@@ -84,13 +84,11 @@ export async function dailyDistrictOrder(battleId: number) {
     return districts;
 }
 
-export async function concludePreviousBattle(): Promise<DistrictResults> {
+export async function concludePreviousBattle(): Promise<[DistrictResults, ThreadChannel | undefined]> {
     const latestBattle = await prisma.districtBattleGroup.findFirst({
         orderBy: { createdAt: "desc" },
         include: { battles: { include: { guesses: true } } },
-    });
-
-    if (!latestBattle) return {};
+    }) || { battles: [] };
 
     const results: DistrictResults = {};
 
@@ -158,6 +156,14 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
             attacker,
             defender
         };
+
+        // Update the previous message
+        const bishopName = defender.toLowerCase() as keyof typeof channelIDs["districts"];
+        const channel = await guild.channels.fetch(channelIDs.districts[bishopName]);
+        if (channel?.type !== ChannelType.GuildText) continue;
+
+        const webhookClient = await getDistrictWebhookClient(bishopName, channel);
+        await webhookClient.client.editMessage(battle.messageId, { components: [] });
     }
 
     // Update the district balances
@@ -176,15 +182,15 @@ export async function concludePreviousBattle(): Promise<DistrictResults> {
             },
             create: {
                 name: bishop,
-                credits: amount(offense.credits) + amount(defense.credits)
+                credits: amount(offense.credits) + amount(defense.credits),
             }
         });
     }
 
     // Send leaderboard update
-    await sendLeaderboardUpdate();
+    const thread = await sendLeaderboardUpdate();
 
-    return results;
+    return [results, thread];
 }
 
 async function sendLeaderboardUpdate() {
@@ -197,7 +203,8 @@ async function sendLeaderboardUpdate() {
     const embed = new EmbedBuilder()
         .setTitle("Glorious Vista Daily Standings")
         .setDescription("Thank you to all loyal citizens for their hard work yesterday. Here are the standings:")
-        .setColor(botMember.displayColor);
+        .setColor(botMember.displayColor)
+        .setFooter({ text: "Glory to Dema." })
 
     const districts = await prisma.district.findMany({
         orderBy: { credits: "desc" }
@@ -214,7 +221,15 @@ async function sendLeaderboardUpdate() {
         });
     }
 
-    const msg = await channel.send({ embeds: [embed] });
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+        new ButtonBuilder()
+            .setLabel("How does this work?")
+            .setEmoji("❓")
+            .setStyle(ButtonStyle.Link)
+            .setURL("https://discord.com/channels/269657133673349120/1218877052199895180/1221536400596533318")
+    );
+
+    const msg = await channel.send({ embeds: [embed], components: [actionRow] });
 
     const thread = await msg.startThread({
         name: `${format(new Date(), "YYY MM'MOON' dd")} District Standings`,
@@ -222,6 +237,8 @@ async function sendLeaderboardUpdate() {
     });
 
     await thread.send("Feel free to publicly discuss the standings or upcoming battle here. Do not share information about your district's strategy.");
+
+    return thread;
 }
 
 export async function getQtrAlloc(battleId: number, defender: BishopType, isAttack: boolean): Promise<QtrAlloc> {

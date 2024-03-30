@@ -127,16 +127,19 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
         const defenseQtrs = Object.keys(defenseTally).filter(qtr => defenseTally[+qtr] === maxDefenseVotes).map(parseInt);
 
         const creditAlloc = calculateAllocatedCurrency({ i: defenseTally[0], ii: defenseTally[1], iii: defenseTally[2], iv: defenseTally[3] }, battle.credits);
-        let attackSuccess = defenseQtrs.includes(attackedQtr);
-        let creditsWon = Math.max(...Object.values(creditAlloc));
+        const attackedQtrStr = numeral(attackedQtr);
+
+        let attackerCreditsWon = attackedQtrStr ? creditAlloc[attackedQtrStr] : 0;
         // If defender cast no votes, they lose all credits to the attacker
-        if (maxDefenseVotes <= 0) {
-            attackSuccess = true;
-            creditsWon = battle.credits;
-        }
+        if (maxDefenseVotes <= 0) attackerCreditsWon = battle.credits;
+
+        let defenderCreditsWon = battle.credits - attackerCreditsWon;
 
         // If neither side cast votes, no one wins anything.
-        if (maxAttackVotes <= 0 && maxDefenseVotes <= 0) creditsWon = 0;
+        if (maxAttackVotes <= 0 && maxDefenseVotes <= 0) {
+            attackerCreditsWon = 0;
+            defenderCreditsWon = 0;
+        }
 
         if (!results[attacker]) results[attacker] = {} as any;
         if (!results[defender]) results[defender] = {} as any;
@@ -144,7 +147,7 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
         results[attacker]!.offense = {
             attackedQtr,
             defenseQtrs,
-            credits: attackSuccess ? creditsWon : -creditsWon,
+            credits: attackerCreditsWon,
             attacker,
             defender
         };
@@ -152,7 +155,7 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
         results[defender]!.defense = {
             attackedQtr,
             defenseQtrs,
-            credits: attackSuccess ? -creditsWon : creditsWon,
+            credits: defenderCreditsWon,
             attacker,
             defender
         };
@@ -164,6 +167,11 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
 
         const webhookClient = await getDistrictWebhookClient(bishopName, channel);
         await webhookClient.client.editMessage(battle.messageId, { components: [] });
+
+        const msg = await channel.messages.fetch(battle.messageId);
+        if (!msg?.thread) continue;
+        await msg.thread.setLocked(true);
+        await msg.thread.setArchived(true);
     }
 
     // Update the district balances
@@ -313,7 +321,7 @@ export async function buildDefendingEmbed(raider: District, currencyAmount: numb
 
     if (maxAlloc > 0) {
         embed.setFooter({
-            text: `${raider.role.name} will win ↁ${maxAlloc} if they search in ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}. If they search elsewhere, you instead will win ↁ${maxAlloc}.`
+            text: `${raider.role.name} will win the credits hidden in the quarter they search. You keep the rest.`
         })
     } else {
         embed.setFooter({ text: `No votes cast; no credits will be hidden. The attacker will take all ↁ${currencyAmount}.` })
@@ -344,7 +352,7 @@ export async function buildAttackEmbed(beingAttacked: District, qtrVotes: QtrAll
     if (maxVotes > 0) {
         const randomly = maxQtrs.length > 1 ? " (randomly) " : " ";
         embed.setFooter({
-            text: `You will search ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}${randomly}in ${beingAttacked.role.name}. If it has the most credits, you will win the credits hidden there.`
+            text: `You will search ${maxQtrs.map(qtr => `QTR ${qtr.toUpperCase()}`).join(" or ")}${randomly}in ${beingAttacked.role.name} and will steal any credits hidden there.`
         })
     } else {
         embed.setFooter({ text: `No votes cast; no search will be made. The defender will keep all of their credits.` })

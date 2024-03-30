@@ -65,12 +65,15 @@ export async function districtCron() {
             const defense = districtResults?.defense;
             if (!defense || defense.credits === 0) return "_Nothing happened yesterday_";
 
-            const won = defense.credits > 0;
-            if (won) {
-                const searchedIn = defense.attackedQtr >= 0 ? `They unsuccessfully searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}` : "They did not select a quarter to attack.";
-                return `**ↁ${defense.credits}** credits were successfully defended from the raiding party from DST. ${defense.attacker.toUpperCase()}. ${searchedIn}`;
+            const creditsKept = defense.credits;
+            const creditsLost = battleWhereDefending.credits - creditsKept;
+
+            if (creditsLost <= 0) {
+                return `We successfully defended all **ↁ${creditsKept}** credits from ${prevDistrict.role.name.toUpperCase()}. They searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}, but found nothing. You have surpassed my expectations.`;
+            } else if (creditsKept > 0) {
+                return `We successfully defended **ↁ${creditsKept}** credits from ${prevDistrict.role.name.toUpperCase()}. However, they managed to seize **ↁ${creditsLost}** credits stored in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have done adequately.`;
             } else {
-                return `The raiding party from DST. ${defense.attacker.toUpperCase()} successfully seized all **ↁ${Math.abs(defense.credits)}** credits from ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have failed me.`
+                return `We lost all **ↁ${Math.abs(creditsLost)}** credits in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()} to ${prevDistrict.role.name.toUpperCase()}. You have failed me.`;
             }
         })();
 
@@ -78,13 +81,15 @@ export async function districtCron() {
             const offense = districtResults?.offense;
             if (!offense || offense.credits === 0) return "_Nothing happened yesterday_";
 
-            const won = offense.credits > 0;
-            if (offense.attackedQtr < 0) {
-                return `We did not select a quarter to attack, so we lost all **ↁ${Math.abs(offense.credits)}** credits. You have failed me.`
-            } else if (won) {
-                return `We successfully seized **ↁ${offense.credits}** credits from ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of DST. ${offense.defender.toUpperCase()}.`;
+            const creditsSeized = offense.credits;
+            const creditsNotFound = battleWhereAttacking.credits - creditsSeized;
+
+            if (creditsNotFound <= 0) {
+                return `We successfully seized all **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from ${nextDistrict.role.name.toUpperCase()}. You have surpassed my expectations.`;
+            } else if (creditsSeized > 0) {
+                return `We successfully seized **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from ${nextDistrict.role.name.toUpperCase()}. You have done adequately.`;
             } else {
-                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of DST. ${offense.defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${Math.abs(offense.credits)}** credits in ${qtrEmoji(offense.defenseQtrs[0])} QTR ${numeral(offense.defenseQtrs[0])?.toUpperCase()}. You have failed me.`
+                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of ${nextDistrict.role.name.toUpperCase()}, but found nothing. It seems they hid **ↁ${creditsNotFound}** credits elsewhere. You have failed me.`;
             }
         })();
 

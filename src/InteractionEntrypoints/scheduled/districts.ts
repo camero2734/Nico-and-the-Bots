@@ -1,6 +1,9 @@
+import { faker } from "@faker-js/faker";
+import { BishopType } from "@prisma/client";
+import Cron from "croner";
 import { format } from "date-fns";
-import { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
-import { emojiIDs } from "../../Configuration/config";
+import { ActionRowBuilder, Colors, EmbedBuilder, StringSelectMenuBuilder, ThreadAutoArchiveDuration } from "discord.js";
+import { emojiIDs, roles, userIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -9,16 +12,19 @@ import { buildAttackEmbed, buildDefendingEmbed, concludePreviousBattle, dailyDis
 
 const entrypoint = new ManualEntrypoint();
 
-// const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
+Cron("0 22 * * *", { timezone: "Europe/Amsterdam" }, districtCron);
 
 export async function districtCron() {
-    const results = await concludePreviousBattle();
+    const [results, thread] = await concludePreviousBattle();
 
     const newBattleGroup = await prisma.districtBattleGroup.create({ data: {} });
     const districts = await dailyDistrictOrder(newBattleGroup.id);
 
-    // This will probably be randomized per day
-    const currencyAmount = 50;
+    const currencyAmount = faker.number.int({ min: 3, max: 7 }) * 10;
+
+    const battlesEmbed = new EmbedBuilder()
+        .setTitle("Today's Battles")
+        .setColor(Colors.Blurple)
 
     const battles = [];
     for (let i = 0; i < districts.length; i++) {
@@ -31,11 +37,19 @@ export async function districtCron() {
                 attacker: prevDistrict.bishopType,
                 defender: district.bishopType,
                 credits: currencyAmount,
+                messageId: "",
             }
+        });
+
+        battlesEmbed.addFields({
+            name: `⚔️ ${prevDistrict.role.name.toUpperCase()}`,
+            value: `🛡️ ${district.role.name.toUpperCase()}`
         });
 
         battles.push(battle);
     }
+
+    if (thread) await thread.send({ embeds: [battlesEmbed] });
 
     for (let i = 0; i < districts.length; i++) {
         const prevDistrict = districts.at(i - 1)!;
@@ -77,7 +91,7 @@ export async function districtCron() {
         const creditsWon = Math.max(districtResults?.offense.credits || 0, 0) + Math.max(districtResults?.defense.credits || 0, 0);
         const creditsMsg = creditsWon === 0
             ? "You have failed me."
-            : creditsWon > 50 ? "You have surpassed my expectations." : "You have done adequately.";
+            : creditsWon > battleWhereAttacking.credits ? "You have surpassed my expectations." : "You have done adequately.";
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: district.imageUrl })
@@ -134,6 +148,12 @@ export async function districtCron() {
         const lastApiMsg = await district.webhook.client.send({ embeds: [embed, attackingEmbed, defendingEmbed], components: [attackingActionRow, defendingActionRow], allowedMentions: { parse: [] } });
         const lastMsg = await district.webhook.webhook.fetchMessage(lastApiMsg.id);
 
+        // Update DB w/ message ID
+        await prisma.districtBattle.update({
+            where: { id: battleWhereDefending.id },
+            data: { messageId: lastMsg.id }
+        });
+
         const thread = await lastMsg.startThread({
             name: `${format(new Date(), "YYY MM'MOON' dd")} 🛡️ ${prevDistrict.role.name} / ⚔️ ${nextDistrict.role.name}`,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
@@ -147,6 +167,25 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
+    // Admins can't vote
+    if (ctx.member.roles.cache.has(roles.admin) && ctx.user.id !== userIDs.me) {
+        throw new CommandError("Admins cannot vote in district battles.");
+    }
+
+    const districtBattle = await prisma.districtBattle.findUnique({
+        where: {
+            id: args.districtBattleId
+        }
+    });
+
+    if (!districtBattle) throw new CommandError("District battle not found");
+
+    // Make sure they actually belong to the district
+    const thisDistrictBishop = districtBattle.attacker;
+    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
+    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
+
+    // Record the vote
     const qtrIndex = parseInt(ctx.values[0]);
 
     const result = await prisma.districtBattleGuess.upsert({
@@ -171,24 +210,9 @@ const genAttackId = entrypoint.addInteractionListener("districtAttackSel", ["dis
         }
     });
 
-    // The user's district is the defender in the battle group returned above
-    const thisDistrictBishop = result.dailyDistrictBattle.defender;
+    const previousEmbeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
+    const embeds = await buildEmbeds(previousEmbeds, thisDistrictBishop, result.dailyDistrictBattle.battleGroupId);
 
-    // Make sure they actually belong to the district
-    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
-
-    // We want to find the battle in which the user's district is the attacker
-    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const thisDistrictIndex = districts.findIndex(b => b.bishopType === thisDistrictBishop);
-    if (thisDistrictIndex === -1) throw new CommandError("District not found");
-
-    const thisDistrict = districts[thisDistrictIndex];
-    const beingAttacked = districts[(thisDistrictIndex + 1) % districts.length];
-
-    const newAttackEmbed = await buildAttackEmbed(beingAttacked, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, true));
-
-    const embeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
-    embeds.splice(1, 1, newAttackEmbed);
     await ctx.editReply({ embeds });
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
@@ -202,8 +226,27 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
     if (!ctx.isStringSelectMenu()) return;
     await ctx.deferUpdate();
 
-    const qtrIndex = parseInt(ctx.values[0]);
+    // Admins can't vote
+    if (ctx.member.roles.cache.has(roles.admin) && ctx.user.id !== userIDs.me) {
+        throw new CommandError("Admins cannot vote in district battles.");
+    }
 
+    const districtBattle = await prisma.districtBattle.findUnique({
+        where: {
+            id: args.districtBattleId
+        }
+    });
+
+    if (!districtBattle) throw new CommandError("District battle not found");
+
+    const thisDistrictBishop = districtBattle.defender;
+
+    // Make sure they actually belong to the district
+    console.log(`Attacking: ${F.userBishop(ctx.member)?.bishop} | ${thisDistrictBishop}`);
+    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
+
+    // Record the vote
+    const qtrIndex = parseInt(ctx.values[0]);
     const result = await prisma.districtBattleGuess.upsert({
         where: {
             dailyDistrictBattleId_userId_isAttackVote: {
@@ -226,22 +269,9 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
         }
     });
 
-    // The user's district is the defender in the battle group returned above
-    const thisDistrictBishop = result.dailyDistrictBattle.defender;
-    const raiderBishop = result.dailyDistrictBattle.attacker;
+    const previousEmbeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
+    const embeds = await buildEmbeds(previousEmbeds, thisDistrictBishop, result.dailyDistrictBattle.battleGroupId);
 
-    // Make sure they actually belong to the district
-    if (F.userBishop(ctx.member)?.bishop !== thisDistrictBishop) throw new CommandError("This is not your district.");
-
-    // Get District being defended (user's district)
-    const districts = await dailyDistrictOrder(result.dailyDistrictBattle.battleGroupId);
-    const thisDistrict = districts.find(b => b.bishopType === thisDistrictBishop);
-    const raider = districts.find(b => b.bishopType === raiderBishop);
-    if (!thisDistrict || !raider) throw new CommandError("District not found");
-
-    const newDefendEmbed = await buildDefendingEmbed(raider, result.dailyDistrictBattle.credits, await getQtrAlloc(result.dailyDistrictBattle.battleGroupId, thisDistrict.bishopType, false));
-    const embeds = ctx.message.embeds.map(e => new EmbedBuilder(e.toJSON()));
-    embeds.splice(2, 1, newDefendEmbed);
     await ctx.editReply({ embeds });
 
     const emojiId = Object.values(emojiIDs.quarters)[qtrIndex];
@@ -250,5 +280,32 @@ const genDefendId = entrypoint.addInteractionListener("districtDefendSel", ["dis
         ephemeral: true
     });
 });
+
+async function buildEmbeds(previousEmbeds: EmbedBuilder[], district: BishopType, battleGroupId: number): Promise<EmbedBuilder[]> {
+    const embeds = [];
+    const announcement = previousEmbeds.find(x => x.data.author?.name?.includes("Announcement"));
+    if (announcement) embeds.push(announcement);
+
+    const { credits } = await prisma.districtBattle.findFirstOrThrow({
+        where: { battleGroupId },
+        select: { credits: true }
+    });
+
+    const districts = await dailyDistrictOrder(battleGroupId);
+    const thisDistrictIdx = districts.findIndex(b => b.bishopType === district);
+
+    const thisDistrict = districts[thisDistrictIdx];
+    const raider = districts.at(thisDistrictIdx - 1);
+    const defender = districts.at((thisDistrictIdx + 1) % districts.length);
+
+    if (!raider || !thisDistrict || !defender) throw new CommandError("District not found");
+
+    const attackingEmbed = await buildAttackEmbed(defender, await getQtrAlloc(battleGroupId, defender.bishopType, true));
+    const defendingEmbed = await buildDefendingEmbed(raider, credits, await getQtrAlloc(battleGroupId, district, false));
+
+    embeds.push(attackingEmbed, defendingEmbed);
+
+    return embeds;
+}
 
 export default entrypoint;

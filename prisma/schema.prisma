@@ -415,6 +415,8 @@ model DistrictBattle {
   attacker BishopType
   defender BishopType
 
+  messageId String
+
   battleGroup   DistrictBattleGroup @relation(fields: [battleGroupId], references: [id], onDelete: Cascade)
   battleGroupId Int
 

@@ -16,6 +16,8 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
+    await ctx.deferReply({ ephemeral: true });
+
     const { amount } = ctx.opts;
     const channel = ctx.channel;
 
@@ -39,7 +41,7 @@ command.setHandler(async (ctx) => {
     }
 
     const embed = new EmbedBuilder({ description: `Deleted ${numDeleted} out of the requested ${amount} messages` });
-    await ctx.send({ embeds: [embed] });
+    await ctx.editReply({ embeds: [embed] });
 });
 
 export default command;

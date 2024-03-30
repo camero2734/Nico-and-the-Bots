@@ -20,8 +20,8 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
+    await ctx.deferReply({ ephemeral: true });
     const { time } = ctx.opts;
-    await ctx.deferReply();
     const member = ctx.member;
 
     const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
@@ -38,9 +38,9 @@ command.setHandler(async (ctx) => {
     const inMinutes = millisecondsToMinutes(durationMs);
     const timestamp = F.discordTimestamp(endsAt, "shortDateTime");
     const embed = new EmbedBuilder()
-        .setDescription(`${member} has been timed out for ${timeStr} (${inMinutes} minutes)`)
+        .setDescription(`You have been muted for ${timeStr} (${inMinutes} minutes)`)
         .addFields([{ name: "Ends at", value: timestamp }]);
-    await ctx.send({ embeds: [embed] });
+    await ctx.editReply({ embeds: [embed] });
 
     // Message timed out member
     const dmEmbed = new EmbedBuilder()

@@ -66,12 +66,12 @@ export async function districtCron() {
             if (!defense || defense.credits === 0) return "_Nothing happened yesterday_";
 
             const creditsKept = defense.credits;
-            const creditsLost = battleWhereDefending.credits - creditsKept;
+            const creditsLost = defense.totalCredits - creditsKept;
 
             if (creditsLost <= 0) {
                 return `We successfully defended all **ↁ${creditsKept}** credits from ${prevDistrict.role.name.toUpperCase()}. They searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}, but found nothing. You have surpassed my expectations.`;
             } else if (creditsKept > 0) {
-                return `We successfully defended **ↁ${creditsKept}** credits from ${prevDistrict.role.name.toUpperCase()}. However, they managed to seize **ↁ${creditsLost}** credits stored in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have done adequately.`;
+                return `${prevDistrict.role.name.toUpperCase()} managed to seize **ↁ${creditsLost}** credits stored in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have done adequately.`;
             } else {
                 return `We lost all **ↁ${Math.abs(creditsLost)}** credits in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()} to ${prevDistrict.role.name.toUpperCase()}. You have failed me.`;
             }
@@ -82,7 +82,7 @@ export async function districtCron() {
             if (!offense || offense.credits === 0) return "_Nothing happened yesterday_";
 
             const creditsSeized = offense.credits;
-            const creditsNotFound = battleWhereAttacking.credits - creditsSeized;
+            const creditsNotFound = offense.totalCredits - creditsSeized;
 
             if (creditsNotFound <= 0) {
                 return `We successfully seized all **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from ${nextDistrict.role.name.toUpperCase()}. You have surpassed my expectations.`;

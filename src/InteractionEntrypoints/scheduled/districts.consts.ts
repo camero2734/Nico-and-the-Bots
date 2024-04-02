@@ -21,6 +21,7 @@ interface BattleResult {
     attackedQtr: number;
     defenseQtrs: number[]; // Ties are possible and count in favor of the attacker
     credits: number;
+    totalCredits: number;
     attacker: BishopType;
     defender: BishopType;
 }
@@ -148,6 +149,7 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
             attackedQtr,
             defenseQtrs,
             credits: attackerCreditsWon,
+            totalCredits: battle.credits,
             attacker,
             defender
         };
@@ -156,6 +158,7 @@ export async function concludePreviousBattle(): Promise<[DistrictResults, Thread
             attackedQtr,
             defenseQtrs,
             credits: defenderCreditsWon,
+            totalCredits: battle.credits,
             attacker,
             defender
         };

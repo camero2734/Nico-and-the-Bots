@@ -287,6 +287,8 @@ export async function determineNextMatchup(): Promise<{
     song2: SongContender;
     album1: Album;
     album2: Album;
+    song1Wins: number;
+    song2Wins: number;
     nextBattleNumber: number;
     result?: Result;
     totalMatches: number;
@@ -301,5 +303,9 @@ export async function determineNextMatchup(): Promise<{
     // The total number of matches that will be played
     const totalMatches = histories.size - 1 + numTies;
 
-    return { song1, song2, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result, totalMatches };
+    // The number of times the songs have gone before
+    const song1Wins = histories.get(song1Id)?.rounds || 0;
+    const song2Wins = histories.get(song2Id)?.rounds || 0;
+
+    return { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result, totalMatches };
 }

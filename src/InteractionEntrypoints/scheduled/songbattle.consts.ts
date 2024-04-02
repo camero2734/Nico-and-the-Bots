@@ -166,7 +166,8 @@ export const albums = [
         color: "#E33E36",
         emoji: emojiIDs.albums.clancy,
         songs: [
-            { name: "Overcompensate" }
+            { name: "Overcompensate" },
+            { name: "Next Semester" },
         ]
     },
     {

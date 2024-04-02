@@ -148,8 +148,8 @@ export async function songBattleCron() {
         }
     });
 
-    const wins1 = song1Wins > 0 ? ` (🏅x${song1Wins})` : "";
-    const wins2 = song2Wins > 0 ? ` (🏅x${song2Wins})` : "";
+    const wins1 = song1Wins > 0 ? ` 🏅x${song1Wins}` : "";
+    const wins2 = song2Wins > 0 ? ` 🏅x${song2Wins}` : "";
 
     // Create embed
     const embed = new EmbedBuilder()

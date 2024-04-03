@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription("This user has been banned from the twenty one pilots Discord server")
         .setColor(Colors.Red)
-        .setFooter({ text: "If you have any questions about this action, feel free to open a #support ticket.", iconURL: ctx.user.displayAvatarURL() });
+        .setFooter({ text: "If you have any questions about this action, feel free to open a #support ticket." });
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder()

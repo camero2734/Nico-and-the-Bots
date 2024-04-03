@@ -38,6 +38,8 @@ command.setHandler(async (ctx) => {
         throw new CommandError("You cannot ban a staff member or bot.");
     }
 
+    const banReason = (reason || "No reason provided") + ` - Banned by ${ctx.member.displayName}`;
+
     const bannedEmbed = new EmbedBuilder()
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription("You have been banned from the twenty one pilots Discord server")
@@ -54,7 +56,7 @@ command.setHandler(async (ctx) => {
     await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
 
     if (member.id !== userIDs.myAlt) {
-        await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
+        await member.ban({ deleteMessageDays: purge ? 7 : 0, reason: banReason });
     }
 
     await ctx.send({ embeds: [new EmbedBuilder({ description: `${member.toString()} was banned.` })] });
@@ -64,7 +66,7 @@ command.setHandler(async (ctx) => {
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
         .setDescription("This user has been banned from the twenty one pilots Discord server")
         .setColor(Colors.Red)
-        .setFooter({ text: `Banned by ${ctx.member.displayName} | If you have any questions about this action, feel free to open a #support ticket.`, iconURL: ctx.user.displayAvatarURL() });
+        .setFooter({ text: "If you have any questions about this action, feel free to open a #support ticket.", iconURL: ctx.user.displayAvatarURL() });
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder()

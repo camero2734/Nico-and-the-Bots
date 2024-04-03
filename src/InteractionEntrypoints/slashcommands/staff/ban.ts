@@ -57,7 +57,7 @@ command.setHandler(async (ctx) => {
         await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
     }
 
-    await ctx.send({ embeds: [new EmbedBuilder({ description: `${member.toString()} was banned.` }).toJSON()] });
+    await ctx.send({ embeds: [new EmbedBuilder({ description: `${member.toString()} was banned.` })] });
 
     // Send to ban log
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -86,13 +86,13 @@ const genBtnId = command.addInteractionListener("editBanDetails", [], async (ctx
     const actionRow = new ActionRowBuilder<TextInputBuilder>().setComponents([
         new TextInputBuilder()
             .setLabel("Public ban reason")
-            .setPlaceholder("Reason for banning. Be as thorough as possible.")
+            .setPlaceholder("Reasons for ban. Be as thorough as possible.")
             .setCustomId(FIELD_PUBLIC_BAN_REASON)
             .setRequired(true)
             .setStyle(TextInputStyle.Paragraph),
         new TextInputBuilder()
             .setLabel("Internal ban reason")
-            .setPlaceholder("Reason for banning if some details aren't appropriate to be shared. Only available to staff.")
+            .setPlaceholder("Internal reasons. Only available to staff.")
             .setCustomId(FIELD_INTERNAL_BAN_REASON)
             .setRequired(true)
             .setStyle(TextInputStyle.Paragraph)
@@ -111,7 +111,7 @@ const genSubmitId = command.addInteractionListener("editBanDetailsSubmit", [], a
     const newBanReason = ctx.fields.getTextInputValue(FIELD_PUBLIC_BAN_REASON);
     const newInternalBanReason = ctx.fields.getTextInputValue(FIELD_INTERNAL_BAN_REASON);
 
-    await ctx.editReply({ content: `Would update to:\n\n${newBanReason}. Also would note this down privately:\n\n${newInternalBanReason}` });
+    await ctx.editReply({ content: `Would update to:\n${newBanReason}.\n\nAlso would note this down privately:\n${newInternalBanReason}` });
 });
 
 export default command;

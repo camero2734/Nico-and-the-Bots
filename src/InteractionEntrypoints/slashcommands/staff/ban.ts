@@ -119,7 +119,11 @@ const genSubmitId = command.addInteractionListener("editBanDetailsSubmit", [], a
     const newBanReason = ctx.fields.getTextInputValue(FIELD_PUBLIC_BAN_REASON);
     const newInternalBanReason = ctx.fields.getTextInputValue(FIELD_INTERNAL_BAN_REASON);
 
-    await ctx.editReply({ content: `Would update to:\n${newBanReason}.\n\nAlso would note this down privately:\n${newInternalBanReason}` });
+    const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+    embed.addFields({ name: "Reason", value: newBanReason });
+
+    await ctx.message.edit({ embeds: [embed] });
+    await ctx.editReply({ content: `Ban details updated. Also noted:\n${newInternalBanReason}` })
 });
 
 export default command;

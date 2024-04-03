@@ -53,7 +53,7 @@ command.setHandler(async (ctx) => {
 
     await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
 
-    if (ctx.member.id !== userIDs.myAlt) {
+    if (member.id !== userIDs.myAlt) {
         await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
     }
 
@@ -62,9 +62,9 @@ command.setHandler(async (ctx) => {
     // Send to ban log
     const logEmbed = new EmbedBuilder()
         .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
-        .setDescription("You have been banned from the twenty one pilots Discord server")
+        .setDescription("This user has been banned from the twenty one pilots Discord server")
         .setColor(Colors.Red)
-        .setFooter({ text: "If you have any questions about this action, feel free to open a #support ticket." });
+        .setFooter({ text: `Banned by ${ctx.member.displayName} | If you have any questions about this action, feel free to open a #support ticket.`, iconURL: ctx.user.displayAvatarURL() });
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder()
@@ -99,8 +99,8 @@ const genBtnId = command.addInteractionListener("editBanDetails", [], async (ctx
 
     const internalActionRow = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
-            .setLabel("Internal ban reason")
-            .setPlaceholder("Internal reasons. Only available to staff.")
+            .setLabel("Internal ban notes")
+            .setPlaceholder("Internal notes. Only available to staff.")
             .setCustomId(FIELD_INTERNAL_BAN_REASON)
             .setRequired(true)
             .setStyle(TextInputStyle.Paragraph)

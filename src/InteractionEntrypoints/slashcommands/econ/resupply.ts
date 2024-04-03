@@ -232,6 +232,7 @@ async function memberWon(
     switch (prize.type) {
         case PrizeType.Credits:
             dbUserWithBox.credits += prize.amount;
+            prizeDescription = `You now have ${dbUserWithBox.credits} credits.`;
             break;
         case PrizeType.Role: {
             const isColorRole = Object.values(roles.colors).some((group) => Object.values(group).some((id) => id === prize.id)); // prettier-ignore

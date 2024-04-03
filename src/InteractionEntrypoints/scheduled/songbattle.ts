@@ -49,7 +49,7 @@ export async function songBattleCron() {
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, album1, album2, nextBattleNumber, result, totalMatches } = await determineNextMatchup();
+    const { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber, result, totalMatches } = await determineNextMatchup();
 
     // Update the previous battle's message
     const previousPoll = await prisma.poll.findFirst({
@@ -148,13 +148,16 @@ export async function songBattleCron() {
         }
     });
 
+    const wins1 = song1Wins > 0 ? ` 🏅x${song1Wins}` : "";
+    const wins2 = song2Wins > 0 ? ` 🏅x${song2Wins}` : "";
+
     // Create embed
     const embed = new EmbedBuilder()
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: song1.name, value: italic(album1.name), inline: true },
-            { name: song2.name, value: italic(album2.name), inline: true },
+            { name: `${song1.name}${wins1}`, value: italic(album1.name), inline: true },
+            { name: `${song2.name}${wins2}`, value: italic(album2.name), inline: true },
         ])
         .setColor(album1.color)
         .setFooter({ text: embedFooter(0) })

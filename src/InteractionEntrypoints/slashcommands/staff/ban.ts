@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder, ModalBuilder, TextChannel, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, Colors, EmbedBuilder, ModalBuilder, TextChannel, TextInputBuilder, TextInputStyle, channelMention } from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
@@ -53,52 +53,60 @@ command.setHandler(async (ctx) => {
 
     await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
 
-    if (ctx.user.id !== userIDs.myAlt) {
+    if (ctx.member.id !== userIDs.myAlt) {
         await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
     }
 
     await ctx.send({ embeds: [new EmbedBuilder({ description: `${member.toString()} was banned.` })] });
 
     // Send to ban log
+    const logEmbed = new EmbedBuilder()
+        .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+        .setDescription("You have been banned from the twenty one pilots Discord server")
+        .setColor(Colors.Red)
+        .setFooter({ text: "If you have any questions about this action, feel free to open a #support ticket." });
+
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder()
-            .setLabel("Update Action Details")
+            .setLabel("[STAFF] Update")
             .setEmoji("📝")
             .setStyle(ButtonStyle.Secondary)
             .setCustomId(genBtnId({}))
     );
 
-    bannedEmbed.setFooter({ text: "If you have any questions about this action, feel free to open a #support ticket." });
-
     const banLogChannel = (await ctx.guild.channels.fetch(channelIDs.banlog)) as TextChannel;
-    await banLogChannel.send({ embeds: [bannedEmbed], components: [actionRow] });
+    await banLogChannel.send({ embeds: [logEmbed], components: [actionRow] });
 });
 
 const FIELD_PUBLIC_BAN_REASON = "banReasonPublic";
 const FIELD_INTERNAL_BAN_REASON = "banReasonInternal";
 const genBtnId = command.addInteractionListener("editBanDetails", [], async (ctx) => {
     if (!ctx.isButton()) return;
+    if (!ctx.member.roles.cache.has(roles.staff)) throw new CommandError(`You must be a staff member to do this. If you have any questions, feel free to open a ticket in ${channelMention(channelIDs.ticketSupport)}`);
 
     const modal = new ModalBuilder()
         .setCustomId(genSubmitId({}))
         .setTitle("Edit ban details");
 
-    const actionRow = new ActionRowBuilder<TextInputBuilder>().setComponents([
+    const publicActionRow = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
             .setLabel("Public ban reason")
             .setPlaceholder("Reasons for ban. Be as thorough as possible.")
             .setCustomId(FIELD_PUBLIC_BAN_REASON)
             .setRequired(true)
-            .setStyle(TextInputStyle.Paragraph),
+            .setStyle(TextInputStyle.Paragraph)
+    );
+
+    const internalActionRow = new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
             .setLabel("Internal ban reason")
             .setPlaceholder("Internal reasons. Only available to staff.")
             .setCustomId(FIELD_INTERNAL_BAN_REASON)
             .setRequired(true)
             .setStyle(TextInputStyle.Paragraph)
-    ]);
+    );
 
-    modal.setComponents(actionRow);
+    modal.setComponents([publicActionRow, internalActionRow]);
 
     await ctx.showModal(modal);
 });

@@ -67,7 +67,6 @@
     "rimraf": "^3.0.2",
     "spotify-web-api-node": "^5.0.2",
     "string-progressbar": "^1.0.4",
-    "ts-essentials": "^8.1.0",
     "twitter-api-v2": "1.10.0",
     "twitter-openapi-typescript": "^0.0.27",
     "video-url-link": "^0.1.5",

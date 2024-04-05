@@ -36,4 +36,3 @@ This is a system that primarily watches for changes in websites related to the b
 
 ![Topfeed example](https://i.imgur.com/RVSj7iq.png)
 
-.

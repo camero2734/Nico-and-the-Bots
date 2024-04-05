@@ -1,6 +1,3 @@
-# Stage 1: Build stage
-
-# Try building based off previous image?
 FROM oven/bun:1.1-debian as build
 
 USER root

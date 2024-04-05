@@ -7,6 +7,8 @@ WORKDIR /code
 # System dependencies
 RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
 
+RUN curl -sf https://gobinaries.com/tj/node-prune | sh
+
 # NPM packages
 COPY bun.lockb package.json ./
 RUN bun install --frozen-lockfile --production --no-cache && \
@@ -15,7 +17,8 @@ RUN bun install --frozen-lockfile --production --no-cache && \
     rm -rf node_modules/@faker-js/faker/dist/types && \
     rm -rf node_modules/date-fns/fp && \
     rm -rf node_modules/@aws-sdk/client-s3/dist-types && \
-    rm -rf node_modules/@smithy/types
+    rm -rf node_modules/@smithy/types && \
+    node-prune && bunx modclean
 
 # Stage 2: Final stage
 FROM oven/bun:1.1-debian

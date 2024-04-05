@@ -1,5 +1,4 @@
 import env from "env-var";
-import 'dotenv/config'
 
 const secrets = {
     bots: {

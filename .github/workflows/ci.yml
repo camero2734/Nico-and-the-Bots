@@ -39,8 +39,8 @@ jobs:
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
-          # cache-from: type=registry,ref=camer0/nico:buildcache
-          # cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
+          cache-from: type=registry,ref=camer0/nico:buildcache
+          cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
 
       - name: Rename tag to :latest in Docker Hub

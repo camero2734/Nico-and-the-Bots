@@ -11,13 +11,7 @@ RUN apt update -qq && apt install -qq -y git-crypt
 
 # NPM packages
 COPY bun.lockb package.json ./
-RUN bun install --frozen-lockfile --production --no-cache && \
-    bun pm cache rm && \
-    rm -rf node_modules/@faker-js/faker/dist/cjs && \
-    rm -rf node_modules/@faker-js/faker/dist/types && \
-    rm -rf node_modules/date-fns/fp && \
-    rm -rf node_modules/@aws-sdk/client-s3/dist-types && \
-    rm -rf node_modules/@smithy/types
+RUN bun install --frozen-lockfile --production --no-cache && bun pm cache rm
 
 FROM build
 

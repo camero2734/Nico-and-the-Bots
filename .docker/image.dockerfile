@@ -1,4 +1,4 @@
-FROM oven/bun:1.0-debian
+FROM oven/bun:1.1-debian
 
 USER root
 WORKDIR /code

@@ -1,14 +1,13 @@
 # Stage 1: Build stage
-FROM oven/bun:1.1-debian
+
+# Try building based off previous image?
+FROM oven/bun:1.1-debian as build
 
 USER root
 WORKDIR /code
 
 # System dependencies
 RUN apt update -qq && apt install -qq -y git-crypt
-
-# Copy all files
-COPY . .
 
 # NPM packages
 COPY bun.lockb package.json ./
@@ -19,6 +18,11 @@ RUN bun install --frozen-lockfile --production --no-cache && \
     rm -rf node_modules/date-fns/fp && \
     rm -rf node_modules/@aws-sdk/client-s3/dist-types && \
     rm -rf node_modules/@smithy/types
+
+FROM build
+
+# Copy all files
+COPY . .
 
 # Unlock git-crypt
 ARG CRYPT64

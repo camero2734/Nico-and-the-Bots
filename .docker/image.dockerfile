@@ -18,7 +18,7 @@ RUN bun install --frozen-lockfile --production --no-cache && \
     rm -rf node_modules/date-fns/fp && \
     rm -rf node_modules/@aws-sdk/client-s3/dist-types && \
     rm -rf node_modules/@smithy/types && \
-    node-prune && bunx modclean
+    node-prune && bunx modclean -r
 
 # Stage 2: Final stage
 FROM oven/bun:1.1-debian
@@ -48,3 +48,9 @@ ARG UPDATE_DB
 ENV UPDATE_DB=$UPDATE_DB
 
 CMD [ "bash", ".docker/entrypoint.sh" ]
+
+
+358.6 MiB  Apparent size: 269.5 MiB
+320.1 MiB  Apparent size: 254.9 MiB 
+274.2 MiB  Apparent size: 229.1 MiB
+250.1 MiB  Apparent size: 211.1 MiB

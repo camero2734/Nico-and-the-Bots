@@ -9,7 +9,7 @@ RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 mak
 
 # NPM packages
 COPY bun.lockb package.json ./
-RUN bun install --frozen-lockfile --production --no-cache
+RUN bun install --frozen-lockfile --production --no-cache && bun pm cache rm
 
 # Stage 2: Final stage
 FROM oven/bun:1.1-debian

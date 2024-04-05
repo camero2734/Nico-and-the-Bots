@@ -48,9 +48,3 @@ ARG UPDATE_DB
 ENV UPDATE_DB=$UPDATE_DB
 
 CMD [ "bash", ".docker/entrypoint.sh" ]
-
-
-358.6 MiB  Apparent size: 269.5 MiB
-320.1 MiB  Apparent size: 254.9 MiB 
-274.2 MiB  Apparent size: 229.1 MiB
-250.1 MiB  Apparent size: 211.1 MiB

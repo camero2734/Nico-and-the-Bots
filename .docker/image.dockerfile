@@ -8,7 +8,7 @@ RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 mak
 
 # NPM packages
 COPY bun.lockb package.json ./
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --production
 
 # Copy all files
 COPY . .

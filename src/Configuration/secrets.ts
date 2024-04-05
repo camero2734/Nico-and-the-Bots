@@ -1,5 +1,4 @@
 import env from "env-var";
-import 'dotenv/config'
 
 const secrets = {
     bots: {
@@ -36,10 +35,6 @@ const secrets = {
         },
         tiktok: {
             sid_tt: env.get("TIKTOK_SESSION_LIST").required().asString()
-        },
-        minio: {
-            accessKey: env.get("MINIO_KEY").asString(),
-            secretKey: env.get("MINIO_SECRET").asString()
         },
         cloudflare: {
             ACCOUNT_ID: env.get("CLOUDFLARE_ACCOUNT_ID").required().asString(),

@@ -25,7 +25,9 @@ command.setHandler(async (ctx) => {
 
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
-    if (ctx.opts.num === 42) {
+    if (ctx.opts.num === 1) {
+        await ctx.editReply("1");
+    } else if (ctx.opts.num === 42) {
         for (const role of withColor.values()) {
             await role.delete();
         }

@@ -5,7 +5,7 @@ import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
 import { Watcher } from "./types/base";
-import { InstaWatcher, setupInstagram } from "./types/instagram";
+// import { InstaWatcher, setupInstagram } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";
 import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
@@ -18,7 +18,7 @@ class TopfeedBot {
     ready: Promise<void>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     websites: SiteWatcher<any>[] = [];
-    instagrams: InstaWatcher[] = [];
+    // instagrams: InstaWatcher[] = [];
     twitters: TwitterWatcher[] = [];
     youtubes: YoutubeWatcher[] = [];
     constructor() {
@@ -49,7 +49,7 @@ class TopfeedBot {
 
                 // Setup Instagram
                 // Instagram doesn't run in dev since logging in so often gets the account flagged
-                if (onHeroku) await setupInstagram();
+                // if (onHeroku) await setupInstagram();
 
                 resolve();
             });
@@ -66,11 +66,11 @@ class TopfeedBot {
             new SiteWatcher("https://twentyonepilots.com", "Band Homepage", ["VISUAL"], channelIDs.topfeed.band)
         ];
 
-        this.instagrams = [
-            new InstaWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
-            new InstaWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh),
-            new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler)
-        ];
+        // this.instagrams = [
+        //     new InstaWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
+        //     new InstaWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh),
+        //     new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler)
+        // ];
 
         this.twitters = [
             new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
@@ -153,7 +153,7 @@ class TopfeedBot {
     async checkGroup(jobType: JobType): Promise<void> {
         const methods: Record<JobType, () => void> = {
             YOUTUBE: () => this.#checkGroup(this.youtubes),
-            INSTAGRAM: () => this.#checkGroup(this.instagrams),
+            // INSTAGRAM: () => this.#checkGroup(this.instagrams),
             TWITTER: () => this.#checkGroup(this.twitters),
             WEBSITES: () => this.#checkGroup(this.websites)
         };
@@ -165,7 +165,7 @@ class TopfeedBot {
         await this.ready;
         const numMinutes: Record<JobType, number> = {
             YOUTUBE: 5,
-            INSTAGRAM: 15,
+            // INSTAGRAM: 15,
             TWITTER: 2,
             WEBSITES: 0.1
         };

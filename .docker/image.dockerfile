@@ -1,25 +1,27 @@
-FROM oven/bun:1.0-debian
+FROM oven/bun:1.1-debian as build
 
 USER root
 WORKDIR /code
 
 # System dependencies
-RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 make g++ llvm jq
+RUN apt update -qq && apt install -qq -y git-crypt
 
 # NPM packages
 COPY bun.lockb package.json ./
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --production --no-cache && bun pm cache rm
+
+FROM build
 
 # Copy all files
 COPY . .
 
 # Unlock git-crypt
 ARG CRYPT64
-RUN echo $CRYPT64 | base64 -d >> gc_temp.key
-RUN git -c user.name='A' -c user.email='a@a.co' stash || echo "Couldn't stash"
-RUN git-crypt unlock gc_temp.key
-RUN git -c user.name='A' -c user.email='a@a.co' stash pop || echo "Couldn't stash"
-RUN rm gc_temp.key
+RUN echo $CRYPT64 | base64 -d >> gc_temp.key && \
+    git -c user.name='A' -c user.email='a@a.co' stash || echo "Couldn't stash" && \
+    git-crypt unlock gc_temp.key && \
+    git -c user.name='A' -c user.email='a@a.co' stash pop || echo "Couldn't stash" && \
+    rm gc_temp.key
 
 # Whether or not to pull the production DB
 ARG UPDATE_DB

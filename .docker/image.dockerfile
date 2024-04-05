@@ -13,8 +13,6 @@ RUN bun install --frozen-lockfile --production --no-cache && \
     bun pm cache rm && \
     rm -rf node_modules/@faker-js/faker/dist/cjs && \
     rm -rf node_modules/@faker-js/faker/dist/types && \
-    rm -rf node_modules/date-fns/locale && \
-    rm -rf node_modules/date-fns/esm/locale && \
     rm -rf node_modules/date-fns/fp && \
     rm -rf node_modules/@aws-sdk/client-s3/dist-types && \
     rm -rf node_modules/@smithy/types

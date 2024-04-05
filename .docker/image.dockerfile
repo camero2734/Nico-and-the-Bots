@@ -5,7 +5,7 @@ USER root
 WORKDIR /code
 
 # System dependencies
-RUN apt update && apt install -y git-crypt
+RUN apt update -qq && apt install -qq -y git-crypt
 
 # Copy all files
 COPY . .

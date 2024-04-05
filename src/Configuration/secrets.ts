@@ -37,10 +37,6 @@ const secrets = {
         tiktok: {
             sid_tt: env.get("TIKTOK_SESSION_LIST").required().asString()
         },
-        minio: {
-            accessKey: env.get("MINIO_KEY").asString(),
-            secretKey: env.get("MINIO_SECRET").asString()
-        },
         cloudflare: {
             ACCOUNT_ID: env.get("CLOUDFLARE_ACCOUNT_ID").required().asString(),
             ACCESS_KEY_ID: env.get("CLOUDFLARE_ACCESS_KEY_ID").required().asString(),

@@ -34,10 +34,8 @@ jobs:
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
-          # cache-from: type=registry,ref=camer0/nico:buildcache
-          # cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
-          cache-from: type=gha
-          cache-to: type=gha,mode=min
+          cache-from: type=registry,ref=camer0/nico:buildcache
+          cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
         env: 
           TAG: "pr-${{ steps.findPr.outputs.pr }}"

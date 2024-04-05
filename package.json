@@ -34,6 +34,7 @@
     "countries-list": "^3.1.0",
     "croner": "^8.0.1",
     "date-fns": "2.28.0",
+    "diff": "^5.2.0",
     "discord.js": "^14.14.1",
     "dotenv": "^16.0.0",
     "emittery": "^0.9.2",

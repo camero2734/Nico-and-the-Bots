@@ -9,7 +9,15 @@ RUN apt update && apt install -y gnupg2 wget curl git-crypt pv unzip python3 mak
 
 # NPM packages
 COPY bun.lockb package.json ./
-RUN bun install --frozen-lockfile --production --no-cache && bun pm cache rm
+RUN bun install --frozen-lockfile --production --no-cache && \
+    bun pm cache rm && \
+    rm -rf node_modules/@faker-js/faker/dist/cjs && \
+    rm -rf node_modules/@faker-js/faker/dist/types && \
+    rm -rf node_modules/date-fns/locale && \
+    rm -rf node_modules/date-fns/esm/locale && \
+    rm -rf node_modules/date-fns/fp && \
+    rm -rf node_modules/@aws-sdk/client-s3/dist-types && \
+    rm -rf node_modules/@smithy/types
 
 # Stage 2: Final stage
 FROM oven/bun:1.1-debian

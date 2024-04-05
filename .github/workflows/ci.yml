@@ -26,6 +26,9 @@ jobs:
         with:
           state: all
 
+      - name: Add tag to env
+        run: echo "TAG=pr-${{ steps.findPr.outputs.pr }}" >> $GITHUB_ENV
+
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
@@ -37,5 +40,30 @@ jobs:
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
-        env: 
-          TAG: "pr-${{ steps.findPr.outputs.pr }}"
+
+      - name: Rename tag to :latest in Docker Hub
+        if: contains(github.event.pull_request.labels.*.name, 'deploy')
+        run: |
+          docker buildx imagetools create camer0/nico:${{ env.TAG }} --tag camer0/nico:latest
+
+      - name: Push to Dokku
+        if: contains( github.event.pull_request.labels.*.name, 'deploy')
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: ${{ secrets.DOKKU_SSH_URL }}
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PK }}
+          git_push_flags: '--force'
+
+      - name: Remove PR tag from Docker Hub
+        if: contains(github.event.pull_request.labels.*.name, 'deploy')
+        run: |
+          TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d \
+            '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_PASSWORD }}"}' \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+          echo "::add-mask::$TOKEN"
+
+          curl -i -X DELETE \
+            -H "Accept: application/json" \
+            -H "Authorization: JWT $TOKEN" \
+            https://hub.docker.com/v2/repositories/camer0/nico/tags/${{ env.TAG }}/

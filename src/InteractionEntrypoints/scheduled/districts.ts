@@ -67,13 +67,14 @@ export async function districtCron() {
 
             const creditsKept = defense.credits;
             const creditsLost = defense.totalCredits - creditsKept;
+            const attacker = defense.attacker;
 
             if (creditsLost <= 0) {
-                return `We successfully defended all **ↁ${creditsKept}** credits from ${prevDistrict.role.name.toUpperCase()}. They searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}, but found nothing. You have surpassed my expectations.`;
+                return `We successfully defended all **ↁ${creditsKept}** credits from DST. ${attacker.toUpperCase()}. They searched in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}, but found nothing. You have surpassed my expectations.`;
             } else if (creditsKept > 0) {
-                return `${prevDistrict.role.name.toUpperCase()} managed to seize **ↁ${creditsLost}** credits stored in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have done adequately.`;
+                return `DST. ${attacker.toUpperCase()} managed to seize **ↁ${creditsLost}** credits stored in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()}. You have done adequately.`;
             } else {
-                return `We lost all **ↁ${Math.abs(creditsLost)}** credits in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()} to ${prevDistrict.role.name.toUpperCase()}. You have failed me.`;
+                return `We lost all **ↁ${Math.abs(creditsLost)}** credits in ${qtrEmoji(defense.attackedQtr)} QTR ${numeral(defense.attackedQtr)?.toUpperCase()} to DST. ${attacker.toUpperCase()}. You have failed me.`;
             }
         })();
 
@@ -83,13 +84,14 @@ export async function districtCron() {
 
             const creditsSeized = offense.credits;
             const creditsNotFound = offense.totalCredits - creditsSeized;
+            const defender = offense.defender;
 
             if (creditsNotFound <= 0) {
-                return `We successfully seized all **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from ${nextDistrict.role.name.toUpperCase()}. You have surpassed my expectations.`;
+                return `We successfully seized all **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from DST. ${defender.toUpperCase()}. You have surpassed my expectations.`;
             } else if (creditsSeized > 0) {
-                return `We successfully seized **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from ${nextDistrict.role.name.toUpperCase()}. You have done adequately.`;
+                return `We successfully seized **ↁ${creditsSeized}** credits in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} from DST. ${defender.toUpperCase()}. You have done adequately.`;
             } else {
-                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of ${nextDistrict.role.name.toUpperCase()}, but found nothing. It seems they hid **ↁ${creditsNotFound}** credits elsewhere. You have failed me.`;
+                return `We searched in ${qtrEmoji(offense.attackedQtr)} QTR ${numeral(offense.attackedQtr)?.toUpperCase()} of DST. ${defender.toUpperCase()}, but found nothing. It seems they hid **ↁ${creditsNotFound}** credits elsewhere. You have failed me.`;
             }
         })();
 

@@ -52,13 +52,7 @@ export async function districtCron() {
     if (thread) await thread.send({ embeds: [battlesEmbed] });
 
     for (let i = 0; i < districts.length; i++) {
-        const prevDistrict = districts.at(i - 1)!;
         const district = districts[i];
-        const nextDistrict = districts[(i + 1) % districts.length];
-
-        const battleWhereDefending = battles[i];
-        const battleWhereAttacking = battles[(i + 1) % districts.length];
-
         const districtResults = results[district.bishopType];
 
         const defenseResults = (() => {
@@ -98,7 +92,7 @@ export async function districtCron() {
         const creditsWon = Math.max(districtResults?.offense.credits || 0, 0) + Math.max(districtResults?.defense.credits || 0, 0);
         const creditsMsg = creditsWon === 0
             ? "You have failed me."
-            : creditsWon > battleWhereAttacking.credits ? "You have surpassed my expectations." : "You have done adequately.";
+            : districtResults?.defense?.totalCredits && creditsWon > districtResults?.defense?.totalCredits ? "You have surpassed my expectations." : "You have done adequately.";
 
         const embed = new EmbedBuilder()
             .setAuthor({ name: `Announcement from ${district.name.toUpperCase()}`, iconURL: district.imageUrl })
@@ -120,6 +114,11 @@ export async function districtCron() {
                 }
             ])
             .setFooter({ text: "See the pinned message in #glorious-vista for how to play" });
+
+        const prevDistrict = districts.at(i - 1)!;
+        const nextDistrict = districts[(i + 1) % districts.length];
+        const battleWhereDefending = battles[i];
+        const battleWhereAttacking = battles[(i + 1) % districts.length];
 
         const defendingEmbed = await buildDefendingEmbed(prevDistrict, currencyAmount, await getQtrAlloc(newBattleGroup.id, district.bishopType, false));
         const attackingEmbed = await buildAttackEmbed(nextDistrict, await getQtrAlloc(newBattleGroup.id, nextDistrict.bishopType, true));

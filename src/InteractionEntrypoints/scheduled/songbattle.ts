@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { Cron } from "croner";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -151,7 +151,7 @@ export async function songBattleCron() {
     await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 }
 
-export async function updateCurrentSongBattleMessage(ctx: ChatInputCommandInteraction) {
+export async function updateCurrentSongBattleMessage() {
     // Get the latest poll
     const poll = await prisma.poll.findFirst({
         where: {
@@ -207,9 +207,7 @@ export async function updateCurrentSongBattleMessage(ctx: ChatInputCommandIntera
         }
     });
 
-    console.log(msgOptions);
-    await ctx.editReply(msgOptions);
-    // await msg.edit(msgOptions);
+    await msg.edit(msgOptions);
 }
 
 interface SongBattleDetails {

@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
     if (ctx.opts.num === 1) {
         await ctx.editReply("1");
     } else if (ctx.opts.num === 2) {
-        await updateCurrentSongBattleMessage(ctx);
+        await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 42) {
         for (const role of withColor.values()) {
             await role.delete();

@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { Cron } from "croner";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, EmbedBuilder, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -8,7 +8,7 @@ import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { IMAGE_SIZE, PREFIX, Result, buttonColors, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { Album, IMAGE_SIZE, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -96,38 +96,7 @@ export async function songBattleCron() {
     // Pick two random button colors
     const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
 
-    // Create the image
-    const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
-    const cctx = canvas.getContext("2d");
-
-    const leftImageUrl = album1.image || song1.image;
-    const rightImageUrl = album2.image || song2.image;
-    if (!leftImageUrl || !rightImageUrl) throw new CommandError("Missing image(s)");
-
-    const leftImage = await loadImage(leftImageUrl);
-    const rightImage = await loadImage(rightImageUrl);
-
-    cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a tint to the left iamge
-    cctx.fillStyle = button1[1]!;
-    cctx.globalAlpha = 0.4;
-    cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.globalAlpha = 1;
-
-    cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a tint to the right image
-    cctx.fillStyle = button2[1]!;
-    cctx.globalAlpha = 0.4;
-    cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.globalAlpha = 1;
-
-    // Draw a divider
-    const DIVIDER_WIDTH = 10;
-    cctx.fillStyle = "white";
-    cctx.fillRect(IMAGE_SIZE / 2 - DIVIDER_WIDTH / 2, 0, DIVIDER_WIDTH, IMAGE_SIZE);
-
-    const buffer = canvas.toBuffer("image/png");
-    const attachment = new AttachmentBuilder(buffer, { name: "battle.png" });
+    const buffer = await generateSongImages(album1, album2, song1, song2, button1[1] || "#000", button2[1] || "#000");
 
     const startsAt = new Date();
     const endsAt = cron.nextRun()!;
@@ -148,37 +117,30 @@ export async function songBattleCron() {
         }
     });
 
-    const wins1 = song1Wins > 0 ? ` 🏅x${song1Wins}` : "";
-    const wins2 = song2Wins > 0 ? ` 🏅x${song2Wins}` : "";
-
-    // Create embed
-    const embed = new EmbedBuilder()
-        .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
-        .setThumbnail("attachment://battle.png")
-        .addFields([
-            { name: `${song1.name}${wins1}`, value: italic(album1.name), inline: true },
-            { name: `${song2.name}${wins2}`, value: italic(album2.name), inline: true },
-        ])
-        .setColor(album1.color)
-        .setFooter({ text: embedFooter(0) })
-        .setTimestamp(startsAt);
-
-    // Create message components
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-        new ButtonBuilder()
-            .setCustomId(genButtonId({ songId: toSongId(song1, album1), pollId: poll.id.toString() }))
-            .setStyle(button1[0])
-            .setLabel(song1.name)
-            .setEmoji(album1.emoji),
-        new ButtonBuilder()
-            .setCustomId(genButtonId({ songId: toSongId(song2, album2), pollId: poll.id.toString() }))
-            .setStyle(button2[0])
-            .setLabel(song2.name)
-            .setEmoji(album2.emoji)
-    ]);
+    const msgOptions = await createMessageComponents({
+        pollId: poll.id,
+        nextBattleNumber,
+        totalMatches,
+        startsAt,
+        image: buffer,
+        song1: {
+            song: song1,
+            album: album1,
+            buttonStyle: button1[0],
+            nextBattleNumber,
+            wins: song1Wins
+        },
+        song2: {
+            song: song2,
+            album: album2,
+            buttonStyle: button2[0],
+            nextBattleNumber,
+            wins: song2Wins
+        }
+    });
 
     // Send the main message
-    await m.edit({ embeds: [embed], files: [attachment], components: [actionRow] });
+    await m.edit(msgOptions);
 
     // Create a discussion thread
     const thread = await m.startThread({
@@ -187,6 +149,155 @@ export async function songBattleCron() {
     });
 
     await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
+}
+
+export async function updateCurrentSongBattleMessage(ctx: ChatInputCommandInteraction) {
+    // Get the latest poll
+    const poll = await prisma.poll.findFirst({
+        where: {
+            name: { startsWith: PREFIX },
+        },
+        orderBy: { id: "desc" },
+    });
+
+    if (!poll) return false;
+
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+    const msg = await channel.messages.fetch(poll.options[2]);
+    if (!msg) return false;
+
+    const nextBattleNumber = parseInt(poll.name.split("-")[0].replace(PREFIX, ""));
+    const { totalMatches } = await determineNextMatchup();
+
+    const song1 = fromSongId(poll.options[0]);
+    const song2 = fromSongId(poll.options[1]);
+
+    // Pick two random button colors
+    const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
+
+    const buffer = await generateSongImages(song1.album, song2.album, song1.song, song2.song, button1[1] || "#000", button2[1] || "#000");
+
+    const { histories } = await calculateHistory();
+
+    const song1Wins = histories.get(poll.options[0])?.rounds || 0;
+    const song2Wins = histories.get(poll.options[1])?.rounds || 0;
+
+    const msgOptions = await createMessageComponents({
+        pollId: poll.id,
+        nextBattleNumber,
+        totalMatches,
+        startsAt: new Date(),
+        image: buffer,
+        song1: {
+            song: song1.song,
+            album: song1.album,
+            buttonStyle: button1[0],
+            nextBattleNumber,
+            wins: song1Wins
+        },
+        song2: {
+            song: song2.song,
+            album: song2.album,
+            buttonStyle: button2[0],
+            nextBattleNumber,
+            wins: song2Wins
+        }
+    });
+
+    console.log(msgOptions);
+    await ctx.editReply(msgOptions);
+    // await msg.edit(msgOptions);
+}
+
+interface SongBattleDetails {
+    pollId: number;
+    nextBattleNumber: number;
+    totalMatches: number;
+    startsAt: Date;
+    song1: SongBattleContender;
+    song2: SongBattleContender;
+    image: Buffer;
+}
+
+interface SongBattleContender {
+    song: SongContender;
+    album: Album;
+    buttonStyle: ButtonStyle;
+    nextBattleNumber: number;
+    wins: number;
+}
+
+async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
+    const { pollId, nextBattleNumber, totalMatches, song1, song2, startsAt, image } = details;
+
+    const wins1 = song1.wins > 0 ? ` 🏅x${song1.wins}` : "";
+    const wins2 = song2.wins > 0 ? ` 🏅x${song2.wins}` : "";
+
+    // Create embed
+    const embed = new EmbedBuilder()
+        .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
+        .setThumbnail("attachment://battle.png")
+        .addFields([
+            { name: `${song1.song.name}${wins1}`, value: italic(song1.album.name), inline: true },
+            { name: `${song2.song.name}${wins2}`, value: italic(song2.album.name), inline: true },
+        ])
+        .setColor(song1.album.color)
+        .setFooter({ text: embedFooter(0) })
+        .setTimestamp(startsAt);
+
+    // Create message components
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
+        new ButtonBuilder()
+            .setCustomId(genButtonId({ songId: toSongId(song1.song, song1.album), pollId: pollId.toString() }))
+            .setStyle(song1.buttonStyle)
+            .setLabel(song1.song.name)
+            .setEmoji(song1.album.emoji),
+        new ButtonBuilder()
+            .setCustomId(genButtonId({ songId: toSongId(song2.song, song2.album), pollId: pollId.toString() }))
+            .setStyle(song2.buttonStyle)
+            .setLabel(song2.song.name)
+            .setEmoji(song2.album.emoji)
+    ]);
+
+    const attachment = new AttachmentBuilder(image, { name: "battle.png" });
+
+    return { embeds: [embed], components: [actionRow], files: [attachment] };
+}
+
+async function generateSongImages(album1: Album, album2: Album, song1: SongContender, song2: SongContender, song1Color: string, song2Color: string) {
+    // Create the image
+    const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
+    const cctx = canvas.getContext("2d");
+
+    const leftImageUrl = album1.image || song1.image;
+    const rightImageUrl = album2.image || song2.image;
+    if (!leftImageUrl || !rightImageUrl) throw new CommandError("Missing image(s)");
+
+    const leftImage = await loadImage(leftImageUrl);
+    const rightImage = await loadImage(rightImageUrl);
+
+    cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    // Add a tint to the left iamge
+    cctx.fillStyle = song1Color;
+    cctx.globalAlpha = 0.4;
+    cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    cctx.globalAlpha = 1;
+
+    cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    // Add a tint to the right image
+    cctx.fillStyle = song2Color;
+    cctx.globalAlpha = 0.4;
+    cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
+    cctx.globalAlpha = 1;
+
+    // Draw a divider
+    const DIVIDER_WIDTH = 10;
+    cctx.fillStyle = "white";
+    cctx.fillRect(IMAGE_SIZE / 2 - DIVIDER_WIDTH / 2, 0, DIVIDER_WIDTH, IMAGE_SIZE);
+
+    return canvas.toBuffer("image/png");
 }
 
 const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["pollId", "songId"], async (ctx, args) => {

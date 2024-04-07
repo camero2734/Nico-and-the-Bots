@@ -3,6 +3,7 @@ import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { districtCron } from "../../scheduled/districts";
+import { updateCurrentSongBattleMessage } from "../../scheduled/songbattle";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -27,6 +28,8 @@ command.setHandler(async (ctx) => {
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
         await ctx.editReply("1");
+    } else if (ctx.opts.num === 2) {
+        await updateCurrentSongBattleMessage(ctx);
     } else if (ctx.opts.num === 42) {
         for (const role of withColor.values()) {
             await role.delete();

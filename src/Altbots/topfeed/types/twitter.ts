@@ -68,8 +68,6 @@ export class TwitterWatcher extends Watcher<TweetType> {
 
         const checkedTweets = await Promise.all(promises);
 
-        console.log(JSON.stringify(checkedTweets, null, 2));
-
         // Likes
         // TODO:
 

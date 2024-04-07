@@ -168,6 +168,7 @@ export async function updateCurrentSongBattleMessage() {
     const msg = await channel.messages.fetch(poll.options[2]);
     if (!msg) return false;
 
+    console.log({ pollId: poll.id, pollName: poll.name });
     const nextBattleNumber = parseInt(poll.name.split("-")[0].replace(PREFIX, ""));
     const { totalMatches } = await determineNextMatchup();
 
@@ -184,6 +185,7 @@ export async function updateCurrentSongBattleMessage() {
     const song1Wins = histories.get(poll.options[0])?.rounds || 1;
     const song2Wins = histories.get(poll.options[1])?.rounds || 1;
 
+    // @ts-expect-error
     const msgOptions = await createMessageComponents({
         pollId: poll.id,
         nextBattleNumber,
@@ -207,7 +209,7 @@ export async function updateCurrentSongBattleMessage() {
         }
     });
 
-    await msg.edit(msgOptions);
+    // await msg.edit(msgOptions);
 }
 
 interface SongBattleDetails {

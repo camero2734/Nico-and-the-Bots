@@ -158,7 +158,7 @@ class TopfeedBot {
             WEBSITES: () => this.#checkGroup(this.websites)
         };
         if (methods[jobType]) methods[jobType]();
-        else console.log(new Error("Invalid JobType"));
+        else console.log(new Error(`Invalid JobType: ${jobType}`));
     }
 
     async registerChecks(): Promise<void> {

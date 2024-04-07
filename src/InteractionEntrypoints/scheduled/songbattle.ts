@@ -181,8 +181,8 @@ export async function updateCurrentSongBattleMessage(ctx: ChatInputCommandIntera
 
     const { histories } = await calculateHistory();
 
-    const song1Wins = histories.get(poll.options[0])?.rounds || 0;
-    const song2Wins = histories.get(poll.options[1])?.rounds || 0;
+    const song1Wins = histories.get(poll.options[0])?.rounds || 1;
+    const song2Wins = histories.get(poll.options[1])?.rounds || 1;
 
     const msgOptions = await createMessageComponents({
         pollId: poll.id,
@@ -195,14 +195,15 @@ export async function updateCurrentSongBattleMessage(ctx: ChatInputCommandIntera
             album: song1.album,
             buttonStyle: button1[0],
             nextBattleNumber,
-            wins: song1Wins
+            // Need to subtract 1 because the battle hasn't ended yet
+            wins: song1Wins - 1
         },
         song2: {
             song: song2.song,
             album: song2.album,
             buttonStyle: button2[0],
             nextBattleNumber,
-            wins: song2Wins
+            wins: song2Wins - 1
         }
     });
 

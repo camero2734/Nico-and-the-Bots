@@ -57,7 +57,7 @@ export async function districtCron() {
 
         const defenseResults = (() => {
             const defense = districtResults?.defense;
-            if (!defense || defense.credits === 0) return "_Nothing happened yesterday_";
+            if (!defense) return "_Nothing happened yesterday_";
 
             const creditsKept = defense.credits;
             const creditsLost = defense.totalCredits - creditsKept;
@@ -74,7 +74,7 @@ export async function districtCron() {
 
         const offenseResults = (() => {
             const offense = districtResults?.offense;
-            if (!offense || offense.credits === 0) return "_Nothing happened yesterday_";
+            if (!offense) return "_Nothing happened yesterday_";
 
             const creditsSeized = offense.credits;
             const creditsNotFound = offense.totalCredits - creditsSeized;

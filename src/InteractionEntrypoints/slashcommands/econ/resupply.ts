@@ -122,10 +122,12 @@ const genSelectId = command.addInteractionListener("banditosBishopsSelect", ["ma
         return;
     }
 
-    await prisma.dailyBox.update({
+    const newDailyBox = await prisma.dailyBox.update({
         where: { userId: ctx.member.id },
         data: { tokens: { decrement: 1 } }
     });
+
+    dbUser.dailyBox = newDailyBox;
 
     const CHANCE_CAUGHT = District.catchPercent(districtNum);
 

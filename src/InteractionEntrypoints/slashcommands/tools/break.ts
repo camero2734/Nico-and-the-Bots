@@ -28,6 +28,7 @@ command.setHandler(async (ctx) => {
 
     const durationMs = parseDuration(timeStr);
     if (!durationMs) throw new CommandError("Unable to parse duration.");
+    if (durationMs > 2419200000) throw new CommandError("You cannot take a break longer than 28 days.")
 
     const endsAt = addMilliseconds(new Date(), durationMs);
 

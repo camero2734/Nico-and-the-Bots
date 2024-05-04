@@ -112,7 +112,7 @@ export async function songBattleCron() {
     await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
 }
 
-export async function updatePreviousSongBattleMessage() {
+export async function updatePreviousSongBattleMessage(skip = 0) {
     const channel = await guild.channels.fetch(channelIDs.songbattles);
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
@@ -123,7 +123,7 @@ export async function updatePreviousSongBattleMessage() {
         },
         orderBy: { id: "desc" },
         include: { votes: true },
-        skip: 1
+        skip: skip
     });
     const previousMessageId = previousPoll?.options[2];
 

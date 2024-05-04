@@ -63,7 +63,7 @@ export async function songBattleCron() {
     const endsAt = cron.nextRun()!;
 
     // Ping message
-    await channel.send({ content: roleMention(roles.songBattles) });
+    await channel.send({ content: roleMention(roles.songBattles), allowedMentions: { roles: [roles.songBattles] } });
 
     // Placeholder message
     const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");

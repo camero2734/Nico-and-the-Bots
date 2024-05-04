@@ -157,8 +157,7 @@ export async function updatePreviousSongBattleMessage() {
             const actionRow = previousMessage.components[0].toJSON();
             actionRow.components.forEach(c => c.disabled = true);
 
-            console.log(`Would update ${previousPoll.options.join(", ")} with result ${result}`);
-            // await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
+            await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
         }
     }
 }

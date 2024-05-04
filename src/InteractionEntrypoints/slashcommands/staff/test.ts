@@ -18,11 +18,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    // await districtCron();
-
     await ctx.deferReply({ ephemeral: true });
-
-    // Concert channels
 
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");

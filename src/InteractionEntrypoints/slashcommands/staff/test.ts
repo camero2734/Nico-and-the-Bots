@@ -3,7 +3,7 @@ import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { districtCron } from "../../scheduled/districts";
-import { updateCurrentSongBattleMessage } from "../../scheduled/songbattle";
+import { updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -18,11 +18,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    // await districtCron();
-
     await ctx.deferReply({ ephemeral: true });
-
-    // Concert channels
 
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
@@ -30,6 +26,8 @@ command.setHandler(async (ctx) => {
         await ctx.editReply("1");
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
+    } else if (ctx.opts.num === 3) {
+        await updatePreviousSongBattleMessage(1);
     } else if (ctx.opts.num === 42) {
         for (const role of withColor.values()) {
             await role.delete();

@@ -3,6 +3,7 @@ import { emojiIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
 import { CommandError } from "../../Configuration/definitions";
 import { prisma } from "../../Helpers/prisma-init";
+import { Poll, Vote } from "@prisma/client";
 
 export enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -280,6 +281,20 @@ export async function calculateHistory() {
     const sorted = F.shuffle(eligibleSongs).sort((a, b) => a[1].rounds - b[1].rounds);
 
     return { histories, sorted, numTies, previousBattlesRaw, result };
+}
+
+export function determineResult(poll: Poll & { votes: Vote[] }): Result {
+    const totalVotes = poll.votes.length;
+    const song1Votes = poll.votes.filter(v => v.choices[0] === 0).length;
+    const song2Votes = totalVotes - song1Votes;
+
+    if (song1Votes > song2Votes) {
+        return Result.Song1;
+    } else if (song2Votes > song1Votes) {
+        return Result.Song2;
+    } else {
+        return Result.Tie;
+    }
 }
 
 export async function determineNextMatchup(): Promise<{

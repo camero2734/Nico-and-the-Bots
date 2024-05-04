@@ -8,7 +8,7 @@ import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, IMAGE_SIZE, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { Album, IMAGE_SIZE, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -49,49 +49,10 @@ export async function songBattleCron() {
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber, result, totalMatches } = await determineNextMatchup();
+    const { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
 
     // Update the previous battle's message
-    const previousPoll = await prisma.poll.findFirst({
-        where: {
-            name: { startsWith: PREFIX },
-        },
-        orderBy: { id: "desc" },
-        include: { votes: true }
-    });
-    const previousMessageId = previousPoll?.options[2];
-
-    if (previousMessageId) {
-        const previousMessage = await channel.messages?.fetch(previousMessageId);
-
-        if (previousMessage) {
-            const embed = new EmbedBuilder(previousMessage.embeds[0].data);
-
-            let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
-
-            for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
-                const field = embed.data.fields?.[i];
-                if (!field) continue;
-
-                const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
-                field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
-                field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
-            }
-
-            if (winnerIdx === false) {
-                embed.addFields({
-                    name: "🙁 Tie",
-                    value: "No winner was determined. These songs will be put back into the pool.",
-                });
-            }
-
-            // Disable the buttons
-            const actionRow = previousMessage.components[0].toJSON();
-            actionRow.components.forEach(c => c.disabled = true);
-
-            await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
-        }
-    }
+    await updatePreviousSongBattleMessage();
 
     // Pick two random button colors
     const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
@@ -149,6 +110,56 @@ export async function songBattleCron() {
     });
 
     await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
+}
+
+export async function updatePreviousSongBattleMessage(skip = 0) {
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+    // Update the previous battle's message
+    const previousPoll = await prisma.poll.findFirst({
+        where: {
+            name: { startsWith: PREFIX },
+        },
+        orderBy: { id: "desc" },
+        include: { votes: true },
+        skip: skip
+    });
+    const previousMessageId = previousPoll?.options[2];
+
+
+    if (previousMessageId) {
+        const previousMessage = await channel.messages?.fetch(previousMessageId);
+        const result = determineResult(previousPoll);
+
+        if (previousMessage) {
+            const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+
+            let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+
+            for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
+                const field = embed.data.fields?.[i];
+                if (!field) continue;
+
+                const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
+                field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
+                field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
+            }
+
+            if (winnerIdx === false) {
+                embed.addFields({
+                    name: "🙁 Tie",
+                    value: "No winner was determined. These songs will be put back into the pool.",
+                });
+            }
+
+            // Disable the buttons
+            const actionRow = previousMessage.components[0].toJSON();
+            actionRow.components.forEach(c => c.disabled = true);
+
+            await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
+        }
+    }
 }
 
 export async function updateCurrentSongBattleMessage() {

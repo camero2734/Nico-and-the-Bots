@@ -4,6 +4,8 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { districtCron } from "../../scheduled/districts";
 import { updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { prisma } from "../../../Helpers/prisma-init";
+import F from "../../../Helpers/funcs";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -42,6 +44,56 @@ command.setHandler(async (ctx) => {
     } else if (ctx.opts.num === 74) {
         await districtCron();
         await ctx.editReply("Done with districtCron");
+    } else if (ctx.opts.num === 89) {
+        const results = {
+            sacarver: 2_487,
+            keons: 2_436,
+            lisden: 2_417,
+            reisdro: 2_314,
+            vetomo: 2_310,
+            nico: 2_297,
+            nills: 2_290,
+            andre: 2_270,
+            listo: 2_210
+        }
+
+        const votingRounds = await prisma.districtBattleGroup.count();
+
+        const allVotes = await prisma.districtBattleGuess.findMany();
+        const userVotes = new Map<string, number>();
+
+        for (const vote of allVotes) {
+            const current = userVotes.get(vote.userId) ?? 0;
+            userVotes.set(vote.userId, current + 1);
+        }
+
+        for (const [userId, votes] of userVotes) {
+            if (votes > 1) {
+                const member = await ctx.guild.members.fetch(userId);
+                if (!member) continue;
+                const district = F.userBishop(member)?.name;
+                if (!district) continue;
+
+                const inWinningDistrict = district === "sacarver";
+
+                const percentVoted = Math.min(1, votes / votingRounds);
+                let amountEarned = Math.floor(results[district] * percentVoted);
+                if (inWinningDistrict) amountEarned *= 2;
+
+                console.log(`${member.displayName} voted ${votes} times in dst. ${district} and earned ${amountEarned} credits`);
+                // await prisma.user.update({
+                //     where: { id: userId },
+                //     data: {
+                //         credits: { increment: amountEarned },
+                //     }
+                // });
+
+                if (inWinningDistrict) {
+                    console.log(`${member.displayName} will receive the dema role since they were in the winning district`);
+                    // await member.roles.add(roleIDs.dema);
+                }
+            }
+        }
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

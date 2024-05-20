@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, GuildMember, roleMention } from "discord.js";
-import { userIDs } from "../../../Configuration/config";
+import { ApplicationCommandOptionType, ChannelType, GuildMember, roleMention, userMention } from "discord.js";
+import { channelIDs, userIDs, roles as roleIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { districtCron } from "../../scheduled/districts";
@@ -55,7 +55,15 @@ command.setHandler(async (ctx) => {
             nills: 2_290,
             andre: 2_270,
             listo: 2_210
-        }
+        };
+
+        const chan = await ctx.guild.channels.fetch(channelIDs.gloriousVista);
+        if (chan?.type !== ChannelType.GuildText) return;
+
+        const thread = await chan.threads.create({
+            name: "District Battle Results",
+            autoArchiveDuration: 60
+        });
 
         const votingRounds = await prisma.districtBattleGroup.count();
 
@@ -85,20 +93,25 @@ command.setHandler(async (ctx) => {
                 let amountEarned = Math.floor(results[district] * percentVoted);
                 if (inWinningDistrict) amountEarned *= 2;
 
-                console.log(`${member.displayName} voted ${votes} times in dst. ${district} and earned ${amountEarned} credits`);
-                // await prisma.user.update({
-                //     where: { id: userId },
-                //     data: {
-                //         credits: { increment: amountEarned },
-                //     }
-                // });
+                let message = `${userMention(member.displayName)} voted ${votes} times in dst. ${district} and earned ${amountEarned} credits.`;
+                if (inWinningDistrict) message += ` They were in the winning district, so their earnings were doubled and they won the ${roleMention(roleIDs.dema)} role.`;
+
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: {
+                        credits: { increment: amountEarned },
+                    }
+                });
 
                 if (inWinningDistrict) {
-                    console.log(`${member.displayName} will receive the dema role since they were in the winning district`);
-                    // await member.roles.add(roleIDs.dema);
+                    await member.roles.add(roleIDs.dema);
                 }
+
+                await thread.send({ content: message });
             }
         }
+
+        await ctx.editReply("Done with districtBattle rewards");
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, roleMention } from "discord.js";
+import { ApplicationCommandOptionType, GuildMember, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
@@ -59,7 +59,7 @@ command.setHandler(async (ctx) => {
 
         const votingRounds = await prisma.districtBattleGroup.count();
 
-        const allVotes = await prisma.districtBattleGuess.findMany();
+        const allVotes = await prisma.districtBattleGuess.findMany({ select: { userId: true } });
         const userVotes = new Map<string, number>();
 
         for (const vote of allVotes) {
@@ -69,7 +69,12 @@ command.setHandler(async (ctx) => {
 
         for (const [userId, votes] of userVotes) {
             if (votes > 1) {
-                const member = await ctx.guild.members.fetch(userId);
+                let member: GuildMember;
+                try {
+                    member = await ctx.guild.members.fetch(userId);
+                } catch (e) {
+                    continue;
+                }
                 if (!member) continue;
                 const district = F.userBishop(member)?.name;
                 if (!district) continue;

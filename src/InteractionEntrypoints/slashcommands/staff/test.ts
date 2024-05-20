@@ -1,11 +1,8 @@
-import { ApplicationCommandOptionType, ChannelType, GuildMember, roleMention, userMention } from "discord.js";
-import { channelIDs, userIDs, roles as roleIDs } from "../../../Configuration/config";
+import { ApplicationCommandOptionType, roleMention } from "discord.js";
+import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
-import { districtCron } from "../../scheduled/districts";
 import { updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
-import { prisma } from "../../../Helpers/prisma-init";
-import F from "../../../Helpers/funcs";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -41,77 +38,6 @@ command.setHandler(async (ctx) => {
         await concertChannelManager.initialize();
         await concertChannelManager.checkChannels();
         await ctx.editReply("Done checking concert channels");
-    } else if (ctx.opts.num === 74) {
-        await districtCron();
-        await ctx.editReply("Done with districtCron");
-    } else if (ctx.opts.num === 89) {
-        const results = {
-            sacarver: 2_487,
-            keons: 2_436,
-            lisden: 2_417,
-            reisdro: 2_314,
-            vetomo: 2_310,
-            nico: 2_297,
-            nills: 2_290,
-            andre: 2_270,
-            listo: 2_210
-        };
-
-        const chan = await ctx.guild.channels.fetch(channelIDs.gloriousVista);
-        if (chan?.type !== ChannelType.GuildText) return;
-
-        const thread = await chan.threads.create({
-            name: "District Battle Results",
-            autoArchiveDuration: 60
-        });
-
-        const votingRounds = await prisma.districtBattleGroup.count();
-
-        const allVotes = await prisma.districtBattleGuess.findMany({ select: { userId: true } });
-        const userVotes = new Map<string, number>();
-
-        for (const vote of allVotes) {
-            const current = userVotes.get(vote.userId) ?? 0;
-            userVotes.set(vote.userId, current + 1);
-        }
-
-        for (const [userId, votes] of userVotes) {
-            if (votes > 1) {
-                let member: GuildMember;
-                try {
-                    member = await ctx.guild.members.fetch(userId);
-                } catch (e) {
-                    continue;
-                }
-                if (!member) continue;
-                const district = F.userBishop(member)?.name;
-                if (!district) continue;
-
-                const inWinningDistrict = district === "sacarver";
-
-                const percentVoted = Math.min(1, votes / votingRounds);
-                let amountEarned = Math.floor(results[district] * percentVoted);
-                if (inWinningDistrict) amountEarned *= 2;
-
-                let message = `${userMention(member.displayName)} voted ${votes} times in dst. ${district} and earned ${amountEarned} credits.`;
-                if (inWinningDistrict) message += ` They were in the winning district, so their earnings were doubled and they won the ${roleMention(roleIDs.dema)} role.`;
-
-                await prisma.user.update({
-                    where: { id: userId },
-                    data: {
-                        credits: { increment: amountEarned },
-                    }
-                });
-
-                if (inWinningDistrict) {
-                    await member.roles.add(roleIDs.dema);
-                }
-
-                await thread.send({ content: message });
-            }
-        }
-
-        await ctx.editReply("Done with districtBattle rewards");
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

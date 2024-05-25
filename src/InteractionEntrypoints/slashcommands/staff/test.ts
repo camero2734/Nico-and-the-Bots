@@ -62,7 +62,7 @@ command.setHandler(async (ctx) => {
             .filter(([userId]) => numberOfVotes.get(userId)! >= 75)
             .sort((a, b) => b[1] - a[1]);
         const mostCorrect = sorted.slice(0, 20);
-        const leastCorrect = sorted.slice(-20);
+        const leastCorrect = sorted.slice(-20).reverse();
         const embed = new EmbedBuilder()
             .setFooter({ text: `Only users with 75 or more votes are shown, ${sorted.length} users in total` })
             .addFields({ name: "Most correct", value: "```\n" + mostCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") + "\n```" })

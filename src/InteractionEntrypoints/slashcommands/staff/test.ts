@@ -65,8 +65,8 @@ command.setHandler(async (ctx) => {
         const leastCorrect = sorted.slice(-20);
         const embed = new EmbedBuilder()
             .setFooter({ text: `Only users with 75 or more votes are shown, ${sorted.length} users in total` })
-            .addFields({ name: "Most correct", value: mostCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") })
-            .addFields({ name: "Least correct", value: leastCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") });
+            .addFields({ name: "Most correct", value: "```\n" + mostCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") + "\n```" })
+            .addFields({ name: "Least correct", value: "```\n" + leastCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") + "\n```" });
 
         await ctx.editReply({ embeds: [embed] });
     } else {

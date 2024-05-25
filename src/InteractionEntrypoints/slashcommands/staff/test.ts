@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, roleMention } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder, roleMention, userMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { Result, calculateHistory, determineResult } from "../../scheduled/songbattle.consts";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -38,6 +39,31 @@ command.setHandler(async (ctx) => {
         await concertChannelManager.initialize();
         await concertChannelManager.checkChannels();
         await ctx.editReply("Done checking concert channels");
+    } else if (ctx.opts.num === 70) {
+        const songBattleResults = await calculateHistory();
+        const numberOfCorrectVotes = new Map<string, number>();
+
+        for (const poll of songBattleResults.previousBattlesRaw) {
+            const result = determineResult(poll);
+
+            for (const vote of poll.votes) {
+                const votedFor = vote.choices[0];
+                const isCorrect = votedFor === 0 && result === Result.Song1 || votedFor === 1 && result === Result.Song2;
+
+                if (isCorrect) {
+                    numberOfCorrectVotes.set(vote.userId, (numberOfCorrectVotes.get(vote.userId) ?? 0) + 1);
+                }
+            }
+        }
+
+        const sorted = [...numberOfCorrectVotes.entries()].sort((a, b) => b[1] - a[1]);
+        const mostCorrect = sorted.slice(0, 20);
+        const leastCorrect = sorted.slice(-20);
+        const embed = new EmbedBuilder()
+            .addFields({ name: "Most correct", value: mostCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / 87`).join("\n") })
+            .addFields({ name: "Least correct", value: leastCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / 87`).join("\n") });
+
+        await ctx.editReply({ embeds: [embed] });
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

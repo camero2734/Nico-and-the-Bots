@@ -218,6 +218,7 @@ export const roles = <const>{
             "Regional at Blue": "557303160197349376",
             "Dema Gray": "557303139238150154",
             "No Pink Intended": "557303175292649482",
+            "At The Risk of Feeling Plum": "1244311105715568802",
         },
         tier3: {
             "Forest Green": "557303348315815950",

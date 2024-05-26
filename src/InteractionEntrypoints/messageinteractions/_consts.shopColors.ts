@@ -71,7 +71,7 @@ export function getColorRoleCategories(roleManager: RoleManager) {
             id: "DEMA",
             data: tier5,
             description:
-                "VIOLATION WARNING: This page contains highly controlled contraband items. The Sacred Municipality of Dema will take any action necessary to keep its citizens safe from this dangerous material."
+                "**VIOLATION WARNING**: This page contains highly controlled contraband items. The Sacred Municipality of Dema will take any action necessary to keep its citizens safe from this dangerous material."
         },
         "Tower Treasures": {
             id: "Dragons",

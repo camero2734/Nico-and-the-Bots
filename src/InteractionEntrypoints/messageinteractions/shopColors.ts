@@ -229,89 +229,10 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     )
 
     for (const [name, item] of Object.entries(categories)) {
-        const sortablesProm = item.data.roles.map(async (r) => {
-            const role = await member.guild.roles.fetch(r.id);
-            return { data: r, color: role?.color || 0 };
-        });
-        const sortables = await Promise.all(sortablesProm);
-
-        const sorted = sortByColor(sortables);
-        MenuEmbed.addFields([{ name: name, value: `${italic(item.description)}\n` + sorted.map((r) => `<@&${r.data.id}>`).join("\n") + "\n\u2063" }]);
+        MenuEmbed.addFields([{ name: name, value: `${italic(item.description)}\n` + item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
     }
 
     return { embeds: [MenuEmbed], components: actionRows };
-}
-
-interface ColorSortable<Data> {
-    data: Data;
-    color: number;
-}
-
-export function sortByColor<Data>(colors: ColorSortable<Data>[]): ColorSortable<Data>[] {
-    colors.sort((a, b) => {
-        const stepA = step(a.color, 8);
-        const stepB = step(b.color, 8);
-        return compareSteps(stepA, stepB);
-    });
-
-    return colors;
-}
-
-// Function to calculate step value for a color
-function step(color: number, repetitions: number): [number, number, number] {
-    const r = (color >> 16) & 255;
-    const g = (color >> 8) & 255;
-    const b = color & 255;
-
-    let lum = Math.sqrt(0.241 * r + 0.691 * g + 0.068 * b);
-    const hsv = rgbToHsv(r, g, b);
-    const h2 = Math.floor(hsv[0] * repetitions);
-    let v2 = Math.floor(hsv[2] * repetitions);
-
-    if (h2 % 2 === 1) {
-        v2 = repetitions - v2;
-        lum = repetitions - lum;
-    }
-
-    return [h2, lum, v2];
-}
-
-// Function to convert RGB to HSV
-function rgbToHsv(r: number, g: number, b: number): [number, number, number] {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0;
-    let s = 0;
-    const v = max;
-
-    const d = max - min;
-    s = max === 0 ? 0 : d / max;
-
-    if (max !== min) {
-        switch (max) {
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-    }
-
-    return [h, s, v];
-}
-
-// Function to compare two step values
-function compareSteps(stepA: [number, number, number], stepB: [number, number, number]): number {
-    if (stepA[0] !== stepB[0]) {
-        return stepA[0] - stepB[0];
-    }
-    if (stepA[1] !== stepB[1]) {
-        return stepA[1] - stepB[1];
-    }
-    return stepA[2] - stepB[2];
 }
 
 export default msgInt;

@@ -40,9 +40,9 @@ export function getColorRoleCategories(roleManager: RoleManager) {
 
     const tier1 = new ColorCategory(tierToRoles(colorRoles.tier1), { credits: 7500, level: 10 });
     const tier2 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 20 });
-    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 35 });
-    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 25000, level: 50 });
-    const tier5 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
+    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 15000, level: 35 });
+    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 25000, level: 50 });
+    const tier5 = new ColorCategory(tierToRoles(colorRoles.tier5), { credits: 50000, level: 100 });
     const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
 
     return {

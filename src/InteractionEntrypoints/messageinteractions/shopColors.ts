@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, InteractionEditReplyOptions } from "discord.js";
+import { ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, InteractionEditReplyOptions, italic } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -229,7 +229,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     )
 
     for (const [name, item] of Object.entries(categories)) {
-        MenuEmbed.addFields([{ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
+        MenuEmbed.addFields([{ name: name, value: `${italic(item.description)}\n` + item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
     }
 
     return { embeds: [MenuEmbed], components: actionRows };

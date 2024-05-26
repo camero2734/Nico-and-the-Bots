@@ -89,7 +89,8 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
         [albumRoles.VSL]: "vessel",
         [albumRoles.BF]: "blurryface",
         [albumRoles.TRENCH]: "trench",
-        [albumRoles.SAI]: "sai"
+        [albumRoles.SAI]: "sai",
+        [albumRoles.CLANCY]: "clancy"
     }[src];
 
     const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}.png`);

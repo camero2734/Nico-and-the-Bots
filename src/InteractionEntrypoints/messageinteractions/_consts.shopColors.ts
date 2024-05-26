@@ -40,8 +40,9 @@ export function getColorRoleCategories(roleManager: RoleManager) {
 
     const tier1 = new ColorCategory(tierToRoles(colorRoles.tier1), { credits: 7500, level: 10 });
     const tier2 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 20 });
-    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 25000, level: 50 });
-    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
+    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 35 });
+    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 25000, level: 50 });
+    const tier5 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 50000, level: 100 });
     const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
 
     return {
@@ -61,17 +62,22 @@ export function getColorRoleCategories(roleManager: RoleManager) {
             description:
                 "Do you want to stand out in the crowd? Saturation Creations provides a variety of bright, colors to increase your saturation. Because saturation is happiness™."
         },
+        "Keons' Neons": {
+            id: "Keons",
+            data: tier4,
+            description: "These colors are to die for! Handpicked by Keons himself, before... well, you know."
+        },
         "DEMA's Dreamers": {
             id: "DEMA",
-            data: tier4,
+            data: tier5,
             description:
                 "VIOLATION WARNING: This page contains highly controlled contraband items. The Sacred Municipality of Dema will take any action necessary to keep its citizens safe from this dangerous material."
         },
-        "Here Be Dragons": {
+        "Tower Treasures": {
             id: "Dragons",
             data: DExclusive,
             description:
-                "Trash the Dragon sponsored this collection himself. Browse this exclusive merchandise as a Firebreather."
+                "Climb the top of the tower and see what you'll find! Browse this exclusive merchandise as a Firebreather."
         }
     };
 }

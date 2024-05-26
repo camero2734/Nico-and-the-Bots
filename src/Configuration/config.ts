@@ -209,6 +209,7 @@ export const roles = <const>{
         tier1: {
             "Cheetah Tan": "557303083303043077",
             "Vulture Brown": "557303097248972801",
+            "Goldies Station": "1244242684470755328",
             "Bandito Green": "557303116941361183"
         },
         tier2: {
@@ -216,33 +217,41 @@ export const roles = <const>{
             "Regional at Blue": "557303160197349376",
             "Dema Gray": "557303139238150154",
             "Jumpsuit Green": "557303189976907788",
-            "Bounce Man Orange": "894429283441848371"
+            "Lavaish": "894429283441848371"
         },
         tier3: {
             "Ned Blue": "557303253143126016",
-            "March to the Cyan": "557303359489703966",
-            "Never Teal It": "894427960872927242",
             "Holding on to Blue": "557303322965573848",
             "Forest Green": "557303348315815950",
-            "Trees Green": "557303213728989224",
             "Mulberry Jam": "894428312468860978",
             "Kitchen Pink": "557303336244609037",
             "Pink You Out": "558091763856965642",
-            "Rebel Red": "557303280321953810",
             "The Red and Go": "558091802813399077",
-            "Torch Orange": "557303308608471046",
+            "Maroontines in the Night": "1244240121960595516",
+            "Navygating": "1244242389258731540",
             "Fairly Lilac": "558091865593872389",
             "Pantaloon Purple": "557611467810144266",
             "Pet Cheetah Purple": "557303295513985024"
         },
         tier4: {
+            "Formidablue": "1244242819028090920",
+            "March to the Cyan": "557303359489703966",
+            "Never Teal It": "894427960872927242",
+            "Trees Green": "557303213728989224",
+            "Paladin Pink": "895466048353103892",
+            "Rebel Red": "557303280321953810",
+            "Torchbearer Orange": "557303308608471046",
+            "Ochrecompensate": "1244242855187189843",
+            "Midwest Indigo": "1244242616720031764",
+        },
+        tier5: {
             "Clancy Black": "557303371778752523",
             "DMAORG White": "557303384860917781"
         },
         DExclusive: {
             "Oh Mint Believer": "693150656764313693",
             "Silver Screen": "692990517801254933",
-            Trapdoorange: "692990519969841152",
+            "Trapdoorange": "692990519969841152",
             "Ode to Pink": "692990523014774874",
             "Bandito Yellow": "693151392780517397"
         }

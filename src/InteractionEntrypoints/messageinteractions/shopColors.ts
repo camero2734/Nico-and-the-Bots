@@ -229,47 +229,10 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     )
 
     for (const [name, item] of Object.entries(categories)) {
-        const sortablesProm = item.data.roles.map(async (r) => {
-            const role = await member.guild.roles.fetch(r.id);
-            return { data: r, color: role?.color || 0 };
-        });
-        const sortables = await Promise.all(sortablesProm);
-        const sorted = sortByColor(sortables);
-
-        MenuEmbed.addFields([{ name: name, value: `${italic(item.description)}\n` + sorted.map((r) => `<@&${r.data.id}>`).join("\n") + "\n\u2063" }]);
+        MenuEmbed.addFields([{ name: name, value: `${italic(item.description)}\n` + item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
     }
 
     return { embeds: [MenuEmbed], components: actionRows };
-}
-
-interface ColorSortable<Data> {
-    data: Data;
-    color: number;
-}
-export function sortByColor<Data>(colors: ColorSortable<Data>[]): ColorSortable<Data>[] {
-    const hsv = colors.map((c) => {
-        const r = c.color >> 16;
-        const g = (c.color >> 8) & 0xff;
-        const b = c.color & 0xff;
-
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        const delta = max - min;
-        const s = max === 0 ? 0 : delta / max;
-        let h = 0;
-        if (delta !== 0) {
-            if (max === r) h = (g - b) / delta + (g < b ? 6 : 0);
-            if (max === g) h = (b - r) / delta + 2;
-            if (max === b) h = (r - g) / delta + 4;
-            h *= 60;
-        }
-        return { h, s, v: max / 255, data: c.data, color: c.color };
-    });
-
-    return hsv.sort((a, b) => {
-        if (a.h === b.h) return a.s - b.s;
-        return a.h - b.h;
-    });
 }
 
 export default msgInt;

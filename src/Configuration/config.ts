@@ -214,8 +214,8 @@ export const roles = <const>{
         },
         tier2: {
             "No Pink Intended": "557303175292649482",
-            "Regional at Blue": "557303160197349376",
             "Dema Gray": "557303139238150154",
+            "Regional at Blue": "557303160197349376",
             "Jumpsuit Green": "557303189976907788",
             "Lavaish": "894429283441848371"
         },

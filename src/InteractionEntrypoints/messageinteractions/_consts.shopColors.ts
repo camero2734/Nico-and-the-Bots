@@ -30,7 +30,7 @@ export class ColorCategory {
     }
 }
 
-export const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clancy", "dmaorg"];
+export const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clancy", "dmaorg", "paladin"];
 
 const colorRoles = roles.colors;
 

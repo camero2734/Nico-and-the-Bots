@@ -161,14 +161,14 @@ export const districts: Array<District> = [
         .setCredits(4000)
         .addItem("BOUNTY", "10%")
         .addItem("JUMPSUIT", "5%")
-        .addRole(roles.colors.tier3["Torch Orange"], "0.75%"),
+        .addRole(roles.colors.tier4["Torchbearer Orange"], "0.75%"),
 
     new District(7)
         .setDifficulty("Almost Impossible")
         .setCredits(5000)
         .addItem("BOUNTY", "10%")
         .addItem("JUMPSUIT", "5%")
-        .addRole(roles.colors.tier4["Clancy Black"], "0.5%"),
+        .addRole(roles.colors.tier5["Clancy Black"], "0.5%"),
 
     new District(8)
         .setDifficulty("No Chances")

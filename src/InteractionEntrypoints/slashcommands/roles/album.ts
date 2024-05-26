@@ -3,14 +3,15 @@ import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
-const { SAI, TRENCH, BF, VSL, RAB, ST } = roles.albums;
+const { CLANCY, SAI, TRENCH, BF, VSL, RAB, ST } = roles.albums;
 const albumRoles = {
+    "Clancy": CLANCY,
     "Scaled and Icy": SAI,
     Trench: TRENCH,
     Blurryface: BF,
     Vessel: VSL,
     "Regional at Best": RAB,
-    "Self Titled": ST
+    "Self Titled": ST,
 };
 
 const command = new SlashCommand({

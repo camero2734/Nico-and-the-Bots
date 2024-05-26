@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, InteractionEditReplyOptions } from "discord.js";
+import { ButtonBuilder, ButtonStyle, EmbedBuilder, GuildMember, InteractionEditReplyOptions, italic } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -207,7 +207,8 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
         )
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
-    const menuActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+
+    const actionRows = MessageTools.allocateButtonsIntoRows(
         Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);
             const builder = new ButtonBuilder()
@@ -225,13 +226,13 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
 
             return builder;
         })
-    );
+    )
 
     for (const [name, item] of Object.entries(categories)) {
-        MenuEmbed.addFields([{ name: name, value: item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
+        MenuEmbed.addFields([{ name: name, value: `${italic(item.description)}\n` + item.data.roles.map((r) => `<@&${r.id}>`).join("\n") + "\n\u2063" }]);
     }
 
-    return { embeds: [MenuEmbed], components: [menuActionRow] };
+    return { embeds: [MenuEmbed], components: actionRows };
 }
 
 export default msgInt;

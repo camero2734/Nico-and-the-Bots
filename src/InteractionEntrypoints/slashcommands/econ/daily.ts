@@ -85,6 +85,8 @@ command.setHandler(async (ctx) => {
                 return "blurryface";
             case albumRoles.TRENCH:
                 return "trench";
+            case albumRoles.BF:
+                return "clancy";
             default:
                 return "sai";
         }

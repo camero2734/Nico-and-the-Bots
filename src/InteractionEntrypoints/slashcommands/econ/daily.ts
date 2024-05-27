@@ -97,7 +97,7 @@ command.setHandler(async (ctx) => {
 
     const canvas = createCanvas(500, 162);
     const cctx = canvas.getContext("2d");
-    cctx.drawImage(background, 0, 0);
+    cctx.drawImage(background, 0, 0, 500, 162);
 
     //MAKE TEXT FIT
     const maxWidth = 300;

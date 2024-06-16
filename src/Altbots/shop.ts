@@ -30,7 +30,9 @@ export class KeonsBot {
             this.client.on("ready", () => resolve());
         });
 
-        this.client.on("interactionCreate", (int) => NicoClient.listeners("interactionCreate")[0](int));
+        this.client.on("interactionCreate", (int) => {
+            NicoClient.emit("interactionCreate", int)
+        });
     }
 
     async setupShop(): Promise<void> {

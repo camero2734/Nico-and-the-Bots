@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, addMinutes } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v10";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
@@ -7,6 +7,8 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ContextMenu, MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 import { TimedInteractionListener } from "../../Structures/TimedInteractionListener";
+import Cron from "croner";
+import { guild } from "../../../app";
 
 const GOLD_COST = 2500;
 const ADDITIONAL_GOLD_COST = 1000;
@@ -19,7 +21,7 @@ const MESSAGE_ALREADY_GOLD = `This message has already been given gold! You can 
 const ctxMenu = new MessageContextMenu("🪙 Gold Message");
 
 ctxMenu.setHandler(async (ctx, msg) => {
-    if (!msg.member) throw new Error("Could not find member");
+    if (!msg.member || !msg.inGuild()) throw new Error("Could not find member");
 
     await ctx.deferReply({ ephemeral: true });
 
@@ -50,6 +52,8 @@ const genAdditionalGoldId = ctxMenu.addInteractionListener(
     "additionalGold",
     ["originalUserId", "originalMessageId", "originalChannelId"],
     async (ctx, args) => {
+        if (!ctx.message.inGuild()) return;
+
         await ctx.deferReply({ ephemeral: true });
         await handleGold(
             (<unknown>ctx) as typeof ContextMenu.GenericContextType,
@@ -63,7 +67,7 @@ const genAdditionalGoldId = ctxMenu.addInteractionListener(
 
 async function handleGold(
     ctx: typeof ContextMenu.GenericContextType,
-    msg: Message,
+    msg: Message<true>,
     originalMessageId: Snowflake,
     originalChannelId: Snowflake,
     originalUserId?: Snowflake
@@ -206,9 +210,50 @@ async function handleGold(
         new ButtonBuilder().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url)
     ]);
 
-    ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });
+    await ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });
+
+    // React to original message with gold emoji
+    await msg.react(emojiIDs.gold);
+
+    // Send message to golded user
+    const dm = await originalMember.createDM();
+    const dmEmbed = new EmbedBuilder()
+        .setDescription(`You received gold from ${ctxMember.displayName}!`)
+        .setColor(0xfce300)
+        .setFooter({ text: `Given in ${msg.channel.name}`, iconURL: ctx.guild?.iconURL() || undefined });
+
+    await dm.send({ embeds: [dmEmbed], components: [replyActionRow] });
+
+    // Add gold role
+    await originalMember.roles.add(roles.gold);
 }
 
 ctxMenu.addPermission(roles.banditos, true);
 
 export default ctxMenu;
+
+// Remove gold role from users that haven't received golds in the last 3 days
+new Cron("12 * * * *", async () => {
+    if (!guild) return;
+    const goldRole = await guild.roles.fetch(roles.gold);
+    if (!goldRole) return;
+
+    const usersWithGoldRole = goldRole.members;
+
+    const receivedGoldRecently = await prisma.gold.findMany({
+        where: {
+            toUserId: { in: usersWithGoldRole.map((u) => u.id) },
+            createdAt: { gte: addMinutes(new Date(), -3) }
+        }
+    });
+
+    const hasGoldRoleSet = new Set(usersWithGoldRole.map((u) => u.id));
+    const receivedGoldRecentlySet = new Set(receivedGoldRecently.map((g) => g.toUserId));
+
+    const toRemove = hasGoldRoleSet.difference(receivedGoldRecentlySet);
+
+    for (const userId of toRemove) {
+        const member = usersWithGoldRole.find((m) => m.id === userId)!;
+        await member.roles.remove(goldRole);
+    }
+});

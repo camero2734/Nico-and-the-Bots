@@ -39,6 +39,8 @@ command.setHandler(async (ctx) => {
         embed.addFields([{ name: "Created", value: `${role.createdAt}` }]);
         embed.addFields([{ name: "ID", value: role.id }]);
 
+        if (role.icon) embed.setThumbnail(role.iconURL({ extension: "png", size: 128 }));
+
         embeds.push(embed);
     }
 

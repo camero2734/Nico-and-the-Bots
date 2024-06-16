@@ -64,7 +64,7 @@ const genMigrateModalId = command.addInteractionListener("fmMigrateModal", ["use
 
     await prisma.userLastFM.upsert({
         where: { userId: user.id },
-        create: { username: fmUsername },
+        create: { username: fmUsername, userId: user.id },
         update: { username: fmUsername }
     });
 

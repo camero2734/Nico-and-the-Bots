@@ -32,11 +32,15 @@ command.setHandler(async (ctx) => {
         const emoji = await ctx.channel.guild.emojis.fetch(emojiId, { force: true });
         if (!emoji) continue;
 
+        const author = emoji.author?.id && await ctx.guild.members.fetch(emoji.author.id);
+
         const embed = new EmbedBuilder();
         embed.setTitle(emoji.name);
         embed.addFields([{ name: "Created", value: `${emoji.createdAt}` }]);
+        embed.addFields([{ name: "Animated", value: `${emoji.animated}` }]);
+        if (author) embed.addFields([{ name: "Creator", value: author.user.tag }]);
         embed.addFields([{ name: "ID", value: emoji.id }]);
-        embed.setImage(emoji.imageURL({ extension: "png", size: 512 }));
+        embed.setThumbnail(emoji.imageURL({ extension: "png", size: 512 }));
 
         embeds.push(embed);
     }

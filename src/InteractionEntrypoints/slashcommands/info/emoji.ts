@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, EmbedBuilder, Snowflake } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder, Snowflake, userMention } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
         embed.setTitle(emoji.name);
         embed.addFields([{ name: "Created", value: `${emoji.createdAt}` }]);
         embed.addFields([{ name: "Animated", value: `${emoji.animated}` }]);
-        if (author) embed.addFields([{ name: "Creator", value: author.user.tag }]);
+        if (author) embed.addFields([{ name: "Creator", value: userMention(author.user.id) }]);
         embed.addFields([{ name: "ID", value: emoji.id }]);
         embed.setThumbnail(emoji.imageURL({ extension: "png", size: 512 }));
 

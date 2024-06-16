@@ -1,14 +1,14 @@
-import { addDays, addMinutes } from "date-fns";
+import Cron from "croner";
+import { addDays } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v10";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
+import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ContextMenu, MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 import { TimedInteractionListener } from "../../Structures/TimedInteractionListener";
-import Cron from "croner";
-import { guild } from "../../../app";
 
 const GOLD_COST = 2500;
 const ADDITIONAL_GOLD_COST = 1000;
@@ -243,7 +243,7 @@ new Cron("12 * * * *", async () => {
     const receivedGoldRecently = await prisma.gold.findMany({
         where: {
             toUserId: { in: usersWithGoldRole.map((u) => u.id) },
-            createdAt: { gte: addMinutes(new Date(), -3) }
+            createdAt: { gte: addDays(new Date(), -3) }
         }
     });
 

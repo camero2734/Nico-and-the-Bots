@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addDays, addMinutes } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v10";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, Message, Snowflake, TextChannel } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
@@ -240,7 +240,7 @@ new Cron("12 * * * *", async () => {
     const receivedGoldRecently = await prisma.gold.findMany({
         where: {
             toUserId: { in: usersWithGoldRole.map((u) => u.id) },
-            createdAt: { gte: addDays(new Date(), -3) }
+            createdAt: { gte: addMinutes(new Date(), -3) }
         }
     });
 
@@ -251,6 +251,6 @@ new Cron("12 * * * *", async () => {
 
     for (const userId of toRemove) {
         const member = usersWithGoldRole.find((m) => m.id === userId)!;
-        await member.roles.remove(roles.gold);
+        await member.roles.remove(goldRole);
     }
 });

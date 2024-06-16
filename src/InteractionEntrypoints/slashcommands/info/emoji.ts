@@ -12,7 +12,7 @@ const command = new SlashCommand({
                 name,
                 description: `Emoji #${idx} to look up information for`,
                 required: idx === 0,
-                type: ApplicationCommandOptionType.Mentionable
+                type: ApplicationCommandOptionType.String
             }
     )
 });
@@ -25,7 +25,10 @@ command.setHandler(async (ctx) => {
 
     await ctx.guild.members.fetch();
 
-    for (const emojiId of emojis) {
+    for (const emojiMention of emojis) {
+        const emojiId = emojiMention.match(/\d+/)?.[0];
+        if (!emojiId) continue;
+
         const emoji = await ctx.channel.guild.emojis.fetch(emojiId, { force: true });
         if (!emoji) continue;
 

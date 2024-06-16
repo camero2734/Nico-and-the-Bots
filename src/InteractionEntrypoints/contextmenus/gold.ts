@@ -210,7 +210,10 @@ async function handleGold(
         new ButtonBuilder().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url)
     ]);
 
-    ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });
+    await ctx.editReply({ embeds: [replyEmbed], components: isAdditionalGold ? [] : [replyActionRow] });
+
+    // React to original message with gold emoji
+    await msg.react(emojiIDs.gold);
 
     // Send message to golded user
     const dm = await originalMember.createDM();

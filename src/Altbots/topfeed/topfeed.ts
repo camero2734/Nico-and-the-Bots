@@ -59,13 +59,13 @@ class TopfeedBot {
     async #createWatchers(): Promise<void> {
         // prettier-ignore
         this.websites = [
+            new SiteWatcher("http://dmaorg.info", "DMAORG 404 Page", ["HTML"]),
+            new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML"]),
+            new SiteWatcher("http://dmaorg.info/found/103_37/clancy.html", "DMAORG 103.37 Page", ["HTML"]),
             new SiteWatcher("http://dmaorg.info/found/103_37/Violation_Code_DMA-8325.mp4", "DMAORG Violation MP4", ["HEADERS"]),
-            new SiteWatcher("http://dmaorg.info", "DMAORG 404 Page", ["VISUAL", "HTML"]),
-            new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML", "VISUAL"]),
-            new SiteWatcher("http://dmaorg.info/found/103_37/clancy.html", "DMAORG 103.37 Page", ["HTML", "VISUAL"]),
             // new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
             //     .setDisplayedURL("https://live.twentyonepilots.com"),
-            new SiteWatcher("https://twentyonepilots.com", "Band Homepage", ["VISUAL"], channelIDs.topfeed.band)
+            // new SiteWatcher("https://twentyonepilots.com", "Band Homepage", ["VISUAL"], channelIDs.topfeed.band)
         ];
 
         // this.instagrams = [

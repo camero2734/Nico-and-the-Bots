@@ -14,14 +14,16 @@ import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { Checked, Watcher } from "./base";
+import { Headers } from "node-fetch";
 
-const watchMethods = <const>["VISUAL", "HTML", "LAST_MODIFIED"]; // Ordered by importance
+const watchMethods = <const>["VISUAL", "HTML", "HEADERS", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = typeof watchMethods[number];
 
 type CheckBase = { isNew: boolean; hash: string };
 
 type CheckObj = {
     HTML: { _data: CheckBase & { subtype: "HTML"; html: string; diff: string } };
+    HEADERS: { _data: CheckBase & { subtype: "HEADERS"; headers: string; diff: string } };
     LAST_MODIFIED: { _data: CheckBase & { subtype: "LAST_MODIFIED"; lastModified: string } };
     VISUAL: { _data: CheckBase & { subtype: "VISUAL"; image: Buffer } };
 };
@@ -63,11 +65,18 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const promises = this.watchMethods.map((wm) => {
             return {
                 HTML: () => this.#checkHTML(),
+                HEADERS: () => this.#checkHeadHTML(),
                 LAST_MODIFIED: () => this.#checkLastModified(),
                 VISUAL: () => this.#checkVisual()
             }[wm]();
         }) as Promise<CheckObj[WATCH_METHOD]["_data"]>[];
-        const response = await Promise.all(promises);
+
+        try {
+            var response = await Promise.all(promises);
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
 
         const validResponses = response.filter((r) => r.isNew);
 
@@ -89,7 +98,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const desc = [
             obj.HTML ? `\`\`\`diff\n${obj.HTML._data.diff.substring(0, 1850)}\`\`\`` : undefined,
-            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED._data.lastModified}` : undefined
+            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED._data.lastModified}` : undefined,
+            obj.HEADERS ? `\`\`\`diff\n${obj.HEADERS._data.diff.substring(0, 1850)}\`\`\`` : undefined
         ]
             .filter((d) => d !== undefined)
             .join("\n") || "No changes (?)";
@@ -133,7 +143,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         await msg.edit({ components: msg.components });
 
-        const savedUrl = await this.#archivePage(this.url);
+        const savedUrl = !this.watchMethods.includes("HEADERS") && await this.#archivePage(this.url);
 
         actionRow["components"].splice(actionRow["components"].length - 1, 1);
         if (savedUrl) {
@@ -159,6 +169,31 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         const diff = Diff.createPatch(this.id, old?.data.html || "", html);
 
         return { html, diff, hash, isNew, subtype };
+    }
+
+    async #checkHeadHTML(): Promise<CheckObj["HEADERS"]["_data"]> {
+        const subtype = <const>"HEADERS";
+
+        console.log(`Checking html for ${this.url}`);
+
+        const res = await fetch(this.url, { tls: { rejectUnauthorized: false }, method: "HEAD" });
+        const headers = [...(res.headers as unknown as Headers).entries()]
+            // Filter out some headers that we don't care about
+            .filter(([k]) => !["date", "keep-alive", "connection"].includes(k.toLowerCase()))
+            // Ensure the headers are always in the same order
+            .sort(([a], [b]) => a.localeCompare(b))
+            // Stringify the headers
+            .map(([k, v]) => `${k}: ${v}`)
+            .join("\n");
+
+        const hash = SiteWatcher.hash(headers);
+
+        const old = await this.getLatestItem(subtype);
+
+        const isNew = !old || old?.data.hash !== hash;
+        const diff = Diff.createPatch(this.id, old?.data.headers || "", headers);
+
+        return { headers, diff, hash, isNew, subtype };
     }
 
     async #checkLastModified(): Promise<CheckObj["LAST_MODIFIED"]["_data"]> {

@@ -136,7 +136,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         await msg.edit({ components: msg.components });
 
-        const savedUrl = await this.#archivePage(this.url);
+        const savedUrl = !this.watchMethods.includes("HEADERS") && await this.#archivePage(this.url);
 
         actionRow["components"].splice(actionRow["components"].length - 1, 1);
         if (savedUrl) {
@@ -171,8 +171,11 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const res = await fetch(this.url, { tls: { rejectUnauthorized: false }, method: "HEAD" });
         const headers = [...(res.headers as unknown as Headers).entries()]
-            .filter(([k]) => k.toLowerCase() !== "date" && k.toLowerCase() !== "keep-alive" && k.toLowerCase() !== "connection")
+            // Filter out some headers that we don't care about
+            .filter(([k]) => !["date", "keep-alive", "connection"].includes(k.toLowerCase()))
+            // Ensure the headers are always in the same order
             .sort(([a], [b]) => a.localeCompare(b))
+            // Stringify the headers
             .map(([k, v]) => `${k}: ${v}`)
             .join("\n");
 

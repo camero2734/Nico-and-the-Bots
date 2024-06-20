@@ -92,7 +92,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
         const desc = [
             obj.HTML ? `\`\`\`diff\n${obj.HTML._data.diff.substring(0, 1850)}\`\`\`` : undefined,
-            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED._data.lastModified}` : undefined
+            obj.LAST_MODIFIED ? `> ${obj.LAST_MODIFIED._data.lastModified}` : undefined,
+            obj.HEADERS ? `\`\`\`diff\n${obj.HEADERS._data.diff.substring(0, 1850)}\`\`\`` : undefined
         ]
             .filter((d) => d !== undefined)
             .join("\n") || "No changes (?)";

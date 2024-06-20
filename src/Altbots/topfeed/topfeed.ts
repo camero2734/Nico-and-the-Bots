@@ -75,7 +75,8 @@ class TopfeedBot {
         this.twitters = [
             new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
             new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler),
-            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh)
+            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh),
+            new TwitterWatcher("blurryface", channelIDs.topfeed.dmaorg, roles.topfeed.selectable.dmaorg)
         ];
 
         this.youtubes = [

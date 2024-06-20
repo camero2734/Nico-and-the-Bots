@@ -70,7 +70,13 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
                 VISUAL: () => this.#checkVisual()
             }[wm]();
         }) as Promise<CheckObj[WATCH_METHOD]["_data"]>[];
-        const response = await Promise.all(promises);
+
+        try {
+            var response = await Promise.all(promises);
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
 
         const validResponses = response.filter((r) => r.isNew);
 

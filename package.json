@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@types/async": "^3.2.7",
-    "@types/bun": "^1.1.5",
+    "@types/bun": "^1.0.5",
     "@types/diff": "^5.0.0",
     "@types/express": "^4.17.11",
     "@types/fuzzy-search": "^2.1.0",

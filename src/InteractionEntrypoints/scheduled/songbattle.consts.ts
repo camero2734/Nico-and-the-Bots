@@ -187,7 +187,7 @@ export const albums = [
     {
         name: AlbumName.Singles,
         color: "#FFFFFF",
-        emoji: "1211716502621917215",
+        emoji: emojiIDs.albums.clancy,
         songs: [
             // { name: "Cancer (MCR Cover)", image: "https://i.scdn.co/image/ab67616d00001e020fde79bfa5e23cb9cbdcd142" },
             // { name: "Heathens", image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb" },

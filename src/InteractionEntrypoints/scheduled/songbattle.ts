@@ -11,7 +11,7 @@ import { Album, PREFIX, Result, SongContender, buttonColors, calculateHistory, d
 
 const entrypoint = new ManualEntrypoint();
 
-export const cron = Cron("15 22 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 const SLOWMODE_SECONDS = 30;
 
@@ -41,6 +41,7 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
         if (thread) await thread.setRateLimitPerUser(SLOWMODE_SECONDS);
     }
 
+    // Also lock the previous thread
     if (!eerPreviousPoll) return;
     const eerPreviousMessage = await channel.messages.fetch(eerPreviousPoll.options[2]);
     if (eerPreviousMessage) {

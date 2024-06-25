@@ -34,7 +34,7 @@ export interface SongContender {
 }
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = "SongBattle2024ClancyTest1-";
+export const PREFIX = "SongBattle2024ClancyBattle-";
 
 export const albums = [
     // {

@@ -55,7 +55,10 @@ export async function songBattleCron() {
     await updatePreviousSongBattleMessage();
 
     // Pick two random button colors
-    const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
+    const [button1, button2] = [
+        [ButtonStyle.Secondary, "#4F545C"],
+        [ButtonStyle.Secondary, "#4F545C"]
+    ] as const;
 
     const buffer = await generateSongImages(album1, album2, song1, song2, button1[1] || "#000", button2[1] || "#000");
 

@@ -27,18 +27,28 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
             name: { startsWith: PREFIX },
         },
         orderBy: { id: "desc" },
-        take: 2,
+        take: 3,
     });
 
     if (!poll) return;
 
-    const [_, previousPoll] = poll;
+    const [_, previousPoll, eerPreviousPoll] = poll;
 
-    const message = await channel.messages.fetch(previousPoll.options[2]);
-
-    if (message) {
-        const thread = message.thread;
+    if (!previousPoll) return;
+    const previousMessage = await channel.messages.fetch(previousPoll.options[2]);
+    if (previousMessage) {
+        const thread = previousMessage.thread;
         if (thread) await thread.setRateLimitPerUser(SLOWMODE_SECONDS);
+    }
+
+    if (!eerPreviousPoll) return;
+    const eerPreviousMessage = await channel.messages.fetch(eerPreviousPoll.options[2]);
+    if (eerPreviousMessage) {
+        const thread = eerPreviousMessage.thread;
+        if (thread) {
+            await thread.setLocked(true);
+            await thread.setArchived(true);
+        }
     }
 });
 

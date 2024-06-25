@@ -250,8 +250,8 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: `${song1.song.name}${wins1}`, value: `${emoji1} ${italic(song1.album.name)}`, inline: true },
-            { name: `${song2.song.name}${wins2}`, value: `${emoji2} ${italic(song2.album.name)}`, inline: true },
+            { name: `[${song1.song.name}](${song1.song.yt})${wins1}`, value: `${emoji1} ${italic(song1.album.name)}`, inline: true },
+            { name: `[${song2.song.name}](${song2.song.yt})${wins2}`, value: `${emoji2} ${italic(song2.album.name)}`, inline: true },
         ])
         .setColor(song1.album.color)
         .setFooter({ text: embedFooter(0) })

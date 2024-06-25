@@ -29,6 +29,8 @@ export interface Album {
 export interface SongContender {
     name: string;
     image?: string;
+    /** YouTube video link */
+    yt: string;
 }
 
 export const IMAGE_SIZE = 1000;
@@ -169,19 +171,19 @@ export const albums = [
         color: "#E33E36",
         emoji: emojiIDs.albums.clancy,
         songs: [
-            { name: "Overcompensate" },
-            { name: "Next Semester" },
-            { name: "Backslide" },
-            { name: "Midwest Indigo" },
-            { name: "Routines in the Night" },
-            { name: "Vignette" },
-            { name: "The Craving (Jenna's Version)" },
-            { name: "Lavish" },
-            { name: "Navigating" },
-            { name: "Snap Back" },
-            { name: "Oldies Station" },
-            { name: "At the Risk of Feeling Dumb" },
-            { name: "Paladin Strait" },
+            { name: "Overcompensate", yt: "https://youtu.be/53tgVlXBZVg" },
+            { name: "Next Semester", yt: "https://youtu.be/a5i-KdUQ47o" },
+            { name: "Backslide", yt: "https://youtu.be/YAmLMohrus4" },
+            { name: "Midwest Indigo", yt: "https://youtu.be/mREOvIgImmo" },
+            { name: "Routines in the Night", yt: "https://youtu.be/AupwoN8QvbU" },
+            { name: "Vignette", yt: "https://youtu.be/eoEKwwbPfvc" },
+            { name: "The Craving (Jenna's Version)", yt: "https://youtu.be/yN6OQncqqI0" },
+            { name: "Lavish", yt: "https://youtu.be/flYgpeWsC2E" },
+            { name: "Navigating", yt: "https://youtu.be/07YtBj3BEBQ" },
+            { name: "Snap Back", yt: "https://youtu.be/eZptwvjKjk4" },
+            { name: "Oldies Station", yt: "https://youtu.be/fBE_2sHDt4E" },
+            { name: "At the Risk of Feeling Dumb", yt: "https://youtu.be/TnoWOgAD054" },
+            { name: "Paladin Strait", yt: "https://youtu.be/mix9YfaaNa0" },
         ]
     },
     {
@@ -195,7 +197,7 @@ export const albums = [
             // { name: "Christmas Saves the Year", image: "https://i.scdn.co/image/ab67616d00001e02fdd772158c3af54caf44879b" },
             // { name: "Twenty-Four (Switchfoot Cover)", image: "https://i.scdn.co/image/ab67616d00001e0243882fdb47a06d880f61efdc" },
             // { name: "Time to Say Goodbye", image: "https://i1.sndcdn.com/artworks-000005083596-vd83l9-t500x500.jpg" },
-            { name: "The Craving (single version)", image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26" },
+            { name: "The Craving (single version)", image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26", yt: "https://youtu.be/H3OiQEOcrA8" },
         ]
     },
 ] satisfies Album[];

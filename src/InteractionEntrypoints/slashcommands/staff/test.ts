@@ -1,8 +1,9 @@
-import { ApplicationCommandOptionType, roleMention } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder, roleMention, userMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { Result, calculateHistory, determineResult } from "../../scheduled/songbattle.consts";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -26,7 +27,7 @@ command.setHandler(async (ctx) => {
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {
-        await updatePreviousSongBattleMessage(1);
+        await updatePreviousSongBattleMessage(0);
     } else if (ctx.opts.num === 42) {
         for (const role of withColor.values()) {
             await role.delete();
@@ -38,6 +39,36 @@ command.setHandler(async (ctx) => {
         await concertChannelManager.initialize();
         await concertChannelManager.checkChannels();
         await ctx.editReply("Done checking concert channels");
+    } else if (ctx.opts.num === 70) {
+        const songBattleResults = await calculateHistory();
+        const numberOfCorrectVotes = new Map<string, number>();
+        const numberOfVotes = new Map<string, number>();
+
+        for (const poll of songBattleResults.previousBattlesRaw) {
+            const result = determineResult(poll);
+
+            for (const vote of poll.votes) {
+                const votedFor = vote.choices[0];
+                const isCorrect = votedFor === 0 && result === Result.Song1 || votedFor === 1 && result === Result.Song2;
+
+                numberOfVotes.set(vote.userId, (numberOfVotes.get(vote.userId) ?? 0) + 1);
+                if (isCorrect) {
+                    numberOfCorrectVotes.set(vote.userId, (numberOfCorrectVotes.get(vote.userId) ?? 0) + 1);
+                }
+            }
+        }
+
+        const sorted = [...numberOfCorrectVotes.entries()]
+            .filter(([userId]) => numberOfVotes.get(userId)! >= 75)
+            .sort((a, b) => b[1] - a[1]);
+        const mostCorrect = sorted.slice(0, 20);
+        const leastCorrect = sorted.slice(-20).reverse();
+        const embed = new EmbedBuilder()
+            .setFooter({ text: `Only users with 75 or more votes are shown, ${sorted.length} users in total` })
+            .addFields({ name: "Most correct", value: "```\n" + mostCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") + "\n```" })
+            .addFields({ name: "Least correct", value: "```\n" + leastCorrect.map(([userId, count]) => `${userMention(userId)}: ${count} / ${numberOfVotes.get(userId)}`).join("\n") + "\n```" });
+
+        await ctx.editReply({ embeds: [embed] });
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

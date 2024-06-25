@@ -287,7 +287,7 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 
     // Check if the user has already voted
     const existingVote = await prisma.vote.findFirst({
-        select: { id: true },
+        select: { id: true, choices: true },
         where: { pollId, userId: ctx.user.id }
     });
 
@@ -314,7 +314,8 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
     await ctx.message.edit({ embeds: [embed], files: [...ctx.message.attachments.values()] });
 
     if (existingVote) {
-        await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
+        if (existingVote.choices[0] === choiceId) await ctx.editReply({ content: `You already voted for ${song.name} on the album ${album.name}. But thanks for confirming.` });
+        else await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
     } else {
         await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
     }

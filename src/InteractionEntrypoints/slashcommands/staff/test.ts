@@ -45,7 +45,8 @@ command.setHandler(async (ctx) => {
         const nextRun = cron.nextRun();
         if (!nextRun) throw new CommandError("Next run is null");
 
-        await ctx.editReply(`Next run: ${F.discordTimestamp(nextRun, "relative")}`);
+        const timeStamp = F.discordTimestamp(nextRun, "relative");
+        await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

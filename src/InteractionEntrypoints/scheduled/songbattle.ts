@@ -1,6 +1,5 @@
-import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { Cron } from "croner";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -8,7 +7,7 @@ import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, IMAGE_SIZE, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { Album, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -28,18 +27,29 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
             name: { startsWith: PREFIX },
         },
         orderBy: { id: "desc" },
-        take: 2,
+        take: 3,
     });
 
     if (!poll) return;
 
-    const [_, previousPoll] = poll;
+    const [_, previousPoll, eerPreviousPoll] = poll;
 
-    const message = await channel.messages.fetch(previousPoll.options[2]);
-
-    if (message) {
-        const thread = message.thread;
+    if (!previousPoll) return;
+    const previousMessage = await channel.messages.fetch(previousPoll.options[2]);
+    if (previousMessage) {
+        const thread = previousMessage.thread;
         if (thread) await thread.setRateLimitPerUser(SLOWMODE_SECONDS);
+    }
+
+    // Also lock the previous thread
+    if (!eerPreviousPoll) return;
+    const eerPreviousMessage = await channel.messages.fetch(eerPreviousPoll.options[2]);
+    if (eerPreviousMessage) {
+        const thread = eerPreviousMessage.thread;
+        if (thread) {
+            await thread.setLocked(true);
+            await thread.setArchived(true);
+        }
     }
 });
 
@@ -55,9 +65,12 @@ export async function songBattleCron() {
     await updatePreviousSongBattleMessage();
 
     // Pick two random button colors
-    const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
+    const [button1, button2] = [
+        [ButtonStyle.Secondary, "#4F545C"],
+        [ButtonStyle.Secondary, "#4F545C"]
+    ] as const;
 
-    const buffer = await generateSongImages(album1, album2, song1, song2, button1[1] || "#000", button2[1] || "#000");
+    // const buffer = await generateSongImages(album1, album2, song1, song2, button1[1] || "#000", button2[1] || "#000");
 
     const startsAt = new Date();
     const endsAt = cron.nextRun()!;
@@ -83,7 +96,6 @@ export async function songBattleCron() {
         nextBattleNumber,
         totalMatches,
         startsAt,
-        image: buffer,
         song1: {
             song: song1,
             album: album1,
@@ -105,7 +117,7 @@ export async function songBattleCron() {
 
     // Create a discussion thread
     const thread = await m.startThread({
-        name: `Song Battle #${nextBattleNumber}`,
+        name: `Clancy Song Battle #${nextBattleNumber}`,
         autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
     });
 
@@ -187,8 +199,6 @@ export async function updateCurrentSongBattleMessage() {
     // Pick two random button colors
     const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
 
-    const buffer = await generateSongImages(song1.album, song2.album, song1.song, song2.song, button1[1] || "#000", button2[1] || "#000");
-
     const { histories, previousBattlesRaw } = await calculateHistory();
 
     const song1Wins = histories.get(poll.options[0])?.rounds || 1;
@@ -200,7 +210,6 @@ export async function updateCurrentSongBattleMessage() {
         nextBattleNumber,
         totalMatches,
         startsAt: new Date(),
-        image: buffer,
         song1: {
             song: song1.song,
             album: song1.album,
@@ -228,7 +237,6 @@ interface SongBattleDetails {
     startsAt: Date;
     song1: SongBattleContender;
     song2: SongBattleContender;
-    image: Buffer;
 }
 
 interface SongBattleContender {
@@ -240,18 +248,21 @@ interface SongBattleContender {
 }
 
 async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
-    const { pollId, nextBattleNumber, totalMatches, song1, song2, startsAt, image } = details;
+    const { pollId, nextBattleNumber, totalMatches, song1, song2, startsAt } = details;
 
     const wins1 = song1.wins > 0 ? ` 🏅x${song1.wins}` : "";
     const wins2 = song2.wins > 0 ? ` 🏅x${song2.wins}` : "";
+
+    const emoji1 = `<:emoji:${song1.album.emoji}>`;
+    const emoji2 = `<:emoji:${song2.album.emoji}>`;
 
     // Create embed
     const embed = new EmbedBuilder()
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: `${song1.song.name}${wins1}`, value: italic(song1.album.name), inline: true },
-            { name: `${song2.song.name}${wins2}`, value: italic(song2.album.name), inline: true },
+            { name: `${song1.song.name}${wins1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
+            { name: `${song2.song.name}${wins2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
         ])
         .setColor(song1.album.color)
         .setFooter({ text: embedFooter(0) })
@@ -271,43 +282,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             .setEmoji(song2.album.emoji)
     ]);
 
-    const attachment = new AttachmentBuilder(image, { name: "battle.png" });
-
-    return { embeds: [embed], components: [actionRow], files: [attachment] };
-}
-
-async function generateSongImages(album1: Album, album2: Album, song1: SongContender, song2: SongContender, song1Color: string, song2Color: string) {
-    // Create the image
-    const canvas = createCanvas(IMAGE_SIZE, IMAGE_SIZE);
-    const cctx = canvas.getContext("2d");
-
-    const leftImageUrl = album1.image || song1.image;
-    const rightImageUrl = album2.image || song2.image;
-    if (!leftImageUrl || !rightImageUrl) throw new CommandError("Missing image(s)");
-
-    const leftImage = await loadImage(leftImageUrl);
-    const rightImage = await loadImage(rightImageUrl);
-
-    cctx.drawImage(leftImage, 0, 0, leftImage.width / 2, leftImage.height, 0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a tint to the left iamge
-    cctx.fillStyle = song1Color;
-    cctx.globalAlpha = 0.4;
-    cctx.fillRect(0, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.globalAlpha = 1;
-
-    cctx.drawImage(rightImage, rightImage.width / 2, 0, rightImage.width / 2, rightImage.height, IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    // Add a tint to the right image
-    cctx.fillStyle = song2Color;
-    cctx.globalAlpha = 0.4;
-    cctx.fillRect(IMAGE_SIZE / 2, 0, IMAGE_SIZE / 2, IMAGE_SIZE);
-    cctx.globalAlpha = 1;
-
-    // Draw a divider
-    const DIVIDER_WIDTH = 10;
-    cctx.fillStyle = "white";
-    cctx.fillRect(IMAGE_SIZE / 2 - DIVIDER_WIDTH / 2, 0, DIVIDER_WIDTH, IMAGE_SIZE);
-
-    return canvas.toBuffer("image/png");
+    return { embeds: [embed], components: [actionRow] };
 }
 
 const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["pollId", "songId"], async (ctx, args) => {
@@ -323,7 +298,7 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 
     // Check if the user has already voted
     const existingVote = await prisma.vote.findFirst({
-        select: { id: true },
+        select: { id: true, choices: true },
         where: { pollId, userId: ctx.user.id }
     });
 
@@ -350,7 +325,8 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
     await ctx.message.edit({ embeds: [embed], files: [...ctx.message.attachments.values()] });
 
     if (existingVote) {
-        await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
+        if (existingVote.choices[0] === choiceId) await ctx.editReply({ content: `You already voted for ${song.name} on the album ${album.name}. But thanks for confirming.` });
+        else await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
     } else {
         await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
     }

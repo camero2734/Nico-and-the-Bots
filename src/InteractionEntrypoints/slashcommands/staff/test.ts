@@ -1,8 +1,10 @@
 import { ApplicationCommandOptionType, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
-import { updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { cron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -38,6 +40,13 @@ command.setHandler(async (ctx) => {
         await concertChannelManager.initialize();
         await concertChannelManager.checkChannels();
         await ctx.editReply("Done checking concert channels");
+    } else if (ctx.opts.num === 420) {
+        // songBattleCron();
+        const nextRun = cron.nextRun();
+        if (!nextRun) throw new CommandError("Next run is null");
+
+        const timeStamp = F.discordTimestamp(nextRun, "relative");
+        await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

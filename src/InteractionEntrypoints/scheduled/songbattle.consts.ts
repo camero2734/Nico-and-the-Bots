@@ -294,7 +294,9 @@ export async function calculateHistory() {
     const eligibleSongs = Array.from(histories.entries()).filter(([_, h]) => h.eliminations < NUMBER_OF_ELIMINATIONS);
     const sorted = F.shuffle(eligibleSongs).sort((a, b) => a[1].rounds - b[1].rounds);
 
-    return { histories, sorted, numTies, previousBattlesRaw, result };
+    const fewestEliminations = Math.min(...sorted.map(s => s[1].eliminations));
+
+    return { histories, sorted, numTies, previousBattlesRaw, result, fewestEliminations };
 }
 
 export function determineResult(poll: Poll & { votes: Vote[] }): Result {
@@ -322,7 +324,7 @@ export async function determineNextMatchup(): Promise<{
     result?: Result;
     totalMatches: number;
 }> {
-    const { sorted, histories, numTies, previousBattlesRaw, result } = await calculateHistory();
+    const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = await calculateHistory();
 
     const [song1Id, song2Id] = sorted.slice(0, 2).map(s => s[0]);
 
@@ -330,7 +332,8 @@ export async function determineNextMatchup(): Promise<{
     const { song: song2, album: album2 } = fromSongId(song2Id);
 
     // The total number of matches that will be played
-    const totalMatches = histories.size - 1 + numTies;
+    // For NUMBER_OF_ELIMINATIONS > 1, this is a lower bound.
+    const totalMatches = NUMBER_OF_ELIMINATIONS * (histories.size - 1) + numTies + fewestEliminations;
 
     // The number of times the songs have gone before
     const song1Wins = histories.get(song1Id)?.rounds || 0;

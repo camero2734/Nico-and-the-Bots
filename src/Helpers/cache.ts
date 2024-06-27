@@ -1,7 +1,42 @@
-import NodeCache from 'node-cache';
+import { secondsToMilliseconds } from 'date-fns';
 import { DeepReadonly } from '../Structures/SlashCommandOptions';
 
-const cache = new NodeCache({ useClones: false, checkperiod: 1 });
+class Cache {
+    constructor(private cache = new Map<string, { data: any, expires: number }>(), private gcSeconds = 60) {
+        if (gcSeconds !== 0) this.garbageCollect();
+    }
+
+    get<T>(key: string): T | undefined {
+        const cached = this.cache.get(key);
+        if (!cached) return undefined;
+        if (cached.expires < Date.now()) {
+            this.del(key);
+            return undefined;
+        }
+        return cached.data;
+    }
+
+    set<T>(key: string, value: T, ttlSeconds: number) {
+        this.cache.set(key, { data: value, expires: Date.now() + secondsToMilliseconds(ttlSeconds) });
+    }
+
+    del(key: string) {
+        this.cache.delete(key);
+    }
+
+    garbageCollect(once = false) {
+        for (const [key, value] of this.cache) {
+            if (value.expires < Date.now()) {
+                this.del(key);
+            }
+        }
+        if (once) return;
+
+        setTimeout(() => this.garbageCollect(), secondsToMilliseconds(this.gcSeconds));
+    }
+}
+
+const cache = new Cache();
 
 export const withCache = async <T>(key: string, fn: () => Promise<T>, ttlSeconds = 60): Promise<DeepReadonly<T>> => {
     const cached = cache.get<T>(key);

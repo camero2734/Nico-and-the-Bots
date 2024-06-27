@@ -43,6 +43,10 @@ jobs:
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
 
+      - name: Run tests
+        run: |
+          docker run --rm camer0/nico:${{ env.TAG }} bun test
+
       - name: Rename tag to :latest in Docker Hub
         if: contains(github.event.pull_request.labels.*.name, 'deploy')
         run: |

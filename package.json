@@ -56,7 +56,6 @@
     "mime-types": "^2.1.31",
     "moize": "^6.1.0",
     "nanoid": "3.2.0",
-    "node-cache": "^5.1.2",
     "normalize-url": "^4.5.0",
     "ordinal": "^1.0.3",
     "parse-duration": "^1.1.0",

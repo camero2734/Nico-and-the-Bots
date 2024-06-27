@@ -1,8 +1,11 @@
 import { secondsToMilliseconds } from 'date-fns';
 import { DeepReadonly } from '../Structures/SlashCommandOptions';
 
-class Cache {
-    constructor(private cache = new Map<string, { data: any, expires: number }>(), private gcSeconds = 60) {
+export class Cache {
+    private cache: Map<string, { data: any, expires: number }>;
+
+    constructor(private gcSeconds = 60) {
+        this.cache = new Map();
         if (gcSeconds !== 0) this.garbageCollect();
     }
 

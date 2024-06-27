@@ -8,6 +8,7 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { Album, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { invalidateCache, withCache } from "../../Helpers/cache";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -138,7 +139,6 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         skip: skip
     });
     const previousMessageId = previousPoll?.options[2];
-
 
     if (previousMessageId) {
         const previousMessage = await channel.messages?.fetch(previousMessageId);
@@ -289,18 +289,28 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
     await ctx.deferReply({ ephemeral: true });
     if (!ctx.isButton()) return;
 
+    await ctx.editReply({ content: "Processing your vote..." });
+
+    const { song, album } = fromSongId(args.songId);
+
     // Find associated poll
     const pollId = parseInt(args.pollId);
-    const poll = await prisma.poll.findUnique({ where: { id: pollId } });
+    const poll = await withCache(`sb:poll-${pollId}`, () => prisma.poll.findUnique({ where: { id: pollId }, select: { options: true } }), 600);
+
     if (!poll) throw new CommandError("Poll not found");
 
     const choiceId = poll.options.findIndex(o => o === args.songId);
 
     // Check if the user has already voted
-    const existingVote = await prisma.vote.findFirst({
+    const existingVote = await withCache(`sb:vote-${pollId}-${ctx.user.id}`, () => prisma.vote.findFirst({
         select: { id: true, choices: true },
         where: { pollId, userId: ctx.user.id }
-    });
+    }), 30);
+
+    if (existingVote && existingVote.choices[0] === choiceId) {
+        await ctx.editReply({ content: `You already voted for ${song.name} on the album ${album.name}. But thanks for confirming.` });
+        return;
+    } else invalidateCache(`sb:vote-${pollId}-${ctx.user.id}`);
 
     // Create or update the vote
     await prisma.vote.upsert({
@@ -312,21 +322,21 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
         },
         update: {
             choices: [choiceId]
-        }
+        },
     });
 
-    const totalVotes = await prisma.vote.count({ where: { pollId } });
+    // Update main message vote count
+    withCache(`sb:votes-${pollId}`, async () => {
+        const totalVotes = await prisma.vote.count({ where: { pollId } });
 
-    const { song, album } = fromSongId(args.songId);
+        const embed = new EmbedBuilder(ctx.message.embeds[0].data);
+        embed.setFooter({ text: embedFooter(totalVotes) });
 
-    const embed = new EmbedBuilder(ctx.message.embeds[0].data);
-    embed.setFooter({ text: embedFooter(totalVotes) });
-
-    await ctx.message.edit({ embeds: [embed], files: [...ctx.message.attachments.values()] });
+        await ctx.message.edit({ embeds: [embed] });
+    }, 5);
 
     if (existingVote) {
-        if (existingVote.choices[0] === choiceId) await ctx.editReply({ content: `You already voted for ${song.name} on the album ${album.name}. But thanks for confirming.` });
-        else await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
+        await ctx.editReply({ content: `You changed your vote to ${song.name} on the album ${album.name}` });
     } else {
         await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
     }

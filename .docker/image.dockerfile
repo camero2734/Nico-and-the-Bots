@@ -1,4 +1,4 @@
-FROM oven/bun:1.1-debian as build
+FROM oven/bun:1.1-debian AS build
 
 USER root
 WORKDIR /code
@@ -22,9 +22,5 @@ RUN echo $CRYPT64 | base64 -d >> gc_temp.key && \
     git-crypt unlock gc_temp.key && \
     git -c user.name='A' -c user.email='a@a.co' stash pop || echo "Couldn't stash" && \
     rm gc_temp.key
-
-# Whether or not to pull the production DB
-ARG UPDATE_DB
-ENV UPDATE_DB=$UPDATE_DB
 
 CMD [ "bash", ".docker/entrypoint.sh" ]

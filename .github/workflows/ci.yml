@@ -31,27 +31,25 @@ jobs:
       - name: Add tag to env
         run: echo "TAG=pr-${{ steps.findPr.outputs.pr }}" >> $GITHUB_ENV
 
-      - name: Build and load image
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
-          load: true
+          push: true
           tags: camer0/nico:${{ env.TAG }}
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
+            COMMIT_SHA=${{ github.event.pull_request.head.sha }}
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
 
+      - name: Pull and load image
+        run: docker pull camer0/nico:${{ env.TAG }}
+
       - name: Run tests
         run: |
           docker run --rm camer0/nico:${{ env.TAG }} bun test
-
-      - name: Push image to Docker Hub
-        uses: docker/build-push-action@v5
-        with:
-          tags: camer0/nico:${{ env.TAG }}
-          push: true
 
       - name: Rename tag to :latest in Docker Hub
         if: contains(github.event.pull_request.labels.*.name, 'deploy')

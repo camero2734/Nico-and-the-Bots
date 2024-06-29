@@ -172,6 +172,7 @@ export const roles = <const>{
     vc: "465268535543988224",
     staffSupport: "1215033226674839582",
     songBattles: "1216123368613351594",
+    qotwContributor: "1249235874281947146",
     albums: {
         CLANCY: "1233054456501768242",
         SAI: "849825119337840680",

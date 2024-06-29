@@ -330,7 +330,7 @@ export function findFirstUnmatchedSongs(sorted: [string, SongBattleHistory][], p
 
         for (const [song2Id, history2] of sorted) {
             // We've already found a better match
-            if (history2.rounds > maximumRound2) break;
+            if (history2.rounds >= maximumRound2) break;
             // Can't match a song against itself
             if (song1Id === song2Id) continue;
             // This song has already gone against song1
@@ -340,6 +340,7 @@ export function findFirstUnmatchedSongs(sorted: [string, SongBattleHistory][], p
             finalSong2Id = song2Id;
             maximumRound1 = history.rounds;
             maximumRound2 = history2.rounds;
+            break;
         }
     }
 

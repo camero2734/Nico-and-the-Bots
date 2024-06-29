@@ -2,6 +2,7 @@ import { Image, createCanvas, loadImage } from "@napi-rs/canvas";
 import { GuildMember } from "discord.js";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
+import { roles } from "../Configuration/config";
 
 interface BadgeLoaderOptions {
     numBadges?: number;
@@ -34,42 +35,34 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
 
     yield await createBadge("booster.png", async function () {
         return member.roles.cache.has("585527743324880897");
-
     });
 
     yield await createBadge("staff.png", async function () {
         return member.roles.cache.has("330877657132564480");
-
     });
 
     yield await createBadge("rich.png", async function () {
         return member.roles.cache.has("350036748404785153");
-
     });
 
     yield await createBadge("firebreather.png", async function () {
         return member.roles.cache.has("283272728084086784");
-
     });
 
     yield await createBadge("cliqueart.png", async function () {
         return member.roles.cache.has("705224524098043914");
-
     });
 
     yield await createBadge("youtube.png", async function () {
         return member.roles.cache.has("341027502703116289");
-
     });
 
     yield await createBadge("commonfren.png", async function () {
         return member.roles.cache.has("332021614256455690");
-
     });
 
     yield await createBadge("artist.png", async function () {
         return member.roles.cache.has("341029793954922496");
-
     });
 
     yield await createBadge("top10.png", async function () {
@@ -147,6 +140,10 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     yield await createBadge("lgbt.png", async function () {
         const badge = await prisma.badge.findUnique({ where: { userId_type: { userId: member.id, type: "LGBT" } } });
         return !!badge;
+    });
+
+    yield await createBadge("qotw.png", async function () {
+        return member.roles.cache.has(roles.qotwContributor);
     });
 
     yield await createBadge("teamWinner.png", async function () {

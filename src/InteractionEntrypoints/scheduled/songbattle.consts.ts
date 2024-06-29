@@ -315,6 +315,42 @@ export function determineResult(poll: Poll & { votes: Vote[] }): Result {
     }
 }
 
+export function findFirstUnmatchedSongs(sorted: [string, SongBattleHistory][], previousBattlesRaw: Poll[]) {
+    let maximumRound1 = Infinity;
+    let maximumRound2 = Infinity;
+    let finalSong1Id: string | undefined;
+    let finalSong2Id: string | undefined;
+
+    // Find the first two songs that haven't been matched up yet
+    for (const [song1Id, history] of sorted) {
+        // This song is in a higher bracket than an earlier found match, no need to continue
+        if (history.rounds > maximumRound1) break;
+
+        const previousBattles = previousBattlesRaw.filter(b => b.options.includes(song1Id));
+
+        for (const [song2Id, history2] of sorted) {
+            // We've already found a better match
+            if (history2.rounds > maximumRound2) break;
+            // Can't match a song against itself
+            if (song1Id === song2Id) continue;
+            // This song has already gone against song1
+            if (previousBattles.some(b => b.options.includes(song2Id))) continue;
+
+            finalSong1Id = song1Id;
+            finalSong2Id = song2Id;
+            maximumRound1 = history.rounds;
+            maximumRound2 = history2.rounds;
+        }
+    }
+
+    if (finalSong1Id && finalSong2Id) {
+        return { song1Id: finalSong1Id, song2Id: finalSong2Id };
+    }
+
+    // All songs have gone against each other
+    throw new Error("All songs have been matched up");
+}
+
 export async function determineNextMatchup(): Promise<{
     song1: SongContender;
     song2: SongContender;
@@ -328,7 +364,7 @@ export async function determineNextMatchup(): Promise<{
 }> {
     const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = await calculateHistory();
 
-    const [song1Id, song2Id] = sorted.slice(0, 2).map(s => s[0]);
+    const { song1Id, song2Id } = findFirstUnmatchedSongs(sorted, previousBattlesRaw);
 
     const { song: song1, album: album1 } = fromSongId(song1Id);
     const { song: song2, album: album2 } = fromSongId(song2Id);

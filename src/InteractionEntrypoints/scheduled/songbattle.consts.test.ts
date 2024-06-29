@@ -24,8 +24,8 @@ describe('findFirstUnmatchedSongs', () => {
     test('skips previously matched', () => {
         const sorted = [
             constructHistory('song1', 1),
-            constructHistory('song2', 2),
-            constructHistory('song3', 3)
+            constructHistory('song2', 1),
+            constructHistory('song3', 1)
         ];
         const previousBattlesRaw: Poll[] = [
             constructPoll('song1', 'song2')
@@ -56,8 +56,8 @@ describe('findFirstUnmatchedSongs', () => {
     test('throws an error if all songs have been matched up', () => {
         const sorted = [
             constructHistory('song1', 1),
-            constructHistory('song2', 2),
-            constructHistory('song3', 3)
+            constructHistory('song2', 1),
+            constructHistory('song3', 1)
         ];
         const previousBattlesRaw: Poll[] = [
             constructPoll('song1', 'song2'),

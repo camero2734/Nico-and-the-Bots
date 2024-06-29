@@ -9,7 +9,6 @@ fi
 
 # Run migrations
 bunx prisma migrate deploy
-bunx prisma generate
 
 if [ "$NODE_ENV" == "development" ]; then
     sleep 100000

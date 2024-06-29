@@ -23,4 +23,7 @@ RUN echo $CRYPT64 | base64 -d >> gc_temp.key && \
     git -c user.name='A' -c user.email='a@a.co' stash pop || echo "Couldn't stash" && \
     rm gc_temp.key
 
+ARG COMMIT_SHA
+ENV COMMIT_SHA=$COMMIT_SHA
+
 CMD [ "bash", ".docker/entrypoint.sh" ]

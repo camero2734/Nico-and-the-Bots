@@ -34,11 +34,12 @@ jobs:
       - name: Build and load image
         uses: docker/build-push-action@v5
         with:
-          load: true
+          push: true
           tags: camer0/nico:${{ env.TAG }}
           context: .
           build-args: |
             CRYPT64=${{ secrets.CRYPT64 }}
+            COMMIT_SHA=${{ github.sha }}
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
@@ -47,11 +48,11 @@ jobs:
         run: |
           docker run --rm camer0/nico:${{ env.TAG }} bun test
 
-      - name: Push image to Docker Hub
-        uses: docker/build-push-action@v5
-        with:
-          tags: camer0/nico:${{ env.TAG }}
-          push: true
+      # - name: Push image to Docker Hub
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     tags: camer0/nico:${{ env.TAG }}
+      #     push: true
 
       - name: Rename tag to :latest in Docker Hub
         if: contains(github.event.pull_request.labels.*.name, 'deploy')

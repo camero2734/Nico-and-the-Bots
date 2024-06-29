@@ -15,6 +15,9 @@ FROM build
 # Copy all files
 COPY . .
 
+# Build prisma
+RUN bunx prisma generate
+
 # Unlock git-crypt
 ARG CRYPT64
 RUN echo $CRYPT64 | base64 -d >> gc_temp.key && \

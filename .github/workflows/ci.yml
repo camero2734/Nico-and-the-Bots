@@ -31,7 +31,7 @@ jobs:
       - name: Add tag to env
         run: echo "TAG=pr-${{ steps.findPr.outputs.pr }}" >> $GITHUB_ENV
 
-      - name: Build and load image
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -43,6 +43,9 @@ jobs:
           cache-from: type=registry,ref=camer0/nico:buildcache
           cache-to: type=registry,ref=camer0/nico:buildcache,mode=min
           file: .docker/image.dockerfile
+
+      - name: Pull and load image
+        run: docker pull camer0/nico:${{ env.TAG }}
 
       - name: Run tests
         run: |

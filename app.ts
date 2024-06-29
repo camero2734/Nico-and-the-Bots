@@ -74,7 +74,7 @@ client.on("ready", async () => {
 
     // Send started message
     const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
-    await botChan.send({ embeds: [new Discord.EmbedBuilder({ description: "Bot is now running" })] });
+    await botChan.send({ embeds: [new Discord.EmbedBuilder({ description: "Bot is now running", footer: { text: secrets.commitSha || "No commit associated" } })] });
     await guild.members.fetch();
 
     await botChan.send({

@@ -45,6 +45,7 @@ const secrets = {
     },
     randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString(),
     webhookUrl: env.get("WEBHOOK_URL").required().asString(),
+    commitSha: env.get("COMMIT_SHA").asString(),
 };
 
 export default secrets;

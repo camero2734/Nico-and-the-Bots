@@ -98,37 +98,37 @@ export function getSongRoleCategories(roleManager: RoleManager) {
         "Twenty One Pilots": {
             id: "SelfTitled",
             data: selfTitled,
-            description: "The album that started it all. Get a role from the album the self-titled album."
+            description: "The album that started it all."
         },
         "Regional at Best": {
             id: "RegionalAtBest",
             data: regionalAtBest,
-            description: "The album that was taken off the shelves. Get a role from the album Regional at Best."
+            description: "The album that was taken off the shelves."
         },
         "Vessel": {
             id: "Vessel",
             data: vessel,
-            description: "The album that put them on the map. Get a role from the album Vessel."
+            description: "The album that put them on the map."
         },
         "Blurryface": {
             id: "Blurryface",
             data: blurryface,
-            description: "The album that made them famous. Get a role from the album Blurryface."
+            description: "The album that made them famous."
         },
         "Trench": {
             id: "Trench",
             data: trench,
-            description: "The album that created a world. Get a role from the album Trench."
+            description: "The album that created a world."
         },
         "Scaled and Icy": {
             id: "ScaledAndIcy",
             data: scaledAndIcy,
-            description: "The album that defied expectations. Get a role from the album Scaled and Icy."
+            description: "The album that defied expectations."
         },
         "Clancy": {
             id: "Clancy",
             data: clancy,
-            description: "The album that's the end of an era. Get a role from the album Clancy."
+            description: "The album that's the end of an era."
         }
     };
 }

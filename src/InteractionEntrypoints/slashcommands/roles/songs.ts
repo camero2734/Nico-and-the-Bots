@@ -27,7 +27,9 @@ command.setHandler(async (ctx) => {
 
     const orderedRoleIds = await withCache('songs-role-id-cache', async () => [...(await ctx.guild.roles.fetch()).keys()], 3600);
 
+    console.log(orderedRoleIds, /ORDERED/);
     const roleIDs = userRoles.map((r) => r.roleId).sort((a, b) => {
+        console.log({ a, ai: orderedRoleIds.indexOf(a), b, bi: orderedRoleIds.indexOf(b) });
         return orderedRoleIds.indexOf(b) - orderedRoleIds.indexOf(a)
     });
 

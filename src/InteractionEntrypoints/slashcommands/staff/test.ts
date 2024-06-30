@@ -113,8 +113,8 @@ command.setHandler(async (ctx) => {
         if (!insertBelowRole) throw new CommandError("Role not found");
 
         let msg = "";
-        for (const album of albums) {
-            for (const song of album.songs) {
+        for (const album of albums.toReversed()) {
+            for (const song of album.songs.toReversed()) {
                 const title = song.trim();
                 let role = guildRoles.find(r => r.name === title);
                 if (!role) {

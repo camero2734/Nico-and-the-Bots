@@ -6,7 +6,7 @@ import { sendViolationNotice } from "../../Helpers/dema-notice";
 import F from "../../Helpers/funcs";
 import { prisma, queries } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { CONTRABAND_WORDS, getColorRoleCategories } from "./_consts.shopColors";
+import { CONTRABAND_WORDS, getColorRoleCategories } from "./shop.consts";
 
 enum ActionTypes {
     View,

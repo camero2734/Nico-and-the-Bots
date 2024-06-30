@@ -7,7 +7,6 @@ import F from "../../Helpers/funcs";
 import { prisma, queries } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONTRABAND_WORDS, getSongRoleCategories } from "./shop.consts";
-import { userIDs } from "../../Configuration/config";
 
 enum ActionTypes {
     View,
@@ -18,8 +17,6 @@ const msgInt = new ManualEntrypoint();
 
 export const GenSongBtnId = msgInt.addInteractionListener("shopSongsBtn", [], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-
-    if (ctx.member.id !== userIDs.me) throw new CommandError("This command is not available to you.");
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);
     await ctx.editReply(initialMsg);

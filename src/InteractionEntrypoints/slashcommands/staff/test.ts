@@ -24,81 +24,116 @@ command.setHandler(async (ctx) => {
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
-        const songs =
-            `
-Overcompensate
-Next Semester
-Backslide
-Midwest Indigo
-Vignette
-Lavish
-Navigating
-Snap Back
-Paladin Strait
-
-Choker
-Shy Away
-The Outside
-Saturday
-Mulberry Street
-No Chances
-Redecorate
-
-Jumpsuit
-Levitate
-Morph
-Chlorine
-Nico and the Niners
-Cut My Lip
-Pet Cheetah
-
-Heavydirtysoul
-Fairly Local
-Lane Boy
-Message Man
-Hometown
-Goner
-
-Ode to Sleep
-Holding on to You
-Migraine
-Car Radio
-Guns for Hands
-Trees
-
-Forest
-Kitchen Sink
-Anathema
-Lovely
-Ruby
-Clear
-
-Fall Away
-Addict With A Pen
-Friend, Please
-Trapdoor
-Taxi Cab
-Isle of Flightless Birds
-`.trim().split(/\n{1,}/g);
+        const albums = <const>[
+            {
+                "color": "#df3c2d",
+                "songs": [
+                    "Overcompensate",
+                    "Next Semester",
+                    "Backslide",
+                    "Vignette",
+                    "Lavish",
+                    "Navigating",
+                    "Snap Back",
+                    "Paladin Strait"
+                ]
+            },
+            {
+                "color": "#01dead",
+                "songs": [
+                    "Choker",
+                    "Shy Away",
+                    "The Outside",
+                    "Saturday",
+                    "Mulberry Street",
+                    "No Chances",
+                    "Redecorate"
+                ]
+            },
+            {
+                "color": "#fce300",
+                "songs": [
+                    "Jumpsuit",
+                    "Levitate",
+                    "Morph",
+                    "Chlorine",
+                    "Nico and the Niners",
+                    "Cut My Lip",
+                    "Pet Cheetah"
+                ]
+            },
+            {
+                "color": "#ec5748",
+                "songs": [
+                    "Heavydirtysoul",
+                    "Fairly Local",
+                    "Lane Boy",
+                    "Message Man",
+                    "Hometown",
+                    "Goner"
+                ]
+            },
+            {
+                "color": "#aebfd9",
+                "songs": [
+                    "Ode to Sleep",
+                    "Holding on to You",
+                    "Migraine",
+                    "Car Radio",
+                    "Guns for Hands",
+                    "Trees"
+                ]
+            },
+            {
+                "color": "#9bc1db",
+                "songs": [
+                    "Forest",
+                    "Kitchen Sink",
+                    "Anathema",
+                    "Lovely",
+                    "Ruby",
+                    "Clear"
+                ]
+            },
+            {
+                "color": "#8cb82c",
+                "songs": [
+                    "Fall Away",
+                    "Addict With A Pen",
+                    "Friend, Please",
+                    "Trapdoor",
+                    "Taxi Cab",
+                    "Isle of Flightless Birds"
+                ]
+            }
+        ];
 
         const guildRoles = await ctx.guild.roles.fetch();
-        let msg = "";
-        for (const song of songs) {
-            if (!song) continue;
-            const title = song.trim();
-            const role = guildRoles.find(r => r.name === title);
-            if (!role) {
-                await ctx.editReply(`Creating role for ${title}`);
-                const newRole = await ctx.guild.roles.create({
-                    name: title,
-                });
-                msg += `NEW: ${song}: ${newRole.id}\n`;
-            } else {
-                await ctx.editReply(`Role for ${title} already exists`);
-                msg += `${song}: ${role.id}\n`;
-            }
+        let insertBelowRole = guildRoles.get("319632312654495754");
+        if (!insertBelowRole) throw new CommandError("Role not found");
 
-            await F.wait(500);
+        let msg = "";
+        for (const album of albums) {
+            for (const song of album.songs) {
+                const title = song.trim();
+                let role = guildRoles.find(r => r.name === title);
+                if (!role) {
+                    await ctx.editReply(`Creating role for ${title}`);
+                    role = await ctx.guild.roles.create({
+                        name: title,
+                    });
+                    msg += `NEW: ${song}: ${role.id}\n`;
+                } else {
+                    await ctx.editReply(`Role for ${title} already exists`);
+                    msg += `${song}: ${role.id}\n`;
+                }
+
+                await role.setColor(album.color);
+                await role.setPosition(insertBelowRole.position);
+                insertBelowRole = role;
+
+                await F.wait(500);
+            }
         }
 
         await ctx.editReply(msg);

@@ -12,7 +12,6 @@ import { userIDs } from "../../Configuration/config";
 enum ActionTypes {
     View,
     Purchase
-    // Delete
 }
 
 const msgInt = new ManualEntrypoint();
@@ -203,7 +202,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
         .setColor(0xD07A21)
         .setDescription(
             [
-                "Welcome to the official Discord song role shop! Feel free to peruse the shop to add a little more... saturation.",
+                "Welcome to the official Discord song role shop! Feel free to peruse the shop to find your favorite song 🎶",
                 "",
                 "Choose one of the categories below. A submenu will open that allows you to purchase roles within that category.",
             ].join("\n")

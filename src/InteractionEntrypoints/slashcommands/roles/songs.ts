@@ -2,6 +2,7 @@ import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { withCache } from "../../../Helpers/cache";
 
 const command = new SlashCommand({
     description: "Chooses a song role that you own",
@@ -22,7 +23,11 @@ command.setHandler(async (ctx) => {
         where: { userId: ctx.user.id }
     });
 
-    const roleIDs = userRoles.map((r) => r.roleId.toSnowflake());
+    const orderedRoleIds = await withCache('songs-role-id-cache', async () => [...(await ctx.guild.roles.fetch()).keys()], 3600);
+
+    const roleIDs = userRoles.map((r) => r.roleId).sort((a, b) => {
+        return orderedRoleIds.indexOf(b) - orderedRoleIds.indexOf(a)
+    });
 
     if (!roleIDs || roleIDs.length === 0) {
         throw new CommandError(`You don't have any song roles!`);

@@ -19,6 +19,8 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     const role = ctx.opts.role;
 
+    await ctx.deferReply({ ephemeral: true });
+
     const userRoles = await prisma.songRole.findMany({
         where: { userId: ctx.user.id }
     });
@@ -42,7 +44,7 @@ command.setHandler(async (ctx) => {
                 value: `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles song <@&${roleIDs[0]}>`
             }]);
 
-        return ctx.send({ embeds: [embed] });
+        return ctx.editReply({ embeds: [embed] });
     }
 
     // User has valid roles and requested one
@@ -65,13 +67,13 @@ command.setHandler(async (ctx) => {
     // If they requested a role they already had, leave them with no song roles
     if (currentlyEquippedRoles.includes(role)) {
         const embed = new EmbedBuilder().setTitle("Success!").setDescription("Removed your song role");
-        return ctx.send({ embeds: [embed] });
+        return ctx.editReply({ embeds: [embed] });
     }
 
     // Otherwise add the role they requested
     await ctx.member.roles.add(role);
     const embed = new EmbedBuilder().setTitle("Success!").setDescription(`You now have the <@&${role}> song role!`);
-    return ctx.send({ embeds: [embed] });
+    return ctx.editReply({ embeds: [embed] });
 });
 
 export default command;

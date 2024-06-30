@@ -86,13 +86,13 @@ export function getSongRoleCategories(roleManager: RoleManager) {
     const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
         Object.values(roleIds).map((r) => roleManager.cache.get(r) as Role);
 
-    const selfTitled = new ShopCategory(tierToRoles(songRoles.selfTitled), { credits: 25_000, level: 15 });
-    const regionalAtBest = new ShopCategory(tierToRoles(songRoles.regionalAtBest), { credits: 25_000, level: 15 });
-    const vessel = new ShopCategory(tierToRoles(songRoles.vessel), { credits: 25_000, level: 15 });
-    const blurryface = new ShopCategory(tierToRoles(songRoles.blurryface), { credits: 25_000, level: 15 });
-    const trench = new ShopCategory(tierToRoles(songRoles.trench), { credits: 25_000, level: 15 });
-    const scaledAndIcy = new ShopCategory(tierToRoles(songRoles.scaledAndIcy), { credits: 25_000, level: 15 });
-    const clancy = new ShopCategory(tierToRoles(songRoles.clancy), { credits: 25_000, level: 15 });
+    const selfTitled = new ShopCategory(tierToRoles(songRoles.selfTitled), { credits: 12_500, level: 15 });
+    const regionalAtBest = new ShopCategory(tierToRoles(songRoles.regionalAtBest), { credits: 12_500, level: 15 });
+    const vessel = new ShopCategory(tierToRoles(songRoles.vessel), { credits: 12_500, level: 15 });
+    const blurryface = new ShopCategory(tierToRoles(songRoles.blurryface), { credits: 12_500, level: 15 });
+    const trench = new ShopCategory(tierToRoles(songRoles.trench), { credits: 12_500, level: 15 });
+    const scaledAndIcy = new ShopCategory(tierToRoles(songRoles.scaledAndIcy), { credits: 12_500, level: 15 });
+    const clancy = new ShopCategory(tierToRoles(songRoles.clancy), { credits: 12_500, level: 15 });
 
     return {
         "Twenty One Pilots": {

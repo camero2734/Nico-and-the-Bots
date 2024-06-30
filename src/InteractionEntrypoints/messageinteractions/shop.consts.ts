@@ -2,7 +2,7 @@ import { User } from "@prisma/client";
 import { GuildMember, Role, RoleManager, Snowflake } from "discord.js";
 import { roles } from "../../Configuration/config";
 
-export class ColorCategory {
+export class ShopCategory {
     public requiresDE = false;
     public credits: number;
     public level: number;
@@ -32,18 +32,17 @@ export class ColorCategory {
 
 export const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clancy", "dmaorg", "paladin"];
 
-const colorRoles = roles.colors;
-
 export function getColorRoleCategories(roleManager: RoleManager) {
+    const colorRoles = roles.colors;
     const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
         Object.values(roleIds).map((r) => roleManager.cache.get(r) as Role);
 
-    const tier1 = new ColorCategory(tierToRoles(colorRoles.tier1), { credits: 7500, level: 10 });
-    const tier2 = new ColorCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 20 });
-    const tier3 = new ColorCategory(tierToRoles(colorRoles.tier3), { credits: 15000, level: 35 });
-    const tier4 = new ColorCategory(tierToRoles(colorRoles.tier4), { credits: 25000, level: 50 });
-    const tier5 = new ColorCategory(tierToRoles(colorRoles.tier5), { credits: 50000, level: 100 });
-    const DExclusive = new ColorCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
+    const tier1 = new ShopCategory(tierToRoles(colorRoles.tier1), { credits: 7500, level: 10 });
+    const tier2 = new ShopCategory(tierToRoles(colorRoles.tier2), { credits: 15000, level: 20 });
+    const tier3 = new ShopCategory(tierToRoles(colorRoles.tier3), { credits: 15000, level: 35 });
+    const tier4 = new ShopCategory(tierToRoles(colorRoles.tier4), { credits: 25000, level: 50 });
+    const tier5 = new ShopCategory(tierToRoles(colorRoles.tier5), { credits: 50000, level: 100 });
+    const DExclusive = new ShopCategory(tierToRoles(colorRoles.DExclusive), { credits: 50000, level: 100, DE: true }); // prettier-ignore
 
     return {
         "The Scaled Back Collection": {
@@ -78,6 +77,58 @@ export function getColorRoleCategories(roleManager: RoleManager) {
             data: DExclusive,
             description:
                 "Climb the top of the tower and see what you'll find! Browse this exclusive merchandise as a Firebreather."
+        }
+    };
+}
+
+export function getSongRoleCategories(roleManager: RoleManager) {
+    const songRoles = roles.songs;
+    const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
+        Object.values(roleIds).map((r) => roleManager.cache.get(r) as Role);
+
+    const selfTitled = new ShopCategory(tierToRoles(songRoles.selfTitled), { credits: 25_000, level: 15 });
+    const regionalAtBest = new ShopCategory(tierToRoles(songRoles.regionalAtBest), { credits: 25_000, level: 15 });
+    const vessel = new ShopCategory(tierToRoles(songRoles.vessel), { credits: 25_000, level: 15 });
+    const blurryface = new ShopCategory(tierToRoles(songRoles.blurryface), { credits: 25_000, level: 15 });
+    const trench = new ShopCategory(tierToRoles(songRoles.trench), { credits: 25_000, level: 15 });
+    const scaledAndIcy = new ShopCategory(tierToRoles(songRoles.scaledAndIcy), { credits: 25_000, level: 15 });
+    const clancy = new ShopCategory(tierToRoles(songRoles.clancy), { credits: 25_000, level: 15 });
+
+    return {
+        "Twenty One Pilots": {
+            id: "SelfTitled",
+            data: selfTitled,
+            description: "The album that started it all. Get a role from the album the self-titled album."
+        },
+        "Regional at Best": {
+            id: "RegionalAtBest",
+            data: regionalAtBest,
+            description: "The album that was taken off the shelves. Get a role from the album Regional at Best."
+        },
+        "Vessel": {
+            id: "Vessel",
+            data: vessel,
+            description: "The album that put them on the map. Get a role from the album Vessel."
+        },
+        "Blurryface": {
+            id: "Blurryface",
+            data: blurryface,
+            description: "The album that made them famous. Get a role from the album Blurryface."
+        },
+        "Trench": {
+            id: "Trench",
+            data: trench,
+            description: "The album that created a world. Get a role from the album Trench."
+        },
+        "Scaled and Icy": {
+            id: "ScaledAndIcy",
+            data: scaledAndIcy,
+            description: "The album that defied expectations. Get a role from the album Scaled and Icy."
+        },
+        "Clancy": {
+            id: "Clancy",
+            data: clancy,
+            description: "The album that's the end of an era. Get a role from the album Clancy."
         }
     };
 }

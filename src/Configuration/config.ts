@@ -258,6 +258,15 @@ export const roles = <const>{
             "Ode to Pink": "692990523014774874",
         }
     },
+    songs: {
+        selfTitled: {},
+        regionalAtBest: {},
+        vessel: {},
+        blurryface: {},
+        trench: {},
+        scaledAndIcy: {},
+        clancy: {}
+    },
     districts: {
         keons: "1217561582574374943",
         lisden: "1217562330548666418",

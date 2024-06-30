@@ -25,11 +25,12 @@ command.setHandler(async (ctx) => {
         where: { userId: ctx.user.id }
     });
 
-    const orderedRoleIds = await withCache('songs-role-id-cache', async () => [...(await ctx.guild.roles.fetch()).keys()], 3600);
+    const orderedRoleIds = await withCache('songs-role-id-cache', async () => {
+        const roles = await ctx.guild.roles.fetch();
+        return roles.sort((a, b) => a.position - b.position).map((r) => r.id);
+    }, 3600);
 
-    console.log(orderedRoleIds, /ORDERED/);
     const roleIDs = userRoles.map((r) => r.roleId).sort((a, b) => {
-        console.log({ a, ai: orderedRoleIds.indexOf(a), b, bi: orderedRoleIds.indexOf(b) });
         return orderedRoleIds.indexOf(b) - orderedRoleIds.indexOf(a)
     });
 

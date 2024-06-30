@@ -1,8 +1,9 @@
 import { Client, ButtonBuilder, EmbedBuilder, TextChannel, ActionRowBuilder, ButtonStyle } from "discord.js";
 import secrets from "../Configuration/secrets";
 import { channelIDs, guildID } from "../Configuration/config";
-import { GenBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { NicoClient } from "../../app";
+import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
+import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
 
 export class KeonsBot {
     client: Client;
@@ -76,11 +77,19 @@ export class KeonsBot {
                 text: "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited."
             });
 
+        const colorRolesBtn = new ButtonBuilder()
+            .setStyle(ButtonStyle.Primary)
+            .setLabel("Color Roles")
+            .setCustomId(GenColorBtnId({}));
+
+        const songRolesBtn = new ButtonBuilder()
+            .setStyle(ButtonStyle.Primary)
+            .setLabel("Song Roles")
+            .setCustomId(GenSongBtnId({}));
+
         const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-            [new ButtonBuilder() //
-                .setStyle(ButtonStyle.Primary)
-                .setLabel("Color Roles")
-                .setCustomId(GenBtnId({}))]
+            colorRolesBtn,
+            songRolesBtn
         );
 
         await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });

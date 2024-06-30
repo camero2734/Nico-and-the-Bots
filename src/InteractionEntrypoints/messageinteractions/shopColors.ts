@@ -207,7 +207,6 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
         )
         .setFooter({ text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council." }); // prettier-ignore
 
-
     const actionRows = MessageTools.allocateButtonsIntoRows(
         Object.entries(categories).map(([label, item], idx) => {
             const unlocked = item.data.unlockedFor(member, dbUser);

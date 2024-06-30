@@ -17,3 +17,5 @@ export const GenSongBtnId = msgInt.addInteractionListener("shopSongsBtn", [], as
 
     await ctx.editReply({ content: "This is a test message." });
 });
+
+export default msgInt;

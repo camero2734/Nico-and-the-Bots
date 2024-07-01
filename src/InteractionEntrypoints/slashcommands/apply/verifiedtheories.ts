@@ -1,10 +1,11 @@
-import { Faker, en } from "@faker-js/faker";
+import { en, Faker } from "@faker-js/faker";
 import { roundToNearestMinutes } from "date-fns";
 import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
     channelMention,
+    ComponentType,
     EmbedBuilder,
     GuildMember,
     Message,
@@ -23,7 +24,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts, caesarEncode, generateWords, morseEncode } from "./_consts";
+import { caesarEncode, generateWords, morseEncode, PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 
 const command = new SlashCommand({
@@ -388,10 +389,10 @@ async function sendFinalEmbed(
         ["I won't send, share, or discuss leaked content", "I'll share leaked content", "I am become leaker, destroyer of surprises"]
     ].map(x => x.map((y, idx) => ({ label: y, value: idx.toString() })));
 
-    const actionRows = questions.map(q => {
+    const actionRows = questions.map((q, idx) => {
         const selectMenu = new StringSelectMenuBuilder()
             .setPlaceholder("Select the most appropriate answer")
-            .setCustomId(genPartThreeBtnId({}))
+            .setCustomId(genPartThreeBtnId({ idx: idx.toString() }))
             .setOptions(q.map(x => new StringSelectMenuOptionBuilder(x)));
         return createSelect(selectMenu);
     });
@@ -399,13 +400,39 @@ async function sendFinalEmbed(
     return [embed, actionRows];
 }
 
-const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", [], async (ctx) => {
+const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", ["idx"], async (ctx) => {
     if (!ctx.isStringSelectMenu()) return;
 
-    const passed = ctx.values.every(x => x === '0');
-    if (!passed) await ctx.reply({ ephemeral: true, content: "You must select the correct answers to continue." });
-
     await ctx.deferUpdate();
+
+    const passed = ctx.values.every(v => v === "0");
+    if (!passed) return;
+
+    // Disable this select menu
+    const idx = parseInt(ctx.values[0]);
+
+    const newActionRows = ctx.message.components.map((row, i) => {
+        if (i !== idx) return row;
+
+        const jsonComponent = row.components[0].toJSON();
+        if (jsonComponent.type !== ComponentType.StringSelect) return row;
+
+        const newSelectMenu = new StringSelectMenuBuilder(jsonComponent);
+        newSelectMenu.setDisabled(true);
+
+        return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(newSelectMenu);
+    });
+
+    await ctx.editReply({ components: newActionRows });
+
+
+    // Check if all answers are correct
+    const allCorrect = newActionRows.every(row => {
+        const selectMenu = row.components[0].toJSON();
+        return selectMenu.type === ComponentType.StringSelect && selectMenu.disabled;
+    });
+
+    if (!allCorrect) return;
 
     await ctx.member.roles.add(roles.verifiedtheories);
 

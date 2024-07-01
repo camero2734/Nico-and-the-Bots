@@ -34,16 +34,16 @@ command.setHandler(async (ctx) => {
         const total = verifiedRole.members.size;
         for (const member of verifiedRole.members.values()) {
             if (removedFrom.length === 5) {
-                await ctx.editReply(`[TEST] (${i}/${total}) Removing verified role from ${removedFrom.join(", ")}...`);
+                await ctx.editReply(`[REAL] (${i}/${total}) Removing verified role from ${removedFrom.join(", ")}...`);
                 removedFrom = [];
             } else {
                 removedFrom.push(member.user.tag);
             }
             i++;
-            // await member.roles.remove(verifiedRole);
+            await member.roles.remove(verifiedRole);
         }
 
-        await ctx.editReply(`[TEST] Done in ${Date.now() - start}ms`);
+        await ctx.editReply(`[REAL] Done in ${Date.now() - start}ms`);
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {

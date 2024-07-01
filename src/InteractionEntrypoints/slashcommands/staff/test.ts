@@ -30,13 +30,16 @@ command.setHandler(async (ctx) => {
 
         const start = Date.now();
         let removedFrom = [];
+        let i = 0;
+        const total = verifiedRole.members.size;
         for (const member of verifiedRole.members.values()) {
             if (removedFrom.length === 5) {
-                await ctx.editReply(`[TEST] Removing verified role from ${removedFrom.join(", ")}...`);
+                await ctx.editReply(`[TEST] (${i}/${total}) Removing verified role from ${removedFrom.join(", ")}...`);
                 removedFrom = [];
             } else {
                 removedFrom.push(member.user.tag);
             }
+            i++;
             // await member.roles.remove(verifiedRole);
         }
 

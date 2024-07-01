@@ -5,6 +5,7 @@ import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { cron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { roles as roleIDs } from "../../../Configuration/config";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -19,12 +20,26 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
     if (ctx.user.id !== userIDs.me) return;
 
-    await ctx.deferReply({ ephemeral: true });
+    await ctx.deferReply({ ephemeral: ctx.opts.num !== 1 });
 
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
-        await ctx.editReply("1");
+        const verifiedRole = roles.get(roleIDs.verifiedtheories);
+        if (!verifiedRole) throw new CommandError("Verified theories role not found");
+
+        let removedFrom = [];
+        for (const member of verifiedRole.members.values()) {
+            if (removedFrom.length === 5) {
+                await ctx.editReply(`[TEST] Removing verified role from ${removedFrom.join(", ")}...`);
+                removedFrom = [];
+            } else {
+                removedFrom.push(member.user.tag);
+            }
+            // await member.roles.remove(verifiedRole);
+        }
+
+        await ctx.editReply("Done");
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {

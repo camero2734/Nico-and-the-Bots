@@ -196,6 +196,8 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
             break;
         }
     }
+    // TODO: TEMP REMOVE
+    correct = true;
 
     // Send to staff
     const staffEmbed = new EmbedBuilder()

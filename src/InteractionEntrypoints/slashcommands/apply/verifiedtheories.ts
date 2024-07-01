@@ -4,6 +4,7 @@ import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
+    channelMention,
     EmbedBuilder,
     GuildMember,
     Message,
@@ -69,13 +70,21 @@ command.setHandler(async (ctx) => {
                 "## Part 2: Multiple choice questions",
                 `This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,
                 `*Note:* Select your answers very carefully - **once you select an answer, it is final.**`,
-                "If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below."
+                "If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.",
+                "## Part 3: You're in! Rules and guidelines",
+                "If you pass the quiz, you will be granted access to the channel. There's some rules and guidelines you must follow to keep your access. You'll be presented with these after you pass the quiz."
             ].join("\n\n")
         )
-        .addFields([{
-            name: "Cheating is not allowed",
-            value: "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
-        }]);
+        .addFields([
+            {
+                name: "Cheating is not allowed",
+                value: "You may use relevant sites as reference to find the answers, but do NOT upload them, share them, etc. Any cheating will result in an immediate and permanent ban from the channel."
+            },
+            {
+                name: "Access is conditional",
+                value: "Once granted, access to the channel is conditional on following the rules. If you break the rules, you will be removed from the channel and will not be able to reapply for a set period of time."
+            }
+        ]);
 
     let dmMessage: Message;
     try {
@@ -348,23 +357,63 @@ async function sendFinalEmbed(
     const staffChan = member.guild.channels.cache.get(channelIDs.verifiedapplications) as TextChannel;
     await staffChan.send({ embeds: [staffEmbed] });
 
-    if (passed) {
-        await member.roles.add(roles.verifiedtheories);
-    }
-
     // Send embed to normal user
     const embed = new EmbedBuilder()
         .setTitle(`${correct}/${questionList.length} correct`)
         .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
             `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
-                ? `You can now access <#${channelIDs.verifiedtheories}>. Congratulations!\n\nPlease ensure you read the pinned messages and abide by the rules to avoid being removed from the channel.`
+                ? `Congratulations, you passed!\n\nPlease read the following rules and select the correct answers to ensure you fully understand them.`
                 : `You may apply again in ${hours} hours.`
             }`
         );
 
-    return [embed, []];
+    if (!passed) return [embed, []];
+
+    embed.addFields([
+        { name: "Be On Topic", value: "All discussion must be related to theories and lore of the band." },
+        { name: "Be Informed", value: `Make sure you're up to date by reading ${channelMention(channelIDs.loreupdates)} and ${channelMention(channelIDs.confirmedfakestuff)}` },
+        { name: "Be Constructive", value: "All discussion should be constructive and respectful of others." },
+        { name: "No General Discussion", value: `General discussion should be kept to the appropriate channels, like ${channelMention(channelIDs.hometown)} or ${channelMention(channelIDs.slowtown)}. Memes belong in  ${channelMention(channelIDs.eramemes)}.` },
+        { name: "No Spoilers", value: "Do not spoil any leaked or unofficial content for others. This does not include official teasers, like dmaorg.info." },
+    ]);
+
+    const createSelect = (selectMenu: StringSelectMenuBuilder) => new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+    const questions = [
+        ["I must be on topic in the verified theories channel", "I can discuss anything I want in the verified theories channel", "I might send some memes in the verified theories channel"],
+        ["I'll keep up to date with the latest lore updates of the band before contributing to the channel", "I don't need to know anything about the band", "I can make up my own lore"],
+        ["I will be respectful of other people's theories", "I will dismiss anyone who doesn't agree with me", "I will belittle people not in the verified channel"],
+        ["I won't start talking about random things", "I'll break out into a random topic every now and then", "I'll post content that belongs in other channels"],
+        ["I won't send, share, or discuss leaked content", "I'll share leaked content", "I am become leaker, destroyer of surprises"]
+    ].map(x => x.map((y, idx) => ({ label: y, value: idx.toString() })));
+
+    const actionRows = questions.map(q => {
+        const selectMenu = new StringSelectMenuBuilder()
+            .setPlaceholder("Select the most appropriate answer")
+            .setCustomId(genPartThreeBtnId({}))
+            .setOptions(q.map(x => new StringSelectMenuOptionBuilder(x)));
+        return createSelect(selectMenu);
+    });
+
+    return [embed, actionRows];
 }
+
+const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", [], async (ctx) => {
+    if (!ctx.isStringSelectMenu()) return;
+
+    const passed = ctx.values.every(x => x === '0');
+    if (!passed) await ctx.reply({ ephemeral: true, content: "You must select the correct answers to continue." });
+
+    await ctx.deferUpdate();
+
+    await ctx.member.roles.add(roles.verifiedtheories);
+
+    await ctx.editReply({
+        content: `You now have access to the ${channelMention(channelIDs.verifiedtheories)} channel!`,
+        components: []
+    });
+});
 
 function generatePartOne(seed: number) {
     const faker = new Faker({ locale: [en] });

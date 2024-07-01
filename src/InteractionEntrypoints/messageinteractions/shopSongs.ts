@@ -6,17 +6,16 @@ import { sendViolationNotice } from "../../Helpers/dema-notice";
 import F from "../../Helpers/funcs";
 import { prisma, queries } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { CONTRABAND_WORDS, getColorRoleCategories } from "./shop.consts";
+import { CONTRABAND_WORDS, getSongRoleCategories } from "./shop.consts";
 
 enum ActionTypes {
     View,
     Purchase
-    // Delete
 }
 
 const msgInt = new ManualEntrypoint();
 
-export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
+export const GenSongBtnId = msgInt.addInteractionListener("shopSongsBtn", [], async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);
@@ -24,7 +23,7 @@ export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], 
 });
 
 // Main Menu
-const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", [], async (ctx) => {
+const genMainMenuId = msgInt.addInteractionListener("songSongsMenu", [], async (ctx) => {
     await ctx.deferUpdate();
 
     const initialMsg = await generateMainMenuEmbed(ctx.member);
@@ -32,14 +31,14 @@ const genMainMenuId = msgInt.addInteractionListener("shopColorMenu", [], async (
 });
 
 // Category submenu
-const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categoryId"], async (ctx, args) => {
-    const categories = getColorRoleCategories(ctx.guild.roles);
+const genSubmenuId = msgInt.addInteractionListener("songSongsSubmenu", ["categoryId"], async (ctx, args) => {
+    const categories = getSongRoleCategories(ctx.guild.roles);
     const [name, category] = Object.entries(categories).find(([_id, data]) => data.id === args.categoryId) || [];
     if (!name || !category) return;
 
     await ctx.deferUpdate();
 
-    const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { songRoles: true });
 
     const embed = new EmbedBuilder()
         .setAuthor({ name: "Good Day Dema® Discord Shop", iconURL: "https://i.redd.it/wd53naq96lr61.png" })
@@ -55,7 +54,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
 
     const rawComponents = category.data.roles.map((role) => {
         const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-        const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
+        const ownsRole = dbUser.songRoles.some((r) => r.roleId === role.id);
         const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
         const builder = new ButtonBuilder()
@@ -79,10 +78,10 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
 });
 
 // Viewing a specific item
-const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "action"], async (ctx, args) => {
+const genItemId = msgInt.addInteractionListener("songSongsItem", ["itemId", "action"], async (ctx, args) => {
     const actionType = +args.action;
 
-    const categories = getColorRoleCategories(ctx.guild.roles);
+    const categories = getSongRoleCategories(ctx.guild.roles);
     const [categoryName, category] =
         Object.entries(categories).find(([_, category]) => category.data.roles.some((r) => r.id === args.itemId)) || [];
     const role = category?.data.roles.find((r) => r.id === args.itemId);
@@ -92,8 +91,8 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     await ctx.deferUpdate();
 
     // Ensure user doesn't have role already
-    const dbUser = await queries.findOrCreateUser(ctx.member.id, { colorRoles: true });
-    if (dbUser.colorRoles.some((r) => r.roleId === role.id)) throw new CommandError("You already have this role!");
+    const dbUser = await queries.findOrCreateUser(ctx.member.id, { songRoles: true });
+    if (dbUser.songRoles.some((r) => r.roleId === role.id)) throw new CommandError("You already have this role!");
 
     // Change some stuff if the item is contraband
     const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
@@ -145,13 +144,13 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
         if (!category.data.purchasable(role.id, ctx.member, dbUser))
             throw new CommandError("You do not have enough credits to purchase this item");
 
-        // Add role to user's color roles list
+        // Add role to user's song roles list
         if (ctx.member.roles.cache.some((r) => r.id === role.id)) throw new CommandError("You already have this role!");
 
         // Use transaction to ensure user receives role and has their credits deducted
         await prisma.$transaction([
-            prisma.colorRole.create({
-                data: { userId: ctx.user.id, roleId: role.id, amountPaid: category.data.credits }
+            prisma.songRole.create({
+                data: { userId: ctx.user.id, roleId: role.id, /** amountPaid: category.data.credits TODO */ }
             }),
             prisma.user.update({
                 where: { id: dbUser.id },
@@ -165,7 +164,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
             ) // prettier-ignore
             .addFields([{
                 name: `How do I "equip" this role?`,
-                value: "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want)."
+                value: "To actually apply this role, simply use the `/roles songs` command. You may only have one song role applied at a time (but you can own as many as you want)."
             }]);
         let sent = false;
         try {
@@ -191,7 +190,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
 });
 
 async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEditReplyOptions> {
-    const categories = getColorRoleCategories(member.guild.roles);
+    const categories = getSongRoleCategories(member.guild.roles);
 
     const dbUser = await queries.findOrCreateUser(member.id);
 
@@ -200,7 +199,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
         .setColor(0xD07A21)
         .setDescription(
             [
-                "Welcome to the official Discord color role shop! Feel free to peruse the shop to add a little more... saturation.",
+                "Welcome to the official Discord song role shop! Feel free to peruse the shop to find your favorite song 🎶",
                 "",
                 "Choose one of the categories below. A submenu will open that allows you to purchase roles within that category.",
             ].join("\n")

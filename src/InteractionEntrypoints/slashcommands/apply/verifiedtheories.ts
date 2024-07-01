@@ -401,7 +401,7 @@ async function sendFinalEmbed(
     return [embed, actionRows];
 }
 
-const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", ["idx"], async (ctx) => {
+const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", ["idx"], async (ctx, args) => {
     if (!ctx.isStringSelectMenu()) return;
 
     await ctx.deferUpdate();
@@ -410,7 +410,7 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
     if (!passed) return;
 
     // Disable this select menu
-    const idx = parseInt(ctx.values[0]);
+    const idx = parseInt(args.idx);
 
     const newActionRows = ctx.message.components.map((row, i) => {
         console.log({ i, idx });

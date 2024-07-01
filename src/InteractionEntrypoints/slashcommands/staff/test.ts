@@ -28,6 +28,7 @@ command.setHandler(async (ctx) => {
         const verifiedRole = roles.get(roleIDs.verifiedtheories);
         if (!verifiedRole) throw new CommandError("Verified theories role not found");
 
+        const start = Date.now();
         let removedFrom = [];
         for (const member of verifiedRole.members.values()) {
             if (removedFrom.length === 5) {
@@ -39,7 +40,7 @@ command.setHandler(async (ctx) => {
             // await member.roles.remove(verifiedRole);
         }
 
-        await ctx.editReply("Done");
+        await ctx.editReply(`[TEST] Done in ${Date.now() - start}ms`);
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {

@@ -389,7 +389,7 @@ async function sendFinalEmbed(
         ["I will respect other's theories", "I will dismiss anyone who doesn't agree with me", "I will dunk on bad theories"],
         ["I won't talk about random things", "I'll break out into a random topic", "I'll send so many jokes"],
         ["I won't discuss leaked content", "I'll share leaked content", "I am become leaker, destroyer of surprises"]
-    ].map(x => x.map((y, idx) => ({ label: y, value: idx.toString() })));
+    ].map(x => x.map((y, idx) => ({ label: y, value: idx.toString() }))).map(x => F.shuffle(x));
 
     const actionRows = questions.map((q, idx) => {
         const selectMenu = new StringSelectMenuBuilder()
@@ -441,7 +441,8 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
 
     await ctx.editReply({
         content: `You now have access to the ${channelMention(channelIDs.verifiedtheories)} channel!`,
-        components: []
+        components: [],
+        embeds: []
     });
 });
 

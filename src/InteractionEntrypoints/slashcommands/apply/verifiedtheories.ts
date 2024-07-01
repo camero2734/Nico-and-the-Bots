@@ -364,13 +364,14 @@ async function sendFinalEmbed(
         .setColor(passed ? 0x88ff88 : 0xff8888)
         .setDescription(
             `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
-                ? `Congratulations, you passed!\n\nPlease read the following rules and select the correct answers to ensure you fully understand them.`
+                ? `Please read the following rules and select the correct answers to ensure you fully understand them.`
                 : `You may apply again in ${hours} hours.`
             }`
         );
 
     if (!passed) return [embed, []];
 
+    embed.setTitle("VERIFIED AGREEMENT -- PLEASE READ");
     embed.addFields([
         { name: "Be On Topic", value: "All discussion must be related to theories and lore of the band." },
         { name: "Be Informed", value: `Make sure you're up to date by reading ${channelMention(channelIDs.loreupdates)} and ${channelMention(channelIDs.confirmedfakestuff)}` },
@@ -412,19 +413,24 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
     const idx = parseInt(ctx.values[0]);
 
     const newActionRows = ctx.message.components.map((row, i) => {
+        console.log({ i, idx });
         if (i !== idx) return row;
 
         const jsonComponent = row.components[0].toJSON();
+
+        console.log({ i, msg: "Before select check" })
         if (jsonComponent.type !== ComponentType.StringSelect) return row;
+
+        console.log({ i, msg: "Disabling select menu" })
 
         const newSelectMenu = new StringSelectMenuBuilder(jsonComponent);
         newSelectMenu.setDisabled(true);
+        newSelectMenu.setPlaceholder("You have agreed to this rule");
 
-        return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(newSelectMenu);
+        return new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(newSelectMenu);
     });
 
     await ctx.editReply({ components: newActionRows });
-
 
     // Check if all answers are correct
     const allCorrect = newActionRows.every(row => {

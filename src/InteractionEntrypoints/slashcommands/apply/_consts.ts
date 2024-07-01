@@ -9,7 +9,7 @@ import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 
 const VERIFIED_DELAY_HOURS = 12;
 export const VerifiedQuizConsts = {
-    NUM_QUESTIONS: 3,
+    NUM_QUESTIONS: 15,
     DELAY_BETWEEN_TAKING: hoursToMilliseconds(VERIFIED_DELAY_HOURS),
     DELAY_BETWEEN_TAKING_HOURS: VERIFIED_DELAY_HOURS
 };

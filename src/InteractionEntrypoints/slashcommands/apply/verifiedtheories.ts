@@ -17,7 +17,8 @@ import {
     TextInputBuilder,
     TextInputStyle
 } from "discord.js";
-import { channelIDs, guildID, roles, userIDs } from "../../../Configuration/config";
+import { guild } from "../../../../app";
+import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -25,7 +26,6 @@ import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { caesarEncode, generateWords, morseEncode, PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
-import { guild } from "../../../../app";
 export { VerifiedQuizConsts } from "./_consts";
 
 const command = new SlashCommand({
@@ -35,8 +35,6 @@ const command = new SlashCommand({
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-
-    if (ctx.member.id !== userIDs.me) throw new CommandError("This command is currently disabled.");
 
     // If they already have the VQ role then no need to take again
     if (ctx.member.roles.cache.has(roles.verifiedtheories)) {

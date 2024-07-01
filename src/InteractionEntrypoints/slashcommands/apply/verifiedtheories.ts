@@ -25,6 +25,7 @@ import { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { caesarEncode, generateWords, morseEncode, PreviousAnswersEncoder, QuestionIDEncoder, VerifiedQuizConsts } from "./_consts";
+import { guild } from "../../../../app";
 export { VerifiedQuizConsts } from "./_consts";
 
 const command = new SlashCommand({
@@ -383,11 +384,11 @@ async function sendFinalEmbed(
     const createSelect = (selectMenu: StringSelectMenuBuilder) => new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
     const questions = [
-        ["I must be on topic in the verified theories channel", "I can discuss anything I want in the verified theories channel", "I might send some memes in the verified theories channel"],
-        ["I'll keep up to date with the latest lore updates of the band before contributing to the channel", "I don't need to know anything about the band", "I can make up my own lore"],
-        ["I will be respectful of other people's theories", "I will dismiss anyone who doesn't agree with me", "I will belittle people not in the verified channel"],
-        ["I won't start talking about random things", "I'll break out into a random topic every now and then", "I'll post content that belongs in other channels"],
-        ["I won't send, share, or discuss leaked content", "I'll share leaked content", "I am become leaker, destroyer of surprises"]
+        ["I'll be on topic in the channel", "I can discuss anything I want", "I might send some memes"],
+        ["I'll keep up to date before posting", "I don't need to know anything", "I can make up my own lore"],
+        ["I will respect other's theories", "I will dismiss anyone who doesn't agree with me", "I will dunk on bad theories"],
+        ["I won't talk about random things", "I'll break out into a random topic", "I'll send so many jokes"],
+        ["I won't discuss leaked content", "I'll share leaked content", "I am become leaker, destroyer of surprises"]
     ].map(x => x.map((y, idx) => ({ label: y, value: idx.toString() })));
 
     const actionRows = questions.map((q, idx) => {
@@ -413,15 +414,10 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
     const idx = parseInt(args.idx);
 
     const newActionRows = ctx.message.components.map((row, i) => {
-        console.log({ i, idx });
         if (i !== idx) return row;
 
         const jsonComponent = row.components[0].toJSON();
-
-        console.log({ i, msg: "Before select check" })
         if (jsonComponent.type !== ComponentType.StringSelect) return row;
-
-        console.log({ i, msg: "Disabling select menu" })
 
         const newSelectMenu = new StringSelectMenuBuilder(jsonComponent);
         newSelectMenu.setDisabled(true);
@@ -440,7 +436,8 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
 
     if (!allCorrect) return;
 
-    await ctx.member.roles.add(roles.verifiedtheories);
+    const member = await guild.members.fetch(ctx.user.id);
+    await member.roles.add(roles.verifiedtheories);
 
     await ctx.editReply({
         content: `You now have access to the ${channelMention(channelIDs.verifiedtheories)} channel!`,

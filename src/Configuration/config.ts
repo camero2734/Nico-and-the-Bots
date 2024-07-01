@@ -79,6 +79,9 @@ export const channelIDs = <const>{
     cliqueartfriday: "689548218828455967",
     artevents: "940391413194047558",
     concertsForum: "1222170861344133160",
+    eramemes: "1208318225432051763",
+    loreupdates: "820002209194180619",
+    confirmedfakestuff: "828741866526343199",
     logs: {
         ban: "689685441485733952",
         staffCommands: "488076541499277333",

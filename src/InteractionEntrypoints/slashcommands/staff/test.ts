@@ -5,7 +5,6 @@ import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { cron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
-import { roles as roleIDs } from "../../../Configuration/config";
 
 const command = new SlashCommand({
     description: "Test command",

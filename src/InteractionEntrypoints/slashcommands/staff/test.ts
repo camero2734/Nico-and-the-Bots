@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
-        // Nothing
+        throw new CommandError("Test error");
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {

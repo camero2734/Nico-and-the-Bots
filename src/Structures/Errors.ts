@@ -41,6 +41,7 @@ export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e
     console.log("===================================");
     if (e instanceof Error) console.log(e.stack);
 
+    let sentInErrorChannel = false;
     const errorChannel = await getErrorChannel();
     if (errorChannel && !(e instanceof CommandError)) {
         const embed = new EmbedBuilder()
@@ -66,6 +67,7 @@ export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e
             value: `\`\`\`js\n${e instanceof Error ? e.stack : e}\`\`\``,
         })
         await errorChannel.send({ embeds: [embed] });
+        sentInErrorChannel = true;
     }
 
     const ectx = ctx as unknown as CommandInteraction & { send: CommandInteraction["reply"] };
@@ -89,7 +91,7 @@ export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e
         console.log(`Unknown error:`, e);
         const embed = new EmbedBuilder()
             .setTitle("An unknown error occurred!")
-            .setFooter({ text: `DEMA internet machine really broke. Error ${errorId}` });
+            .setFooter({ text: `DEMA internet machine really broke. Error ${errorId} ${sentInErrorChannel ? "📝" : ""}` });
         ectx.send({ embeds: [embed], components: [], ephemeral: true });
     }
 };

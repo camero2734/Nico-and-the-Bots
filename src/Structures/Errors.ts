@@ -4,7 +4,6 @@ import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
-import { InteractionListener } from "./ListenerInteraction";
 
 const getReplyMethod = async (ctx: CommandInteraction) => {
     if (!ctx.isRepliable() || !ctx.isChatInputCommand()) return ctx.followUp;
@@ -31,7 +30,7 @@ const getChannelName = (ctx: TextBasedChannel | Interaction): string => {
     return `${interactionType}: ${ctx.user.tag} in ${ctx.channel ? getChannelName(ctx.channel) : "?"}`
 }
 
-export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown, interactionHandler?: InteractionListener) => {
+export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown, handler?: string) => {
     const errorId = nanoid();
 
     console.log("===================================");
@@ -55,10 +54,10 @@ export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e
             .setTimestamp()
             .setFooter({ text: errorId });
 
-        if (interactionHandler) {
+        if (handler) {
             embed.addFields({
                 name: "Handler",
-                value: interactionHandler.name,
+                value: handler,
             });
         }
 

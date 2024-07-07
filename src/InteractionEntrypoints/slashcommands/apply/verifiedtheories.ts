@@ -199,7 +199,8 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
     const staffEmbed = new EmbedBuilder()
         .setAuthor({ name: ctx.user.username, iconURL: ctx.user.displayAvatarURL() })
         .setTitle(`${correct ? "Passed" : "Failed"}: Part 1`)
-        .setColor(correct ? "Blurple" : 0xff8888);
+        .setColor(correct ? "Blurple" : 0xff8888)
+        .setFooter({ text: ctx.user.id });
 
     for (const key in partOne) {
         const inputted = ctx.fields.getTextInputValue(key);

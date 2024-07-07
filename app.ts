@@ -138,6 +138,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+    const receivedInteractionAt = new Date();
     if (interaction.isChatInputCommand()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
         const command = SlashCommands.get(commandIdentifier);
@@ -165,7 +166,7 @@ client.on("interactionCreate", async (interaction) => {
             );
         } catch (e) {
             console.log("Error in interaction handler", e);
-            ErrorHandler(interaction, e);
+            ErrorHandler(interaction, e, interactionHandler.name, receivedInteractionAt);
         }
     } else if (interaction.isAutocomplete()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);

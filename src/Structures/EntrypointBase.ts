@@ -75,7 +75,7 @@ export abstract class InteractionEntrypoint<
             EntrypointEvents.emit("entrypointFinished", { entrypoint: this, ctx });
         } catch (e) {
             EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx });
-            ErrorHandler(ctx, e);
+            ErrorHandler(ctx, e, this.identifier);
         }
     }
 

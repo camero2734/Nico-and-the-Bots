@@ -1,9 +1,10 @@
 import { ChannelType, CommandInteraction, DMChannel, EmbedBuilder, GuildTextBasedChannel, Interaction, InteractionType, TextBasedChannel, TextChannel } from "discord.js";
-import { CommandError } from "../Configuration/definitions";
 import { nanoid } from "nanoid";
 import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
+import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
+import { InteractionListener } from "./ListenerInteraction";
 
 const getReplyMethod = async (ctx: CommandInteraction) => {
     if (!ctx.isRepliable() || !ctx.isChatInputCommand()) return ctx.followUp;
@@ -30,7 +31,7 @@ const getChannelName = (ctx: TextBasedChannel | Interaction): string => {
     return `${interactionType}: ${ctx.user.tag} in ${ctx.channel ? getChannelName(ctx.channel) : "?"}`
 }
 
-export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown) => {
+export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown, interactionHandler?: InteractionListener) => {
     const errorId = nanoid();
 
     console.log("===================================");
@@ -42,23 +43,29 @@ export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e
     if (e instanceof Error) console.log(e.stack);
 
     const errorChannel = await getErrorChannel();
-    if (errorChannel) {
+    if (errorChannel && !(e instanceof CommandError)) {
         const embed = new EmbedBuilder()
             .setTitle("An error occurred!")
             .setColor("DarkRed")
             .setDescription(`An error occurred in ${ctx.constructor.name}.\nError ID: ${errorId}`)
-            .addFields([
-                {
-                    name: "Channel",
-                    value: getChannelName(ctx),
-                },
-                {
-                    name: "Error",
-                    value: `\`\`\`js\n${e instanceof Error ? e.stack : e}\`\`\``,
-                }
-            ])
+            .addFields({
+                name: "Channel",
+                value: getChannelName(ctx),
+            })
             .setTimestamp()
             .setFooter({ text: errorId });
+
+        if (interactionHandler) {
+            embed.addFields({
+                name: "Handler",
+                value: interactionHandler.name,
+            });
+        }
+
+        embed.addFields({
+            name: "Error",
+            value: `\`\`\`js\n${e instanceof Error ? e.stack : e}\`\`\``,
+        })
         await errorChannel.send({ embeds: [embed] });
     }
 

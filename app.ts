@@ -165,7 +165,7 @@ client.on("interactionCreate", async (interaction) => {
             );
         } catch (e) {
             console.log("Error in interaction handler", e);
-            ErrorHandler(interaction, e);
+            ErrorHandler(interaction, e, interactionHandler);
         }
     } else if (interaction.isAutocomplete()) {
         const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);

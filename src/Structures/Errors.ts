@@ -30,8 +30,9 @@ const getChannelName = (ctx: TextBasedChannel | Interaction): string => {
     return `${interactionType}: ${ctx.user.tag} in ${ctx.channel ? getChannelName(ctx.channel) : "?"}`
 }
 
-export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown, handler?: string) => {
+export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e: unknown, handler?: string, receivedInteractionAt?: Date) => {
     const errorId = nanoid();
+    const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
 
     console.log("===================================");
     console.log("||                               ||");
@@ -59,6 +60,13 @@ export const ErrorHandler = async (ctx: TextChannel | DMChannel | Interaction, e
             embed.addFields({
                 name: "Handler",
                 value: handler,
+            });
+        }
+
+        if (errorDelta) {
+            embed.addFields({
+                name: "Time to Error",
+                value: `${errorDelta}ms`,
             });
         }
 

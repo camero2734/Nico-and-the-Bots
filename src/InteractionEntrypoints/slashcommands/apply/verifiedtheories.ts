@@ -157,10 +157,7 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
         data: { lastTaken: new Date(), timesTaken: { increment: 1 } }
     });
 
-    // Update existing message
-    const msg = ctx.message;
-
-    const dmActionRow = new ActionRowBuilder<ButtonBuilder>(msg.components[0].toJSON());
+    const dmActionRow = new ActionRowBuilder<ButtonBuilder>(ctx.message.components[0].toJSON());
     const beginBtn = dmActionRow.components.find(c => (c.data.label === "Begin" || c.data.label === "Reopen"));
     const cancelBtn = dmActionRow.components.find(c => c.data.label === "Cancel");
 
@@ -169,10 +166,10 @@ const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) 
     beginBtn.setLabel("Reopen");
     cancelBtn.setDisabled(true);
 
-    const embed = new EmbedBuilder(msg.embeds[0].toJSON());
+    const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
     embed.setFooter({ text: "You have started the quiz. Click 'Reopen' to continue." });
 
-    await msg.edit({ components: [dmActionRow], embeds: [embed] });
+    await ctx.editReply({ components: [dmActionRow], embeds: [embed] });
 });
 
 const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {

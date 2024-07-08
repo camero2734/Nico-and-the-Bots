@@ -1,5 +1,4 @@
 import { en, Faker } from "@faker-js/faker";
-import { roundToNearestMinutes } from "date-fns";
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -94,8 +93,10 @@ command.setHandler(async (ctx) => {
         throw new CommandError("You must have server DMs enabled to use this command");
     }
 
+    const seed36 = F.hashToInt(`${ctx.user.id}:${Date.now()}`).toString(36);
+
     const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-        new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(genModalId({})),
+        new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(genModalId({ seed36 })),
         new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(genCancelId({}))
     ]);
 
@@ -121,16 +122,14 @@ const genCancelId = command.addInteractionListener("verifcancel", [], async (ctx
     });
 });
 
-const genModalId = command.addInteractionListener("verifmodal", [], async (ctx) => {
+const genModalId = command.addInteractionListener("verifmodal", ["seed36"], async (ctx, args) => {
     if (!ctx.isButton()) return;
 
-    // Ensure the user gets the same questions every time (but different after a while)
-    const currentTime = roundToNearestMinutes(new Date(), { nearestTo: 30 }).getTime();
-    const seed = F.hashToInt(`${ctx.user.id}:${currentTime}`);
+    const seed = parseInt(args.seed36, 36);
 
     const modal = new ModalBuilder()
         .setTitle("Verified Theories Quiz -- Part 1")
-        .setCustomId(genModalSubmitId({ seed36: seed.toString(36) }));
+        .setCustomId(genModalSubmitId({ seed36: args.seed36 }));
 
     const questions = generatePartOne(seed);
 

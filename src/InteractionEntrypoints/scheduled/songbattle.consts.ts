@@ -375,8 +375,11 @@ export async function determineNextMatchup(): Promise<{
     const totalMatches = NUMBER_OF_ELIMINATIONS * (histories.size - 1) + numTies + fewestEliminations;
 
     // The number of times the songs have gone before
-    const song1Wins = histories.get(song1Id)?.rounds || 0;
-    const song2Wins = histories.get(song2Id)?.rounds || 0;
+    const song1Hist = histories.get(song1Id);
+    const song2Hist = histories.get(song2Id);
+
+    const song1Wins = song1Hist ? song1Hist.rounds - song1Hist.eliminations : 0;
+    const song2Wins = song2Hist ? song2Hist.rounds - song2Hist.eliminations : 0;
 
     return { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result, totalMatches };
 }

@@ -209,8 +209,8 @@ export async function updateCurrentSongBattleMessage() {
     const song1Wins = song1Hist ? song1Hist.rounds - song1Hist.eliminations : 1;
     const song2Wins = song2Hist ? song2Hist.rounds - song2Hist.eliminations : 1;
 
-    const song1Losses = song1Hist ? song1Hist.eliminations : 0;
-    const song2Losses = song2Hist ? song2Hist.eliminations : 0;
+    const song1Losses = song1Hist ? song1Hist.eliminations : 1;
+    const song2Losses = song2Hist ? song2Hist.eliminations : 1;
 
     const nextBattleNumber = previousBattlesRaw.length;
 
@@ -226,7 +226,7 @@ export async function updateCurrentSongBattleMessage() {
             nextBattleNumber,
             // Need to subtract 1 because the battle hasn't ended yet
             wins: song1Wins - 1,
-            losses: song1Losses
+            losses: song1Losses - 1
         },
         song2: {
             song: song2.song,
@@ -234,7 +234,7 @@ export async function updateCurrentSongBattleMessage() {
             buttonStyle: button2[0],
             nextBattleNumber,
             wins: song2Wins - 1,
-            losses: song2Losses
+            losses: song2Losses - 1
         }
     });
 

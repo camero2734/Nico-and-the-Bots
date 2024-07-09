@@ -141,39 +141,84 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         skip: skip
     });
     const previousMessageId = previousPoll?.options[2];
+    if (!previousMessageId) return;
 
-    if (previousMessageId) {
-        const previousMessage = await channel.messages?.fetch(previousMessageId);
-        const result = determineResult(previousPoll);
+    let previousMessage = await channel.messages?.fetch(previousMessageId);
+    if (!previousMessage) return;
 
-        if (previousMessage) {
-            const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+    const { histories, previousBattlesRaw } = await calculateHistory();
 
-            let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+    const song1 = fromSongId(previousPoll.options[0]);
+    const song2 = fromSongId(previousPoll.options[1]);
 
-            for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
-                const field = embed.data.fields?.[i];
-                if (!field) continue;
+    const song1Hist = histories.get(previousPoll.options[0]);
+    const song2Hist = histories.get(previousPoll.options[1]);
 
-                const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
-                field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
-                field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
-            }
+    const song1Wins = song1Hist ? song1Hist.rounds - song1Hist.eliminations : 1;
+    const song2Wins = song2Hist ? song2Hist.rounds - song2Hist.eliminations : 1;
 
-            if (winnerIdx === false) {
-                embed.addFields({
-                    name: "🙁 Tie",
-                    value: "No winner was determined. These songs will be put back into the pool.",
-                });
-            }
+    const song1Losses = song1Hist ? song1Hist.eliminations : 1;
+    const song2Losses = song2Hist ? song2Hist.eliminations : 1;
 
-            // Disable the buttons
-            const actionRow = previousMessage.components[0].toJSON();
-            actionRow.components.forEach(c => c.disabled = true);
+    const nextBattleNumber = previousBattlesRaw.length;
 
-            await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
+    const [button1, button2] = [
+        [ButtonStyle.Secondary, "#4F545C"],
+        [ButtonStyle.Secondary, "#4F545C"]
+    ] as const;
+
+    const { totalMatches } = await determineNextMatchup();
+    const msgOptions = await createMessageComponents({
+        pollId: previousPoll.id,
+        nextBattleNumber,
+        totalMatches,
+        startsAt: new Date(),
+        song1: {
+            song: song1.song,
+            album: song1.album,
+            buttonStyle: button1[0],
+            nextBattleNumber,
+            wins: song1Wins,
+            losses: song1Losses
+        },
+        song2: {
+            song: song2.song,
+            album: song2.album,
+            buttonStyle: button2[0],
+            nextBattleNumber,
+            wins: song2Wins,
+            losses: song2Losses
         }
+    });
+
+    previousMessage = await previousMessage.edit(msgOptions);
+
+    const result = determineResult(previousPoll);
+    const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+
+    let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+
+    for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
+        const field = embed.data.fields?.[i];
+        if (!field) continue;
+
+        const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
+        field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
+        field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
     }
+
+    if (winnerIdx === false) {
+        embed.addFields({
+            name: "🙁 Tie",
+            value: "No winner was determined. These songs will be put back into the pool.",
+        });
+    }
+
+    // Disable the buttons
+    const actionRow = previousMessage.components[0].toJSON();
+    actionRow.components.forEach(c => c.disabled = true);
+
+    await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
 }
 
 export async function updateCurrentSongBattleMessage() {
@@ -198,7 +243,6 @@ export async function updateCurrentSongBattleMessage() {
     const song1 = fromSongId(poll.options[0]);
     const song2 = fromSongId(poll.options[1]);
 
-    // Pick two random button colors
     const [button1, button2] = [
         [ButtonStyle.Secondary, "#4F545C"],
         [ButtonStyle.Secondary, "#4F545C"]

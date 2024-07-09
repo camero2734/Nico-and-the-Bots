@@ -4,11 +4,11 @@ import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
+import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
-import { invalidateCache, withCache } from "../../Helpers/cache";
+import { Album, PREFIX, Result, SongContender, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -60,7 +60,7 @@ export async function songBattleCron() {
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
+    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
 
     // Update the previous battle's message
     await updatePreviousSongBattleMessage();
@@ -102,14 +102,16 @@ export async function songBattleCron() {
             album: album1,
             buttonStyle: button1[0],
             nextBattleNumber,
-            wins: song1Wins
+            wins: song1Wins,
+            losses: song1Losses,
         },
         song2: {
             song: song2,
             album: album2,
             buttonStyle: button2[0],
             nextBattleNumber,
-            wins: song2Wins
+            wins: song2Wins,
+            losses: song2Losses,
         }
     });
 
@@ -139,39 +141,87 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         skip: skip
     });
     const previousMessageId = previousPoll?.options[2];
+    if (!previousMessageId) return;
 
-    if (previousMessageId) {
-        const previousMessage = await channel.messages?.fetch(previousMessageId);
-        const result = determineResult(previousPoll);
+    let previousMessage = await channel.messages?.fetch(previousMessageId);
+    if (!previousMessage) return;
 
-        if (previousMessage) {
-            const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+    const { histories, previousBattlesRaw } = await calculateHistory();
 
-            let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+    const song1 = fromSongId(previousPoll.options[0]);
+    const song2 = fromSongId(previousPoll.options[1]);
 
-            for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
-                const field = embed.data.fields?.[i];
-                if (!field) continue;
+    const song1Hist = histories.get(previousPoll.options[0]);
+    const song2Hist = histories.get(previousPoll.options[1]);
 
-                const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
-                field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
-                field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
-            }
+    const song1Wins = song1Hist ? song1Hist.rounds - song1Hist.eliminations : 1;
+    const song2Wins = song2Hist ? song2Hist.rounds - song2Hist.eliminations : 1;
 
-            if (winnerIdx === false) {
-                embed.addFields({
-                    name: "🙁 Tie",
-                    value: "No winner was determined. These songs will be put back into the pool.",
-                });
-            }
+    const song1Losses = song1Hist ? song1Hist.eliminations : 1;
+    const song2Losses = song2Hist ? song2Hist.eliminations : 1;
 
-            // Disable the buttons
-            const actionRow = previousMessage.components[0].toJSON();
-            actionRow.components.forEach(c => c.disabled = true);
+    const nextBattleNumber = previousBattlesRaw.length;
 
-            await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
+    const [button1, button2] = [
+        [ButtonStyle.Secondary, "#4F545C"],
+        [ButtonStyle.Secondary, "#4F545C"]
+    ] as const;
+
+    const { totalMatches } = await determineNextMatchup();
+    const msgOptions = await createMessageComponents({
+        pollId: previousPoll.id,
+        nextBattleNumber,
+        totalMatches,
+        startsAt: new Date(),
+        song1: {
+            song: song1.song,
+            album: song1.album,
+            buttonStyle: button1[0],
+            nextBattleNumber,
+            wins: song1Wins - 1,
+            losses: song1Losses - 1
+        },
+        song2: {
+            song: song2.song,
+            album: song2.album,
+            buttonStyle: button2[0],
+            nextBattleNumber,
+            wins: song2Wins - 1,
+            losses: song2Losses - 1
         }
+    });
+
+    previousMessage = await previousMessage.edit(msgOptions);
+
+    const result = determineResult(previousPoll);
+    const embed = new EmbedBuilder(previousMessage.embeds[0].data);
+
+    const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
+    embed.setFooter({ text: embedFooter(totalVotes) });
+
+    let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+
+    for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
+        const field = embed.data.fields?.[i];
+        if (!field) continue;
+
+        const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
+        field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
+        field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
     }
+
+    if (winnerIdx === false) {
+        embed.addFields({
+            name: "🙁 Tie",
+            value: "No winner was determined. These songs will be put back into the pool.",
+        });
+    }
+
+    // Disable the buttons
+    const actionRow = previousMessage.components[0].toJSON();
+    actionRow.components.forEach(c => c.disabled = true);
+
+    await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
 }
 
 export async function updateCurrentSongBattleMessage() {
@@ -196,13 +246,22 @@ export async function updateCurrentSongBattleMessage() {
     const song1 = fromSongId(poll.options[0]);
     const song2 = fromSongId(poll.options[1]);
 
-    // Pick two random button colors
-    const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
+    const [button1, button2] = [
+        [ButtonStyle.Secondary, "#4F545C"],
+        [ButtonStyle.Secondary, "#4F545C"]
+    ] as const;
 
     const { histories, previousBattlesRaw } = await calculateHistory();
 
-    const song1Wins = histories.get(poll.options[0])?.rounds || 1;
-    const song2Wins = histories.get(poll.options[1])?.rounds || 1;
+    const song1Hist = histories.get(poll.options[0]);
+    const song2Hist = histories.get(poll.options[1]);
+
+    const song1Wins = song1Hist ? song1Hist.rounds - song1Hist.eliminations : 1;
+    const song2Wins = song2Hist ? song2Hist.rounds - song2Hist.eliminations : 1;
+
+    const song1Losses = song1Hist ? song1Hist.eliminations : 1;
+    const song2Losses = song2Hist ? song2Hist.eliminations : 1;
+
     const nextBattleNumber = previousBattlesRaw.length;
 
     const msgOptions = await createMessageComponents({
@@ -216,14 +275,16 @@ export async function updateCurrentSongBattleMessage() {
             buttonStyle: button1[0],
             nextBattleNumber,
             // Need to subtract 1 because the battle hasn't ended yet
-            wins: song1Wins - 1
+            wins: song1Wins - 1,
+            losses: song1Losses - 1
         },
         song2: {
             song: song2.song,
             album: song2.album,
             buttonStyle: button2[0],
             nextBattleNumber,
-            wins: song2Wins - 1
+            wins: song2Wins - 1,
+            losses: song2Losses - 1
         }
     });
 
@@ -245,6 +306,7 @@ interface SongBattleContender {
     buttonStyle: ButtonStyle;
     nextBattleNumber: number;
     wins: number;
+    losses: number;
 }
 
 async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
@@ -252,6 +314,9 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
 
     const wins1 = song1.wins > 0 ? ` 🏅x${song1.wins}` : "";
     const wins2 = song2.wins > 0 ? ` 🏅x${song2.wins}` : "";
+
+    const losses1 = song1.losses > 0 ? ` 💀x${song1.losses}` : "";
+    const losses2 = song2.losses > 0 ? ` 💀x${song2.losses}` : "";
 
     const emoji1 = `<:emoji:${song1.album.emoji}>`;
     const emoji2 = `<:emoji:${song2.album.emoji}>`;
@@ -261,8 +326,8 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: `${song1.song.name}${wins1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
-            { name: `${song2.song.name}${wins2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
+            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
+            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
         ])
         .setColor(song1.album.color)
         .setFooter({ text: embedFooter(0) })

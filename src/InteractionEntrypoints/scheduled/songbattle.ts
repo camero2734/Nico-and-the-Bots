@@ -60,7 +60,7 @@ export async function songBattleCron() {
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, song1Wins, song2Wins, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
+    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
 
     // Update the previous battle's message
     await updatePreviousSongBattleMessage();
@@ -102,14 +102,16 @@ export async function songBattleCron() {
             album: album1,
             buttonStyle: button1[0],
             nextBattleNumber,
-            wins: song1Wins
+            wins: song1Wins,
+            losses: song1Losses,
         },
         song2: {
             song: song2,
             album: album2,
             buttonStyle: button2[0],
             nextBattleNumber,
-            wins: song2Wins
+            wins: song2Wins,
+            losses: song2Losses,
         }
     });
 
@@ -201,8 +203,15 @@ export async function updateCurrentSongBattleMessage() {
 
     const { histories, previousBattlesRaw } = await calculateHistory();
 
-    const song1Wins = histories.get(poll.options[0])?.rounds || 1;
-    const song2Wins = histories.get(poll.options[1])?.rounds || 1;
+    const song1Hist = histories.get(poll.options[0]);
+    const song2Hist = histories.get(poll.options[1]);
+
+    const song1Wins = song1Hist ? song1Hist.rounds - song1Hist.eliminations : 1;
+    const song2Wins = song2Hist ? song2Hist.rounds - song2Hist.eliminations : 1;
+
+    const song1Losses = song1Hist ? song1Hist.eliminations : 0;
+    const song2Losses = song2Hist ? song2Hist.eliminations : 0;
+
     const nextBattleNumber = previousBattlesRaw.length;
 
     const msgOptions = await createMessageComponents({
@@ -216,14 +225,16 @@ export async function updateCurrentSongBattleMessage() {
             buttonStyle: button1[0],
             nextBattleNumber,
             // Need to subtract 1 because the battle hasn't ended yet
-            wins: song1Wins - 1
+            wins: song1Wins - 1,
+            losses: song1Losses
         },
         song2: {
             song: song2.song,
             album: song2.album,
             buttonStyle: button2[0],
             nextBattleNumber,
-            wins: song2Wins - 1
+            wins: song2Wins - 1,
+            losses: song2Losses
         }
     });
 
@@ -245,6 +256,7 @@ interface SongBattleContender {
     buttonStyle: ButtonStyle;
     nextBattleNumber: number;
     wins: number;
+    losses: number;
 }
 
 async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
@@ -252,6 +264,9 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
 
     const wins1 = song1.wins > 0 ? ` 🏅x${song1.wins}` : "";
     const wins2 = song2.wins > 0 ? ` 🏅x${song2.wins}` : "";
+
+    const losses1 = song1.losses > 0 ? ` 💀x${song1.losses}` : "";
+    const losses2 = song2.losses > 0 ? ` 💀x${song2.losses}` : "";
 
     const emoji1 = `<:emoji:${song1.album.emoji}>`;
     const emoji2 = `<:emoji:${song2.album.emoji}>`;
@@ -261,8 +276,8 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: `${song1.song.name}${wins1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
-            { name: `${song2.song.name}${wins2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
+            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
+            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
         ])
         .setColor(song1.album.color)
         .setFooter({ text: embedFooter(0) })

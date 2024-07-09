@@ -4,11 +4,11 @@ import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
+import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, PREFIX, Result, SongContender, buttonColors, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
-import { invalidateCache, withCache } from "../../Helpers/cache";
+import { Album, PREFIX, Result, SongContender, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -199,7 +199,10 @@ export async function updateCurrentSongBattleMessage() {
     const song2 = fromSongId(poll.options[1]);
 
     // Pick two random button colors
-    const [button1, button2] = F.shuffle(F.entries(buttonColors)).slice(0, 2);
+    const [button1, button2] = [
+        [ButtonStyle.Secondary, "#4F545C"],
+        [ButtonStyle.Secondary, "#4F545C"]
+    ] as const;
 
     const { histories, previousBattlesRaw } = await calculateHistory();
 

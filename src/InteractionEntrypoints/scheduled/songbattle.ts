@@ -178,16 +178,16 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
             album: song1.album,
             buttonStyle: button1[0],
             nextBattleNumber,
-            wins: song1Wins,
-            losses: song1Losses
+            wins: song1Wins - 1,
+            losses: song1Losses - 1
         },
         song2: {
             song: song2.song,
             album: song2.album,
             buttonStyle: button2[0],
             nextBattleNumber,
-            wins: song2Wins,
-            losses: song2Losses
+            wins: song2Wins - 1,
+            losses: song2Losses - 1
         }
     });
 

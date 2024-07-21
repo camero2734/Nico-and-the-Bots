@@ -167,7 +167,8 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         [ButtonStyle.Secondary, "#4F545C"]
     ] as const;
 
-    const { totalMatches } = await determineNextMatchup();
+    // const { totalMatches } = await determineNextMatchup();
+    const totalMatches = 25;
     const msgOptions = await createMessageComponents({
         pollId: previousPoll.id,
         nextBattleNumber,

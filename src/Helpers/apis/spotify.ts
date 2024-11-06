@@ -11,6 +11,6 @@ export const SpotifyClient = new SpotifyAPI({
         const res = await SpotifyClient.clientCredentialsGrant();
         SpotifyClient.setAccessToken(res.body.access_token);
     } catch (err) {
-        console.error(err);
+        console.error("SpotifyClientError: ", err);
     }
 })();

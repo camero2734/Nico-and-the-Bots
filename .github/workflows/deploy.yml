@@ -50,6 +50,7 @@ jobs:
         if: steps.check-tag.outcome == 'failure'
         uses: docker/build-push-action@v5
         with:
+          pull: true
           push: true
           tags: camer0/nico:${{ env.TAG }}
           context: .

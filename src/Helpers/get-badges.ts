@@ -125,7 +125,7 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
         return !!badge;
     });
 
-    yield await createBadge("afsp_contributor.png", async () => {
+    yield await createBadge("afsp_donor.png", async () => {
         return member.roles.cache.has(roles.donorTyler) ||
             member.roles.cache.has(roles.donorJosh);
     });

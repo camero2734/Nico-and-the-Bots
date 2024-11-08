@@ -55,7 +55,7 @@ command.setHandler(async (ctx) => {
 
     // Ensure they're ready to take the quiz
     const initialEmbed = new EmbedBuilder()
-        .setTitle("<:cliffordpopcorn:893992063677366295> Vultue Verification Validator")
+        .setTitle("<:cliffordpopcorn:893992063677366295> Vulture Verification Validator")
         .setDescription(
             [
                 "# Verified Quiz",

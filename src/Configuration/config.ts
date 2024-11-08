@@ -177,6 +177,10 @@ export const roles = <const>{
     staffSupport: "1215033226674839582",
     songBattles: "1216123368613351594",
     qotwContributor: "1249235874281947146",
+    donorTyler: "1304142953325002792",
+    donorJosh: "1304142999340449792",
+    teamTyler: "1304144274480169050",
+    teamJosh: "1304142865055617105",
     albums: {
         CLANCY: "1233054456501768242",
         SAI: "849825119337840680",

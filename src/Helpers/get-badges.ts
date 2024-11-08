@@ -125,6 +125,19 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
         return !!badge;
     });
 
+    yield await createBadge("afsp_donor.png", async () => {
+        return member.roles.cache.has(roles.donorTyler) ||
+            member.roles.cache.has(roles.donorJosh);
+    });
+
+    yield await createBadge("team_josh.png", async () => {
+        return member.roles.cache.has(roles.teamJosh);
+    });
+
+    yield await createBadge("team_tyler.png", async () => {
+        return member.roles.cache.has(roles.teamTyler);
+    });
+
     yield await createBadge("AndreBlackWhite.png", async () => {
         const badge = await prisma.badge.findUnique({ where: { userId_type: { userId: member.id, type: "ANDRE" } } });
         return !!badge;

@@ -25,7 +25,6 @@ import {
     SlashCommands
 } from "./src/Structures/data";
 
-
 const client = new Discord.Client({
     intents: [
         "Guilds",

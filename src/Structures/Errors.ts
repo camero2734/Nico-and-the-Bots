@@ -6,11 +6,6 @@ import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
 
 const getReplyMethod = async (ctx: CommandInteraction) => {
-    if (!ctx.isRepliable() || !ctx.isChatInputCommand()) {
-        console.log(ctx.id, "followUp");
-        return ctx.followUp;
-    }
-
     if (!ctx.deferred && !ctx.replied) {
         console.log(ctx.id, "Deferring reply...");
         const reply = await ctx.deferReply({ ephemeral: true, fetchReply: true });

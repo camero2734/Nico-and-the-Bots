@@ -210,18 +210,29 @@ function startPingServer() {
     })
 }
 
+async function forwardMessageToErrorChannel(msg: string) {
+    try {
+        const channel = await guild.channels.fetch(channelIDs.bottest);
+        if (!channel?.isSendable()) return;
+
+        const embed = new Discord.EmbedBuilder()
+            .setDescription(msg)
+            .setColor("Red");
+
+        await channel.send({ embeds: [embed] });
+    } catch (e) {
+        console.error("Unable to forward error to channel", msg);
+    }
+}
+
 process.on("unhandledRejection", (reason, promise) => {
     console.error("Unhandled Rejection at:", promise, "reason:", reason);
-    const file = `unhandled-rejection-${Date.now()}.txt`;
-    Bun.write(file, `Unhandled Rejection at: ${promise}\nReason: ${reason}`);
-    process.exit(1);
+    forwardMessageToErrorChannel(`Unhandled rejection:\n\nPromise:\n${promise}\n\nReason:\n${reason}`);
 });
 
 process.on("uncaughtException", (err) => {
     console.error("Uncaught Exception thrown", err);
-    const file = `uncaught-exception-${Date.now()}.txt`;
-    Bun.write(file, `Uncaught Exception thrown: ${err}`);
-    process.exit(1);
+    forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
 });
 
 export const NicoClient = client;

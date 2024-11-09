@@ -6,17 +6,18 @@ import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
 
 const getReplyMethod = async (ctx: CommandInteraction) => {
-    if (!ctx.deferred && !ctx.replied) {
-        console.log(ctx.id, "Deferring reply...");
-        const reply = await ctx.deferReply({ ephemeral: true, fetchReply: true });
-        if (reply.content) {
-            console.log(ctx.id, "editReply");
-            return ctx.editReply;
+    if (!ctx.isRepliable() || !ctx.isChatInputCommand()) {
+        if (ctx.channel?.isSendable()) {
+            return ctx.channel.send;
+        } else {
+            return () => { };
         }
-        console.log(ctx.id, "followUp2");
-        return ctx.followUp;
     }
-    console.log(ctx.id, "editReply2");
+
+    if (!ctx.deferred && !ctx.replied) {
+        await ctx.deferReply({ ephemeral: true, fetchReply: true });
+    }
+
     return ctx.editReply;
 }
 

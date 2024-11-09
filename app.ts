@@ -210,4 +210,18 @@ function startPingServer() {
     })
 }
 
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+    const file = `unhandled-rejection-${Date.now()}.txt`;
+    Bun.write(file, `Unhandled Rejection at: ${promise}\nReason: ${reason}`);
+    process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception thrown", err);
+    const file = `uncaught-exception-${Date.now()}.txt`;
+    Bun.write(file, `Uncaught Exception thrown: ${err}`);
+    process.exit(1);
+});
+
 export const NicoClient = client;

@@ -91,7 +91,7 @@ export class SacarverBot {
             {
                 emoji: "💬",
                 title: "General chats",
-                text: `For the dedicated band chat check out <#${channelIDs.pilotsDiscussion}> and for general discussion, check out <#${channelIDs.hometown}>, <#${channelIDs.slowtown}>, <#${channelIDs.}> and <#${channelIDs.international}>`
+                text: `For the dedicated band chat check out <#${channelIDs.pilotsDiscussion}> and for general discussion, check out <#${channelIDs.hometown}>, <#${channelIDs.slowtown}>, <#${channelIDs.paladinStrait}> and <#${channelIDs.international}>`
             },
             {
                 emoji: "🎟️",

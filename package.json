@@ -35,7 +35,7 @@
     "croner": "^8.0.1",
     "date-fns": "2.28.0",
     "diff": "^5.2.0",
-    "discord.js": "^14.14.1",
+    "discord.js": "^14.16.3",
     "emittery": "^0.9.2",
     "emoji-regex": "10.0.0",
     "env-var": "^7.1.1",

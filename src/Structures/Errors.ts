@@ -6,9 +6,18 @@ import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
 
 const getReplyMethod = async (ctx: CommandInteraction) => {
-    if (!ctx.isRepliable() || !ctx.isChatInputCommand()) return ctx.followUp;
+    if (!ctx.isRepliable() || !ctx.isChatInputCommand()) {
+        if (ctx.channel?.isSendable()) {
+            return ctx.channel.send;
+        } else {
+            return () => { };
+        }
+    }
 
-    if (!ctx.deferred && !ctx.replied) await ctx.deferReply({ ephemeral: true });
+    if (!ctx.deferred && !ctx.replied) {
+        await ctx.deferReply({ ephemeral: true, fetchReply: true });
+    }
+
     return ctx.editReply;
 }
 

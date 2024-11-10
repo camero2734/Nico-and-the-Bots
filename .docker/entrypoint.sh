@@ -11,6 +11,7 @@ fi
 bunx prisma migrate deploy
 
 if [ "$NODE_ENV" == "development" ]; then
+    echo "Running in development mode"
     sleep 100000
 else
     bun run app.ts

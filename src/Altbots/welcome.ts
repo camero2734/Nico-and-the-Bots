@@ -165,7 +165,6 @@ export class SacarverBot {
         guildMemberCount,
         memberNum
     }: {
-        // member: GuildMember,
         avatarUrl: string,
         displayName: string,
         guildMemberCount: number,
@@ -209,7 +208,7 @@ export class SacarverBot {
         ctx.textAlign = "center";
         ctx.fillText(`#${memberNum}`, 180, 300);
 
-        return new AttachmentBuilder(canvas.toBuffer('image/png'), { name: "welcome.png" });
+        return new AttachmentBuilder(canvas.toBuffer('image/webp', 100), { name: "welcome.webp" });
     }
 
     async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {

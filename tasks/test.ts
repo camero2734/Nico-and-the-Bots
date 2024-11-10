@@ -16,4 +16,4 @@ const attachment = await SacarverBot.generateWelcomeImage({
 
 const buffer = attachment.attachment as BufferResolvable;
 
-await Bun.write("out.png", buffer);
+await Bun.write("out.webp", buffer);

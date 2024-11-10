@@ -31,7 +31,7 @@ command.setHandler(async (ctx) => {
     const buffer = await generateScoreCard(member);
     await ctx.editReply({
         embeds: [],
-        files: [new AttachmentBuilder(buffer, { name: "score.png" })]
+        files: [new AttachmentBuilder(buffer, { name: "score.webp" })]
     });
 });
 
@@ -193,7 +193,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     cctx.strokeText(`${placeNum}`, 85, 100);
     cctx.fillText(`${placeNum}`, 85, 100);
 
-    return canvas.toBuffer('image/png');
+    return canvas.toBuffer('image/webp', 100);
 }
 
 export default command;

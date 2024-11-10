@@ -117,7 +117,7 @@ export class SacarverBot {
             .setDescription(
                 "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n"
             )
-            .setImage("attachment://welcome.png");
+            .setImage("attachment://welcome.webp");
 
         embed.addFields([{ name: "\u200b", value: "\u200b" }]);
         for (const { emoji, title, text } of noteworthyChannels) {

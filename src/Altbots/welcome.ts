@@ -174,43 +174,40 @@ export class SacarverBot {
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
 
-        const bg = await loadImage("./src/Assets/images/welcome-card.png");
-
+        const bg = await loadImage("./src/Assets/images/welcome-card-clancy.png");
         ctx.drawImage(bg, 0, 0, 1000, 500);
 
         // Avatar
-        ctx.translate(0, 88);
         const avatar = await loadImage(avatarUrl);
-        ctx.drawImage(avatar, 104, 0, 144, 144);
+        ctx.drawImage(avatar, 102, 91, 160, 160);
+
+        ctx.fillStyle = "#FCE300";
+        ctx.fillRect(102, 246, 160, 10)
 
         // Member name
-        ctx.translate(0, 197);
+        const fontFamily = "Clancy, Futura, FiraCode, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#F31717";
+        ctx.font = `54px ${fontFamily}`;
+        ctx.fillText('welcome', 610, 209);
 
-        ctx.fillStyle = "white";
-        ctx.shadowColor = "#EF89AE";
-        ctx.shadowBlur = 1;
-        ctx.shadowOffsetX = 4;
-        ctx.shadowOffsetY = 4;
+        const name = displayName.normalize("NFKC").replace(/[^a-zA-Z0-9_ ]/g, "").trim().toLowerCase();
+        const fontSize = F.canvasFitText(ctx, canvas, name, fontFamily, { maxWidth: 600, maxFontSize: 45 });
 
-        const name = displayName.normalize("NFKC");
-        const fontSize = F.canvasFitText(ctx, canvas, name, "Futura", { maxWidth: 600, maxFontSize: 64 });
-        ctx.font = `${fontSize}px Futura`;
-        ctx.fillText(name, 300, 0);
+        ctx.fillStyle = "#FCE300";
+        ctx.font = `${fontSize}px ${fontFamily}`;
+        ctx.fillText(name, 610, 300);
 
         // Current member number
-        ctx.translate(0, 130);
-        ctx.shadowColor = "#55A4B5";
-        ctx.font = "42px Futura";
+        ctx.fillStyle = "#F31717";
+        ctx.font = `24px ${fontFamily}`;
         ctx.textAlign = "end";
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 3;
-        ctx.fillText(`Member #${guildMemberCount}`, 925, 0);
+        ctx.fillText(`Member#${guildMemberCount}`, 920, 432);
 
         // Original member number (by join date)
-        ctx.translate(0, 40);
-        ctx.font = "24px Futura";
+        ctx.font = `18px ${fontFamily}`;
         ctx.textAlign = "center";
-        ctx.fillText(`#${memberNum}`, 155, 0);
+        ctx.fillText(`#${memberNum}`, 180, 300);
 
         return new AttachmentBuilder(canvas.toBuffer('image/png'), { name: "welcome.png" });
     }

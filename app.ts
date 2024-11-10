@@ -192,6 +192,7 @@ async function setup() {
     GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
     GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
     GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
+    GlobalFonts.registerFromPath(`./src/Assets/fonts/clancy.otf`, "Clancy");
 
     Scheduler(client);
     topfeedBot.registerChecks();

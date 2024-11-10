@@ -5,12 +5,12 @@ import { GlobalFonts } from "@napi-rs/canvas";
 GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
 GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
 GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
-
+GlobalFonts.registerFromPath(`./src/Assets/fonts/clancy.otf`, "Clancy");
 
 const attachment = await SacarverBot.generateWelcomeImage({
     memberNum: 1987,
-    avatarUrl: "https://images-ext-1.discordapp.net/external/4Bl7gGIEe1WxeijqKR7U85-jgPFS0gLY8tt5kkRz_GE/https/cdn.discordapp.com/avatars/221465443297263618/24f74435e62c01c1ca79552032a85ad2.webp?format=webp",
-    displayName: "poot",
+    avatarUrl: "https://images-ext-1.discordapp.net/external/_N3TF6XlCx7jGZ8NUfv14MnUihQdbA9y1MbEBfK_d9k/https/cdn.discordapp.com/avatars/470691679712706570/39c96b8e460b356c723fa088f27d4360.webp?format=webp",
+    displayName: "username 😄😄😄",
     guildMemberCount: 456
 });
 

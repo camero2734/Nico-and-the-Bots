@@ -20,7 +20,7 @@ model DailyBox {
 
 model User {
   // Basic info
-  id       String   @id
+  id       String   @id @unique
   joinedAt DateTime @default(now())
 
   // Economy

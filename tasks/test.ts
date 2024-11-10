@@ -1,58 +1,19 @@
-const songs =
-    `
-Overcompensate
-Next Semester
-Backslide
-Midwest Indigo
-Vignette
-Lavish
-Navigating
-Snap Back
-Paladin Strait
+import { BufferResolvable } from "discord.js";
+import { SacarverBot } from "../src/Altbots/welcome";
+import { GlobalFonts } from "@napi-rs/canvas";
 
-Choker
-Shy Away
-The Outside
-Saturday
-Mulberry Street
-No Chances
-Redecorate
+GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
+GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
+GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
 
-Jumpsuit
-Levitate
-Morph
-Chlorine
-Nico and the Niners
-Cut My Lip
-Pet Cheetah
 
-Heavydirtysoul
-Fairly Local
-Lane Boy
-Message Man
-Hometown
-Goner
+const attachment = await SacarverBot.generateWelcomeImage({
+    memberNum: 1987,
+    avatarUrl: "https://images-ext-1.discordapp.net/external/4Bl7gGIEe1WxeijqKR7U85-jgPFS0gLY8tt5kkRz_GE/https/cdn.discordapp.com/avatars/221465443297263618/24f74435e62c01c1ca79552032a85ad2.webp?format=webp",
+    displayName: "poot",
+    guildMemberCount: 456
+});
 
-Ode to Sleep
-Holding on to You
-Migraine
-Car Radio
-Guns for Hands
-Trees
+const buffer = attachment.attachment as BufferResolvable;
 
-Forest
-Kitchen Sink
-Anathema
-Lovely
-Ruby
-Clear
-
-Fall Away
-Addict With A Pen
-Friend, Please
-Trapdoor
-Taxi Cab
-Isle of Flightless Birds
-`.trim().split(/\n{1,}/g);
-
-console.log(songs);
+await Bun.write("out.png", buffer);

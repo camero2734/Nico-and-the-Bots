@@ -75,7 +75,12 @@ export class SacarverBot {
         const memberNum = await this.getMemberNumber(member);
         console.log(`Member #${memberNum} joined`);
 
-        const attachment = await this.generateWelcomeImage(member, memberNum);
+        const attachment = await SacarverBot.generateWelcomeImage({
+            avatarUrl: member.user.displayAvatarURL({ extension: "png" }),
+            displayName: member.displayName,
+            guildMemberCount: member.guild.memberCount,
+            memberNum
+        });
 
         const noteworthyChannels = [
             {
@@ -154,7 +159,18 @@ export class SacarverBot {
         });
     }
 
-    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<AttachmentBuilder> {
+    static async generateWelcomeImage({
+        avatarUrl,
+        displayName,
+        guildMemberCount,
+        memberNum
+    }: {
+        // member: GuildMember,
+        avatarUrl: string,
+        displayName: string,
+        guildMemberCount: number,
+        memberNum: number
+    }): Promise<AttachmentBuilder> {
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
 
@@ -164,7 +180,7 @@ export class SacarverBot {
 
         // Avatar
         ctx.translate(0, 88);
-        const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png" }));
+        const avatar = await loadImage(avatarUrl);
         ctx.drawImage(avatar, 104, 0, 144, 144);
 
         // Member name
@@ -176,7 +192,7 @@ export class SacarverBot {
         ctx.shadowOffsetX = 4;
         ctx.shadowOffsetY = 4;
 
-        const name = member.displayName.normalize("NFKC");
+        const name = displayName.normalize("NFKC");
         const fontSize = F.canvasFitText(ctx, canvas, name, "Futura", { maxWidth: 600, maxFontSize: 64 });
         ctx.font = `${fontSize}px Futura`;
         ctx.fillText(name, 300, 0);
@@ -188,7 +204,7 @@ export class SacarverBot {
         ctx.textAlign = "end";
         ctx.shadowOffsetX = 3;
         ctx.shadowOffsetY = 3;
-        ctx.fillText(`Member #${member.guild.memberCount}`, 925, 0);
+        ctx.fillText(`Member #${guildMemberCount}`, 925, 0);
 
         // Original member number (by join date)
         ctx.translate(0, 40);

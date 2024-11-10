@@ -86,28 +86,33 @@ export class SacarverBot {
             {
                 emoji: "📜",
                 title: "Rules & Announcements",
-                text: `Make sure you've read our server's <#${channelIDs.rules}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related announcements.`
+                text: `Make sure you've read our server's <#${channelIDs.rules}> and <#${channelIDs.info}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related news`
             },
             {
-                emoji: "🏠",
+                emoji: "💬",
                 title: "General chats",
-                text: `For general discussion, check out <#${channelIDs.hometown}> and <#${channelIDs.slowtown}>`
+                text: `For the dedicated band chat check out <#${channelIDs.pilotsDiscussion}> and for general discussion, check out <#${channelIDs.hometown}>, <#${channelIDs.slowtown}>, <#${channelIDs.}> and <#${channelIDs.international}>`
+            },
+            {
+                emoji: "🎟️",
+                title: "The Clancy World Tour",
+                text: `Head over to <#${channelIDs.concertsForum}> to find thread chats for your shows`
+            },
+            {
+                emoji: "<:DEMA:1218335710457757726>",
+                title: "Theories and Lore",
+                text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theoryForum}>`
+            },
+            {
+                emoji: "🎨",
+                title: "Creations",
+                text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.musiccreations}>`
             },
             { emoji: "🤖", title: "Our bots", text: `Use our custom bots in <#${channelIDs.commands}>` },
             {
-                emoji: "<:THEORY:404458118299254785>",
-                title: "Theories",
-                text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theorylist}>`
-            },
-            {
-                emoji: "🧑‍🎨",
-                title: "Creations",
-                text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.mulberrystreet}>`
-            },
-            {
                 emoji: "🥁",
-                title: "Topfeed",
-                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command.`
+                title: "Tøpfeed",
+                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command or from <id:customize>`
             }
         ];
 
@@ -201,7 +206,7 @@ export class SacarverBot {
         ctx.fillStyle = "#F31717";
         ctx.font = `24px ${fontFamily}`;
         ctx.textAlign = "end";
-        ctx.fillText(`Member#${guildMemberCount}`, 920, 432);
+        ctx.fillText(`Member #${guildMemberCount}`, 920, 432);
 
         // Original member number (by join date)
         ctx.font = `18px ${fontFamily}`;

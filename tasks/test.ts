@@ -1,58 +1,19 @@
-const songs =
-    `
-Overcompensate
-Next Semester
-Backslide
-Midwest Indigo
-Vignette
-Lavish
-Navigating
-Snap Back
-Paladin Strait
+import { BufferResolvable } from "discord.js";
+import { SacarverBot } from "../src/Altbots/welcome";
+import { GlobalFonts } from "@napi-rs/canvas";
 
-Choker
-Shy Away
-The Outside
-Saturday
-Mulberry Street
-No Chances
-Redecorate
+GlobalFonts.registerFromPath(`./src/Assets/fonts/f.ttf`, "Futura");
+GlobalFonts.registerFromPath(`./src/Assets/fonts/FiraCode/Regular.ttf`, "FiraCode");
+GlobalFonts.registerFromPath(`./src/Assets/fonts/ArialNarrow/Regular.ttf`, "'Arial Narrow'");
+GlobalFonts.registerFromPath(`./src/Assets/fonts/clancy.otf`, "Clancy");
 
-Jumpsuit
-Levitate
-Morph
-Chlorine
-Nico and the Niners
-Cut My Lip
-Pet Cheetah
+const attachment = await SacarverBot.generateWelcomeImage({
+    memberNum: 1987,
+    avatarUrl: "https://images-ext-1.discordapp.net/external/_N3TF6XlCx7jGZ8NUfv14MnUihQdbA9y1MbEBfK_d9k/https/cdn.discordapp.com/avatars/470691679712706570/39c96b8e460b356c723fa088f27d4360.webp?format=webp",
+    displayName: "username 😄😄😄",
+    guildMemberCount: 456
+});
 
-Heavydirtysoul
-Fairly Local
-Lane Boy
-Message Man
-Hometown
-Goner
+const buffer = attachment.attachment as BufferResolvable;
 
-Ode to Sleep
-Holding on to You
-Migraine
-Car Radio
-Guns for Hands
-Trees
-
-Forest
-Kitchen Sink
-Anathema
-Lovely
-Ruby
-Clear
-
-Fall Away
-Addict With A Pen
-Friend, Please
-Trapdoor
-Taxi Cab
-Isle of Flightless Birds
-`.trim().split(/\n{1,}/g);
-
-console.log(songs);
+await Bun.write("out.webp", buffer);

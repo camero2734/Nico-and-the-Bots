@@ -75,34 +75,44 @@ export class SacarverBot {
         const memberNum = await this.getMemberNumber(member);
         console.log(`Member #${memberNum} joined`);
 
-        const attachment = await this.generateWelcomeImage(member, memberNum);
+        const attachment = await SacarverBot.generateWelcomeImage({
+            avatarUrl: member.user.displayAvatarURL({ extension: "png" }),
+            displayName: member.displayName,
+            guildMemberCount: member.guild.memberCount,
+            memberNum
+        });
 
         const noteworthyChannels = [
             {
                 emoji: "📜",
                 title: "Rules & Announcements",
-                text: `Make sure you've read our server's <#${channelIDs.rules}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related announcements.`
+                text: `Make sure you've read our server's <#${channelIDs.rules}> and <#${channelIDs.info}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related news`
             },
             {
-                emoji: "🏠",
+                emoji: "💬",
                 title: "General chats",
-                text: `For general discussion, check out <#${channelIDs.hometown}> and <#${channelIDs.slowtown}>`
+                text: `For the dedicated band chat check out <#${channelIDs.pilotsDiscussion}> and for general discussion, check out <#${channelIDs.hometown}>, <#${channelIDs.slowtown}>, <#${channelIDs.paladinStrait}> and <#${channelIDs.international}>`
+            },
+            {
+                emoji: "🎟️",
+                title: "The Clancy World Tour",
+                text: `Head over to <#${channelIDs.concertsForum}> to find thread chats for your shows`
+            },
+            {
+                emoji: "<:DEMA:1218335710457757726>",
+                title: "Theories and Lore",
+                text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theoryForum}>`
+            },
+            {
+                emoji: "🎨",
+                title: "Creations",
+                text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.musiccreations}>`
             },
             { emoji: "🤖", title: "Our bots", text: `Use our custom bots in <#${channelIDs.commands}>` },
             {
-                emoji: "<:THEORY:404458118299254785>",
-                title: "Theories",
-                text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theorylist}>`
-            },
-            {
-                emoji: "🧑‍🎨",
-                title: "Creations",
-                text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.mulberrystreet}>`
-            },
-            {
                 emoji: "🥁",
-                title: "Topfeed",
-                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command.`
+                title: "Tøpfeed",
+                text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command or from <id:customize>`
             }
         ];
 
@@ -112,7 +122,7 @@ export class SacarverBot {
             .setDescription(
                 "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n"
             )
-            .setImage("attachment://welcome.png");
+            .setImage("attachment://welcome.webp");
 
         embed.addFields([{ name: "\u200b", value: "\u200b" }]);
         for (const { emoji, title, text } of noteworthyChannels) {
@@ -154,49 +164,56 @@ export class SacarverBot {
         });
     }
 
-    async generateWelcomeImage(member: GuildMember, memberNum: number | string): Promise<AttachmentBuilder> {
+    static async generateWelcomeImage({
+        avatarUrl,
+        displayName,
+        guildMemberCount,
+        memberNum
+    }: {
+        avatarUrl: string,
+        displayName: string,
+        guildMemberCount: number,
+        memberNum: number
+    }): Promise<AttachmentBuilder> {
         const canvas = createCanvas(1000, 500);
         const ctx = canvas.getContext("2d");
 
-        const bg = await loadImage("./src/Assets/images/welcome-card.png");
-
+        const bg = await loadImage("./src/Assets/images/welcome-card-clancy.png");
         ctx.drawImage(bg, 0, 0, 1000, 500);
 
         // Avatar
-        ctx.translate(0, 88);
-        const avatar = await loadImage(member.user.displayAvatarURL({ extension: "png" }));
-        ctx.drawImage(avatar, 104, 0, 144, 144);
+        const avatar = await loadImage(avatarUrl);
+        ctx.drawImage(avatar, 102, 91, 160, 160);
+
+        ctx.fillStyle = "#FCE300";
+        ctx.fillRect(102, 246, 160, 10)
 
         // Member name
-        ctx.translate(0, 197);
+        const fontFamily = "Clancy, Futura, FiraCode, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#F31717";
+        ctx.font = `54px ${fontFamily}`;
+        ctx.fillText('welcome', 610, 209);
 
-        ctx.fillStyle = "white";
-        ctx.shadowColor = "#EF89AE";
-        ctx.shadowBlur = 1;
-        ctx.shadowOffsetX = 4;
-        ctx.shadowOffsetY = 4;
+        const name = displayName.normalize("NFKC").replace(/[^a-zA-Z0-9_ ]/g, "").trim().toLowerCase();
+        const fontSize = F.canvasFitText(ctx, canvas, name, fontFamily, { maxWidth: 600, maxFontSize: 45 });
 
-        const name = member.displayName.normalize("NFKC");
-        const fontSize = F.canvasFitText(ctx, canvas, name, "Futura", { maxWidth: 600, maxFontSize: 64 });
-        ctx.font = `${fontSize}px Futura`;
-        ctx.fillText(name, 300, 0);
+        ctx.fillStyle = "#FCE300";
+        ctx.font = `${fontSize}px ${fontFamily}`;
+        ctx.fillText(name, 610, 300);
 
         // Current member number
-        ctx.translate(0, 130);
-        ctx.shadowColor = "#55A4B5";
-        ctx.font = "42px Futura";
+        ctx.fillStyle = "#F31717";
+        ctx.font = `24px ${fontFamily}`;
         ctx.textAlign = "end";
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 3;
-        ctx.fillText(`Member #${member.guild.memberCount}`, 925, 0);
+        ctx.fillText(`Member #${guildMemberCount}`, 920, 432);
 
         // Original member number (by join date)
-        ctx.translate(0, 40);
-        ctx.font = "24px Futura";
+        ctx.font = `18px ${fontFamily}`;
         ctx.textAlign = "center";
-        ctx.fillText(`#${memberNum}`, 155, 0);
+        ctx.fillText(`#${memberNum}`, 180, 300);
 
-        return new AttachmentBuilder(canvas.toBuffer('image/png'), { name: "welcome.png" });
+        return new AttachmentBuilder(canvas.toBuffer('image/webp', 100), { name: "welcome.webp" });
     }
 
     async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {

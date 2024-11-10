@@ -9,6 +9,11 @@ export const guildID = "269657133673349120";
 export const dropEmojiGuildId = "901909949821648936";
 
 export const channelIDs = <const>{
+    theoryForum: "940390927661412353",
+    international: "827679833487704094",
+    pilotsDiscussion: "1117774740405366814",
+    info: "893915158106230844",
+    paladinStrait: "1223785064370929744",
     demadistricting: "1217952001317666926",
     songbattles: "1211412086442426429",
     commands: "940341308696965120",

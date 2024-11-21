@@ -4,7 +4,7 @@ import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { addYears } from "date-fns";
 
 const command = new SlashCommand({
-    description: "Edits a user's economy",
+    description: "Edits a user's verified status",
     options: [
         {
             name: "user",

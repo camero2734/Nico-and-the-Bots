@@ -141,7 +141,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
             staffEmbed.setImage("attachment://file.png");
         }
 
-        const staffChan = (await ctx.guild.channels.fetch("815016457669705778")) as TextChannel;
+        const staffChan = (await ctx.guild.channels.fetch("1309892790490234943")) as TextChannel;
         const m = await staffChan.send(msgOpts);
 
         // Save to DB

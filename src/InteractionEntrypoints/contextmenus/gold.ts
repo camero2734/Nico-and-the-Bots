@@ -146,6 +146,7 @@ async function handleGold(
     if (!chan) throw new Error("Couldn't find the gold channel");
 
     const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0); // prettier-ignore
+    const goldsUntilCertified = NUM_GOLDS_FOR_CERTIFICATION - numGolds;
 
     const goldActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
         new ButtonBuilder()
@@ -166,13 +167,12 @@ async function handleGold(
     const idx = goldEmbed.data.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
     if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
-    if (numGolds < NUM_GOLDS_FOR_CERTIFICATION) {
-        const remain = NUM_GOLDS_FOR_CERTIFICATION - numGolds;
+    if (goldsUntilCertified > 0) {
         const date = isAdditionalGold ? msg.createdAt : new Date();
 
         goldEmbed.addFields([{
             name: "⚠️ Not certified!",
-            value: `This post needs ${remain} more gold${F.plural(remain)}, or it will be deleted ${F.discordTimestamp(
+            value: `This post needs ${goldsUntilCertified} more gold${F.plural(goldsUntilCertified)}, or it will be deleted ${F.discordTimestamp(
                 addDays(date, NUM_DAYS_FOR_CERTIFICATION),
                 "relative"
             )}`
@@ -215,17 +215,19 @@ async function handleGold(
     // React to original message with gold emoji
     await msg.react(emojiIDs.gold);
 
+    // Add gold role
+    if (goldsUntilCertified <= 0) {
+        await originalMember.roles.add(roles.gold);
+    }
+
     // Send message to golded user
     const dm = await originalMember.createDM();
     const dmEmbed = new EmbedBuilder()
-        .setDescription(`You received gold from ${ctxMember.displayName}!`)
+        .setDescription(`You received gold from ${ctxMember.displayName}!${goldsUntilCertified === 0 ? " Your post has also now passed the threshold to stay in the gold channel, and **you have received the gold role.**" : ""}`)
         .setColor(0xfce300)
         .setFooter({ text: `Given in ${msg.channel.name}`, iconURL: ctx.guild?.iconURL() || undefined });
 
     await dm.send({ embeds: [dmEmbed], components: [replyActionRow] });
-
-    // Add gold role
-    await originalMember.roles.add(roles.gold);
 }
 
 ctxMenu.addPermission(roles.banditos, true);

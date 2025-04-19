@@ -55,7 +55,7 @@ command.setHandler(async (ctx) => {
         const timeStamp = F.discordTimestamp(nextRun, "relative");
         await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
     } else if (ctx.opts.num === 444) {
-        await ctx.editReply({
+        await ctx.followUp({
             poll: {
                 question: {
                     text: "Test poll",

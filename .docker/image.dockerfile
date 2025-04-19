@@ -1,4 +1,4 @@
-FROM oven/bun:1.1-debian AS build
+FROM oven/bun:1.2.10-debian AS build
 
 USER root
 WORKDIR /code
@@ -7,7 +7,7 @@ WORKDIR /code
 RUN apt update -qq && apt install -qq -y git-crypt
 
 # NPM packages
-COPY bun.lockb package.json ./
+COPY bun.lock package.json ./
 RUN bun install --frozen-lockfile --production --no-cache && bun pm cache rm
 
 FROM build

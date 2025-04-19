@@ -213,7 +213,7 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
         .setFooter({ text: `CITIZEN ${citizenId}` });
 
     const channel = await ctx.client.channels.fetch(channelIDs.demadistricting);
-    if (!channel?.isTextBased()) return;
+    if (!channel?.isTextBased() || !channel?.isSendable()) return;
 
     await channel.send({ embeds: [staffEmbed] });
 });

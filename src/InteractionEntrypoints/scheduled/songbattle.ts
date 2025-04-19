@@ -199,7 +199,7 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
     const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
     embed.setFooter({ text: embedFooter(totalVotes) });
 
-    let winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+    const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
 
     for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
         const field = embed.data.fields?.[i];

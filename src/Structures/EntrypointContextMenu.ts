@@ -52,7 +52,7 @@ export class UserContextMenu extends ContextMenu<ApplicationCommandType.User> {
         super(name, ApplicationCommandType.User);
     }
 
-    getTarget(ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) {
+    getTarget(ctx: UserContextMenuCommandInteraction) {
         const member = ctx.options.getMember("user");
         if (!member) throw new CommandError("Failed to get member");
         return member as GuildMember;
@@ -64,7 +64,7 @@ export class MessageContextMenu extends ContextMenu<ApplicationCommandType.Messa
         super(name, ApplicationCommandType.Message);
     }
 
-    getTarget(ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) {
+    getTarget(ctx: MessageContextMenuCommandInteraction) {
         const msg = ctx.options.getMessage("message", false);
         if (!msg) throw new CommandError("Failed to get message");
         return msg as Message;

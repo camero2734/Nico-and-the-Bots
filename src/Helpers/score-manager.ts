@@ -1,5 +1,5 @@
 import { startOfDay } from "date-fns";
-import { DiscordAPIError, Message, EmbedBuilder, MessageReference, Snowflake, TextChannel } from "discord.js";
+import { DiscordAPIError, Message, EmbedBuilder, MessageReference, Snowflake, TextChannel, MessageReferenceType } from "discord.js";
 import { prisma } from "./prisma-init";
 import { User } from "@prisma/client";
 
@@ -23,6 +23,7 @@ const scoreQueue = new Queue(QUEUE_NAME, {
 export const updateUserScore = (msg: Message): void => {
     if (!msg.guild || !msg.channel) return;
     const reference: MessageReference = {
+        type: MessageReferenceType.Default,
         guildId: msg.guild.id,
         channelId: msg.channel.id,
         messageId: msg.id

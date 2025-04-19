@@ -1,6 +1,7 @@
 import { en, Faker } from "@faker-js/faker";
 import {
     ActionRowBuilder,
+    APIButtonComponent,
     ButtonBuilder,
     ButtonStyle,
     channelMention,
@@ -156,9 +157,13 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
         data: { lastTaken: new Date(), timesTaken: { increment: 1 } }
     });
 
+    const getLabel = (data: Partial<APIButtonComponent>) => {
+        return "label" in data ? data.label : undefined;
+    }
+
     const dmActionRow = new ActionRowBuilder<ButtonBuilder>(ctx.message.components[0].toJSON());
-    const beginBtn = dmActionRow.components.find(c => (c.data.label === "Begin" || c.data.label === "Reopen"));
-    const cancelBtn = dmActionRow.components.find(c => c.data.label === "Cancel");
+    const beginBtn = dmActionRow.components.find(c => (getLabel(c.data) === "Begin" || getLabel(c.data) === "Reopen"));
+    const cancelBtn = dmActionRow.components.find(c => getLabel(c.data) === "Cancel");
 
     if (!beginBtn || !cancelBtn) throw new Error("Invalid components");
 

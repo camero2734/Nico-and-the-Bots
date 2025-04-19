@@ -21,10 +21,6 @@ interface Question {
     short?: boolean;
 }
 
-// interface AnsweredQuestion extends Question {
-//     answer: string;
-// }
-
 const PART_ONE: Record<string, Question> = <const>{
     REFERRED_FROM: {
         question: "Where did you find out about our server?",
@@ -107,7 +103,7 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
 }
 
 const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async (ctx) => {
-    if (!ctx.isButton() || !ctx.component.label) return;
+    if (!ctx.isButton() || !("label" in ctx.component) || !ctx.component.label) return;
 
     const formPart = FORM[ctx.component.label];
     if (!formPart) return;

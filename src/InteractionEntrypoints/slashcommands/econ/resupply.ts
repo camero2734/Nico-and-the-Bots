@@ -197,7 +197,7 @@ async function memberCaught(
 ): Promise<void> {
     const issuingBishop = F.capitalize(district.bishop) as BishopType;
     const emojiURL = `https://cdn.discordapp.com/emojis/${district.emoji}.png?v=1`;
-    const tokensRemaining = `${dailyBox.tokens - 1} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
+    const tokensRemaining = `${dailyBox.tokens} token${dailyBox.tokens === 2 ? "" : "s"} remaining.`;
 
     const embed = new EmbedBuilder()
         .setColor(0xea523b)

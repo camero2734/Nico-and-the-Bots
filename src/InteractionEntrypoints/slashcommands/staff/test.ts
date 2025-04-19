@@ -54,6 +54,20 @@ command.setHandler(async (ctx) => {
 
         const timeStamp = F.discordTimestamp(nextRun, "relative");
         await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
+    } else if (ctx.opts.num === 444) {
+        await ctx.editReply({
+            poll: {
+                question: {
+                    text: "Test poll",
+                },
+                answers: [
+                    { text: "Option 1", emoji: "👍" },
+                    { text: "Option 2", emoji: "👎" },
+                ],
+                duration: 24,
+                allowMultiselect: false,
+            }
+        })
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

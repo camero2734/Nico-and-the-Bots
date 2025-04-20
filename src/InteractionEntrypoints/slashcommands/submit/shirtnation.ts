@@ -28,7 +28,7 @@ command.setHandler(async (ctx) => {
     const stringified = JSON.stringify(image, null, 2);
 
     await ctx.editReply({
-        message: `Type: ${type}\n\nConstructor: ${constructor}\n\nStringified:\n${stringified}`
+        content: `Type: ${type}\n\nConstructor: ${constructor}\n\nStringified:\n${stringified}`
     })
 });
 

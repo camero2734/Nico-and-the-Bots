@@ -13,7 +13,6 @@ import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
-import SlurFilter from "./src/Helpers/slur-filter";
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
@@ -89,6 +88,7 @@ client.on("ready", async () => {
 });
 
 async function getReplyInteractionId(msg: Discord.Message) {
+    console.log({ msg });
     if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;
     const repliedTo = await msg.fetchReference();
     if (repliedTo?.author.id !== client.user?.id) return;
@@ -101,9 +101,6 @@ async function getReplyInteractionId(msg: Discord.Message) {
 }
 
 client.on("messageCreate", async (msg: Discord.Message) => {
-    const wasSlur = await SlurFilter(msg);
-    if (wasSlur) return;
-
     const { replyId, repliedTo } = await getReplyInteractionId(msg) || {};
     if (replyId && repliedTo) {
         const replyListener = ReplyHandlers.get(replyId);
@@ -115,15 +112,6 @@ client.on("messageCreate", async (msg: Discord.Message) => {
 
     AutoReact(msg);
     updateUserScore(msg); // Add to score
-});
-
-client.on("messageUpdate", async (_oldMsg, newMsg) => {
-    try {
-        await SlurFilter(await newMsg.fetch());
-    } catch (e) {
-        console.log("Slur filter failed to fetch message", newMsg.id)
-    }
-
 });
 
 client.on("guildMemberUpdate", async (oldMem, newMem) => {

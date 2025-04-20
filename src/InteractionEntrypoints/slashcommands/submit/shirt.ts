@@ -16,7 +16,6 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setTitle("Shirt Discussion")
         .setDescription("Please reply (via the context menu action) to this message with your proposed announcement.")
-        .setColor("#00FF00")
         .setFooter({ text: footerId });
     const message = await dm.send({ embeds: [embed] });
 

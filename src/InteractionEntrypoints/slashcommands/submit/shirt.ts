@@ -15,8 +15,8 @@ command.setHandler(async (ctx) => {
     const dm = await ctx.member.createDM();
     const embed = new EmbedBuilder()
         .setTitle("Shirt Discussion")
-        .setDescription("Please reply (via the context menu action) to this message with your proposed announcement.")
-        .setFooter({ text: "Thank you for your contribution!" });
+        .setDescription("Please use Discord's built-in reply feature on this message to respond with your proposed announcement. Formatting will be preserved and you can include images.")
+        .setFooter({ text: "On desktop, right click and select 'Reply'. On mobile, long press and select 'Reply'. Thank you for your contribution!" });
     const message = await dm.send({ embeds: [embed], components: [shirtReplyActionRow] });
 
     await ctx.editReply({

@@ -41,7 +41,7 @@ const client = new Discord.Client({
         "GuildVoiceStates",
         "GuildWebhooks"
     ],
-    partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message]
+    partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
 });
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();

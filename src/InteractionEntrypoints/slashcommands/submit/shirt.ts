@@ -26,8 +26,7 @@ command.setHandler(async (ctx) => {
 });
 
 const footerId = command.addReplyListener("shirtReply", async (reply) => {
-    if (reply.author.id !== userIDs.me) return false;
-
+    console.log("Got reply", reply.content);
     const embed = new EmbedBuilder()
         .setDescription("Thank you for your contribution!")
         .setColor("#FFFFFF")

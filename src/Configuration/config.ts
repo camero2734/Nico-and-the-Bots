@@ -151,7 +151,11 @@ export const emojiIDs = <const>{
         blurryface: "833130087943634944",
         trench: "833130193568530483",
         scaledAndIcy: "840759270625771521",
-        clancy: "1214045012879343658"
+        clancy: "1214045012879343658",
+        topxmm: "1363199884051878109",
+        heathensSingle: "1363244700789768312",
+        doubtSingle: "1363244689674731820",
+        cancerCover: "1363460224836702298"
     },
     quarters: {
         i: "1219348841082523648",

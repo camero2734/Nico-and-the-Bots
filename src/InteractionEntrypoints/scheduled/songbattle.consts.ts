@@ -5,7 +5,7 @@ import { CommandError } from "../../Configuration/definitions";
 import { prisma } from "../../Helpers/prisma-init";
 import { Poll, Vote } from "@prisma/client";
 
-export const NUMBER_OF_ELIMINATIONS = 2;
+export const NUMBER_OF_ELIMINATIONS = 1;
 
 export enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -15,6 +15,7 @@ export enum AlbumName {
     Trench = "Trench",
     ScaledAndIcy = "Scaled And Icy",
     Clancy = "Clancy",
+    TOPxMM = "TOPxMM",
     Singles = "Singles",
 }
 
@@ -29,12 +30,14 @@ export interface Album {
 export interface SongContender {
     name: string;
     image?: string;
+    emoji?: string;
+    color?: ColorResolvable;
     /** YouTube video link */
     yt: string;
 }
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = "SongBattle2024ClancyBattle-";
+export const PREFIX = "TEST2SongBattle2025BlurryfaceBattle-";
 
 export const albums = [
     // {
@@ -102,28 +105,41 @@ export const albums = [
     //         { name: "Lovely (Bonus Track Version)" }
     //     ]
     // },
-    // {
-    //     name: AlbumName.Blurryface,
-    //     image: "https://i.scdn.co/image/ab67616d00001e02352e5ec301a02278ffe53d14",
-    //     color: "#ec5748",
-    //     emoji: emojiIDs.albums.blurryface,
-    //     songs: [
-    //         { name: "Heavydirtysoul" },
-    //         { name: "Stressed Out" },
-    //         { name: "Ride" },
-    //         { name: "Fairly Local" },
-    //         { name: "Tear in My Heart" },
-    //         { name: "Lane Boy" },
-    //         { name: "The Judge" },
-    //         { name: "Doubt" },
-    //         { name: "Polarize" },
-    //         { name: "We Don't Believe What's on TV" },
-    //         { name: "Message Man" },
-    //         { name: "Hometown" },
-    //         { name: "Not Today" },
-    //         { name: "Goner" },
-    //     ]
-    // },
+    {
+        name: AlbumName.Blurryface,
+        image: "https://i.scdn.co/image/ab67616d00001e022df0d98a423025032d0db1f7",
+        color: "#ec5748",
+        emoji: emojiIDs.albums.blurryface,
+        songs: [
+            { name: "Heavydirtysoul", yt: "https://youtu.be/r_9Kf0D5BTs" },
+            { name: "Stressed Out", yt: "https://youtu.be/pXRviuL6vMY" },
+            { name: "Ride", yt: "https://youtu.be/Pw-0pbY9JeU" },
+            { name: "Fairly Local", yt: "https://youtu.be/HDI9inno86U" },
+            { name: "Tear in My Heart", yt: "https://youtu.be/nky4me4NP70" },
+            { name: "Lane Boy", yt: "https://youtu.be/ywvRgGAd2XI" },
+            { name: "The Judge", yt: "https://youtu.be/PbP-aIe51Ek" },
+            { name: "Doubt", yt: "https://youtu.be/MEiVnNNpJLA" },
+            { name: "Polarize", yt: "https://youtu.be/MiPBQJq49xk" },
+            { name: "We Don't Believe What's on TV", yt: "https://youtu.be/zZEumf7RowI" },
+            { name: "Message Man", yt: "https://youtu.be/iE_54CU7Fxk" },
+            { name: "Hometown", yt: "https://youtu.be/pJtlLzsDICo" },
+            { name: "Not Today", yt: "https://youtu.be/yqem6k_3pZ8" },
+            { name: "Goner", yt: "https://youtu.be/3J5mE-J1WLk" },
+        ]
+    },
+    {
+        name: AlbumName.TOPxMM,
+        image: "https://i.scdn.co/image/ab67616d00001e02aa53cf116c616b262b59742a",
+        color: "#D9C6B0",
+        emoji: emojiIDs.albums.topxmm,
+        songs: [
+            { name: "Heathens (feat. MUTEMATH)", yt: "https://youtu.be/qNk-xjCISYQ" },
+            { name: "Heavydirtysoul (feat. MUTEMATH)", yt: "https://youtu.be/0KEwQEBEvIU" },
+            { name: "Ride (feat. MUTEMATH)", yt: "https://youtu.be/fo4p5GJDk_g" },
+            { name: "Tear in My Heart (feat. MUTEMATH)", yt: "https://youtu.be/dnrcpLRykO0" },
+            { name: "Lane Boy (feat. MUTEMATH)", yt: "https://youtu.be/oRb0C1rMCH0" },
+        ],
+    },
     // {
     //     name: AlbumName.Trench,
     //     image: "https://i.scdn.co/image/ab67616d00001e027a1bbe4ec7066c9db1d0f398",
@@ -165,39 +181,40 @@ export const albums = [
     //         { name: "Redecorate" },
     //     ]
     // },
-    {
-        name: AlbumName.Clancy,
-        image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26",
-        color: "#E33E36",
-        emoji: emojiIDs.albums.clancy,
-        songs: [
-            { name: "Overcompensate", yt: "https://youtu.be/53tgVlXBZVg" },
-            { name: "Next Semester", yt: "https://youtu.be/a5i-KdUQ47o" },
-            { name: "Backslide", yt: "https://youtu.be/YAmLMohrus4" },
-            { name: "Midwest Indigo", yt: "https://youtu.be/mREOvIgImmo" },
-            { name: "Routines in the Night", yt: "https://youtu.be/AupwoN8QvbU" },
-            { name: "Vignette", yt: "https://youtu.be/eoEKwwbPfvc" },
-            { name: "The Craving (Jenna's Version)", yt: "https://youtu.be/yN6OQncqqI0" },
-            { name: "Lavish", yt: "https://youtu.be/flYgpeWsC2E" },
-            { name: "Navigating", yt: "https://youtu.be/07YtBj3BEBQ" },
-            { name: "Snap Back", yt: "https://youtu.be/eZptwvjKjk4" },
-            { name: "Oldies Station", yt: "https://youtu.be/fBE_2sHDt4E" },
-            { name: "At the Risk of Feeling Dumb", yt: "https://youtu.be/TnoWOgAD054" },
-            { name: "Paladin Strait", yt: "https://youtu.be/mix9YfaaNa0" },
-        ]
-    },
+    // {
+    //     name: AlbumName.Clancy,
+    //     image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26",
+    //     color: "#E33E36",
+    //     emoji: emojiIDs.albums.clancy,
+    //     songs: [
+    //         { name: "Overcompensate", yt: "https://youtu.be/53tgVlXBZVg" },
+    //         { name: "Next Semester", yt: "https://youtu.be/a5i-KdUQ47o" },
+    //         { name: "Backslide", yt: "https://youtu.be/YAmLMohrus4" },
+    //         { name: "Midwest Indigo", yt: "https://youtu.be/mREOvIgImmo" },
+    //         { name: "Routines in the Night", yt: "https://youtu.be/AupwoN8QvbU" },
+    //         { name: "Vignette", yt: "https://youtu.be/eoEKwwbPfvc" },
+    //         { name: "The Craving (Jenna's Version)", yt: "https://youtu.be/yN6OQncqqI0" },
+    //         { name: "Lavish", yt: "https://youtu.be/flYgpeWsC2E" },
+    //         { name: "Navigating", yt: "https://youtu.be/07YtBj3BEBQ" },
+    //         { name: "Snap Back", yt: "https://youtu.be/eZptwvjKjk4" },
+    //         { name: "Oldies Station", yt: "https://youtu.be/fBE_2sHDt4E" },
+    //         { name: "At the Risk of Feeling Dumb", yt: "https://youtu.be/TnoWOgAD054" },
+    //         { name: "Paladin Strait", yt: "https://youtu.be/mix9YfaaNa0" },
+    //     ]
+    // },
     {
         name: AlbumName.Singles,
         color: "#FFFFFF",
         emoji: emojiIDs.albums.clancy,
         songs: [
-            // { name: "Cancer (MCR Cover)", image: "https://i.scdn.co/image/ab67616d00001e020fde79bfa5e23cb9cbdcd142" },
-            // { name: "Heathens", image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb" },
             // { name: "Level of Concern", image: "https://i.scdn.co/image/ab67616d00001e02ab2f8973949159695f65df7b" },
             // { name: "Christmas Saves the Year", image: "https://i.scdn.co/image/ab67616d00001e02fdd772158c3af54caf44879b" },
             // { name: "Twenty-Four (Switchfoot Cover)", image: "https://i.scdn.co/image/ab67616d00001e0243882fdb47a06d880f61efdc" },
             // { name: "Time to Say Goodbye", image: "https://i1.sndcdn.com/artworks-000005083596-vd83l9-t500x500.jpg" },
-            { name: "The Craving (single version)", image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26", yt: "https://youtu.be/H3OiQEOcrA8" },
+            // { name: "The Craving (single version)", image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26", yt: "https://youtu.be/H3OiQEOcrA8" },
+            { name: "Cancer (MCR Cover)", image: "https://i.scdn.co/image/ab67616d00001e020fde79bfa5e23cb9cbdcd142", yt: "https://youtu.be/yw6i1SAHetc", emoji: emojiIDs.albums.cancerCover, color: "#FFFFFF" },
+            { name: "Heathens", image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb", yt: "https://youtu.be/UprcpdwuwCg", emoji: emojiIDs.albums.heathensSingle, color: "#BBF2AC" },
+            { name: "Doubt (demo)", image: "https://i.scdn.co/image/ab67616d00001e029b0aa15c3f5e17fa8281aec7", yt: "https://youtu.be/7s1033v2DTQ", emoji: emojiIDs.albums.doubtSingle, color: "#252525" },
         ]
     },
 ] satisfies Album[];

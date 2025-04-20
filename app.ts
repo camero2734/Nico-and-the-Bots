@@ -227,8 +227,9 @@ async function forwardMessageToErrorChannel(msg: string) {
 }
 
 process.on("unhandledRejection", (reason, promise) => {
-    console.error("Unhandled Rejection at:", promise, "reason:", reason);
-    forwardMessageToErrorChannel(`Unhandled rejection:\n\nPromise:\n${promise}\n\nReason:\n${reason}`);
+    const stack = reason instanceof Error ? reason.stack : undefined;
+    console.error("Unhandled Rejection at:", promise, "reason:", reason, stack);
+    forwardMessageToErrorChannel(`Unhandled rejection:\n\nPromise:\n${promise}\n\nReason:\n${reason}\n\nStack:\n${stack}`);
 });
 
 process.on("uncaughtException", (err) => {

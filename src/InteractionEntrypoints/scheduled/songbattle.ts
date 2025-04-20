@@ -15,9 +15,12 @@ const entrypoint = new ManualEntrypoint();
 export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 const SLOWMODE_SECONDS = 30;
+const CRON_ENABLED = false;
 
 // Enable slowmode in the old thread after a while
 Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
+    if (!CRON_ENABLED) return;
+
     // Get song battle channel
     const channel = await guild.channels.fetch(channelIDs.songbattles);
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
@@ -55,6 +58,8 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
 });
 
 export async function songBattleCron() {
+    if (!CRON_ENABLED) return;
+
     // Get song battle channel
     const channel = await guild.channels.fetch(channelIDs.songbattles);
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
@@ -77,7 +82,8 @@ export async function songBattleCron() {
     const endsAt = cron.nextRun()!;
 
     // Ping message
-    await channel.send({ content: roleMention(roles.songBattles), allowedMentions: { roles: [roles.songBattles] } });
+    const mention = Math.random() > -1 ? "ping" : roleMention(roles.songBattles);
+    await channel.send({ content: mention, allowedMentions: { roles: [roles.songBattles] } });
 
     // Placeholder message
     const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
@@ -120,7 +126,7 @@ export async function songBattleCron() {
 
     // Create a discussion thread
     const thread = await m.startThread({
-        name: `Clancy Song Battle #${nextBattleNumber}`,
+        name: `Blurryface X Song Battle #${nextBattleNumber}`,
         autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
     });
 
@@ -318,18 +324,18 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
     const losses1 = song1.losses > 0 ? ` 💀x${song1.losses}` : "";
     const losses2 = song2.losses > 0 ? ` 💀x${song2.losses}` : "";
 
-    const emoji1 = `<:emoji:${song1.album.emoji}>`;
-    const emoji2 = `<:emoji:${song2.album.emoji}>`;
+    const emoji1 = `<:emoji:${song1.song.emoji ?? song1.album.emoji}>`;
+    const emoji2 = `<:emoji:${song2.song.emoji ?? song2.album.emoji}>`;
 
     // Create embed
     const embed = new EmbedBuilder()
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
-            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
+            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [YouTube](${song1.song.yt})`, inline: true },
+            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [YouTube](${song2.song.yt})`, inline: true },
         ])
-        .setColor(song1.album.color)
+        .setColor(song1.song.color ?? song1.album.color)
         .setFooter({ text: embedFooter(0) })
         .setTimestamp(startsAt);
 
@@ -339,12 +345,12 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             .setCustomId(genButtonId({ songId: toSongId(song1.song, song1.album), pollId: pollId.toString() }))
             .setStyle(song1.buttonStyle)
             .setLabel(song1.song.name)
-            .setEmoji(song1.album.emoji),
+            .setEmoji(song1.song.emoji ?? song1.album.emoji),
         new ButtonBuilder()
             .setCustomId(genButtonId({ songId: toSongId(song2.song, song2.album), pollId: pollId.toString() }))
             .setStyle(song2.buttonStyle)
             .setLabel(song2.song.name)
-            .setEmoji(song2.album.emoji)
+            .setEmoji(song2.song.emoji ?? song2.album.emoji),
     ]);
 
     return { embeds: [embed], components: [actionRow] };

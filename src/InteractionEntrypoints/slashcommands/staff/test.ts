@@ -4,7 +4,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
-import { cron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { cron, songBattleCron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -54,6 +54,22 @@ command.setHandler(async (ctx) => {
 
         const timeStamp = F.discordTimestamp(nextRun, "relative");
         await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
+    } else if (ctx.opts.num === 433) {
+        songBattleCron();
+    } else if (ctx.opts.num === 444) {
+        await ctx.channel.send({
+            poll: {
+                question: {
+                    text: "Test poll",
+                },
+                answers: [
+                    { text: "Option 1", emoji: "👍" },
+                    { text: "Option 2", emoji: "👎" },
+                ],
+                duration: 24,
+                allowMultiselect: false,
+            }
+        })
     } else {
         const msg = withColor.map(x => roleMention(x.id)).join("\n");
 

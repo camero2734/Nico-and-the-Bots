@@ -31,7 +31,8 @@ type SnowflakeTypes =
     | ApplicationCommandOptionType.User
     | ApplicationCommandOptionType.Channel
     | ApplicationCommandOptionType.Mentionable
-    | ApplicationCommandOptionType.Role;
+    | ApplicationCommandOptionType.Role
+    | ApplicationCommandOptionType.Attachment;
 // prettier-ignore
 type ToPrimitiveType<OType> =
     OType extends SnowflakeTypes

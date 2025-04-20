@@ -31,7 +31,7 @@ const shirtReplyActionRow = command.addReplyListener("shirtReply", async (reply,
     const footer = new EmbedBuilder()
         .setFooter({ text: member.displayName, iconURL: member.avatarURL() || undefined });
 
-    const staffChan = await reply.guild?.channels.fetch(channelIDs.shirtSuggestions);
+    const staffChan = await guild.channels.fetch(channelIDs.shirtSuggestions);
     if (!staffChan || !staffChan.isSendable()) return;
 
     await staffChan.send({

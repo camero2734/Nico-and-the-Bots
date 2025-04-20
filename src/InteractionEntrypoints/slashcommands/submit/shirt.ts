@@ -87,7 +87,7 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
     const updateEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
     updateEmbed.setColor(accepted ? "Green" : "Red");
     if (m) updateEmbed.addFields({ name: "URL", value: `[View announcement](${m.url})` });
-    updateEmbed.setFooter({ text: `${ctx.message.embeds[0].footer?.text} | ${accepted ? "Accepted" : "Rejected"} by ${ctx.user.tag}` });
+    updateEmbed.setFooter({ text: `${ctx.message.embeds[0].footer?.text} | ${accepted ? "Accepted" : "Rejected"} by ${ctx.member.displayName}`, iconURL: ctx.message.embeds[0].footer?.iconURL });
     await ctx.editReply({ components: [], embeds: [updateEmbed] });
 
     const dm = await originalMember.createDM();

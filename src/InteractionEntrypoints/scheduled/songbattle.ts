@@ -318,8 +318,8 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
     const losses1 = song1.losses > 0 ? ` 💀x${song1.losses}` : "";
     const losses2 = song2.losses > 0 ? ` 💀x${song2.losses}` : "";
 
-    const emoji1 = `<:emoji:${song1.album.emoji}>`;
-    const emoji2 = `<:emoji:${song2.album.emoji}>`;
+    const emoji1 = `<:emoji:${song1.song.emoji ?? song1.album.emoji}>`;
+    const emoji2 = `<:emoji:${song2.song.emoji ?? song2.album.emoji}>`;
 
     // Create embed
     const embed = new EmbedBuilder()
@@ -329,7 +329,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
             { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
         ])
-        .setColor(song1.album.color)
+        .setColor(song1.song.color ?? song1.album.color)
         .setFooter({ text: embedFooter(0) })
         .setTimestamp(startsAt);
 
@@ -339,12 +339,12 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             .setCustomId(genButtonId({ songId: toSongId(song1.song, song1.album), pollId: pollId.toString() }))
             .setStyle(song1.buttonStyle)
             .setLabel(song1.song.name)
-            .setEmoji(song1.album.emoji),
+            .setEmoji(song1.song.emoji ?? song1.album.emoji),
         new ButtonBuilder()
             .setCustomId(genButtonId({ songId: toSongId(song2.song, song2.album), pollId: pollId.toString() }))
             .setStyle(song2.buttonStyle)
             .setLabel(song2.song.name)
-            .setEmoji(song2.album.emoji)
+            .setEmoji(song2.song.emoji ?? song2.album.emoji)
     ]);
 
     return { embeds: [embed], components: [actionRow] };

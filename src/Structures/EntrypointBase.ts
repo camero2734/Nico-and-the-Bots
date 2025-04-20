@@ -2,11 +2,12 @@
 import { ApplicationCommandData, Client, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
+import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import { EntrypointEvents } from "./Events";
 import { InteractionListener, ListenerCustomIdGenerator, createInteractionListener } from "./ListenerInteraction";
 import { ReactionListener } from "./ListenerReaction";
-import { ApplicationData, InteractionHandlers, ReactionHandlers } from "./data";
+import { ReplyListener } from "./ListenerReply";
 
 type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 
@@ -16,6 +17,7 @@ export abstract class InteractionEntrypoint<
 > {
     public interactionListeners = new Collection<string, InteractionListener>();
     public reactionListeners = new Collection<string, ReactionListener>();
+    public replyListeners = new Collection<string, ReplyListener>();
 
     public identifier: string;
     protected handler: HandlerType;
@@ -55,6 +57,12 @@ export abstract class InteractionEntrypoint<
         this.reactionListeners.set(name, handler);
     }
 
+    addReplyListener(name: string, handler: ReplyListener): string {
+        this.replyListeners.set(name, handler);
+
+        return `##!!RL${name}RL!!##`;
+    }
+
     abstract _run(ctx: Interaction, ...HandlerArgs: HandlerArgs): Promise<unknown>;
 
     // Wraps the _run function to catch errors and ensure the handler has been registered
@@ -92,6 +100,7 @@ export abstract class InteractionEntrypoint<
     register(path: string[]): void {
         for (const [name, listener] of this.interactionListeners) InteractionHandlers.set(name, listener);
         for (const [name, listener] of this.reactionListeners) ReactionHandlers.set(name, listener);
+        for (const [name, listener] of this.replyListeners) ReplyHandlers.set(name, listener);
 
         this.identifier = this._register(path);
     }

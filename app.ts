@@ -22,6 +22,7 @@ import {
     ContextMenus,
     InteractionHandlers,
     ReactionHandlers,
+    ReplyHandlers,
     SlashCommands
 } from "./src/Structures/data";
 
@@ -87,9 +88,30 @@ client.on("ready", async () => {
     startPingServer();
 });
 
+async function getReplyInteractionId(msg: Discord.Message) {
+    if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;
+    const reply = await msg.fetchReference();
+    if (reply?.author.id !== client.user?.id) return;
+
+    const footerText = reply.embeds[0]?.footer?.text;
+    if (!footerText || !footerText.startsWith("##!!RL") || !footerText.endsWith("RL!!##")) return;
+
+    const id = footerText.replace(/^##!!RL/, "").replace(/RL!!##$/, "");
+    return id;
+}
+
 client.on("messageCreate", async (msg: Discord.Message) => {
     const wasSlur = await SlurFilter(msg);
     if (wasSlur) return;
+
+    const replyId = await getReplyInteractionId(msg);
+    if (replyId) {
+        const replyListener = ReplyHandlers.get(replyId);
+        if (replyListener) {
+            await replyListener(msg);
+            return;
+        }
+    }
 
     AutoReact(msg);
     updateUserScore(msg); // Add to score

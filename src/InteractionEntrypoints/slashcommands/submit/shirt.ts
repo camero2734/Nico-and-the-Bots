@@ -1,74 +1,39 @@
-import { ApplicationCommandOptionType, Attachment, EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-    description: "Submits a suggestion for a #shirt-discussion announcement",
-    options: [
-        {
-            name: "description",
-            description: "The body of the potential announcement",
-            required: true,
-            type: ApplicationCommandOptionType.String,
-        },
-        {
-            name: "image1",
-            description: "Attach any relevant image(s)",
-            required: false,
-            type: ApplicationCommandOptionType.Attachment
-        },
-        {
-            name: "image2",
-            description: "Attach any additional image(s)",
-            required: false,
-            type: ApplicationCommandOptionType.Attachment
-        },
-        {
-            name: "image3",
-            description: "Attach any additional image(s)",
-            required: false,
-            type: ApplicationCommandOptionType.Attachment
-        },
-    ]
+    description: "Submit a suggestion for a #shirt-discussion announcement",
+    options: []
 });
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
     if (ctx.user.id !== userIDs.me) throw new CommandError("Under construction");
 
-    const { description } = ctx.opts;
-
-    const [firstImage, ...restImages] = [
-        ctx.options.getAttachment("image1"),
-        ctx.options.getAttachment("image2"),
-        ctx.options.getAttachment("image3"),
-    ].filter((img): img is Attachment => !!img);
-
+    const dm = await ctx.member.createDM();
     const embed = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setURL("https://archive.demacouncil.top")
-        .setAuthor({
-            name: ctx.user.displayName,
-            iconURL: ctx.user.displayAvatarURL(),
-        })
-        .setDescription(description)
-        .setImage(firstImage?.url)
-        .setFooter({ text: "Submitted with the /submit shirt command" });
-
-    const restEmbeds = restImages.map((img) =>
-        new EmbedBuilder()
-            .setURL("https://archive.demacouncil.top")
-            .setImage(img.url)
-    );
+        .setTitle("Shirt Discussion")
+        .setDescription("Please reply (via the context menu action) to this message with your proposed announcement.")
+        .setColor("#00FF00")
+        .setFooter({ text: footerId });
+    const message = await dm.send({ embeds: [embed] });
 
     await ctx.editReply({
-        content: "Your suggestion has been submitte.",
+        content: `Please continue in [your DMs](${message.url})`,
     });
+});
 
-    await ctx.followUp({
-        embeds: [embed, ...restEmbeds],
-    })
+const footerId = command.addReplyListener("shirtReply", async (reply) => {
+    if (reply.author.id !== userIDs.me) return false;
+
+    const embed = new EmbedBuilder(reply.embeds[0].toJSON());
+    embed.setDescription("Thank you for your contribution!")
+        .setColor("#FFFFFF")
+        .setFooter({ text: "Thank you for your contribution!" });
+
+    await reply.edit({ embeds: [embed] });
 });
 
 export default command;

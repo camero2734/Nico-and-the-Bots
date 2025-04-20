@@ -1,6 +1,7 @@
 import { EmbedBuilder } from "discord.js";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { guild } from "../../../../app";
 
 const command = new SlashCommand({
     description: "Submit a suggestion for a #shirt-discussion announcement",
@@ -24,10 +25,11 @@ command.setHandler(async (ctx) => {
 });
 
 const shirtReplyActionRow = command.addReplyListener("shirtReply", async (reply, repliedTo) => {
-    if (!reply.member) return;
+    console.log("shirtReply", reply.content);
+    const member = await guild.members.fetch(reply.author.id);
 
     const footer = new EmbedBuilder()
-        .setFooter({ text: reply.member?.displayName, iconURL: reply.member.avatarURL() || undefined });
+        .setFooter({ text: member.displayName, iconURL: member.avatarURL() || undefined });
 
     const staffChan = await reply.guild?.channels.fetch(channelIDs.shirtSuggestions);
     if (!staffChan || !staffChan.isSendable()) return;

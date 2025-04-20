@@ -92,6 +92,8 @@ async function getReplyInteractionId(msg: Discord.Message) {
     const repliedTo = await msg.fetchReference();
     if (repliedTo?.author.id !== client.user?.id) return;
 
+    console.log("Potential reply interaction ID found");
+
     for (const component of repliedTo.components) {
         if (component.type !== Discord.ComponentType.ActionRow) continue;
         for (const btn of component.components) {

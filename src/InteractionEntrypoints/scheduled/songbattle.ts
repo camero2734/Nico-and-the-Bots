@@ -77,7 +77,8 @@ export async function songBattleCron() {
     const endsAt = cron.nextRun()!;
 
     // Ping message
-    await channel.send({ content: roleMention(roles.songBattles), allowedMentions: { roles: [roles.songBattles] } });
+    const mention = Math.random() > -1 ? "ping" : roleMention(roles.songBattles);
+    await channel.send({ content: mention, allowedMentions: { roles: [roles.songBattles] } });
 
     // Placeholder message
     const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
@@ -326,8 +327,8 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
         .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
         .setThumbnail("attachment://battle.png")
         .addFields([
-            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [Watch](${song1.song.yt})`, inline: true },
-            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [Watch](${song2.song.yt})`, inline: true },
+            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [YouTube](${song1.song.yt})`, inline: true },
+            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [YouTube](${song2.song.yt})`, inline: true },
         ])
         .setColor(song1.song.color ?? song1.album.color)
         .setFooter({ text: embedFooter(0) })

@@ -22,10 +22,13 @@ command.setHandler(async (ctx) => {
 
     if (ctx.user.id !== userIDs.me) throw new CommandError("Under construction");
 
+    const img = ctx.options.getAttachment("image");
+    if (!img) throw new CommandError("No image found");
+
     const type = typeof image;
     const constructor = image?.constructor?.name;
 
-    const stringified = JSON.stringify(image, null, 2);
+    const stringified = JSON.stringify(img, null, 2);
 
     await ctx.editReply({
         content: `Type: ${type}\n\nConstructor: ${constructor}\n\nStringified:\n${stringified}`

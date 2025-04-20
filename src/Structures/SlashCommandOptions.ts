@@ -42,6 +42,8 @@ type ToPrimitiveType<OType> =
     ? number
     : OType extends ApplicationCommandOptionType.String
     ? string
+    : OType extends ApplicationCommandOptionType.Attachment
+    ? string
     : unknown;
 
 type AsArray<T extends DeepReadonly<CommandOptions[number]>> = [T["name"], T["type"], T["required"], T["choices"]];

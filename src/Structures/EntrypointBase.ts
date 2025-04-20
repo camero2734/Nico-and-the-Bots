@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ActionRowBuilder, ApplicationCommandData, ButtonBuilder, ButtonStyle, Client, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
-import { emojiIDs, roles } from "../Configuration/config";
+import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 import { ErrorHandler } from "./Errors";

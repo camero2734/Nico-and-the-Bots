@@ -92,11 +92,16 @@ async function getReplyInteractionId(msg: Discord.Message) {
     const repliedTo = await msg.fetchReference();
     if (repliedTo?.author.id !== client.user?.id) return;
 
-    const footerText = repliedTo.embeds[0]?.footer?.text;
-    if (!footerText || !footerText.startsWith("##!!RL") || !footerText.endsWith("RL!!##")) return;
+    for (const component of repliedTo.components) {
+        if (component.type !== Discord.ComponentType.ActionRow) continue;
+        for (const btn of component.components) {
+            if (btn.type !== Discord.ComponentType.Button) continue;
+            if (!btn.customId?.startsWith("##!!RL") || !btn.customId?.endsWith("RL!!##")) continue;
 
-    const replyId = footerText.replace(/^##!!RL/, "").replace(/RL!!##$/, "");
-    return { replyId, repliedTo };
+            const replyId = btn.customId.replace(/^##!!RL/, "").replace(/RL!!##$/, "");
+            return { replyId, repliedTo };
+        }
+    }
 }
 
 client.on("messageCreate", async (msg: Discord.Message) => {

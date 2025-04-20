@@ -15,9 +15,12 @@ const entrypoint = new ManualEntrypoint();
 export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 const SLOWMODE_SECONDS = 30;
+const CRON_ENABLED = false;
 
 // Enable slowmode in the old thread after a while
 Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
+    if (!CRON_ENABLED) return;
+
     // Get song battle channel
     const channel = await guild.channels.fetch(channelIDs.songbattles);
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
@@ -55,6 +58,8 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
 });
 
 export async function songBattleCron() {
+    if (!CRON_ENABLED) return;
+
     // Get song battle channel
     const channel = await guild.channels.fetch(channelIDs.songbattles);
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");

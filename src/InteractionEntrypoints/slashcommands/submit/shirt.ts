@@ -15,15 +15,15 @@ command.setHandler(async (ctx) => {
     const embed = new EmbedBuilder()
         .setTitle("Shirt Discussion")
         .setDescription("Please reply (via the context menu action) to this message with your proposed announcement.")
-        .setFooter({ text: footerId, iconURL: `https://${footerId}` });
-    const message = await dm.send({ embeds: [embed] });
+        .setFooter({ text: "Thank you for your contribution!" });
+    const message = await dm.send({ embeds: [embed], components: [actionRow] });
 
     await ctx.editReply({
         content: `Please continue in [your DMs](${message.url})`,
     });
 });
 
-const footerId = command.addReplyListener("shirtReply", async (reply, repliedTo) => {
+const actionRow = command.addReplyListener("shirtReply", async (reply, repliedTo) => {
     console.log("Got reply", reply.content);
     const embed = new EmbedBuilder()
         .setDescription("Thank you for your contribution!")

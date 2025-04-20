@@ -103,10 +103,7 @@ client.on("messageCreate", async (msg: Discord.Message) => {
     const { replyId, repliedTo } = await getReplyInteractionId(msg) || {};
     if (replyId && repliedTo) {
         const replyListener = ReplyHandlers.get(replyId);
-        if (replyListener) {
-            await replyListener(msg, repliedTo);
-            return;
-        }
+        if (replyListener) return await replyListener(msg, repliedTo);
     }
 
     AutoReact(msg);

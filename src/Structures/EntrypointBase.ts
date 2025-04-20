@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationCommandData, Client, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
-import { roles } from "../Configuration/config";
+import { ActionRowBuilder, ApplicationCommandData, ButtonBuilder, ButtonStyle, Client, Collection, Guild, GuildMember, Interaction, Snowflake } from "discord.js";
+import { emojiIDs, roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
@@ -57,10 +57,18 @@ export abstract class InteractionEntrypoint<
         this.reactionListeners.set(name, handler);
     }
 
-    addReplyListener(name: string, handler: ReplyListener): string {
+    addReplyListener(name: string, handler: ReplyListener): ActionRowBuilder<ButtonBuilder> {
         this.replyListeners.set(name, handler);
 
-        return `##!!RL${name}RL!!##`;
+        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+            new ButtonBuilder()
+                .setCustomId(`##!!RL${name}RL!!##`)
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(true)
+                .setEmoji("🚀")
+        );
+
+        return actionRow;
     }
 
     abstract _run(ctx: Interaction, ...HandlerArgs: HandlerArgs): Promise<unknown>;

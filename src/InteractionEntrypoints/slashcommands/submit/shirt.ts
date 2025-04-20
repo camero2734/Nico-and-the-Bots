@@ -1,6 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
+import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
@@ -10,13 +9,13 @@ const command = new SlashCommand({
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-    if (ctx.user.id !== userIDs.me) throw new CommandError("Under construction");
+    if (!ctx.member.roles.cache.get(roles.staff)) return;
 
     const dm = await ctx.member.createDM();
     const embed = new EmbedBuilder()
         .setTitle("Shirt Discussion")
         .setDescription("Please reply (via the context menu action) to this message with your proposed announcement.")
-        .setFooter({ text: footerId });
+        .setFooter({ text: footerId, iconURL: `https://${footerId}` });
     const message = await dm.send({ embeds: [embed] });
 
     await ctx.editReply({

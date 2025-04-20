@@ -88,7 +88,6 @@ client.on("ready", async () => {
 });
 
 async function getReplyInteractionId(msg: Discord.Message) {
-    console.log({ msg });
     if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;
     const repliedTo = await msg.fetchReference();
     if (repliedTo?.author.id !== client.user?.id) return;

@@ -69,10 +69,7 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
     const originalMember = await guild.members.fetch(args.userId);
     if (!originalMember) return;
 
-    const updateEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
-    updateEmbed.setColor(accepted ? "Green" : "Red");
-    updateEmbed.setFooter({ text: `${ctx.message.embeds[0].footer?.text} | ${accepted ? "Accepted" : "Rejected"} by ${ctx.user.tag}` });
-    await ctx.editReply({ components: [], embeds: [updateEmbed] });
+    await ctx.editReply({ components: [] });
 
     let m: Message | undefined;
     if (accepted) {
@@ -86,6 +83,12 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
             allowedMentions: { parse: [] },
         });
     }
+
+    const updateEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
+    updateEmbed.setColor(accepted ? "Green" : "Red");
+    if (m) updateEmbed.addFields({ name: "URL", value: `[View announcement](${m.url})` });
+    updateEmbed.setFooter({ text: `${ctx.message.embeds[0].footer?.text} | ${accepted ? "Accepted" : "Rejected"} by ${ctx.user.tag}` });
+    await ctx.editReply({ components: [], embeds: [updateEmbed] });
 
     const dm = await originalMember.createDM();
     if (dm) {

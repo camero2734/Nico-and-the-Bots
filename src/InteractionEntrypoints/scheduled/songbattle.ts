@@ -345,7 +345,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             .setCustomId(genButtonId({ songId: toSongId(song2.song, song2.album), pollId: pollId.toString() }))
             .setStyle(song2.buttonStyle)
             .setLabel(song2.song.name)
-            .setEmoji(song2.song.emoji ?? song2.album.emoji)
+            .setEmoji(song2.song.emoji ?? song2.album.emoji),
     ]);
 
     return { embeds: [embed], components: [actionRow] };

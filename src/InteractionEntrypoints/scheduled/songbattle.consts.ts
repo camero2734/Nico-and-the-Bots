@@ -212,6 +212,7 @@ export const albums = [
             // { name: "Twenty-Four (Switchfoot Cover)", image: "https://i.scdn.co/image/ab67616d00001e0243882fdb47a06d880f61efdc" },
             // { name: "Time to Say Goodbye", image: "https://i1.sndcdn.com/artworks-000005083596-vd83l9-t500x500.jpg" },
             // { name: "The Craving (single version)", image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26", yt: "https://youtu.be/H3OiQEOcrA8" },
+            { name: "Cancer (MCR Cover)", image: "https://i.scdn.co/image/ab67616d00001e020fde79bfa5e23cb9cbdcd142", yt: "https://youtu.be/yw6i1SAHetc", emoji: emojiIDs.albums.cancerCover, color: "#FFFFFF" },
             { name: "Heathens", image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb", yt: "https://youtu.be/UprcpdwuwCg", emoji: emojiIDs.albums.heathensSingle, color: "#BBF2AC" },
             { name: "Doubt (demo)", image: "https://i.scdn.co/image/ab67616d00001e029b0aa15c3f5e17fa8281aec7", yt: "https://youtu.be/7s1033v2DTQ", emoji: emojiIDs.albums.doubtSingle, color: "#252525" },
         ]

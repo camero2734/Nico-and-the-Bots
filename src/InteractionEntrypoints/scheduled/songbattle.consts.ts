@@ -5,7 +5,7 @@ import { CommandError } from "../../Configuration/definitions";
 import { prisma } from "../../Helpers/prisma-init";
 import { Poll, Vote } from "@prisma/client";
 
-export const NUMBER_OF_ELIMINATIONS = 2;
+export const NUMBER_OF_ELIMINATIONS = 1;
 
 export enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -37,7 +37,7 @@ export interface SongContender {
 }
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = "TESTSongBattle2025BlurryfaceBattle-";
+export const PREFIX = "TEST2SongBattle2025BlurryfaceBattle-";
 
 export const albums = [
     // {

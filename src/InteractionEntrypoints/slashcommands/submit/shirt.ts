@@ -25,14 +25,14 @@ command.setHandler(async (ctx) => {
     });
 });
 
-const footerId = command.addReplyListener("shirtReply", async (reply) => {
+const footerId = command.addReplyListener("shirtReply", async (reply, repliedTo) => {
     console.log("Got reply", reply.content);
     const embed = new EmbedBuilder()
         .setDescription("Thank you for your contribution!")
         .setColor("#FFFFFF")
         .setFooter({ text: "Thank you for your contribution!" });
 
-    await reply.edit({ embeds: [embed] });
+    await repliedTo.edit({ embeds: [embed] });
 });
 
 export default command;

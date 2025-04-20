@@ -96,19 +96,19 @@ async function getReplyInteractionId(msg: Discord.Message) {
     const footerText = repliedTo.embeds[0]?.footer?.text;
     if (!footerText || !footerText.startsWith("##!!RL") || !footerText.endsWith("RL!!##")) return;
 
-    const id = footerText.replace(/^##!!RL/, "").replace(/RL!!##$/, "");
-    return id;
+    const replyId = footerText.replace(/^##!!RL/, "").replace(/RL!!##$/, "");
+    return { replyId, repliedTo };
 }
 
 client.on("messageCreate", async (msg: Discord.Message) => {
     const wasSlur = await SlurFilter(msg);
     if (wasSlur) return;
 
-    const replyId = await getReplyInteractionId(msg);
-    if (replyId) {
+    const { replyId, repliedTo } = await getReplyInteractionId(msg) || {};
+    if (replyId && repliedTo) {
         const replyListener = ReplyHandlers.get(replyId);
         if (replyListener) {
-            await replyListener(msg);
+            await replyListener(msg, repliedTo);
             return;
         }
     }

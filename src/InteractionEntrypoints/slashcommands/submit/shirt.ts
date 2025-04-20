@@ -28,8 +28,8 @@ command.setHandler(async (ctx) => {
 const footerId = command.addReplyListener("shirtReply", async (reply) => {
     if (reply.author.id !== userIDs.me) return false;
 
-    const embed = new EmbedBuilder(reply.embeds[0].toJSON());
-    embed.setDescription("Thank you for your contribution!")
+    const embed = new EmbedBuilder()
+        .setDescription("Thank you for your contribution!")
         .setColor("#FFFFFF")
         .setFooter({ text: "Thank you for your contribution!" });
 

@@ -90,10 +90,10 @@ client.on("ready", async () => {
 
 async function getReplyInteractionId(msg: Discord.Message) {
     if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;
-    const reply = await msg.fetchReference();
-    if (reply?.author.id !== client.user?.id) return;
+    const repliedTo = await msg.fetchReference();
+    if (repliedTo?.author.id !== client.user?.id) return;
 
-    const footerText = reply.embeds[0]?.footer?.text;
+    const footerText = repliedTo.embeds[0]?.footer?.text;
     if (!footerText || !footerText.startsWith("##!!RL") || !footerText.endsWith("RL!!##")) return;
 
     const id = footerText.replace(/^##!!RL/, "").replace(/RL!!##$/, "");

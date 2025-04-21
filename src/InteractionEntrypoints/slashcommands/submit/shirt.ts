@@ -1,5 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message } from "discord.js";
-import { channelIDs, roles } from "../../../Configuration/config";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder, Message } from "discord.js";
+import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { guild } from "../../../../app";
 
@@ -10,22 +10,29 @@ const command = new SlashCommand({
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-    if (!ctx.member.roles.cache.get(roles.staff)) return;
 
-    const dm = await ctx.member.createDM();
-    const embed = new EmbedBuilder()
-        .setTitle("Shirt Discussion")
-        .setDescription("Please use Discord's built-in reply feature on this message to respond with your proposed announcement. Formatting will be preserved and you can include images.")
-        .setFooter({ text: "On desktop, right click and select 'Reply'. On mobile, long press and select 'Reply'. Thank you for your contribution!" });
-    const message = await dm.send({ embeds: [embed], components: [shirtReplyActionRow] });
+    try {
+        const dm = await ctx.member.createDM();
+        const embed = new EmbedBuilder()
+            .setTitle("Shirt Discussion")
+            .setDescription("Please use Discord's built-in reply feature on this message to respond with your proposed announcement. Formatting will be preserved and you can include images.")
+            .setFooter({ text: "On desktop, right click and select 'Reply'. On mobile, long press and select 'Reply'. Thank you for your contribution!" });
+        const message = await dm.send({ embeds: [embed], components: [shirtReplyActionRow] });
+    
+        await ctx.editReply({
+            content: `Please continue in [your DMs](${message.url})`,
+        });
+    } catch(e) {
+        if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
+            await ctx.editReply({
+                content: "Please enable DMs from server members to use this command.",
+            });
+        } else throw e;
+    }
 
-    await ctx.editReply({
-        content: `Please continue in [your DMs](${message.url})`,
-    });
 });
 
 const shirtReplyActionRow = command.addReplyListener("shirtReply", async (reply, repliedTo) => {
-    console.log("shirtReply", reply.content);
     const member = await guild.members.fetch(reply.author.id);
 
     const footer = new EmbedBuilder()

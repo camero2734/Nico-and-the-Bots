@@ -73,7 +73,7 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
 
     let m: Message | undefined;
     if (accepted) {
-        const shirtAnnouncementsChan = await guild.channels.fetch(channelIDs.bottest);
+        const shirtAnnouncementsChan = await guild.channels.fetch(channelIDs.shirtAnnouncementsThread);
         if (!shirtAnnouncementsChan || !shirtAnnouncementsChan.isSendable()) return;
 
         m = await shirtAnnouncementsChan.send({

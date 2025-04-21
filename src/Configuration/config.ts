@@ -10,7 +10,7 @@ export const dropEmojiGuildId = "901909949821648936";
 
 export const channelIDs = <const>{
     shirtSuggestions: "1363541631042846880",
-    shirtAnnouncements: "",
+    shirtAnnouncementsThread: "1363716459297247374",
     theoryForum: "940390927661412353",
     international: "827679833487704094",
     pilotsDiscussion: "1117774740405366814",

@@ -5,7 +5,7 @@ import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { cron, songBattleCron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
-import { client } from "../../../../app";
+// import { client } from "../../../../app";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -63,9 +63,134 @@ command.setHandler(async (ctx) => {
     } else if (ctx.opts.num === 422) {
         if (!ctx.opts.test) throw new CommandError("Test is required");
         const decoded = JSON.parse(ctx.opts.test);
-        await client.rest.post(`/channels/${ctx.channel.id}/messages`, {
-            body: decoded
-        })
+
+        await ctx.channel.send(decoded);
+
+        // await client.rest.post(`/channels/${ctx.channel.id}/messages`, {
+        //     body: {
+        //         "flags": 32768,
+        //         "components": [
+        //             {
+        //               "type": 17,
+        //               "components": [
+        //                 {
+        //                   "type": 10,
+        //                   "content": "# Battle #1 / 40"
+        //                 },
+        //                 {
+        //                   "type": 14,
+        //                   "divider": false,
+        //                   "spacing": 1
+        //                 },
+        //                 {
+        //                   "type": 9,
+        //                   "components": [
+        //                     {
+        //                       "type": 10,
+        //                       "content": "**Message Man**"
+        //                     },
+        //                     {
+        //                       "type": 10,
+        //                       "content": "*Blurryface*"
+        //                     },
+        //                     {
+        //                         "type": 10,
+        //                         "content": "[YouTube](https://youtube.com) | 🏅x2"
+        //                     }
+        //                   ],
+        //                   "accessory": {
+        //                     "type": 11,
+        //                     "media": {
+        //                       "url": "https://images.squarespace-cdn.com/content/v1/58ab2fce20099e7487a18b2a/1488423618745-3IDAU928ZPC21H89CEGN/Blurryface-twenty-one-pilots-cover-art.png?format=2500w"
+        //                     },
+        //                     "description": "Album cover for Blurryface"
+        //                   }
+        //                 },
+        //                 {
+        //                     "type": 1,
+        //                     "components": [
+        //                       {
+        //                         "type": 2,
+        //                         "style": 1,
+        //                         "label": "Vote",
+        //                         "custom_id": "vote_song_1",
+        //                         "emoji": {
+        //                           "name": "🎵"
+        //                         }
+        //                       },
+        //                     ]
+        //                 },
+        //                 {
+        //                     "type": 14,
+        //                     "divider": true,
+        //                     "spacing": 2
+        //                 },
+        //                 {
+        //                   "type": 9,
+        //                   "components": [
+        //                     {
+        //                       "type": 10,
+        //                       "content": "**Ride (feat. MUTEMATH)**"
+        //                     },
+        //                     {
+        //                       "type": 10,
+        //                       "content": "*TOPxMM*"
+        //                     },
+        //                     {
+        //                         "type": 10,
+        //                         "content": "[YouTube](https://youtube.com) | 🏅x1"
+        //                     }
+        //                   ],
+        //                   "accessory": {
+        //                     "type": 11,
+        //                     "media": {
+        //                       "url": "https://i.scdn.co/image/ab67616d00001e02aa53cf116c616b262b59742a"
+        //                     },
+        //                     "description": "Album cover for TOPxMM"
+        //                   }
+        //                 },
+        //                 {
+        //                     "type": 1,
+        //                     "components": [
+        //                       {
+        //                         "type": 2,
+        //                         "style": 1,
+        //                         "label": "Ride (feat. MUTEMATH)",
+        //                         "custom_id": "vote_song_2",
+        //                         "emoji": {
+        //                           "name": "🎶"
+        //                         }
+        //                       }
+        //                     ]
+        //                 },
+        //                 {
+        //                   "type": 14,
+        //                   "divider": true,
+        //                   "spacing": 1
+        //                 },
+        //                 {
+        //                   "type": 10,
+        //                   "content": "Which song wins this round?"
+        //                 },
+        //                 {
+        //                   "type": 1,
+        //                   "components": [
+        //                     {
+        //                         "type": 2,
+        //                         "style": 2,
+        //                         "label": "What is this?",
+        //                         "custom_id": "battle_info",
+        //                         "emoji": {
+        //                           "name": "❓"
+        //                         }
+        //                     },
+        //                   ]
+        //                 }
+        //               ]
+        //             }
+        //           ]
+        //     }
+        // })
     } else if (ctx.opts.num === 433) {
         songBattleCron();
     } else if (ctx.opts.num === 444) {

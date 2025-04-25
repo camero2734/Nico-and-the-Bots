@@ -64,11 +64,11 @@ command.setHandler(async (ctx) => {
         if (!ctx.opts.test) throw new CommandError("Test is required");
         const decoded = JSON.parse(ctx.opts.test);
 
-        const r = await client.rest.post(`/channels/${ctx.channel.id}/messages`, {
+        const r: any = await client.rest.post(`/channels/${ctx.channel.id}/messages`, {
             body: decoded,
         });
-        console.log({ r });
-        // await ctx.channel.messages.fetch(r.id);
+
+        await ctx.channel.messages.fetch(r?.id);
     } else if (ctx.opts.num === 433) {
         songBattleCron();
     } else if (ctx.opts.num === 444) {

@@ -14,6 +14,11 @@ const command = new SlashCommand({
         description: "Number of times to test",
         required: true,
         type: ApplicationCommandOptionType.Integer
+    }, {
+        name: "test",
+        description: "Test",
+        required: false,
+        type: ApplicationCommandOptionType.String
     }]
 });
 
@@ -56,17 +61,10 @@ command.setHandler(async (ctx) => {
         const timeStamp = F.discordTimestamp(nextRun, "relative");
         await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
     } else if (ctx.opts.num === 422) {
+        if (!ctx.opts.test) throw new CommandError("Test is required");
+        const decoded = JSON.parse(ctx.opts.test);
         await client.rest.post(`/channels/${ctx.channel.id}/messages`, {
-            body: {
-                "flags": 32768,
-                "components": [
-                {
-                    "type": 10,
-                    "content": "This is a message using the Text Display component"
-                },
-                ]
-            }
-            
+            body: decoded
         })
     } else if (ctx.opts.num === 433) {
         songBattleCron();

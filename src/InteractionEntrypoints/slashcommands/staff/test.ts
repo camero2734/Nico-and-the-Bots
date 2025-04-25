@@ -5,6 +5,7 @@ import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import { cron, songBattleCron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import { client } from "../../../../app";
 
 const command = new SlashCommand({
     description: "Test command",
@@ -54,6 +55,19 @@ command.setHandler(async (ctx) => {
 
         const timeStamp = F.discordTimestamp(nextRun, "relative");
         await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
+    } else if (ctx.opts.num === 422) {
+        await client.rest.post(`/channels/${ctx.channel.id}/messages`, {
+            body: {
+                "flags": 32768,
+                "components": [
+                {
+                    "type": 10,
+                    "content": "This is a message using the Text Display component"
+                },
+                ]
+            }
+            
+        })
     } else if (ctx.opts.num === 433) {
         songBattleCron();
     } else if (ctx.opts.num === 444) {

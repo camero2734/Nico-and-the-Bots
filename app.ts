@@ -13,7 +13,6 @@ import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
-import SlurFilter from "./src/Helpers/slur-filter";
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
@@ -22,6 +21,7 @@ import {
     ContextMenus,
     InteractionHandlers,
     ReactionHandlers,
+    ReplyHandlers,
     SlashCommands
 } from "./src/Structures/data";
 
@@ -41,7 +41,7 @@ const client = new Discord.Client({
         "GuildVoiceStates",
         "GuildWebhooks"
     ],
-    partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message]
+    partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
 });
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
@@ -87,21 +87,34 @@ client.on("ready", async () => {
     startPingServer();
 });
 
+async function getReplyInteractionId(msg: Discord.Message) {
+    if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;
+    const repliedTo = await msg.fetchReference();
+    if (repliedTo?.author.id !== client.user?.id) return;
+
+    console.log("Potential reply interaction ID found");
+
+    for (const component of repliedTo.components) {
+        if (component.type !== Discord.ComponentType.ActionRow) continue;
+        for (const btn of component.components) {
+            if (btn.type !== Discord.ComponentType.Button) continue;
+            if (!btn.customId?.startsWith("##!!RL") || !btn.customId?.endsWith("RL!!##")) continue;
+
+            const replyId = btn.customId.replace(/^##!!RL/, "").replace(/RL!!##$/, "");
+            return { replyId, repliedTo };
+        }
+    }
+}
+
 client.on("messageCreate", async (msg: Discord.Message) => {
-    const wasSlur = await SlurFilter(msg);
-    if (wasSlur) return;
+    const { replyId, repliedTo } = await getReplyInteractionId(msg) || {};
+    if (replyId && repliedTo) {
+        const replyListener = ReplyHandlers.get(replyId);
+        if (replyListener) return await replyListener(msg, repliedTo);
+    }
 
     AutoReact(msg);
     updateUserScore(msg); // Add to score
-});
-
-client.on("messageUpdate", async (_oldMsg, newMsg) => {
-    try {
-        await SlurFilter(await newMsg.fetch());
-    } catch (e) {
-        console.log("Slur filter failed to fetch message", newMsg.id)
-    }
-
 });
 
 client.on("guildMemberUpdate", async (oldMem, newMem) => {

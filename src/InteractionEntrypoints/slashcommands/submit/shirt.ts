@@ -1,74 +1,119 @@
-import { ApplicationCommandOptionType, Attachment, EmbedBuilder } from "discord.js";
-import { userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder, Message } from "discord.js";
+import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { guild } from "../../../../app";
 
 const command = new SlashCommand({
-    description: "Submits a suggestion for a #shirt-discussion announcement",
-    options: [
-        {
-            name: "description",
-            description: "The body of the potential announcement",
-            required: true,
-            type: ApplicationCommandOptionType.String,
-        },
-        {
-            name: "image1",
-            description: "Attach any relevant image(s)",
-            required: false,
-            type: ApplicationCommandOptionType.Attachment
-        },
-        {
-            name: "image2",
-            description: "Attach any additional image(s)",
-            required: false,
-            type: ApplicationCommandOptionType.Attachment
-        },
-        {
-            name: "image3",
-            description: "Attach any additional image(s)",
-            required: false,
-            type: ApplicationCommandOptionType.Attachment
-        },
-    ]
+    description: "Submit a suggestion for a #shirt-discussion announcement",
+    options: []
 });
 
 command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
-    if (ctx.user.id !== userIDs.me) throw new CommandError("Under construction");
 
-    const { description } = ctx.opts;
+    try {
+        const dm = await ctx.member.createDM();
+        const embed = new EmbedBuilder()
+            .setTitle("Shirt Discussion")
+            .setDescription("Please use Discord's built-in reply feature on this message to respond with your proposed announcement. Formatting will be preserved and you can include images.")
+            .setFooter({ text: "On desktop, right click and select 'Reply'. On mobile, long press and select 'Reply'. Thank you for your contribution!" });
+        const message = await dm.send({ embeds: [embed], components: [shirtReplyActionRow] });
+    
+        await ctx.editReply({
+            content: `Please continue in [your DMs](${message.url})`,
+        });
+    } catch(e) {
+        if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
+            await ctx.editReply({
+                content: "Please enable DMs from server members to use this command.",
+            });
+        } else throw e;
+    }
 
-    const [firstImage, ...restImages] = [
-        ctx.options.getAttachment("image1"),
-        ctx.options.getAttachment("image2"),
-        ctx.options.getAttachment("image3"),
-    ].filter((img): img is Attachment => !!img);
+});
 
-    const embed = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setURL("https://archive.demacouncil.top")
-        .setAuthor({
-            name: ctx.user.displayName,
-            iconURL: ctx.user.displayAvatarURL(),
-        })
-        .setDescription(description)
-        .setImage(firstImage?.url)
-        .setFooter({ text: "Submitted with the /submit shirt command" });
+const shirtReplyActionRow = command.addReplyListener("shirtReply", async (reply, repliedTo) => {
+    const member = await guild.members.fetch(reply.author.id);
 
-    const restEmbeds = restImages.map((img) =>
-        new EmbedBuilder()
-            .setURL("https://archive.demacouncil.top")
-            .setImage(img.url)
-    );
+    const footer = new EmbedBuilder()
+        .setFooter({ text: `Submitted by ${member.displayName}`, iconURL: member.avatarURL() || undefined });
 
-    await ctx.editReply({
-        content: "Your suggestion has been submitte.",
+    const staffChan = await guild.channels.fetch(channelIDs.shirtSuggestions);
+    if (!staffChan || !staffChan.isSendable()) return;
+
+    const actionRow = new ActionRowBuilder<ButtonBuilder>()
+        .setComponents(
+            new ButtonBuilder()
+                .setCustomId(genAnswerId({ userId: reply.author.id, answer: "accept" }))
+                .setLabel("Accept")
+                .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+                .setCustomId(genAnswerId({ userId: reply.author.id, answer: "reject" }))
+                .setLabel("Reject")
+                .setStyle(ButtonStyle.Danger)
+        );
+
+    await staffChan.send({
+        content: reply.content,
+        embeds: [footer],
+        components: [actionRow],
+        files: reply.attachments.map((attachment) => attachment.url),
+        allowedMentions: { parse: [] },
     });
 
-    await ctx.followUp({
-        embeds: [embed, ...restEmbeds],
-    })
+    const embed = new EmbedBuilder()
+        .setDescription("Your message has been sent to the staff team.")
+        .setFooter({ text: "Thank you for your contribution!" });
+
+    await repliedTo.edit({ embeds: [embed], components: [] });
+});
+
+const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId", "answer"], async (ctx, args) => {
+    await ctx.deferUpdate();
+
+    const accepted = args.answer === "accept";
+
+    const originalMember = await guild.members.fetch(args.userId);
+    if (!originalMember) return;
+
+    await ctx.editReply({ components: [] });
+
+    let m: Message | undefined;
+    if (accepted) {
+        const shirtAnnouncementsChan = await guild.channels.fetch(channelIDs.shirtAnnouncementsThread);
+        if (!shirtAnnouncementsChan || !shirtAnnouncementsChan.isSendable()) return;
+
+        m = await shirtAnnouncementsChan.send({
+            content: ctx.message.content,
+            embeds: ctx.message.embeds,
+            files: ctx.message.attachments.map((attachment) => attachment.url),
+            allowedMentions: { parse: [] },
+        });
+    }
+
+    const updateEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
+    updateEmbed.setColor(accepted ? "Green" : "Red");
+    if (m) updateEmbed.addFields({ name: "URL", value: `[View announcement](${m.url})` });
+    updateEmbed.setFooter({ text: `${ctx.message.embeds[0].footer?.text} | ${accepted ? "Accepted" : "Rejected"} by ${ctx.member.displayName}`, iconURL: ctx.message.embeds[0].footer?.iconURL });
+    await ctx.editReply({ components: [], embeds: [updateEmbed] });
+
+    const dm = await originalMember.createDM();
+    if (dm) {
+        const embed = new EmbedBuilder()
+            .setTitle("Shirt Discussion")
+            .setDescription(`Your shirt discussion announcement has been ${args.answer === "accept" ? "accepted!" : "rejected."}`)
+            .setFooter({ text: `Submitted by ${originalMember.displayName}`, iconURL: originalMember.avatarURL() || undefined });
+
+        const actionRow = m && new ActionRowBuilder<ButtonBuilder>()
+            .setComponents(
+                new ButtonBuilder()
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(m.url)
+                    .setLabel("View Announcement")
+            );
+
+        await dm.send({ embeds: [embed], components: actionRow ? [actionRow] : [] });
+    }
 });
 
 export default command;

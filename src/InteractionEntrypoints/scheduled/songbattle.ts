@@ -87,7 +87,7 @@ export async function songBattleCron() {
     const m = await channel.send({
         flags: MessageFlags.IsComponentsV2,
         components: [
-            { type: ComponentType.Section, components: [{ type: ComponentType.TextDisplay, content: "Receiving new song battle..." }] },
+            { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: "Receiving new song battle..." }] },
         ]
     });
 
@@ -321,7 +321,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
                 ],
                 accessory: {
                     type: ComponentType.Thumbnail,
-                    media: { url: "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
+                    media: { url: song1.song.image ?? song1.album.image ?? "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
                     description: `Album cover for ${song1.album.name}`
                 }
             },
@@ -342,7 +342,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
                 ],
                 accessory: {
                     type: ComponentType.Thumbnail,
-                    media: { url: "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
+                    media: { url: song2.song.image ?? song2.album.image ?? "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
                     description: `Album cover for ${song2.album.name}`
                 }
             },

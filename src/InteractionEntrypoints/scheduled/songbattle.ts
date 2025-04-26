@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, TextDisplayBuilder, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, ThreadAutoArchiveDuration, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -432,22 +432,22 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 
     // Update main message vote count
     withCache(`sb:votes-${pollId}`, async () => {
-        const totalVotes = await prisma.vote.count({ where: { pollId } });
+        // const totalVotes = await prisma.vote.count({ where: { pollId } });
 
-        const rawContainer = ctx.message.components[0];
-        if (rawContainer.type !== ComponentType.Container) return;
+        // const rawContainer = ctx.message.components[0];
+        // if (rawContainer.type !== ComponentType.Container) return;
         
-        const container = new ContainerBuilder(rawContainer as any);
+        // const container = new ContainerBuilder(rawContainer as any);
         
-        const footerIdx = container.components.findIndex(c => c.data.id === 8004);
+        // const footerIdx = container.components.findIndex(c => c.data.id === 8004);
 
-        container.spliceComponents(footerIdx, 1, new TextDisplayBuilder({
-            content: `-# ${embedFooter(totalVotes + 40)}`,
-            id: 8004
-        }));
+        // container.spliceComponents(footerIdx, 1, new TextDisplayBuilder({
+        //     content: `-# ${embedFooter(totalVotes + 40)}`,
+        //     id: 8004
+        // }));
 
-        await ctx.message.edit({ components: [container] });
-        // await updateCurrentSongBattleMessage();
+        // await ctx.message.edit({ components: [container] });
+        await updateCurrentSongBattleMessage();
     }, 5);
 
     if (existingVote) {

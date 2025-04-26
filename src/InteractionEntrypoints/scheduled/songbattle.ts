@@ -432,22 +432,7 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 
     // Update main message vote count
     withCache(`sb:votes-${pollId}`, async () => {
-        const totalVotes = await prisma.vote.count({ where: { pollId } });
-
-        const rawContainer = ctx.message.components[0];
-        if (rawContainer.type !== ComponentType.Container) return;
-        
-        const container = new ContainerBuilder(rawContainer as any);
-        
-        const footerIdx = container.components.findIndex(c => c.data.id === 8004);
-
-        container.spliceComponents(footerIdx, 1, new TextDisplayBuilder({
-            content: `-# ${embedFooter(totalVotes + 40)}`,
-            id: 8004
-        }).toJSON());
-
-        await ctx.message.edit({ components: [container] });
-        // await updateCurrentSongBattleMessage();
+        await updateCurrentSongBattleMessage();
     }, 5);
 
     if (existingVote) {

@@ -6,6 +6,7 @@ import {
     BaseMessageOptions,
     ButtonBuilder,
     ButtonStyle,
+    ComponentType,
     EmbedBuilder,
     Message,
     Snowflake
@@ -131,7 +132,10 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     }
 
     override async afterCheck(msg: Message): Promise<void> {
-        const actionRow = ActionRowBuilder.from(msg.components[0]);
+        const rawActionRow = msg.components[0];
+        if (rawActionRow.type !== ComponentType.ActionRow) return;
+
+        const actionRow = ActionRowBuilder.from(rawActionRow);
 
         const newButton = new ButtonBuilder()
             .setStyle(ButtonStyle.Link)

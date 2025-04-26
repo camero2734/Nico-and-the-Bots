@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
+import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, ThreadAutoArchiveDuration, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -15,7 +15,7 @@ const entrypoint = new ManualEntrypoint();
 export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 const SLOWMODE_SECONDS = 30;
-const CRON_ENABLED = false;
+const CRON_ENABLED = true;
 
 // Enable slowmode in the old thread after a while
 Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
@@ -65,29 +65,32 @@ export async function songBattleCron() {
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
+    const history = await calculateHistory();
+    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = determineNextMatchup(history);
 
     // Update the previous battle's message
     await updatePreviousSongBattleMessage();
-
-    // Pick two random button colors
-    const [button1, button2] = [
-        [ButtonStyle.Secondary, "#4F545C"],
-        [ButtonStyle.Secondary, "#4F545C"]
-    ] as const;
-
-    // const buffer = await generateSongImages(album1, album2, song1, song2, button1[1] || "#000", button2[1] || "#000");
 
     const startsAt = new Date();
     const endsAt = cron.nextRun()!;
 
     // Ping message
-    const mention = Math.random() > -1 ? "ping" : roleMention(roles.songBattles);
-    await channel.send({ content: mention, allowedMentions: { roles: [roles.songBattles] } });
+    const mention = roleMention(roles.songBattles);
+    await channel.send({
+        flags: MessageFlags.IsComponentsV2,
+        components: [
+            { type: ComponentType.TextDisplay, content: mention },
+        ],
+        allowedMentions: { roles: [roles.songBattles] }
+    });
 
     // Placeholder message
-    const startEmbed = new EmbedBuilder().setDescription("Receiving new song battle...");
-    const m = await channel.send({ embeds: [startEmbed] });
+    const m = await channel.send({
+        flags: MessageFlags.IsComponentsV2,
+        components: [
+            { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: "Receiving new song battle..." }] },
+        ]
+    });
 
     // Create database poll
     const pollName = `${PREFIX}${nextBattleNumber}-${nanoid(10)}`;
@@ -98,7 +101,7 @@ export async function songBattleCron() {
         }
     });
 
-    const msgOptions = await createMessageComponents({
+    const msgOptions = createMessageComponents({
         pollId: poll.id,
         nextBattleNumber,
         totalMatches,
@@ -106,7 +109,6 @@ export async function songBattleCron() {
         song1: {
             song: song1,
             album: album1,
-            buttonStyle: button1[0],
             nextBattleNumber,
             wins: song1Wins,
             losses: song1Losses,
@@ -114,7 +116,6 @@ export async function songBattleCron() {
         song2: {
             song: song2,
             album: album2,
-            buttonStyle: button2[0],
             nextBattleNumber,
             wins: song2Wins,
             losses: song2Losses,
@@ -149,10 +150,11 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
     const previousMessageId = previousPoll?.options[2];
     if (!previousMessageId) return;
 
-    let previousMessage = await channel.messages?.fetch(previousMessageId);
+    const previousMessage = await channel.messages?.fetch(previousMessageId);
     if (!previousMessage) return;
 
-    const { histories, previousBattlesRaw } = await calculateHistory();
+    const history = await calculateHistory();
+    const { histories, previousBattlesRaw } = history;
 
     const song1 = fromSongId(previousPoll.options[0]);
     const song2 = fromSongId(previousPoll.options[1]);
@@ -168,13 +170,13 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
 
     const nextBattleNumber = previousBattlesRaw.length;
 
-    const [button1, button2] = [
-        [ButtonStyle.Secondary, "#4F545C"],
-        [ButtonStyle.Secondary, "#4F545C"]
-    ] as const;
+    const { totalMatches } = determineNextMatchup(history);
 
-    const { totalMatches } = await determineNextMatchup();
-    const msgOptions = await createMessageComponents({
+    const result = determineResult(previousPoll);
+    const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
+    const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
+
+    const msgOptions = createMessageComponents({
         pollId: previousPoll.id,
         nextBattleNumber,
         totalMatches,
@@ -182,7 +184,6 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         song1: {
             song: song1.song,
             album: song1.album,
-            buttonStyle: button1[0],
             nextBattleNumber,
             wins: song1Wins - 1,
             losses: song1Losses - 1
@@ -190,44 +191,16 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         song2: {
             song: song2.song,
             album: song2.album,
-            buttonStyle: button2[0],
             nextBattleNumber,
             wins: song2Wins - 1,
             losses: song2Losses - 1
-        }
+        },
+        totalVotes,
+        winnerIdx,
+        voteCounts: previousPoll.votes.map(v => v.choices[0])
     });
 
-    previousMessage = await previousMessage.edit(msgOptions);
-
-    const result = determineResult(previousPoll);
-    const embed = new EmbedBuilder(previousMessage.embeds[0].data);
-
-    const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
-    embed.setFooter({ text: embedFooter(totalVotes) });
-
-    const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
-
-    for (let i = 0; i < (embed.data.fields?.length || 0); i++) {
-        const field = embed.data.fields?.[i];
-        if (!field) continue;
-
-        const voteCount = previousPoll.votes.filter(v => v.choices[0] === i).length;
-        field.name = i === winnerIdx ? `🏆 ${field.name}` : field.name;
-        field.value = `${field.value} (${voteCount} vote${F.plural(voteCount)})`;
-    }
-
-    if (winnerIdx === false) {
-        embed.addFields({
-            name: "🙁 Tie",
-            value: "No winner was determined. These songs will be put back into the pool.",
-        });
-    }
-
-    // Disable the buttons
-    const actionRow = previousMessage.components[0].toJSON();
-    actionRow.components.forEach(c => c.disabled = true);
-
-    await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });
+    await previousMessage.edit(msgOptions);
 }
 
 export async function updateCurrentSongBattleMessage() {
@@ -237,6 +210,7 @@ export async function updateCurrentSongBattleMessage() {
             name: { startsWith: PREFIX },
         },
         orderBy: { id: "desc" },
+        include: { votes: true },
     });
 
     if (!poll) return false;
@@ -247,17 +221,15 @@ export async function updateCurrentSongBattleMessage() {
     const msg = await channel.messages.fetch(poll.options[2]);
     if (!msg) return false;
 
-    const { totalMatches } = await determineNextMatchup();
+    const history = await calculateHistory();
+    const { histories, previousBattlesRaw } = history;
+
+    const { totalMatches } = determineNextMatchup(history);
 
     const song1 = fromSongId(poll.options[0]);
     const song2 = fromSongId(poll.options[1]);
 
-    const [button1, button2] = [
-        [ButtonStyle.Secondary, "#4F545C"],
-        [ButtonStyle.Secondary, "#4F545C"]
-    ] as const;
 
-    const { histories, previousBattlesRaw } = await calculateHistory();
 
     const song1Hist = histories.get(poll.options[0]);
     const song2Hist = histories.get(poll.options[1]);
@@ -269,8 +241,9 @@ export async function updateCurrentSongBattleMessage() {
     const song2Losses = song2Hist ? song2Hist.eliminations : 1;
 
     const nextBattleNumber = previousBattlesRaw.length;
+    const totalVotes = poll.votes.length;
 
-    const msgOptions = await createMessageComponents({
+    const msgOptions = createMessageComponents({
         pollId: poll.id,
         nextBattleNumber,
         totalMatches,
@@ -278,7 +251,6 @@ export async function updateCurrentSongBattleMessage() {
         song1: {
             song: song1.song,
             album: song1.album,
-            buttonStyle: button1[0],
             nextBattleNumber,
             // Need to subtract 1 because the battle hasn't ended yet
             wins: song1Wins - 1,
@@ -287,11 +259,11 @@ export async function updateCurrentSongBattleMessage() {
         song2: {
             song: song2.song,
             album: song2.album,
-            buttonStyle: button2[0],
             nextBattleNumber,
             wins: song2Wins - 1,
             losses: song2Losses - 1
-        }
+        },
+        totalVotes,
     });
 
     await msg.edit(msgOptions);
@@ -304,56 +276,123 @@ interface SongBattleDetails {
     startsAt: Date;
     song1: SongBattleContender;
     song2: SongBattleContender;
+
+    totalVotes?: number;
+    winnerIdx?: number | false;
+    voteCounts?: number[];
 }
 
 interface SongBattleContender {
     song: SongContender;
     album: Album;
-    buttonStyle: ButtonStyle;
     nextBattleNumber: number;
     wins: number;
     losses: number;
 }
 
-async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
-    const { pollId, nextBattleNumber, totalMatches, song1, song2, startsAt } = details;
+function createMessageComponents(details: SongBattleDetails): MessageEditOptions {
+    const { pollId, nextBattleNumber, totalMatches, song1, song2, totalVotes, winnerIdx, voteCounts, startsAt } = details;
 
-    const wins1 = song1.wins > 0 ? ` 🏅x${song1.wins}` : "";
-    const wins2 = song2.wins > 0 ? ` 🏅x${song2.wins}` : "";
+    const wins1 = song1.wins > 0 ? ` | 🏅x${song1.wins}` : "";
+    const wins2 = song2.wins > 0 ? ` | 🏅x${song2.wins}` : "";
 
-    const losses1 = song1.losses > 0 ? ` 💀x${song1.losses}` : "";
-    const losses2 = song2.losses > 0 ? ` 💀x${song2.losses}` : "";
+    const losses1 = song1.losses > 0 ? ` | 💀x${song1.losses}` : "";
+    const losses2 = song2.losses > 0 ? ` | 💀x${song2.losses}` : "";
 
-    const emoji1 = `<:emoji:${song1.song.emoji ?? song1.album.emoji}>`;
-    const emoji2 = `<:emoji:${song2.song.emoji ?? song2.album.emoji}>`;
+    const hasWinner = totalVotes !== undefined && winnerIdx !== undefined && voteCounts !== undefined;
 
-    // Create embed
-    const embed = new EmbedBuilder()
-        .setTitle(`Battle #${nextBattleNumber} / ${totalMatches}`)
-        .setThumbnail("attachment://battle.png")
-        .addFields([
-            { name: `${song1.song.name}${wins1}${losses1}`, value: `${emoji1} ${italic(song1.album.name)} | [YouTube](${song1.song.yt})`, inline: true },
-            { name: `${song2.song.name}${wins2}${losses2}`, value: `${emoji2} ${italic(song2.album.name)} | [YouTube](${song2.song.yt})`, inline: true },
-        ])
-        .setColor(song1.song.color ?? song1.album.color)
-        .setFooter({ text: embedFooter(0) })
-        .setTimestamp(startsAt);
+    const winnerPrefix1 = hasWinner && winnerIdx === 0 ? "🏆 " : "";
+    const winnerPrefix2 = hasWinner && winnerIdx === 1 ? "🏆 " : "";
 
-    // Create message components
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-        new ButtonBuilder()
-            .setCustomId(genButtonId({ songId: toSongId(song1.song, song1.album), pollId: pollId.toString() }))
-            .setStyle(song1.buttonStyle)
-            .setLabel(song1.song.name)
-            .setEmoji(song1.song.emoji ?? song1.album.emoji),
-        new ButtonBuilder()
-            .setCustomId(genButtonId({ songId: toSongId(song2.song, song2.album), pollId: pollId.toString() }))
-            .setStyle(song2.buttonStyle)
-            .setLabel(song2.song.name)
-            .setEmoji(song2.song.emoji ?? song2.album.emoji),
-    ]);
+    const song1Votes = hasWinner ? voteCounts.filter(v => v === 0).length : 0;
+    const song2Votes = hasWinner ? voteCounts.filter(v => v === 1).length : 0;
 
-    return { embeds: [embed], components: [actionRow] };
+    const voteCounts1 = hasWinner ? `\n*${song1Votes} vote${F.plural(song1Votes)}*` : "";
+    const voteCounts2 = hasWinner ? `\n*${song2Votes} vote${F.plural(song2Votes)}*` : "";
+
+    const container = new ContainerBuilder({
+        components: [
+            {
+                type: ComponentType.TextDisplay,
+                content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# Blurryface 10th Anniversary Song Battles`
+            },
+            { type: ComponentType.Separator, divider: false, spacing: 1 },
+            {
+                type: ComponentType.Section,
+                components: [
+                    { type: ComponentType.TextDisplay, content: `**${winnerPrefix1}${song1.song.name}**` },
+                    { type: ComponentType.TextDisplay, content: `*${song1.album.name}*` },
+                    {
+                        type: ComponentType.TextDisplay,
+                        content: `<:youtube:1365419055594606592>[YouTube](${song1.song.yt})${wins1}${losses1}${voteCounts1}`
+                    }
+                ],
+                accessory: {
+                    type: ComponentType.Thumbnail,
+                    media: { url: song1.song.image ?? song1.album.image ?? "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
+                    description: `Album cover for ${song1.album.name}`
+                }
+            },
+            {
+                type: ComponentType.Separator,
+                divider: true,
+                spacing: 2
+            },
+            {
+                type: ComponentType.Section,
+                components: [
+                    { type: ComponentType.TextDisplay, content: `**${winnerPrefix2}${song2.song.name}**` },
+                    { type: ComponentType.TextDisplay, content: `*${song2.album.name}*` },
+                    {
+                        type: ComponentType.TextDisplay,
+                        content: `<:youtube:1365419055594606592>[YouTube](${song2.song.yt})${wins2}${losses2}${voteCounts2}`
+                    }
+                ],
+                accessory: {
+                    type: ComponentType.Thumbnail,
+                    media: { url: song2.song.image ?? song2.album.image ?? "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
+                    description: `Album cover for ${song2.album.name}`
+                }
+            },
+            {
+                type: ComponentType.Separator,
+                divider: true,
+                spacing: 1
+            },
+            { type: ComponentType.TextDisplay, content: "Which song wins this round?" },
+            {
+                type: ComponentType.ActionRow,
+                components: [
+                    {
+                        type: ComponentType.Button,
+                        style: ButtonStyle.Primary,
+                        label: song1.song.name,
+                        custom_id: genButtonId({ songId: toSongId(song1.song, song1.album), pollId: pollId.toString() }),
+                        emoji: { id: song1.song.emoji ?? song1.album.emoji },
+                        disabled: hasWinner
+                    },
+                    {
+                        type: ComponentType.Button,
+                        style: ButtonStyle.Primary,
+                        label: song2.song.name,
+                        custom_id: genButtonId({ songId: toSongId(song2.song, song2.album), pollId: pollId.toString() }),
+                        emoji: { id: song2.song.emoji ?? song2.album.emoji },
+                        disabled: hasWinner
+                    },
+                    {
+                        type: ComponentType.Button,
+                        style: ButtonStyle.Link,
+                        label: "Info / Rules",
+                        url: "https://discord.com/channels/269657133673349120/1211412086442426429/1363596621241253888",
+                        disabled: hasWinner
+                    }
+                ]
+            },
+            { type: ComponentType.TextDisplay, content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(startsAt) || new Date())}`, id: 8004 },
+        ]
+    });
+
+    return { components: [container] };
 }
 
 const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["pollId", "songId"], async (ctx, args) => {
@@ -398,12 +437,7 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 
     // Update main message vote count
     withCache(`sb:votes-${pollId}`, async () => {
-        const totalVotes = await prisma.vote.count({ where: { pollId } });
-
-        const embed = new EmbedBuilder(ctx.message.embeds[0].data);
-        embed.setFooter({ text: embedFooter(totalVotes) });
-
-        await ctx.message.edit({ embeds: [embed] });
+        await updateCurrentSongBattleMessage();
     }, 5);
 
     if (existingVote) {

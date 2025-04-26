@@ -215,6 +215,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
     const msg = ctx.message;
     const [actionRow] = msg.components;
 
+    if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
     const newComponents = actionRow.components.map(c => {
         if (c.type === ComponentType.StringSelect) return StringSelectMenuBuilder.from(c);
         if (c.type === ComponentType.UserSelect) return UserSelectMenuBuilder.from(c);
@@ -245,6 +246,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const msg = ctx.message;
     const [actionRow] = msg.components;
 
+    if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
     const newComponents = actionRow.components.map(c => {
         if (c.type === ComponentType.StringSelect) return StringSelectMenuBuilder.from(c);
         if (c.type === ComponentType.UserSelect) return UserSelectMenuBuilder.from(c);
@@ -270,6 +272,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const chan = msg.channel as TextChannel;
     const [actionRow] = msg.components;
 
+    if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
     const button = actionRow.components.find((btn) => btn.customId === ctx.customId);
     if (!button) return;
 

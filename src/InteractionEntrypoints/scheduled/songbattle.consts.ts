@@ -37,7 +37,7 @@ export interface SongContender {
 }
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = "TEST2SongBattle2025BlurryfaceBattle-";
+export const PREFIX = "SongBattle2025BlurryfaceBattle-";
 
 export const albums = [
     // {
@@ -219,7 +219,7 @@ export const albums = [
     },
 ] satisfies Album[];
 
-export const embedFooter = (totalVotes: number) => `${totalVotes} vote${F.plural(totalVotes)} | Votes are anonymous | Voting ends in 24 hours`;
+export const embedFooter = (totalVotes: number, endsAt: Date) => `${totalVotes} vote${F.plural(totalVotes)} | Votes are anonymous | Voting ends ${F.discordTimestamp(endsAt, "relative")}`;
 
 export const buttonColors: Partial<Record<ButtonStyle, string>> = {
     [ButtonStyle.Primary]: "#5865F2",
@@ -369,7 +369,7 @@ export function findFirstUnmatchedSongs(sorted: [string, SongBattleHistory][], p
     throw new Error("All songs have been matched up");
 }
 
-export async function determineNextMatchup(): Promise<{
+export function determineNextMatchup(history: Awaited<ReturnType<typeof calculateHistory>>): {
     song1: SongContender;
     song2: SongContender;
     album1: Album;
@@ -381,8 +381,9 @@ export async function determineNextMatchup(): Promise<{
     nextBattleNumber: number;
     result?: Result;
     totalMatches: number;
-}> {
-    const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = await calculateHistory();
+
+} {
+    const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = history;
 
     const { song1Id, song2Id } = findFirstUnmatchedSongs(sorted, previousBattlesRaw);
 

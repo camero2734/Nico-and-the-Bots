@@ -161,7 +161,10 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
         return "label" in data ? data.label : undefined;
     }
 
-    const dmActionRow = new ActionRowBuilder<ButtonBuilder>(ctx.message.components[0].toJSON());
+    const rawActionRow = ctx.message.components[0];
+    if (rawActionRow.type !== ComponentType.ActionRow) throw new Error("Invalid action row");
+
+    const dmActionRow = new ActionRowBuilder<ButtonBuilder>(rawActionRow.toJSON());
     const beginBtn = dmActionRow.components.find(c => (getLabel(c.data) === "Begin" || getLabel(c.data) === "Reopen"));
     const cancelBtn = dmActionRow.components.find(c => getLabel(c.data) === "Cancel");
 
@@ -248,6 +251,7 @@ const genVeriquizId = command.addInteractionListener("veriquiz", ["currentID", "
     await ctx.deferUpdate();
 
     const actionRow = ctx.message.components[0];
+    if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
     actionRow.components.map(c => {
         return { ...c.data, disabled: true };
     })
@@ -416,6 +420,8 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
     const newActionRows = ctx.message.components.map((row, i) => {
         if (i !== idx) return row;
 
+        if (row.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
+
         const jsonComponent = row.components[0].toJSON();
         if (jsonComponent.type !== ComponentType.StringSelect) return row;
 
@@ -430,6 +436,8 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
 
     // Check if all answers are correct
     const allCorrect = newActionRows.every(row => {
+        if ('type' in row && row.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
+        
         const selectMenu = row.components[0].toJSON();
         return selectMenu.type === ComponentType.StringSelect && selectMenu.disabled;
     });

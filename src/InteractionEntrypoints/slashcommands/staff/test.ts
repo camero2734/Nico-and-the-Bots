@@ -1,19 +1,32 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, roleMention } from "discord.js";
+import {
+    ActionRowBuilder,
+    ApplicationCommandOptionType,
+    ButtonBuilder,
+    ButtonStyle,
+    roleMention
+} from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
-import { cron, songBattleCron, updateCurrentSongBattleMessage, updatePreviousSongBattleMessage } from "../../scheduled/songbattle";
+import {
+    cron,
+    songBattleCron,
+    updateCurrentSongBattleMessage,
+    updatePreviousSongBattleMessage
+} from "../../scheduled/songbattle";
 
 const command = new SlashCommand({
     description: "Test command",
-    options: [{
-        name: "num",
-        description: "Number of times to test",
-        required: true,
-        type: ApplicationCommandOptionType.Integer
-    }]
+    options: [
+        {
+            name: "num",
+            description: "Number of times to test",
+            required: true,
+            type: ApplicationCommandOptionType.Integer
+        }
+    ]
 });
 
 command.setHandler(async (ctx) => {
@@ -22,12 +35,12 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply({ ephemeral: true });
 
     const roles = await ctx.guild.roles.fetch();
-    const withColor = roles.filter(r => r.hexColor.toLowerCase() === "#ffc6d5");
+    const withColor = roles.filter((r) => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
         const button = new ButtonBuilder()
             .setLabel("Test button")
             .setStyle(ButtonStyle.Primary)
-            .setCustomId(genTestId({ num: '4' }));
+            .setCustomId(genTestId({ num: "4" }));
 
         const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
 
@@ -60,18 +73,18 @@ command.setHandler(async (ctx) => {
         await ctx.channel.send({
             poll: {
                 question: {
-                    text: "Test poll",
+                    text: "Test poll"
                 },
                 answers: [
                     { text: "Option 1", emoji: "👍" },
-                    { text: "Option 2", emoji: "👎" },
+                    { text: "Option 2", emoji: "👎" }
                 ],
                 duration: 24,
-                allowMultiselect: false,
+                allowMultiselect: false
             }
-        })
+        });
     } else {
-        const msg = withColor.map(x => roleMention(x.id)).join("\n");
+        const msg = withColor.map((x) => roleMention(x.id)).join("\n");
 
         await ctx.editReply(msg);
     }

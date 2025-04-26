@@ -15,7 +15,7 @@ const entrypoint = new ManualEntrypoint();
 export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
 
 const SLOWMODE_SECONDS = 30;
-const CRON_ENABLED = false;
+const CRON_ENABLED = true;
 
 // Enable slowmode in the old thread after a while
 Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {

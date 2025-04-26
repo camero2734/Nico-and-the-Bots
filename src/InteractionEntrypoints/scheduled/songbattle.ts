@@ -283,9 +283,8 @@ interface SongBattleContender {
 }
 
 async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
-    const { pollId, nextBattleNumber, totalMatches, song1, song2, startsAt, totalVotes, winnerIdx, voteCounts } = details;
+    const { pollId, nextBattleNumber, totalMatches, song1, song2, totalVotes, winnerIdx, voteCounts } = details;
 
-    console.log(startsAt);
     const wins1 = song1.wins > 0 ? ` | 🏅x${song1.wins}` : "";
     const wins2 = song2.wins > 0 ? ` | 🏅x${song2.wins}` : "";
 
@@ -294,10 +293,14 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
 
     const hasWinner = totalVotes !== undefined && winnerIdx !== undefined && voteCounts !== undefined;
 
-    const winnerMessage = winnerIdx === false
-        ? "🙁 Tie\nNo winner was determined. These songs will be put back into the pool."
-        : `🏆 Winner: **${winnerIdx === 0 ? song1.song.name : song2.song.name}**`;
+    const winnerPrefix1 = hasWinner && winnerIdx === 0 ? "🏆 " : "";
+    const winnerPrefix2 = hasWinner && winnerIdx === 1 ? "🏆 " : "";
 
+    const song1Votes = hasWinner ? voteCounts[0] : 0;
+    const song2Votes = hasWinner ? voteCounts[1] : 0;
+
+    const voteCounts1 = hasWinner ? `\n*${song1Votes} vote${F.plural(song1Votes)}` : "";
+    const voteCounts2 = hasWinner ? `\n*${song2Votes} vote${F.plural(song2Votes)}` : "";
 
     const container = new ContainerBuilder({
         components: [
@@ -309,16 +312,16 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             {
                 type: ComponentType.Section,
                 components: [
-                    { type: ComponentType.TextDisplay, content: `**${song1.song.name}**` },
+                    { type: ComponentType.TextDisplay, content: `**${winnerPrefix1}${song1.song.name}**` },
                     { type: ComponentType.TextDisplay, content: `*${song1.album.name}*` },
                     {
                         type: ComponentType.TextDisplay,
-                        content: `<:youtube:1365419055594606592>[YouTube](${song1.song.yt})${wins1}${losses1}`
+                        content: `<:youtube:1365419055594606592>[YouTube](${song1.song.yt})${wins1}${losses1}${voteCounts1}`
                     }
                 ],
                 accessory: {
                     type: ComponentType.Thumbnail,
-                    media: { url: song1.song.image ?? song1.album.image ?? "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
+                    media: { url: "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
                     description: `Album cover for ${song1.album.name}`
                 }
             },
@@ -330,16 +333,16 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
             {
                 type: ComponentType.Section,
                 components: [
-                    { type: ComponentType.TextDisplay, content: `**${song2.song.name}**` },
+                    { type: ComponentType.TextDisplay, content: `**${winnerPrefix2}${song2.song.name}**` },
                     { type: ComponentType.TextDisplay, content: `*${song2.album.name}*` },
                     {
                         type: ComponentType.TextDisplay,
-                        content: `<:youtube:1365419055594606592>[YouTube](${song2.song.yt})${wins2}${losses2}`
+                        content: `<:youtube:1365419055594606592>[YouTube](${song2.song.yt})${wins2}${losses2}${voteCounts2}`
                     }
                 ],
                 accessory: {
                     type: ComponentType.Thumbnail,
-                    media: { url: song2.song.image ?? song2.album.image ?? "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
+                    media: { url: "https://community.mp3tag.de/uploads/default/original/2X/a/acf3edeb055e7b77114f9e393d1edeeda37e50c9.png"},
                     description: `Album cover for ${song2.album.name}`
                 }
             },
@@ -377,16 +380,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
                         disabled: hasWinner
                     }
                 ]
-            },
-            ...(hasWinner ? [
-                { type: ComponentType.Separator, divider: true, spacing: 1 },
-                { type: ComponentType.TextDisplay, content: `# **Results**\n${winnerMessage}` },
-                { type: ComponentType.TextDisplay, content: `-# Total Votes: ${totalVotes}` },
-                {
-                    type: ComponentType.TextDisplay,
-                    content: `${song1.song.name}: ${voteCounts.filter(v => v === 0).length} votes\n${song2.song.name}: ${voteCounts.filter(v => v === 1).length} votes`
-                }
-            ] as const : []),
+            }
         ]
     });
 

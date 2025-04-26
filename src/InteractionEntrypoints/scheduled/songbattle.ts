@@ -304,11 +304,11 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     const winnerPrefix1 = hasWinner && winnerIdx === 0 ? "🏆 " : "";
     const winnerPrefix2 = hasWinner && winnerIdx === 1 ? "🏆 " : "";
 
-    const song1Votes = hasWinner ? voteCounts[0] : 0;
-    const song2Votes = hasWinner ? voteCounts[1] : 0;
+    const song1Votes = hasWinner ? voteCounts.filter(v => v === 0).length : 0;
+    const song2Votes = hasWinner ? voteCounts.filter(v => v === 1).length : 0;
 
-    const voteCounts1 = hasWinner ? `\n*${song1Votes} vote${F.plural(song1Votes)}` : "";
-    const voteCounts2 = hasWinner ? `\n*${song2Votes} vote${F.plural(song2Votes)}` : "";
+    const voteCounts1 = hasWinner ? `\n*${song1Votes} vote${F.plural(song1Votes)}*` : "";
+    const voteCounts2 = hasWinner ? `\n*${song2Votes} vote${F.plural(song2Votes)}*` : "";
 
     const container = new ContainerBuilder({
         components: [

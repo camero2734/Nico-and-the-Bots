@@ -75,7 +75,7 @@ export async function songBattleCron() {
     const endsAt = cron.nextRun()!;
 
     // Ping message
-    const mention = Math.random() > -1 ? "ping" : roleMention(roles.songBattles);
+    const mention = roleMention(roles.songBattles);
     await channel.send({
         flags: MessageFlags.IsComponentsV2,
         components: [

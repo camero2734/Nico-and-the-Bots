@@ -3,9 +3,6 @@ import {
   ApplicationCommandOptionType,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType,
-  ContainerBuilder,
-  MessageFlags,
   roleMention
 } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
@@ -70,100 +67,6 @@ command.setHandler(async (ctx) => {
 
         const timeStamp = F.discordTimestamp(nextRun, "relative");
         await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
-    } else if (ctx.opts.num === 422) {
-        const a = new ContainerBuilder({
-            components: [
-                {
-                    type: ComponentType.TextDisplay,
-                    content: "# Battle #3 / 40\n-# Blurryface 10th Anniversary Song Battles"
-                },
-                { type: ComponentType.Separator, divider: false, spacing: 1 },
-                {
-                    type: ComponentType.Section,
-                    components: [
-                        { type: ComponentType.TextDisplay, content: "**Message Man**" },
-                        { type: ComponentType.TextDisplay, content: "*Blurryface*" },
-                        {
-                            type: ComponentType.TextDisplay,
-                            content: "<:youtube:1365419055594606592>[YouTube](https://youtube.com) | 🏅x2"
-                        }
-                    ],
-                    accessory: {
-                        type: ComponentType.Thumbnail,
-                        media: {
-                            url: "https://images.squarespace-cdn.com/content/v1/58ab2fce20099e7487a18b2a/1488423618745-3IDAU928ZPC21H89CEGN/Blurryface-twenty-one-pilots-cover-art.png?format=2500w"
-                        },
-                        description: "Album cover for Blurryface"
-                    }
-                },
-                {
-                    type: ComponentType.Separator,
-                    divider: true,
-                    spacing: 2
-                },
-                {
-                    type: ComponentType.Section,
-                    components: [
-                        { type: ComponentType.TextDisplay, content: "**Ride (feat. MUTEMATH)**" },
-                        { type: ComponentType.TextDisplay, content: "*TOPxMM*" },
-                        {
-                            type: ComponentType.TextDisplay,
-                            content: "<:youtube:1365419055594606592>[YouTube](https://youtube.com) | 🏅x1"
-                        }
-                    ],
-                    accessory: {
-                        type: ComponentType.Thumbnail,
-                        media: {
-                            url: "https://i.scdn.co/image/ab67616d00001e02aa53cf116c616b262b59742a"
-                        },
-                        description: "Album cover for TOPxMM"
-                    }
-                },
-                {
-                    type: ComponentType.Separator,
-                    divider: true,
-                    spacing: 1
-                },
-                { type: ComponentType.TextDisplay, content: "Which song wins this round?" },
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        {
-                            type: ComponentType.Button,
-                            style: ButtonStyle.Primary,
-                            label: "Message Man",
-                            custom_id: "vote_song_1",
-                            emoji: {
-                                id: "833130087943634944"
-                            }
-                        },
-                        {
-                            type: ComponentType.Button,
-                            style: ButtonStyle.Primary,
-                            label: "Ride (feat. MUTEMATH)",
-                            custom_id: "vote_song_2",
-                            emoji: {
-                                id: "1363199884051878109"
-                            }
-                        },
-                        {
-                            type: ComponentType.Button,
-                            style: ButtonStyle.Secondary,
-                            label: "What is this?",
-                            custom_id: "battle_info",
-                            emoji: {
-                                id: "1365428431122071583"
-                            }
-                        }
-                    ]
-                }
-            ]
-        });
-
-        await ctx.channel.send({
-          flags: MessageFlags.IsComponentsV2,
-          components: [a],
-        })
     } else if (ctx.opts.num === 433) {
         songBattleCron();
     } else if (ctx.opts.num === 444) {

@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { ButtonStyle, ComponentType, ContainerBuilder, EmbedBuilder, MessageEditOptions, MessageFlags, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, ThreadAutoArchiveDuration, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -380,7 +380,8 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
                         disabled: hasWinner
                     }
                 ]
-            }
+            },
+            { type: ComponentType.TextDisplay, content: `-# ${embedFooter(totalVotes || 0)}`, id: 8004 },
         ]
     });
 
@@ -431,10 +432,14 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
     withCache(`sb:votes-${pollId}`, async () => {
         const totalVotes = await prisma.vote.count({ where: { pollId } });
 
-        const embed = new EmbedBuilder(ctx.message.embeds[0].data);
-        embed.setFooter({ text: embedFooter(totalVotes) });
+        if (ctx.message.components[0].type === ComponentType.Container) {
+            const footer = ctx.message.components[0].components.find(c => c.id === 8004);
+            if (footer && footer.type === ComponentType.TextDisplay) {
+                (footer as any).content = `-# ${embedFooter(totalVotes || 0)}`;
+            }
+        }
 
-        await ctx.message.edit({ embeds: [embed] });
+        await ctx.message.edit({ components: ctx.message.components });
     }, 5);
 
     if (existingVote) {

@@ -235,6 +235,7 @@ export async function updateCurrentSongBattleMessage() {
     const song2Losses = song2Hist ? song2Hist.eliminations : 1;
 
     const nextBattleNumber = previousBattlesRaw.length;
+    const totalVotes = await prisma.vote.count({ where: { pollId: poll.id } });
 
     const msgOptions = await createMessageComponents({
         pollId: poll.id,
@@ -255,7 +256,8 @@ export async function updateCurrentSongBattleMessage() {
             nextBattleNumber,
             wins: song2Wins - 1,
             losses: song2Losses - 1
-        }
+        },
+        totalVotes,
     });
 
     await msg.edit(msgOptions);
@@ -430,18 +432,24 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 
     // Update main message vote count
     withCache(`sb:votes-${pollId}`, async () => {
-        const totalVotes = await prisma.vote.count({ where: { pollId } });
+        // const totalVotes = await prisma.vote.count({ where: { pollId } });
 
-        const containerRaw = ctx.message.components[0];
-        if (containerRaw.type !== ComponentType.Container) return;
-        const container = new ContainerBuilder(containerRaw as any);
+        // const container = ctx.message.components[0];
+        // if (container.type !== ComponentType.Container) return;
+        
+        // const footerIdx = container.components.findIndex(c => c.id === 8004);
+        // const footer = container.components[footerIdx];
+        // if (footer && footer.data.type === ComponentType.TextDisplay) {
+        //     // footer.content = `-# ${embedFooter(totalVotes)}`;
+        //     container.components[footerIdx] = new TextDisplayBuilder({
+        //         content: `-# ${embedFooter(totalVotes)}`,
+        //         type: ComponentType.TextDisplay,
+        //         id: 8004
+        //     }) as any;
+        // }
 
-        const footer = container.components.find(c => c.data.id === 8004);
-        if (footer && footer.data.type === ComponentType.TextDisplay) {
-            footer.data.content = `-# ${embedFooter(totalVotes)}`;
-        }
-
-        await ctx.message.edit({ components: [container] });
+        // await ctx.message.edit({ components: [container] });
+        await updateCurrentSongBattleMessage();
     }, 5);
 
     if (existingVote) {

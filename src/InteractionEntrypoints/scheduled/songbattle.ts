@@ -449,11 +449,11 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
 });
 
 const genInfoButtonId = entrypoint.addInteractionListener("songBattleInfo", [], async (ctx) => {
-    await ctx.deferReply({ flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
     if (!ctx.isButton()) return;
 
     const songList = albums.map(a => a.songs.map(s => `${s.name} - ${a.name}`)).flat().join("\n");
-    await ctx.editReply({
+    await ctx.reply({
+        flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
         components: [
             new TextDisplayBuilder({
                 content: `**Song Battle Info**\n\nThe song battle is a game where you can vote for your favorite song! The winner will be determined by the number of votes each song receives. The song with the most votes will move on to the next round.\n\n**Current Songs:**\n${songList}`,

@@ -291,7 +291,7 @@ interface SongBattleContender {
 }
 
 function createMessageComponents(details: SongBattleDetails): MessageEditOptions {
-    const { pollId, nextBattleNumber, totalMatches, song1, song2, totalVotes, winnerIdx, voteCounts } = details;
+    const { pollId, nextBattleNumber, totalMatches, song1, song2, totalVotes, winnerIdx, voteCounts, startsAt } = details;
 
     const wins1 = song1.wins > 0 ? ` | 🏅x${song1.wins}` : "";
     const wins2 = song2.wins > 0 ? ` | 🏅x${song2.wins}` : "";
@@ -389,7 +389,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
                     }
                 ]
             },
-            { type: ComponentType.TextDisplay, content: `-# ${embedFooter(totalVotes || 0)}`, id: 8004 },
+            { type: ComponentType.TextDisplay, content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(startsAt) || new Date())}`, id: 8004 },
         ]
     });
 

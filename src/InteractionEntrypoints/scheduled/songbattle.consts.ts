@@ -219,7 +219,7 @@ export const albums = [
     },
 ] satisfies Album[];
 
-export const embedFooter = (totalVotes: number) => `${totalVotes} vote${F.plural(totalVotes)} | Votes are anonymous | Voting ends in 24 hours`;
+export const embedFooter = (totalVotes: number, endsAt: Date) => `${totalVotes} vote${F.plural(totalVotes)} | Votes are anonymous | Voting ends ${F.discordTimestamp(endsAt, "relative")}`;
 
 export const buttonColors: Partial<Record<ButtonStyle, string>> = {
     [ButtonStyle.Primary]: "#5865F2",

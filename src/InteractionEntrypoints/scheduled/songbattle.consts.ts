@@ -369,7 +369,7 @@ export function findFirstUnmatchedSongs(sorted: [string, SongBattleHistory][], p
     throw new Error("All songs have been matched up");
 }
 
-export async function determineNextMatchup(): Promise<{
+export function determineNextMatchup(history: Awaited<ReturnType<typeof calculateHistory>>): {
     song1: SongContender;
     song2: SongContender;
     album1: Album;
@@ -381,8 +381,9 @@ export async function determineNextMatchup(): Promise<{
     nextBattleNumber: number;
     result?: Result;
     totalMatches: number;
-}> {
-    const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = await calculateHistory();
+
+} {
+    const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = history;
 
     const { song1Id, song2Id } = findFirstUnmatchedSongs(sorted, previousBattlesRaw);
 

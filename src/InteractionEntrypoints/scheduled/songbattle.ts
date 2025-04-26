@@ -65,7 +65,8 @@ export async function songBattleCron() {
     if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
     // Determine the next matchup
-    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = await determineNextMatchup();
+    const history = await calculateHistory();
+    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = determineNextMatchup(history);
 
     // Update the previous battle's message
     await updatePreviousSongBattleMessage();
@@ -100,7 +101,7 @@ export async function songBattleCron() {
         }
     });
 
-    const msgOptions = await createMessageComponents({
+    const msgOptions = createMessageComponents({
         pollId: poll.id,
         nextBattleNumber,
         totalMatches,
@@ -152,7 +153,8 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
     const previousMessage = await channel.messages?.fetch(previousMessageId);
     if (!previousMessage) return;
 
-    const { histories, previousBattlesRaw } = await calculateHistory();
+    const history = await calculateHistory();
+    const { histories, previousBattlesRaw } = history;
 
     const song1 = fromSongId(previousPoll.options[0]);
     const song2 = fromSongId(previousPoll.options[1]);
@@ -168,13 +170,13 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
 
     const nextBattleNumber = previousBattlesRaw.length;
 
-    const { totalMatches } = await determineNextMatchup();
+    const { totalMatches } = determineNextMatchup(history);
 
     const result = determineResult(previousPoll);
     const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
     const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
 
-    const msgOptions = await createMessageComponents({
+    const msgOptions = createMessageComponents({
         pollId: previousPoll.id,
         nextBattleNumber,
         totalMatches,
@@ -208,6 +210,7 @@ export async function updateCurrentSongBattleMessage() {
             name: { startsWith: PREFIX },
         },
         orderBy: { id: "desc" },
+        include: { votes: true },
     });
 
     if (!poll) return false;
@@ -218,12 +221,15 @@ export async function updateCurrentSongBattleMessage() {
     const msg = await channel.messages.fetch(poll.options[2]);
     if (!msg) return false;
 
-    const { totalMatches } = await determineNextMatchup();
+    const history = await calculateHistory();
+    const { histories, previousBattlesRaw } = history;
+
+    const { totalMatches } = determineNextMatchup(history);
 
     const song1 = fromSongId(poll.options[0]);
     const song2 = fromSongId(poll.options[1]);
 
-    const { histories, previousBattlesRaw } = await calculateHistory();
+
 
     const song1Hist = histories.get(poll.options[0]);
     const song2Hist = histories.get(poll.options[1]);
@@ -235,9 +241,9 @@ export async function updateCurrentSongBattleMessage() {
     const song2Losses = song2Hist ? song2Hist.eliminations : 1;
 
     const nextBattleNumber = previousBattlesRaw.length;
-    const totalVotes = await prisma.vote.count({ where: { pollId: poll.id } });
+    const totalVotes = poll.votes.length;
 
-    const msgOptions = await createMessageComponents({
+    const msgOptions = createMessageComponents({
         pollId: poll.id,
         nextBattleNumber,
         totalMatches,
@@ -284,7 +290,7 @@ interface SongBattleContender {
     losses: number;
 }
 
-async function createMessageComponents(details: SongBattleDetails): Promise<MessageEditOptions> {
+function createMessageComponents(details: SongBattleDetails): MessageEditOptions {
     const { pollId, nextBattleNumber, totalMatches, song1, song2, totalVotes, winnerIdx, voteCounts } = details;
 
     const wins1 = song1.wins > 0 ? ` | 🏅x${song1.wins}` : "";

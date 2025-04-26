@@ -174,6 +174,7 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
             }
 
             const getMessageButtonWithEmoji = (name: string): ButtonBuilder | undefined => {
+                if (actionRow.type !== ComponentType.ActionRow) return;
                 const btn = actionRow.components.find(
                     (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name)
                 ) as ButtonComponent;

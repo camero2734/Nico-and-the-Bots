@@ -15,6 +15,7 @@ import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { CommandError } from "../../../Configuration/definitions";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -162,8 +163,9 @@ const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], 
 
     const parsedOptions: ParsedOption[] = [];
     for (const actionRow of msg.components) {
+        if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
         const selectMenu = actionRow.components[0];
-        if (selectMenu.type !== ComponentType.SelectMenu) return;
+        if (selectMenu.type !== ComponentType.StringSelect) return;
 
         for (const option of selectMenu.options) {
             const emoji = option.emoji as GuildEmoji;

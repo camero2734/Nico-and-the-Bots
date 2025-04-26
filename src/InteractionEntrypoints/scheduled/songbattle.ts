@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageEditOptions, ThreadAutoArchiveDuration, italic, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -225,6 +225,8 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
 
     // Disable the buttons
     const actionRow = previousMessage.components[0].toJSON();
+    if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
+
     actionRow.components.forEach(c => c.disabled = true);
 
     await previousMessage.edit({ embeds: [embed], components: [actionRow], files: [...previousMessage.attachments.values()] });

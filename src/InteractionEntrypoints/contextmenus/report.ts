@@ -91,11 +91,12 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
         if (!staffMsg) throw new Error("The message disappeared"); // TODO: Delete from DB?
 
         const actionRow = staffMsg.components[0];
+        if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
+
         const btn = actionRow.components.find((c) => c.customId?.startsWith(NULL_CUSTOM_ID_PREFIX));
         if (btn?.type !== ComponentType.Button) throw new Error("The button disappeared");
 
-        // @ts-ignore
-        btn.label = NUM_PEOPLE_TEXT(priorReports.length + 1);
+        (btn as any).label = NUM_PEOPLE_TEXT(priorReports.length + 1);
 
         const embed = new EmbedBuilder()
             .setDescription("A new report was added for this message")

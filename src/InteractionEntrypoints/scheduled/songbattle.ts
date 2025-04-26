@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, TextDisplayBuilder, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, ThreadAutoArchiveDuration, roleMention } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -8,7 +8,7 @@ import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, PREFIX, Result, SongContender, albums, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { Album, PREFIX, Result, SongContender, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -381,10 +381,9 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
                     },
                     {
                         type: ComponentType.Button,
-                        style: ButtonStyle.Secondary,
-                        label: "What is this?",
-                        custom_id: genInfoButtonId({}),
-                        emoji: { id: "1365428431122071583" },
+                        style: ButtonStyle.Link,
+                        label: "Info / Rules",
+                        url: "https://discord.com/channels/269657133673349120/1211412086442426429/1363596621241253888",
                         disabled: hasWinner
                     }
                 ]
@@ -446,20 +445,6 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
     } else {
         await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
     }
-});
-
-const genInfoButtonId = entrypoint.addInteractionListener("songBattleInfo", [], async (ctx) => {
-    if (!ctx.isButton()) return;
-
-    const songList = albums.map(a => a.songs.map(s => `${s.name} - ${a.name}`)).flat().join("\n");
-    await ctx.reply({
-        flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
-        components: [
-            new TextDisplayBuilder({
-                content: `**Song Battle Info**\n\nThe song battle is a game where you can vote for your favorite song! The winner will be determined by the number of votes each song receives. The song with the most votes will move on to the next round.\n\n**Current Songs:**\n${songList}`,
-            })
-        ]
-    });
 });
 
 export default entrypoint;

@@ -1,9 +1,9 @@
 import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  roleMention
+    ActionRowBuilder,
+    ApplicationCommandOptionType,
+    ButtonBuilder,
+    ButtonStyle,
+    roleMention
 } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -11,10 +11,10 @@ import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import {
-  cron,
-  songBattleCron,
-  updateCurrentSongBattleMessage,
-  updatePreviousSongBattleMessage
+    cron,
+    songBattleCron,
+    updateCurrentSongBattleMessage,
+    updatePreviousSongBattleMessage
 } from "../../scheduled/songbattle";
 
 const command = new SlashCommand({

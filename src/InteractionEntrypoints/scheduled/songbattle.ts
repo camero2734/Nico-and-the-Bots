@@ -8,7 +8,7 @@ import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, PREFIX, Result, SongContender, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import { Album, PREFIX, Result, SongContender, albums, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -377,7 +377,7 @@ async function createMessageComponents(details: SongBattleDetails): Promise<Mess
                         type: ComponentType.Button,
                         style: ButtonStyle.Secondary,
                         label: "What is this?",
-                        custom_id: "battle_info",
+                        custom_id: genInfoButtonId({}),
                         emoji: { id: "1365428431122071583" },
                         disabled: hasWinner
                     }
@@ -444,7 +444,7 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
         container.spliceComponents(footerIdx, 1, new TextDisplayBuilder({
             content: `-# ${embedFooter(totalVotes + 40)}`,
             id: 8004
-        }));
+        }).toJSON());
 
         await ctx.message.edit({ components: [container] });
         // await updateCurrentSongBattleMessage();
@@ -455,6 +455,20 @@ const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["poll
     } else {
         await ctx.editReply({ content: `You voted for ${song.name} on the album ${album.name}` });
     }
+});
+
+const genInfoButtonId = entrypoint.addInteractionListener("songBattleInfo", [], async (ctx) => {
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral | MessageFlags.IsComponentsV2 });
+    if (!ctx.isButton()) return;
+
+    const songList = albums.map(a => a.songs.map(s => `${s.name} - ${a.name}`)).flat().join("\n");
+    await ctx.editReply({
+        components: [
+            new TextDisplayBuilder({
+                content: `**Song Battle Info**\n\nThe song battle is a game where you can vote for your favorite song! The winner will be determined by the number of votes each song receives. The song with the most votes will move on to the next round.\n\n**Current Songs:**\n${songList}`,
+            })
+        ]
+    });
 });
 
 export default entrypoint;

@@ -12,7 +12,7 @@
     "prepare": "husky install",
     "prisma:update": "prisma migrate dev",
     "postinstall": "patch-package",
-    "docker:dev": "docker-compose up --force-recreate --build --remove-orphans -d",
+    "docker:dev": "docker compose up --force-recreate --remove-orphans",
     "docker:dev:db": "UPDATE_DB=1 yarn docker:dev",
     "docker:build": "docker-compose build",
     "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",

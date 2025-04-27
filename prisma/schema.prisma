@@ -137,6 +137,8 @@ model Vote {
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
+  createdAt DateTime @default(now())
+
   @@unique([pollId, userId])
 }
 

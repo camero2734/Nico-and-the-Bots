@@ -16,7 +16,11 @@ command.setHandler(async (ctx) => {
         throw new CommandError("This command can only be used in a thread");
     }
 
-    const msg = await thread.fetchStarterMessage();
+    const msg = await thread.messages.fetch({
+        limit: 1,
+        after: thread.id,
+        cache: false
+    }).then((messages) => messages.first()).catch(() => null);
 
     if (!msg) {
         throw new CommandError("Failed to fetch the thread's starter message");

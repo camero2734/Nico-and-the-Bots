@@ -450,9 +450,9 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     const files = [];
     if (chartBuffer && hasWinner) {
         files.push(new AttachmentBuilder(chartBuffer, { name: "chart.png" }));
-        container.addSeparatorComponents(
-            { type: ComponentType.Separator, divider: true, spacing: 1 },
-        );
+        // container.addSeparatorComponents(
+        //     { type: ComponentType.Separator, divider: true, spacing: 1 },
+        // );
         container.addMediaGalleryComponents(
             {
                 type: ComponentType.MediaGallery,

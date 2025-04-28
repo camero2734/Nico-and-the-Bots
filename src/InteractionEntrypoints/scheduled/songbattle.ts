@@ -1,5 +1,14 @@
 import { Cron } from "croner";
-import { ButtonStyle, ComponentType, ContainerBuilder, MessageEditOptions, MessageFlags, ThreadAutoArchiveDuration, roleMention } from "discord.js";
+import {
+    AttachmentBuilder,
+    ButtonStyle,
+    ComponentType,
+    ContainerBuilder,
+    MessageEditOptions,
+    MessageFlags,
+    ThreadAutoArchiveDuration,
+    roleMention
+} from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -8,7 +17,19 @@ import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { Album, PREFIX, Result, SongContender, calculateHistory, determineNextMatchup, determineResult, embedFooter, fromSongId, toSongId } from "./songbattle.consts";
+import {
+    Album,
+    PREFIX,
+    Result,
+    SongContender,
+    calculateHistory,
+    createResultsChart,
+    determineNextMatchup,
+    determineResult,
+    embedFooter,
+    fromSongId,
+    toSongId
+} from "./songbattle.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -28,10 +49,10 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
     // Get the latest poll
     const poll = await prisma.poll.findMany({
         where: {
-            name: { startsWith: PREFIX },
+            name: { startsWith: PREFIX }
         },
         orderBy: { id: "desc" },
-        take: 3,
+        take: 3
     });
 
     if (!poll) return;
@@ -66,7 +87,18 @@ export async function songBattleCron() {
 
     // Determine the next matchup
     const history = await calculateHistory();
-    const { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber, totalMatches } = determineNextMatchup(history);
+    const {
+        song1,
+        song2,
+        song1Wins,
+        song2Wins,
+        song1Losses,
+        song2Losses,
+        album1,
+        album2,
+        nextBattleNumber,
+        totalMatches
+    } = determineNextMatchup(history);
 
     // Update the previous battle's message
     await updatePreviousSongBattleMessage();
@@ -78,9 +110,7 @@ export async function songBattleCron() {
     const mention = roleMention(roles.songBattles);
     await channel.send({
         flags: MessageFlags.IsComponentsV2,
-        components: [
-            { type: ComponentType.TextDisplay, content: mention },
-        ],
+        components: [{ type: ComponentType.TextDisplay, content: mention }],
         allowedMentions: { roles: [roles.songBattles] }
     });
 
@@ -88,7 +118,10 @@ export async function songBattleCron() {
     const m = await channel.send({
         flags: MessageFlags.IsComponentsV2,
         components: [
-            { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: "Receiving new song battle..." }] },
+            {
+                type: ComponentType.Container,
+                components: [{ type: ComponentType.TextDisplay, content: "Receiving new song battle..." }]
+            }
         ]
     });
 
@@ -97,7 +130,7 @@ export async function songBattleCron() {
     const poll = await prisma.poll.create({
         data: {
             name: pollName,
-            options: [toSongId(song1, album1), toSongId(song2, album2), m.id],
+            options: [toSongId(song1, album1), toSongId(song2, album2), m.id]
         }
     });
 
@@ -111,14 +144,14 @@ export async function songBattleCron() {
             album: album1,
             nextBattleNumber,
             wins: song1Wins,
-            losses: song1Losses,
+            losses: song1Losses
         },
         song2: {
             song: song2,
             album: album2,
             nextBattleNumber,
             wins: song2Wins,
-            losses: song2Losses,
+            losses: song2Losses
         }
     });
 
@@ -131,7 +164,12 @@ export async function songBattleCron() {
         autoArchiveDuration: ThreadAutoArchiveDuration.OneDay
     });
 
-    await thread.send(`**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(endsAt, "relative")}`);
+    await thread.send(
+        `**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(
+            endsAt,
+            "relative"
+        )}`
+    );
 }
 
 export async function updatePreviousSongBattleMessage(skip = 0) {
@@ -141,7 +179,7 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
     // Update the previous battle's message
     const previousPoll = await prisma.poll.findFirst({
         where: {
-            name: { startsWith: PREFIX },
+            name: { startsWith: PREFIX }
         },
         orderBy: { id: "desc" },
         include: { votes: true },
@@ -176,6 +214,8 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
     const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
     const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
 
+    const chartBuffer = await createResultsChart(previousPoll.id);
+
     const msgOptions = createMessageComponents({
         pollId: previousPoll.id,
         nextBattleNumber,
@@ -197,7 +237,8 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
         },
         totalVotes,
         winnerIdx,
-        voteCounts: previousPoll.votes.map(v => v.choices[0])
+        voteCounts: previousPoll.votes.map((v) => v.choices[0]),
+        chartBuffer
     });
 
     await previousMessage.edit(msgOptions);
@@ -207,10 +248,10 @@ export async function updateCurrentSongBattleMessage() {
     // Get the latest poll
     const poll = await prisma.poll.findFirst({
         where: {
-            name: { startsWith: PREFIX },
+            name: { startsWith: PREFIX }
         },
         orderBy: { id: "desc" },
-        include: { votes: true },
+        include: { votes: true }
     });
 
     if (!poll) return false;
@@ -228,8 +269,6 @@ export async function updateCurrentSongBattleMessage() {
 
     const song1 = fromSongId(poll.options[0]);
     const song2 = fromSongId(poll.options[1]);
-
-
 
     const song1Hist = histories.get(poll.options[0]);
     const song2Hist = histories.get(poll.options[1]);
@@ -263,7 +302,7 @@ export async function updateCurrentSongBattleMessage() {
             wins: song2Wins - 1,
             losses: song2Losses - 1
         },
-        totalVotes,
+        totalVotes
     });
 
     await msg.edit(msgOptions);
@@ -280,6 +319,7 @@ interface SongBattleDetails {
     totalVotes?: number;
     winnerIdx?: number | false;
     voteCounts?: number[];
+    chartBuffer?: Buffer;
 }
 
 interface SongBattleContender {
@@ -291,7 +331,18 @@ interface SongBattleContender {
 }
 
 function createMessageComponents(details: SongBattleDetails): MessageEditOptions {
-    const { pollId, nextBattleNumber, totalMatches, song1, song2, totalVotes, winnerIdx, voteCounts, startsAt } = details;
+    const {
+        pollId,
+        nextBattleNumber,
+        totalMatches,
+        song1,
+        song2,
+        totalVotes,
+        winnerIdx,
+        voteCounts,
+        startsAt,
+        chartBuffer
+    } = details;
 
     const wins1 = song1.wins > 0 ? ` | 🏅x${song1.wins}` : "";
     const wins2 = song2.wins > 0 ? ` | 🏅x${song2.wins}` : "";
@@ -304,8 +355,8 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     const winnerPrefix1 = hasWinner && winnerIdx === 0 ? "🏆 " : "";
     const winnerPrefix2 = hasWinner && winnerIdx === 1 ? "🏆 " : "";
 
-    const song1Votes = hasWinner ? voteCounts.filter(v => v === 0).length : 0;
-    const song2Votes = hasWinner ? voteCounts.filter(v => v === 1).length : 0;
+    const song1Votes = hasWinner ? voteCounts.filter((v) => v === 0).length : 0;
+    const song2Votes = hasWinner ? voteCounts.filter((v) => v === 1).length : 0;
 
     const voteCounts1 = hasWinner ? `\n*${song1Votes} vote${F.plural(song1Votes)}*` : "";
     const voteCounts2 = hasWinner ? `\n*${song2Votes} vote${F.plural(song2Votes)}*` : "";
@@ -388,11 +439,34 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
                     }
                 ]
             },
-            { type: ComponentType.TextDisplay, content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(startsAt) || new Date())}`, id: 8004 },
+            {
+                type: ComponentType.TextDisplay,
+                content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(startsAt) || new Date())}`,
+                id: 8004
+            },
         ]
     });
 
-    return { components: [container] };
+    const files = [];
+    if (chartBuffer && hasWinner) {
+        files.push(new AttachmentBuilder(chartBuffer, { name: "chart.png" }));
+        container.addSeparatorComponents(
+            { type: ComponentType.Separator, divider: true, spacing: 1 },
+        );
+        container.addMediaGalleryComponents(
+            {
+                type: ComponentType.MediaGallery,
+                items: [
+                    {
+                        media: { url: "attachment://chart.png" },
+                        description: `Vote distribution over time for ${song1.song.name} vs ${song2.song.name}`
+                    }
+                ]
+            }
+        )
+    }
+
+    return { components: [container], files };
 }
 
 const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["pollId", "songId"], async (ctx, args) => {

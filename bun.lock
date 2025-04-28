@@ -13,6 +13,7 @@
         "bigint-conversion": "^2.4.3",
         "bullmq": "1.68.4",
         "chalk": "^4.1.1",
+        "chart.js": "^4.4.9",
         "consola": "^2.15.3",
         "countries-list": "^3.1.0",
         "croner": "^8.0.1",
@@ -236,6 +237,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.17", "", { "dependencies": { "@jridgewell/resolve-uri": "3.1.0", "@jridgewell/sourcemap-codec": "1.4.14" } }, "sha512-MCNzAp77qzKca9+W/+I0+sEpaUnZoeasnghNeVc41VZCEKaCH73Vq3BZZ/SzWIgrqE4H4ceI+p+b6C0mHf9T4g=="],
 
     "@juanelas/base64": ["@juanelas/base64@1.1.5", "", {}, "sha512-mjAF27LzwfYobdwqnxZgeucbKT5wRRNvILg3h5OvCWK+3F7mw/A1tnjHnNiTYtLmTvT/bM1jA5AX7eQawDGs1w=="],
+
+    "@kurkle/color": ["@kurkle/color@0.3.4", "", {}, "sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w=="],
 
     "@metascraper/helpers": ["@metascraper/helpers@5.44.0", "", { "dependencies": { "audio-extensions": "0.0.0", "chrono-node": "~2.7.5", "condense-whitespace": "~2.0.0", "data-uri-utils": "~1.0.7", "entities": "~4.5.0", "file-extension": "~4.0.5", "has-values": "~2.0.1", "image-extensions": "~1.1.0", "is-relative-url": "~3.0.0", "is-uri": "~1.2.6", "iso-639-3": "~2.2.0", "isostring": "0.0.1", "jsdom": "~24.0.0", "lodash": "~4.17.21", "memoize-one": "~6.0.0", "microsoft-capitalize": "~1.0.5", "mime": "~3.0.0", "normalize-url": "~6.1.0", "re2": "~1.20.9", "smartquotes": "~2.3.2", "tldts": "~6.1.10", "url-regex-safe": "~4.0.0", "video-extensions": "~1.2.0" } }, "sha512-wQUzk6pHNpQo/QSeBE233dOP0mUKjvL1Yx0F0ZeSP5viwVWJg+bxtfzagrgIQsstdpPDNFKJ8pPyiFt2mN/8OQ=="],
 
@@ -586,6 +589,8 @@
     "chainsaw": ["chainsaw@0.0.9", "", { "dependencies": { "traverse": ">=0.3.0 <0.4" } }, "sha512-nG8PYH+/4xB+8zkV4G844EtfvZ5tTiLFoX3dZ4nhF4t3OCKIb9UvaFyNmeZO2zOSmRWzBoTD+napN6hiL+EgcA=="],
 
     "chalk": ["chalk@4.1.2", "", { "dependencies": { "ansi-styles": "^4.1.0", "supports-color": "^7.1.0" } }, "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA=="],
+
+    "chart.js": ["chart.js@4.4.9", "", { "dependencies": { "@kurkle/color": "^0.3.0" } }, "sha512-EyZ9wWKgpAU0fLJ43YAEIF8sr5F2W3LqbS40ZJyHIner2lY14ufqv2VMp69MAiZ2rpwxEUxEhIH/0U3xyRynxg=="],
 
     "cheerio": ["cheerio@1.0.0-rc.12", "", { "dependencies": { "cheerio-select": "^2.1.0", "dom-serializer": "^2.0.0", "domhandler": "^5.0.3", "domutils": "^3.0.1", "htmlparser2": "^8.0.1", "parse5": "^7.0.0", "parse5-htmlparser2-tree-adapter": "^7.0.0" } }, "sha512-VqR8m68vM46BNnuZ5NtnGBKIE/DfN0cRIzg9n40EIq9NOv90ayxLBXA8fXC5gquFRGJSTRqBq25Jt2ECLR431Q=="],
 

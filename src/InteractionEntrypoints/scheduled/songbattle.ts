@@ -30,6 +30,7 @@ import {
     fromSongId,
     toSongId
 } from "./songbattle.consts";
+import { addHours } from "date-fns";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -441,7 +442,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
             },
             {
                 type: ComponentType.TextDisplay,
-                content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(startsAt) || new Date())}`,
+                content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(addHours(startsAt, 1)) || new Date())}`,
                 id: 8004
             },
         ]
@@ -450,9 +451,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     const files = [];
     if (chartBuffer && hasWinner) {
         files.push(new AttachmentBuilder(chartBuffer, { name: "chart.png" }));
-        // container.addSeparatorComponents(
-        //     { type: ComponentType.Separator, divider: true, spacing: 1 },
-        // );
+
         container.addMediaGalleryComponents(
             {
                 type: ComponentType.MediaGallery,

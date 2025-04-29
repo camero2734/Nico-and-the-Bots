@@ -5,7 +5,7 @@
   "main": "app.ts",
   "scripts": {
     "dev": "nodemon",
-    "dev:debug": "set DEBUG=consola && yarn dev",
+    "dev:debug": "set DEBUG=consola && bun dev",
     "start": "bun run app.ts",
     "update": "npm-check -u",
     "deploy": "fish ./deploy.fish",
@@ -13,7 +13,6 @@
     "prisma:update": "prisma migrate dev",
     "postinstall": "patch-package",
     "docker:dev": "docker compose up --force-recreate --remove-orphans",
-    "docker:dev:db": "UPDATE_DB=1 yarn docker:dev",
     "docker:build": "docker-compose build",
     "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",
     "tasks:fetch-db": "ts-node tasks/fetch-db.ts"
@@ -30,6 +29,7 @@
     "bigint-conversion": "^2.4.3",
     "bullmq": "1.68.4",
     "chalk": "^4.1.1",
+    "chart.js": "^4.4.9",
     "consola": "^2.15.3",
     "countries-list": "^3.1.0",
     "croner": "^8.0.1",

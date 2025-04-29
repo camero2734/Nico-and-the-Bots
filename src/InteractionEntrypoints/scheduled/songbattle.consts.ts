@@ -1,11 +1,25 @@
+import { Canvas } from "@napi-rs/canvas";
+import { Poll, Vote } from "@prisma/client";
+import { CategoryScale, Chart, Legend, LinearScale, LineController, LineElement, PointElement } from "chart.js";
+import { setHours, startOfDay } from "date-fns";
 import { ButtonStyle, ColorResolvable } from "discord.js";
 import { emojiIDs } from "../../Configuration/config";
-import F from "../../Helpers/funcs";
 import { CommandError } from "../../Configuration/definitions";
+import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
-import { Poll, Vote } from "@prisma/client";
 
 export const NUMBER_OF_ELIMINATIONS = 1;
+
+Chart.defaults.font.family = 'Futura';
+
+Chart.register([
+    CategoryScale,
+    LineController,
+    LineElement,
+    LinearScale,
+    PointElement,
+    Legend
+]);
 
 export enum AlbumName {
     SelfTitled = "Twenty One Pilots",
@@ -405,4 +419,120 @@ export function determineNextMatchup(history: Awaited<ReturnType<typeof calculat
     const song2Losses = song2Hist ? song2Hist.eliminations : 0;
 
     return { song1, song2, song1Wins, song2Wins, song1Losses, song2Losses, album1, album2, nextBattleNumber: previousBattlesRaw.length + 1, result, totalMatches };
+}
+
+const MINUTES_PER_BUCKET = 5;
+const bucketsPerHour = 60 / MINUTES_PER_BUCKET;
+const totalBuckets = 24 * bucketsPerHour;
+export async function createResultsChart(pollId: number) {
+    const poll = await prisma.poll.findFirst({
+        where: {
+            id: pollId,
+        },
+        include: {
+            votes: {
+                orderBy: { createdAt: 'asc' }
+            }
+        }
+    });
+
+    if (!poll) {
+        throw new Error('Poll not found');
+    }
+
+    const firstVote = poll.votes[0].createdAt;
+    const chartStart = setHours(startOfDay(firstVote), 15);
+
+    const labels: string[] = [];
+    const voteCounts0: number[] = [];
+    const voteCounts1: number[] = [];
+    for (let i = 0; i < totalBuckets; i++) {
+        const hour = (i / bucketsPerHour).toFixed(1);
+        labels.push(hour);
+        voteCounts0.push(0);
+        voteCounts1.push(0);
+      }
+      
+      for (const vote of poll.votes) {
+        const voteTime = vote.createdAt;
+        const diffMinutes = (voteTime.getTime() - chartStart.getTime()) / (1000 * 60);
+        const bucketIndex = Math.floor(diffMinutes / MINUTES_PER_BUCKET);
+        
+        if (bucketIndex >= 0 && bucketIndex < totalBuckets) {
+          if (vote.choices[0] === 0) {
+            voteCounts0[bucketIndex]++;
+          } else if (vote.choices[0] === 1) {
+            voteCounts1[bucketIndex]++;
+          }
+        }
+      }
+
+    // Optionally, make the Y axis cumulative for each choice
+    let cumulative0 = 0;
+    let cumulative1 = 0;
+    const cumulativeCounts0 = voteCounts0.map(count => cumulative0 += count);
+    const cumulativeCounts1 = voteCounts1.map(count => cumulative1 += count);
+
+    const song1 = fromSongId(poll.options[0]);
+    const song2 = fromSongId(poll.options[1]);
+
+    const song1Wins = cumulative0 > cumulative1;
+
+    const canvas = new Canvas(1000, 500);
+    const chart = new Chart(canvas as any,
+    {
+        type: 'line',
+        data: {
+        labels,
+        datasets: [
+            {
+                label: `${song1.song.name} (${song1.album.name})`,
+                data: cumulativeCounts0,
+                borderColor: song1Wins ? '#df2a2a' : '#eaeaea',
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0,
+            },
+            {
+                label: `${song2.song.name} (${song2.album.name})`,
+                data: cumulativeCounts1,
+                borderColor: song1Wins ? '#eaeaea' : '#df2a2a',
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0,
+            }
+        ]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Hours Elapsed',
+                    },
+                    ticks: {
+                        // Display fewer ticks for readability when many data points
+                        callback: function(_, index) {
+                            // Only show whole hour labels
+                            const hourValue = parseFloat(labels[index]);
+                            return Number.isInteger(hourValue) ? hourValue.toString() : '';
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 25
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '# of Votes'
+                    },
+                    beginAtZero: true
+                }
+            },
+        }
+    });
+
+    const buffer = canvas.toBuffer('image/png');
+    chart.destroy();
+    return buffer;
 }

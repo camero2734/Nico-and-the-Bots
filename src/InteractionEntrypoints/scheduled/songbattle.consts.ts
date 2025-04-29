@@ -496,7 +496,7 @@ export async function createResultsChart(pollId: number) {
             {
                 label: `${song2.song.name} (${song2.album.name})`,
                 data: cumulativeCounts1,
-                borderColor: song1Wins ? '#eaeaea' : '#2adf2a',
+                borderColor: song1Wins ? '#eaeaea' : '#df2a2a',
                 fill: false,
                 tension: 0.1,
                 pointRadius: 0,

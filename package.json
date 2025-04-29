@@ -58,7 +58,7 @@
     "nanoid": "3.3.8",
     "normalize-url": "^4.5.0",
     "ordinal": "^1.0.3",
-    "parse-duration": "^1.1.0",
+    "parse-duration": "^2.1.4",
     "patch-package": "^6.4.7",
     "prisma": "5.9.1",
     "radix-64": "^1.0.4",

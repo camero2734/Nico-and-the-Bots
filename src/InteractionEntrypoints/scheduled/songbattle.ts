@@ -28,6 +28,7 @@ import {
     determineResult,
     embedFooter,
     fromSongId,
+    getTotalMatches,
     toSongId
 } from "./songbattle.consts";
 import { addHours } from "date-fns";
@@ -209,7 +210,7 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
 
     const nextBattleNumber = previousBattlesRaw.length;
 
-    const { totalMatches } = determineNextMatchup(history);
+    const totalMatches = getTotalMatches(history);
 
     const result = determineResult(previousPoll);
     const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
@@ -266,7 +267,7 @@ export async function updateCurrentSongBattleMessage() {
     const history = await calculateHistory();
     const { histories, previousBattlesRaw } = history;
 
-    const { totalMatches } = determineNextMatchup(history);
+    const totalMatches = getTotalMatches(history);
 
     const song1 = fromSongId(poll.options[0]);
     const song2 = fromSongId(poll.options[1]);

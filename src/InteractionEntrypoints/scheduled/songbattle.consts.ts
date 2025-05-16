@@ -383,6 +383,13 @@ export function findFirstUnmatchedSongs(sorted: [string, SongBattleHistory][], p
     throw new Error("All songs have been matched up");
 }
 
+// The total number of matches that will be played
+// For NUMBER_OF_ELIMINATIONS > 1, this is a lower bound.
+export function getTotalMatches(history: Awaited<ReturnType<typeof calculateHistory>>) {
+    const { histories, numTies, fewestEliminations } = history;
+    return NUMBER_OF_ELIMINATIONS * (histories.size - 1) + numTies + fewestEliminations;
+}
+
 export function determineNextMatchup(history: Awaited<ReturnType<typeof calculateHistory>>): {
     song1: SongContender;
     song2: SongContender;
@@ -397,16 +404,13 @@ export function determineNextMatchup(history: Awaited<ReturnType<typeof calculat
     totalMatches: number;
 
 } {
-    const { sorted, histories, numTies, previousBattlesRaw, result, fewestEliminations } = history;
+    const { sorted, histories, previousBattlesRaw, result } = history;
+    const totalMatches = getTotalMatches(history);
 
     const { song1Id, song2Id } = findFirstUnmatchedSongs(sorted, previousBattlesRaw);
 
     const { song: song1, album: album1 } = fromSongId(song1Id);
     const { song: song2, album: album2 } = fromSongId(song2Id);
-
-    // The total number of matches that will be played
-    // For NUMBER_OF_ELIMINATIONS > 1, this is a lower bound.
-    const totalMatches = NUMBER_OF_ELIMINATIONS * (histories.size - 1) + numTies + fewestEliminations;
 
     // The number of times the songs have gone before
     const song1Hist = histories.get(song1Id);

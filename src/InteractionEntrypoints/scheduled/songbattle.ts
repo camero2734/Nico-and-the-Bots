@@ -215,6 +215,8 @@ export async function updatePreviousSongBattleMessage(skip = 0) {
     const winnerIdx = result !== Result.Tie && (result === Result.Song1 ? 0 : 1);
     const totalVotes = await prisma.vote.count({ where: { pollId: previousPoll.id } });
 
+    console.log({ totalVotes });
+
     const chartBuffer = await createResultsChart(previousPoll.id);
 
     const msgOptions = createMessageComponents({

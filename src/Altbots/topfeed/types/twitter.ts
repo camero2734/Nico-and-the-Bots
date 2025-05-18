@@ -1,5 +1,5 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
-import { TweetApiUtilsData, TwitterOpenApi, TwitterOpenApiClient } from "twitter-openapi-typescript";
+import { TweetApiUtilsData, TwitterApiUtilsResponse, TwitterOpenApi, TwitterOpenApiClient } from "twitter-openapi-typescript";
 import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";
 
@@ -13,17 +13,24 @@ type TweetType = {
     tweetText: string;
 };
 
+type RateLimit = {
+    limit: number;
+    remaining: number;
+    reset: number;
+}
+
 const twitter = new TwitterOpenApi();
 export class TwitterWatcher extends Watcher<TweetType> {
     type = "Twitter" as const;
     userid: string;
     #twitterClient: TwitterOpenApiClient;
+    #rateLimit: RateLimit = { limit: 1, remaining: 1, reset: 0 };
     async fetchRecentItems(): Promise<Checked<TweetType>[]> {
         const client = await this.fetchTwitterClient();
         if (!this.userid) await this.fetchUserID();
 
         // Tweets, retweets
-        const response = await client.getTweetApi().getUserTweets({ userId: this.userid, count: 5 });
+        const response = await this.withRateLimit(() => client.getTweetApi().getUserTweets({ userId: this.userid, count: 5 }));
         const tweets = response.data.data;
 
         const promises = tweets.map((tweet) => {
@@ -67,9 +74,6 @@ export class TwitterWatcher extends Watcher<TweetType> {
         })
 
         const checkedTweets = await Promise.all(promises);
-
-        // Likes
-        // TODO:
 
         return checkedTweets.filter(t => t) as Checked<TweetType>[];
     }
@@ -139,7 +143,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
     }
 
     async fetchUserID(): Promise<void> {
-        const res = await this.#twitterClient.getUserApi().getUserByScreenName({ screenName: this.handle });
+        const res = await this.withRateLimit(() => this.#twitterClient.getUserApi().getUserByScreenName({ screenName: this.handle }));
         if (!res.data.user) throw new Error("User not found or API unavailable");
 
         this.userid = res.data.user?.restId;
@@ -152,6 +156,27 @@ export class TwitterWatcher extends Watcher<TweetType> {
             auth_token: secrets.apis.twitter.auth_token
         });
         return this.#twitterClient;
+    }
+
+    async withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(f: () => Promise<T>): Promise<T> {
+        console.log(`Rate limit: ${this.#rateLimit.remaining}/${this.#rateLimit.limit}/${this.#rateLimit.reset}`);
+        if (this.#rateLimit.remaining <= 1) {
+            const waitTime = this.#rateLimit.reset - Math.floor(Date.now() / 1000);
+            if (waitTime > 0) {
+                console.log(`Rate limit reached. Waiting for ${waitTime} seconds...`);
+                await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
+            }
+        }
+
+
+        const response = await f();
+
+        this.#rateLimit = {
+            limit: response.header.rateLimitLimit,
+            remaining: response.header.rateLimitRemaining,
+            reset: response.header.rateLimitReset
+        };
+        return response;
     }
 }
 /**

@@ -160,15 +160,14 @@ export class TwitterWatcher extends Watcher<TweetType> {
 
     async withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(f: () => Promise<T>): Promise<T> {
         console.log(`Rate limit: ${this.#rateLimit.remaining}/${this.#rateLimit.limit}/${this.#rateLimit.reset}`);
-        if (this.#rateLimit.reset !== undefined && this.#rateLimit.remaining <= 5) {
-            const waitTime = this.#rateLimit.reset - Math.floor(Date.now() / 1000);
 
-            if (waitTime > 0) {
+        const waitTime = this.#rateLimit.reset !== undefined ? this.#rateLimit.reset - Math.floor(Date.now() / 1000) : undefined;
+        if (this.#rateLimit.reset !== undefined && this.#rateLimit.remaining <= 5) {
+            if (waitTime && waitTime > 0) {
                 console.log(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
                 throw new Error("Rate limit reached. Aborting...");
             }
         }
-
 
         const response = await f();
 
@@ -177,6 +176,12 @@ export class TwitterWatcher extends Watcher<TweetType> {
             remaining: response.header.rateLimitRemaining,
             reset: response.header.rateLimitReset
         };
+
+        if (waitTime && waitTime < 0) {
+            const newRequestsPerSecond = this.#rateLimit.reset ? Math.floor(this.#rateLimit.remaining / (this.#rateLimit.reset - Math.floor(Date.now() / 1000))) : -1;
+            console.log("Rate limit reset. New requests per second: ", newRequestsPerSecond);
+        }
+
         return response;
     }
 }

@@ -162,9 +162,13 @@ export class TwitterWatcher extends Watcher<TweetType> {
         console.log(`Rate limit: ${this.#rateLimit.remaining}/${this.#rateLimit.limit}/${this.#rateLimit.reset}`);
         if (this.#rateLimit.remaining <= 1) {
             const waitTime = this.#rateLimit.reset - Math.floor(Date.now() / 1000);
-            if (waitTime > 0) {
+            // If the wait time is small, we can wait
+            if (waitTime > 0 && waitTime <= 60) {
                 console.log(`Rate limit reached. Waiting for ${waitTime} seconds...`);
                 await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
+            } else if (waitTime > 0) {
+                console.log(`Rate limit reached. Would wait for ${waitTime} seconds. Aborting...`);
+                throw new Error("Rate limit reached. Aborting...");
             }
         }
 

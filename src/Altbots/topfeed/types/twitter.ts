@@ -43,6 +43,8 @@ export class TwitterWatcher extends Watcher<TweetType> {
         }
         this.#count = 0;
 
+        console.log(`Fetching tweets for ${this.handle} (${this.userid})`);
+
         // Tweets, retweets
         const response = await this.withRateLimit(() => client.getTweetApi().getUserTweets({ userId: this.userid, count: 5 }));
         const tweets = response.data.data;

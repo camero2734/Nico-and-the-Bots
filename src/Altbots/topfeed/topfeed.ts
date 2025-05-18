@@ -1,11 +1,9 @@
-import consola from "consola";
 import { minutesToMilliseconds } from "date-fns";
 import { Client, EmbedBuilder, Guild, TextChannel } from "discord.js";
 import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
 import { Watcher } from "./types/base";
-// import { InstaWatcher, setupInstagram } from "./types/instagram";
 import { TwitterWatcher } from "./types/twitter";
 import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
@@ -46,11 +44,6 @@ class TopfeedBot {
                 this.guild = guild;
 
                 await this.#createWatchers();
-
-                // Setup Instagram
-                // Instagram doesn't run in dev since logging in so often gets the account flagged
-                // if (onHeroku) await setupInstagram();
-
                 resolve();
             });
         });
@@ -63,16 +56,7 @@ class TopfeedBot {
             new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML"]),
             new SiteWatcher("http://dmaorg.info/found/103_37/clancy.html", "DMAORG 103.37 Page", ["HTML"]),
             new SiteWatcher("http://dmaorg.info/found/103_37/Violation_Code_DMA-8325.mp4", "DMAORG Violation MP4", ["HEADERS"]),
-            // new SiteWatcher("https://21p.lili.network/c5ede9f92bcf8167e2475eda399ea2c815caade9", "Live Site", ["HTML", "LAST_MODIFIED"])
-            //     .setDisplayedURL("https://live.twentyonepilots.com"),
-            // new SiteWatcher("https://twentyonepilots.com", "Band Homepage", ["VISUAL"], channelIDs.topfeed.band)
         ];
-
-        // this.instagrams = [
-        //     new InstaWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
-        //     new InstaWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh),
-        //     new InstaWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler)
-        // ];
 
         this.twitters = [
             new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
@@ -95,16 +79,12 @@ class TopfeedBot {
         // Instagram doesn't run in dev since logging in so often gets the account flagged
         if (watchersType === "Instagram" && !onHeroku) return;
 
-        consola.info(`Checking watchers ${watchersType}`);
-
         for (const watcher of watchers) {
             if (watcher.type !== watchersType) {
                 throw new Error("checkGroup must be called with an array of the same types of watchers");
             }
 
             const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
-
-            consola.info(`  Checking ${watchersType} ${watcher.handle}`);
 
             const [_items, allMsgs] = await watcher.fetchNewItems();
             for (const post of allMsgs) {
@@ -167,9 +147,9 @@ class TopfeedBot {
     async registerChecks(): Promise<void> {
         await this.ready;
         const numMinutes: Record<JobType, number> = {
-            YOUTUBE: 5,
+            YOUTUBE: 0.5,
             // INSTAGRAM: 15,
-            TWITTER: 2,
+            TWITTER: 0.5,
             WEBSITES: 0.1
         };
 

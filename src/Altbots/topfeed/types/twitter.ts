@@ -129,8 +129,8 @@ export class TwitterWatcher extends Watcher<TweetType> {
      * Refetch the tweet with V1 since Twitter API V2 doesn't return videos :(
      * @param tweet The V2 tweet object
      */
-    getVideoInTweet(tweet: TweetApiUtilsData) {
-        const result = tweet.tweet.legacy?.extendedEntities?.media?.find((m) => m.type === "video");
+    getVideoInTweet({ tweet }: TweetApiUtilsData) {
+        const result = tweet.legacy?.extendedEntities?.media?.find((m) => m.type === "video");
         const variants = result?.videoInfo?.variants
             .filter((v) => v.bitrate)
             .sort((v1, v2) => v2.bitrate! - v1.bitrate!);

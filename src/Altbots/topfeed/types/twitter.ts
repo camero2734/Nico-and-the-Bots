@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedBuilder, Snowflake } from "discord.js";
 import { TweetApiUtilsData, TwitterApiUtilsResponse, TwitterOpenApi, TwitterOpenApiClient } from "twitter-openapi-typescript";
 import secrets from "../../../Configuration/secrets";
 import { Checked, Watcher } from "./base";
@@ -25,9 +25,23 @@ export class TwitterWatcher extends Watcher<TweetType> {
     userid: string;
     #twitterClient: TwitterOpenApiClient;
     #rateLimit: RateLimit = { limit: 1, remaining: 1, reset: undefined };
+    #frequency: number;
+    #count = 0;
+
+    constructor(handle: string, channel: Snowflake, pingedRole: Snowflake, frequency: number) {
+        super(handle, channel, pingedRole);
+        this.#frequency = frequency;
+    }
+
     async fetchRecentItems(): Promise<Checked<TweetType>[]> {
         const client = await this.fetchTwitterClient();
         if (!this.userid) await this.fetchUserID();
+
+        this.#count++;
+        if (this.#count % this.#frequency !== 0) {
+            return [];
+        }
+        this.#count = 0;
 
         // Tweets, retweets
         const response = await this.withRateLimit(() => client.getTweetApi().getUserTweets({ userId: this.userid, count: 5 }));

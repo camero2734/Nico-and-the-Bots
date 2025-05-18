@@ -16,7 +16,7 @@ type TweetType = {
 type RateLimit = {
     limit: number;
     remaining: number;
-    reset: number;
+    reset: number | undefined;
 }
 
 const twitter = new TwitterOpenApi();
@@ -24,7 +24,7 @@ export class TwitterWatcher extends Watcher<TweetType> {
     type = "Twitter" as const;
     userid: string;
     #twitterClient: TwitterOpenApiClient;
-    #rateLimit: RateLimit = { limit: 1, remaining: 1, reset: 0 };
+    #rateLimit: RateLimit = { limit: 1, remaining: 1, reset: undefined };
     async fetchRecentItems(): Promise<Checked<TweetType>[]> {
         const client = await this.fetchTwitterClient();
         if (!this.userid) await this.fetchUserID();
@@ -160,11 +160,13 @@ export class TwitterWatcher extends Watcher<TweetType> {
 
     async withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(f: () => Promise<T>): Promise<T> {
         console.log(`Rate limit: ${this.#rateLimit.remaining}/${this.#rateLimit.limit}/${this.#rateLimit.reset}`);
-        if (this.#rateLimit.remaining <= 5) {
+        if (this.#rateLimit.reset !== undefined && this.#rateLimit.remaining <= 5) {
             const waitTime = this.#rateLimit.reset - Math.floor(Date.now() / 1000);
 
-            console.log(`Rate limit reached. Would wait for ${waitTime} seconds. Aborting...`);
-            throw new Error("Rate limit reached. Aborting...");
+            if (waitTime > 0) {
+                console.log(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
+                throw new Error("Rate limit reached. Aborting...");
+            }
         }
 
 

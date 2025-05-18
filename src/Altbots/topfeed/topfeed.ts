@@ -147,9 +147,9 @@ class TopfeedBot {
     async registerChecks(): Promise<void> {
         await this.ready;
         const numMinutes: Record<JobType, number> = {
-            YOUTUBE: 0.5,
+            YOUTUBE: 2,
             // INSTAGRAM: 15,
-            TWITTER: 0.5,
+            TWITTER: 2,
             WEBSITES: 0.1
         };
 

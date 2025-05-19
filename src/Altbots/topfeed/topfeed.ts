@@ -60,8 +60,8 @@ class TopfeedBot {
 
         this.twitters = [
             new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band, 1),
-            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler, 2),
-            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh, 5),
+            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler, 4),
+            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh, 10),
             new TwitterWatcher("blurryface", channelIDs.topfeed.dmaorg, roles.topfeed.selectable.dmaorg, 1)
         ];
 
@@ -149,7 +149,7 @@ class TopfeedBot {
         const numMinutes: Record<JobType, number> = {
             YOUTUBE: 2,
             // INSTAGRAM: 15,
-            TWITTER: 2,
+            TWITTER: 1,
             WEBSITES: 0.1
         };
 

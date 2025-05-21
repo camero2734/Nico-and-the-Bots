@@ -73,6 +73,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         }) as Promise<CheckObj[WATCH_METHOD]["_data"]>[];
 
         try {
+            // eslint-disable-next-line no-var
             var response = await Promise.all(promises);
         } catch (e) {
             console.error(e);
@@ -161,8 +162,6 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
     async #checkHTML(): Promise<CheckObj["HTML"]["_data"]> {
         const subtype = <const>"HTML";
 
-        console.log(`Checking html for ${this.url}`);
-
         const res = await fetch(this.url, { tls: { rejectUnauthorized: false } });
         const html = await res.text();
         const hash = SiteWatcher.hash(html);
@@ -177,8 +176,6 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
 
     async #checkHeadHTML(): Promise<CheckObj["HEADERS"]["_data"]> {
         const subtype = <const>"HEADERS";
-
-        console.log(`Checking html for ${this.url}`);
 
         const res = await fetch(this.url, { tls: { rejectUnauthorized: false }, method: "HEAD" });
         const headers = [...(res.headers as unknown as Headers).entries()]
@@ -226,13 +223,6 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD>> extends Watcher<
         // });
         const screenshot = Buffer.from("");
         const hash = "TEMP";
-
-        const old = await this.getLatestItem(subtype);
-
-        const oldBuffer = Buffer.from(old?.data?.hash || "", "hex");
-        const newBuffer = Buffer.from(hash, "hex");
-
-        console.log(`${this.url}`, oldBuffer.byteLength, newBuffer.byteLength);
 
         // const distance = F.hammingDist(oldBuffer, newBuffer);
 

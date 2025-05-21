@@ -56,14 +56,18 @@ command.setHandler(async (ctx) => {
             select: { id: true },
             where: { currentlyInServer: true }
         })).map((u) => u.id));
-        const leftMembers = activeUsers.difference(membersInServerIds);
+        const leftMembers = Array.from(activeUsers.difference(membersInServerIds));
+        const batchSize = 10000;
 
-        console.log("Members marked active", membersInServerIds.size, membersInServerIds.entries().next().value, activeUsers.entries().next().value, activeUsers.size, leftMembers.size);
-    
-        await prisma.user.updateMany({
-            where: { id: { in: Array.from(leftMembers) } },
-            data: { currentlyInServer: false }
-        });
+        for (let i = 0; i < leftMembers.length; i += batchSize) {
+            const batch = leftMembers.slice(i, i + batchSize);
+            await prisma.user.updateMany({
+                where: { id: { in: batch } },
+                data: { currentlyInServer: false }
+            });
+        }
+
+        await ctx.editReply("Done");
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {

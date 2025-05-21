@@ -81,11 +81,16 @@ async function getAlltimeScores(
 ): Promise<{ member?: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
 
+    const start2 = Date.now();
     const paginatedUsers = await prisma.user.findMany({
         orderBy: { score: "desc" },
+        where: {
+            currentlyInServer: true,
+        },
         skip: startAt,
         take: 10
     });
+    console.log("Time taken to get paginated users: ", Date.now() - start2);
 
     return await Promise.all(
         paginatedUsers.map(async (u) => {

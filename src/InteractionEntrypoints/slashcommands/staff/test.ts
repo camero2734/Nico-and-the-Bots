@@ -1,13 +1,11 @@
 import {
-    ActionRowBuilder,
     ApplicationCommandOptionType,
-    ButtonBuilder,
-    ButtonStyle,
     roleMention
 } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import {
@@ -37,14 +35,39 @@ command.setHandler(async (ctx) => {
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter((r) => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
-        const button = new ButtonBuilder()
-            .setLabel("Test button")
-            .setStyle(ButtonStyle.Primary)
-            .setCustomId(genTestId({ num: "4" }));
+        // Update those who are in the server but are not marked as such
+        const membersInServerIds = new Set((await ctx.guild.members.fetch()).keys());
+        const inactiveUsers = new Set((await prisma.user.findMany({
+            select: { id: true },
+            where: { currentlyInServer: false }
+        })).map((u) => u.id));
 
-        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
+        const membersMarkedInactive = membersInServerIds.intersection(inactiveUsers);
 
-        await ctx.editReply({ content: "Test", components: [actionRow] });
+        console.log("Members marked inactive", membersMarkedInactive.size);
+
+        await prisma.user.updateMany({
+            where: { id: { in: Array.from(membersMarkedInactive) } },
+            data: { currentlyInServer: true }
+        });
+
+        // Update those who are not in the server but are marked as such
+        const activeUsers = new Set((await prisma.user.findMany({
+            select: { id: true },
+            where: { currentlyInServer: true }
+        })).map((u) => u.id));
+        const leftMembers = Array.from(activeUsers.difference(membersInServerIds));
+        const batchSize = 10000;
+
+        for (let i = 0; i < leftMembers.length; i += batchSize) {
+            const batch = leftMembers.slice(i, i + batchSize);
+            await prisma.user.updateMany({
+                where: { id: { in: batch } },
+                data: { currentlyInServer: false }
+            });
+        }
+
+        await ctx.editReply("Done");
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {
@@ -88,12 +111,6 @@ command.setHandler(async (ctx) => {
 
         await ctx.editReply(msg);
     }
-});
-
-const genTestId = command.addInteractionListener("testCommandBtn", ["num"], async (ctx) => {
-    await ctx.deferReply({ ephemeral: true });
-
-    throw new Error("Test error");
 });
 
 export default command;

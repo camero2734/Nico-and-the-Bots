@@ -51,9 +51,14 @@ export abstract class Watcher<T> {
     }
 
     async fetchNewItems(): Promise<[Checked<T>[], BaseMessageOptions[][]]> {
-        const fetchedItems = await this.fetchRecentItems();
-        const checkedItems = await this.#checkItems(fetchedItems);
-        return [checkedItems, await this.generateMessages(checkedItems)];
+        try {
+            const fetchedItems = await this.fetchRecentItems();
+            const checkedItems = await this.#checkItems(fetchedItems);
+            return [checkedItems, await this.generateMessages(checkedItems)];
+        } catch (e) {
+            console.error("Error in fetchNewItems", e);
+            return [[], []];
+        }
     }
 
     protected async getLatestItem<Subtype extends string>(

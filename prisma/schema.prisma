@@ -32,6 +32,8 @@ model User {
   lastMessageSent    DateTime  @default(now())
   lastCreationUpload DateTime?
 
+  currentlyInServer Boolean @default(true)
+
   // Relations
   dailyBox                   DailyBox?
   lastFM                     UserLastFM?
@@ -59,6 +61,8 @@ model User {
   badges                     Badge[]
   firebreatherApplications   FirebreatherApplication[]
   dailyDistrictBattleGuesses DistrictBattleGuess[]
+
+  @@index([currentlyInServer])
 }
 
 model Tag {

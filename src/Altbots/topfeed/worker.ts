@@ -24,13 +24,8 @@ export const queue = new Queue<any, any, JobType>(QUEUE_NAME, {
 export const worker = new Worker(
     QUEUE_NAME,
     async (job) => {
-        try {
-            const name = job.name as JobType;
-            await topfeedBot.checkGroup(name);
-        } catch (e) {
-            console.error("Error in worker", e);
-            throw e;
-        }
+        const name = job.name as JobType;
+        await topfeedBot.checkGroup(name);
     },
     redisOpts
 );

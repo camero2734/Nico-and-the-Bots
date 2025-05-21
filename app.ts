@@ -24,6 +24,8 @@ import {
     ReplyHandlers,
     SlashCommands
 } from "./src/Structures/data";
+import Cron from "croner";
+import { prisma } from "./src/Helpers/prisma-init";
 
 export const client = new Discord.Client({
     intents: [
@@ -55,22 +57,45 @@ console.log("Logging in...");
 const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
 
-// Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
-//     if (!guild) return;
+Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
+    if (!guild) return;
 
-//     const members = await guild.members.fetch();
-//     const memberIds = members.map((m) => m.id);
+    // Update those who are in the server but are not marked as such
+    const membersInServerIds = new Set((await guild.members.fetch()).keys());
+    const inactiveUsers = new Set((await prisma.user.findMany({
+        select: { id: true },
+        where: { currentlyInServer: false }
+    })).map((u) => u.id));
 
-//     await prisma.$transaction([
-//         prisma.user.updateMany({
-//             data: { currentlyInServer: false }
-//         }),
-//         prisma.user.updateMany({
-//             where: { id: { in: memberIds } },
-//             data: { currentlyInServer: true }
-//         })
-//     ]);
-// });
+    const membersMarkedInactive = membersInServerIds.intersection(inactiveUsers);
+
+    await prisma.user.updateMany({
+        where: { id: { in: Array.from(membersMarkedInactive) } },
+        data: { currentlyInServer: true }
+    });
+
+    // Update those who are not in the server but are marked as such
+    const activeUsers = new Set((await prisma.user.findMany({
+        select: { id: true },
+        where: { currentlyInServer: true }
+    })).map((u) => u.id));
+    const leftMembers = Array.from(activeUsers.difference(membersInServerIds));
+    const batchSize = 10000;
+
+    for (let i = 0; i < leftMembers.length; i += batchSize) {
+        const batch = leftMembers.slice(i, i + batchSize);
+        await prisma.user.updateMany({
+            where: { id: { in: batch } },
+            data: { currentlyInServer: false }
+        });
+    }
+
+    const chan = await guild.channels.fetch(channelIDs.bottest);
+    if (!chan?.isSendable()) return;
+    await chan.send({
+        content: `Updated ${membersMarkedInactive.size} members to currentlyInServer = true and ${leftMembers.length} members to currentlyInServer = false`
+    })
+});
 
 client.on("ready", async () => {
     console.log("===================================");

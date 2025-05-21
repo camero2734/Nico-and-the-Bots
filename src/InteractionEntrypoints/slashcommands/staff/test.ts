@@ -1,13 +1,11 @@
 import {
-    ActionRowBuilder,
     ApplicationCommandOptionType,
-    ButtonBuilder,
-    ButtonStyle,
     roleMention
 } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import {
@@ -37,14 +35,18 @@ command.setHandler(async (ctx) => {
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter((r) => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
-        const button = new ButtonBuilder()
-            .setLabel("Test button")
-            .setStyle(ButtonStyle.Primary)
-            .setCustomId(genTestId({ num: "4" }));
-
-        const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
-
-        await ctx.editReply({ content: "Test", components: [actionRow] });
+        const members = await ctx.guild.members.fetch();
+        const memberIds = members.map((m) => m.id);
+    
+        await prisma.$transaction([
+            prisma.user.updateMany({
+                data: { currentlyInServer: false }
+            }),
+            prisma.user.updateMany({
+                where: { id: { in: memberIds } },
+                data: { currentlyInServer: true }
+            })
+        ]);
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {
@@ -88,12 +90,6 @@ command.setHandler(async (ctx) => {
 
         await ctx.editReply(msg);
     }
-});
-
-const genTestId = command.addInteractionListener("testCommandBtn", ["num"], async (ctx) => {
-    await ctx.deferReply({ ephemeral: true });
-
-    throw new Error("Test error");
 });
 
 export default command;

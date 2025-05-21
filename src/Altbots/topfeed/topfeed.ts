@@ -154,14 +154,18 @@ class TopfeedBot {
     }
 
     async checkGroup(jobType: JobType): Promise<void> {
-        const methods: Record<JobType, () => void> = {
-            YOUTUBE: () => this.#checkGroup(this.youtubes),
-            // INSTAGRAM: () => this.#checkGroup(this.instagrams),
-            TWITTER: () => this.#checkGroup(this.twitters),
-            WEBSITES: () => this.#checkGroup(this.websites)
-        };
-        if (methods[jobType]) methods[jobType]();
-        else console.log(new Error(`Invalid JobType: ${jobType}`));
+        try {
+            const methods: Record<JobType, () => void> = {
+                YOUTUBE: () => this.#checkGroup(this.youtubes),
+                // INSTAGRAM: () => this.#checkGroup(this.instagrams),
+                TWITTER: () => this.#checkGroup(this.twitters),
+                WEBSITES: () => this.#checkGroup(this.websites)
+            };
+            if (methods[jobType]) methods[jobType]();
+            else console.log(new Error(`Invalid JobType: ${jobType}`));
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async registerChecks(): Promise<void> {

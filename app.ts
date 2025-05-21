@@ -55,6 +55,23 @@ console.log("Logging in...");
 const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
 
+// Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
+//     if (!guild) return;
+
+//     const members = await guild.members.fetch();
+//     const memberIds = members.map((m) => m.id);
+
+//     await prisma.$transaction([
+//         prisma.user.updateMany({
+//             data: { currentlyInServer: false }
+//         }),
+//         prisma.user.updateMany({
+//             where: { id: { in: memberIds } },
+//             data: { currentlyInServer: true }
+//         })
+//     ]);
+// });
+
 client.on("ready", async () => {
     console.log("===================================");
     console.log("||                               ||");

@@ -75,33 +75,17 @@ async function getMemberScores(
     );
 }
 
-async function getMembersThatLeft(
-    ctx: typeof command.ContextType,) {
-        const allUserIds = await prisma.user.findMany({
-            select: { id: true }
-        });
-        const allUserIdsSet = new Set(allUserIds.map((u) => u.id));
-
-        const members = await ctx.member.guild.members.fetch();
-        const memberIdsSet = new Set(members.map((m) => m.id));
-        return [...allUserIdsSet.difference(memberIdsSet)];
-    }
-
 async function getAlltimeScores(
     ctx: typeof command.ContextType,
     pageNum: number
 ): Promise<{ member?: GuildMember; score: number }[]> {
     const startAt = pageNum * 10;
 
-    const start = Date.now();
-    const excludedMembers = await getMembersThatLeft(ctx);
-    console.log("Time taken to get members that left: ", Date.now() - start);
-
     const start2 = Date.now();
     const paginatedUsers = await prisma.user.findMany({
         orderBy: { score: "desc" },
         where: {
-            id: { notIn: excludedMembers }
+            currentlyInServer: true,
         },
         skip: startAt,
         take: 10

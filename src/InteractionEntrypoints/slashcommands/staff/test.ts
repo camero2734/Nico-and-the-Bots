@@ -44,7 +44,7 @@ command.setHandler(async (ctx) => {
 
         const membersMarkedInactive = membersInServerIds.intersection(inactiveUsers);
 
-        console.log("Members marked inactive", membersMarkedInactive);
+        console.log("Members marked inactive", membersMarkedInactive.size);
 
         await prisma.user.updateMany({
             where: { id: { in: Array.from(membersMarkedInactive) } },
@@ -58,7 +58,7 @@ command.setHandler(async (ctx) => {
         })).map((u) => u.id));
         const leftMembers = activeUsers.difference(membersInServerIds);
 
-        console.log("Members marked active", leftMembers);
+        console.log("Members marked active", leftMembers.size);
     
         await prisma.user.updateMany({
             where: { id: { in: Array.from(leftMembers) } },

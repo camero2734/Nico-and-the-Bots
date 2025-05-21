@@ -35,18 +35,31 @@ command.setHandler(async (ctx) => {
     const roles = await ctx.guild.roles.fetch();
     const withColor = roles.filter((r) => r.hexColor.toLowerCase() === "#ffc6d5");
     if (ctx.opts.num === 1) {
-        const members = await ctx.guild.members.fetch();
-        const memberIds = members.map((m) => m.id);
+        // Update those who are in the server but are not marked as such
+        const membersInServerIds = new Set((await ctx.guild.members.fetch()).keys());
+        const inactiveUsers = new Set((await prisma.user.findMany({
+            select: { id: true },
+            where: { currentlyInServer: false }
+        })).map((u) => u.id));
+
+        const membersMarkedInactive = membersInServerIds.intersection(inactiveUsers);
+
+        await prisma.user.updateMany({
+            where: { id: { in: Array.from(membersMarkedInactive) } },
+            data: { currentlyInServer: true }
+        });
+
+        // Update those who are not in the server but are marked as such
+        const activeUsers = new Set((await prisma.user.findMany({
+            select: { id: true },
+            where: { currentlyInServer: true }
+        })).map((u) => u.id));
+        const leftMembers = activeUsers.difference(membersInServerIds);
     
-        await prisma.$transaction([
-            prisma.user.updateMany({
-                data: { currentlyInServer: false }
-            }),
-            prisma.user.updateMany({
-                where: { id: { in: memberIds } },
-                data: { currentlyInServer: true }
-            })
-        ]);
+        await prisma.user.updateMany({
+            where: { id: { in: Array.from(leftMembers) } },
+            data: { currentlyInServer: false }
+        });
     } else if (ctx.opts.num === 2) {
         await updateCurrentSongBattleMessage();
     } else if (ctx.opts.num === 3) {

@@ -97,6 +97,13 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
         return false;
     });
 
+    yield await createBadge("bfx.png", async () => {
+        const badge = await prisma.badge.findUnique({
+            where: { userId_type: { userId: member.id, type: "BFX" } }
+        });
+        return !!badge;
+    });
+
     yield await createBadge("ScavJumpsuit.png", async () => {
         const badge = await prisma.badge.findUnique({
             where: { userId_type: { userId: member.id, type: "ScavJumpsuit" } }

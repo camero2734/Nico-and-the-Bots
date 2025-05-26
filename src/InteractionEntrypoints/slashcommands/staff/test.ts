@@ -93,19 +93,48 @@ command.setHandler(async (ctx) => {
     } else if (ctx.opts.num === 433) {
         songBattleCron();
     } else if (ctx.opts.num === 444) {
-        await ctx.channel.send({
-            poll: {
-                question: {
-                    text: "Test poll"
-                },
-                answers: [
-                    { text: "Option 1", emoji: "👍" },
-                    { text: "Option 2", emoji: "👎" }
-                ],
-                duration: 24,
-                allowMultiselect: false
+        const bfx1 = await ctx.guild.roles.fetch("1373674037204484167");
+        const bfx2 = await ctx.guild.roles.fetch("1373724238695108761");
+
+        if (!bfx1 || !bfx2) {
+            throw new CommandError("One of the roles is not found");
+        }
+        const bfxHolders = new Set<string>();
+        for (const member of bfx1.members.values()) {
+            bfxHolders.add(member.id);
+        }
+        for (const member of bfx2.members.values()) {
+            bfxHolders.add(member.id);
+        }
+
+        const membersInDatabaseWithoutBfxBadge = await prisma.user.findMany({
+            select: { id: true },
+            where: {
+                badges: {
+                    none: {
+                        type: "BFX"
+                    }
+                }
             }
         });
+
+        const membersInDatabaseSet = new Set(membersInDatabaseWithoutBfxBadge.map((u) => u.id));
+
+        const members = Array.from(bfxHolders.intersection(membersInDatabaseSet));
+        const batchSize = 1000;
+
+        for (let i = 0; i < members.length; i += batchSize) {
+            console.log(`Processing batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(members.length / batchSize)}`);
+            const batch = members.slice(i, i + batchSize);
+            await prisma.badge.createMany({
+                data: batch.map((id) => ({
+                    userId: id,
+                    type: "BFX"
+                })),
+                skipDuplicates: true
+            })
+        }
+        await ctx.editReply("Done processing BFX members");
     } else {
         const msg = withColor.map((x) => roleMention(x.id)).join("\n");
 

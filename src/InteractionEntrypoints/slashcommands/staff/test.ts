@@ -99,14 +99,28 @@ command.setHandler(async (ctx) => {
         if (!bfx1 || !bfx2) {
             throw new CommandError("One of the roles is not found");
         }
-        const membersSet = new Set<string>();
+        const bfxHolders = new Set<string>();
         for (const member of bfx1.members.values()) {
-            membersSet.add(member.id);
+            bfxHolders.add(member.id);
         }
         for (const member of bfx2.members.values()) {
-            membersSet.add(member.id);
+            bfxHolders.add(member.id);
         }
-        const members = Array.from(membersSet);
+
+        const membersInDatabaseWithoutBfxBadge = await prisma.user.findMany({
+            select: { id: true },
+            where: {
+                badges: {
+                    none: {
+                        type: "BFX"
+                    }
+                }
+            }
+        });
+
+        const membersInDatabaseSet = new Set(membersInDatabaseWithoutBfxBadge.map((u) => u.id));
+
+        const members = Array.from(bfxHolders.intersection(membersInDatabaseSet));
         const batchSize = 1000;
 
         for (let i = 0; i < members.length; i += batchSize) {

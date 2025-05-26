@@ -57,7 +57,7 @@ export abstract class Watcher<T> {
             return [checkedItems, await this.generateMessages(checkedItems)];
         } catch (e) {
             const message = e instanceof Error ? e.message : String(e);
-            console.error("Error in fetchNewItems", message);
+            console.error(`Error in fetchNewItems for ${this.type}`, message);
             return [[], []];
         }
     }

@@ -25,6 +25,7 @@ export const worker = new Worker(
     QUEUE_NAME,
     async (job) => {
         const name = job.name as JobType;
+        console.log(`Checking group: ${name}`);
         await topfeedBot.checkGroup(name);
     },
     redisOpts

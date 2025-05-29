@@ -98,10 +98,12 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     });
 
     yield await createBadge("bfx.png", async () => {
+  const bfx1 = member.roles.cache.has("1373674037204484167");
+        const bfx2 = member.roles.cache.has("1373724238695108761");
         const badge = await prisma.badge.findUnique({
             where: { userId_type: { userId: member.id, type: "BFX" } }
         });
-        return !!badge;
+        return bfx1 || bfx2|| !!badge;
     });
 
     yield await createBadge("ScavJumpsuit.png", async () => {

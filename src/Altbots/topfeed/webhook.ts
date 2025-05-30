@@ -1,7 +1,35 @@
 import { subMinutes } from "date-fns";
 import secrets from "../../Configuration/secrets";
 
-const usernamesToWatch = ['camero_2734', 'twentyonepilots'];
+const usernamesToWatch = ['camero_2734', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
+
+type DataForUsername = {
+  roleId: typeof roles.topfeed.selectable[keyof typeof roles.topfeed.selectable];
+  channelId: typeof channelIDs.topfeed[keyof typeof channelIDs.topfeed];
+}
+
+const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
+  "camero_2734": {
+    roleId: roles.topfeed.selectable.jim,
+    channelId: channelIDs.bottest as any,
+  },
+  "blurryface": {
+    roleId: roles.topfeed.selectable.dmaorg,
+    channelId: channelIDs.topfeed.dmaorg,
+  },
+  "twentyonepilots": {
+    roleId: roles.topfeed.selectable.band,
+    channelId: channelIDs.topfeed.band,
+  },
+  "tylerrjoseph": {
+    roleId: roles.topfeed.selectable.tyler,
+    channelId: channelIDs.topfeed.tyler,
+  },
+  "joshuadun": {
+    roleId: roles.topfeed.selectable.josh,
+    channelId: channelIDs.topfeed.josh,
+  },
+}
 
 import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
 import { z } from "zod";
@@ -63,7 +91,7 @@ const responseSchema = z.object({
   tweets: z.array(tweetSchema),
 });
 
-export async function tweetToComponents(tweet: Tweet) {
+export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];
 
   const mediaItems: APIMediaGalleryItem[] = media
@@ -195,7 +223,7 @@ export async function tweetToComponents(tweet: Tweet) {
 
   const footerSection: APIComponentInContainer[] = [{
     type: ComponentType.TextDisplay,
-    content: `-# ${roleMention(roles.topfeed.selectable.band)} Posted at ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
+    content: `-# ${roleMention(roleId)} Posted at ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
   }];
 
   // Build the container
@@ -235,13 +263,20 @@ export async function handleWebhook() {
 
   console.log(parsedResult);
 
-  const channel = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
-  if (!channel || !channel.isTextBased()) {
-    throw new Error("Channel not found or is not text-based");
-  }
-
   for (const tweet of parsedResult.tweets) {
-    const components = await tweetToComponents(tweet);
+    const tweetName = tweet.author.userName as typeof usernamesToWatch[number];
+    if (!usernamesToWatch.includes(tweetName)) {
+      throw new Error(`Tweet from unknown user: ${tweetName}`);
+    }
+
+    const { roleId, channelId } = usernameData[tweetName];
+    const components = await tweetToComponents(tweet, roleId);
+
+    const channel = await topfeedBot.guild.channels.fetch(channelId);
+    if (!channel || !channel.isTextBased()) {
+      throw new Error("Channel not found or is not text-based");
+    }
+
     await channel.send({
       components: [components],
       flags: MessageFlags.IsComponentsV2,

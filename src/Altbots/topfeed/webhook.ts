@@ -225,7 +225,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
 
   const footerSection: APIComponentInContainer[] = [{
     type: ComponentType.TextDisplay,
-    content: `-# ${roleMention(roleId)} Posted ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
+    content: `-# ${roleMention(roleId)} | Posted ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
   }];
 
   // Build the container

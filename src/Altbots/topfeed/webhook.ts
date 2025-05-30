@@ -10,7 +10,7 @@ type DataForUsername = {
 
 const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
   "camero_2734": {
-    roleId: roles.topfeed.selectable.jim,
+    roleId: "572568489320120353" as any,
     channelId: channelIDs.bottest as any,
   },
   "blurryface": {

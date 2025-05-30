@@ -3,10 +3,11 @@ import secrets from "../../Configuration/secrets";
 
 const usernamesToWatch = ['camero_2734', 'twentyonepilots'];
 
-import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags } from "discord.js";
+import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
 import { z } from "zod";
-import { channelIDs } from "../../Configuration/config";
+import { channelIDs, roles } from "../../Configuration/config";
 import topfeedBot from "./topfeed";
+import F from "../../Helpers/funcs";
 
 const videoInfoSchema = z.object({
   aspect_ratio: z.tuple([z.number(), z.number()]),
@@ -48,6 +49,7 @@ const tweetSchema = z.object({
   author: userSchema,
   quoted_tweet: quotedOrRetweetedSchema.nullable(),
   retweeted_tweet: quotedOrRetweetedSchema.nullable(),
+  createdAt: z.string(),
   extendedEntities: z
     .object({
       media: z.array(mediaSchema),
@@ -191,12 +193,18 @@ export async function tweetToComponents(tweet: Tweet) {
         ]
       : [];
 
+  const footerSection: APIComponentInContainer[] = [{
+    type: ComponentType.TextDisplay,
+    content: `-# ${roleMention(roles.topfeed.selectable.band)} Posted at ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
+  }];
+
   // Build the container
   const container = new ContainerBuilder({
     components: [
       ...mainSection,
       ...mediaSection,
       ...contextSection,
+      ...footerSection,
     ],
   });
 
@@ -237,7 +245,7 @@ export async function handleWebhook() {
     await channel.send({
       components: [components],
       flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { parse: [] },
     });
   }
-
 }

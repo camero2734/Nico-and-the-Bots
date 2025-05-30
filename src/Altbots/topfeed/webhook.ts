@@ -203,7 +203,7 @@ export async function handleWebhook() {
   const query = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
 
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");
-  url.searchParams.append('query', `(${query}) since_time:${sinceTs})}`);
+  url.searchParams.append('query', `(${query}) since_time:${sinceTs}`);
   url.searchParams.append('queryType', 'Latest');
 
   console.log(`Fetching tweets with query: ${url.toString()}`);

@@ -210,11 +210,11 @@ export async function handleWebhook() {
     method: 'GET',
     headers: {'X-API-Key': secrets.twitterAlternateApiKey, 'Content-Type': 'application/json'},
   };
-  
-  console.log(url.toString());
 
   const result = await fetch(url.toString(), options).then(r => r.json());
   const parsedResult = responseSchema.parse(result);
+
+  console.log(parsedResult);
 
   const channel = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
   if (!channel || !channel.isTextBased()) {

@@ -149,7 +149,7 @@ class TopfeedBot {
         const numMinutes: Record<JobType, number> = {
             YOUTUBE: 2,
             // INSTAGRAM: 15,
-            TWITTER: 1,
+            TWITTER: 4,
             WEBSITES: 0.1
         };
 

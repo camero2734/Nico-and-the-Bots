@@ -26,6 +26,7 @@ import {
 } from "./src/Structures/data";
 import Cron from "croner";
 import { prisma } from "./src/Helpers/prisma-init";
+import { handleWebhook } from "./src/Altbots/topfeed/webhook";
 
 export const client = new Discord.Client({
     intents: [
@@ -258,6 +259,19 @@ function startPingServer() {
     const started = Date.now();
     Bun.serve({
         port: 2121,
+        routes: {
+            "/api/topfeed": {
+                POST: async (req) => {
+                    if (req.headers.get("Authorization") !== secrets.webhookSecret) {
+                        return new Response("Unauthorized", { status: 401 });
+                    }
+
+                    handleWebhook();
+
+                    return new Response("OK");
+                }
+            }
+        },
         fetch() {
             return new Response(
                 `Nico is running. Uptime: ${Math.floor((Date.now() - started) / 1000)}s`,

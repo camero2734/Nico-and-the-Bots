@@ -46,6 +46,8 @@ const secrets = {
     randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString(),
     webhookUrl: env.get("WEBHOOK_URL").required().asString(),
     commitSha: env.get("COMMIT_SHA").asString(),
+    webhookSecret: env.get("WEBHOOK_SECRET").asString(),
+    twitterAlternateApiKey: env.get("TWITTER_ALTERNATE_API_KEY").asString(),
 };
 
 export default secrets;

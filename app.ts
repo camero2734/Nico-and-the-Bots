@@ -258,6 +258,17 @@ function startPingServer() {
     const started = Date.now();
     Bun.serve({
         port: 2121,
+        routes: {
+            "/api/topfeed": {
+                POST: async (req) => {
+                    if (req.headers.get("Authorization") !== secrets.webhookSecret) {
+                        return new Response("Unauthorized", { status: 401 });
+                    }
+
+                    return new Response("OK");
+                }
+            }
+        },
         fetch() {
             return new Response(
                 `Nico is running. Uptime: ${Math.floor((Date.now() - started) / 1000)}s`,

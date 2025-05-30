@@ -299,7 +299,6 @@ export async function handleWebhook() {
     await channel.send({
       components: [components],
       flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [] },
     });
 
     await prisma.topfeedPost.create({

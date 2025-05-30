@@ -1,7 +1,7 @@
 import { subMinutes } from "date-fns";
 import secrets from "../../Configuration/secrets";
 
-const usernamesToWatch = ['camero_2734', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
+const usernamesToWatch = ['pull_the_blinds', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
 
 type DataForUsername = {
   roleId: typeof roles.topfeed.selectable[keyof typeof roles.topfeed.selectable];
@@ -9,7 +9,7 @@ type DataForUsername = {
 }
 
 const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
-  "camero_2734": {
+  "pull_the_blinds": {
     roleId: "572568489320120353" as any,
     channelId: channelIDs.bottest as any,
   },

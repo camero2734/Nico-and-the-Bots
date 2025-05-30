@@ -198,13 +198,15 @@ export async function handleWebhook() {
   if (!secrets.twitterAlternateApiKey) {
     throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
   }
-  const sinceTs = subMinutes(new Date(), 5).getTime() / 1000;
+  const sinceTs = Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
 
   const query = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
 
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");
   url.searchParams.append('query', `(${query}) since_time:${sinceTs})}`);
   url.searchParams.append('queryType', 'Latest');
+
+  console.log(`Fetching tweets with query: ${url.toString()}`);
 
   const options = {
     method: 'GET',

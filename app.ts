@@ -26,6 +26,7 @@ import {
 } from "./src/Structures/data";
 import Cron from "croner";
 import { prisma } from "./src/Helpers/prisma-init";
+import { handleWebhook } from "./src/Altbots/topfeed/webhook";
 
 export const client = new Discord.Client({
     intents: [
@@ -264,6 +265,8 @@ function startPingServer() {
                     if (req.headers.get("Authorization") !== secrets.webhookSecret) {
                         return new Response("Unauthorized", { status: 401 });
                     }
+
+                    handleWebhook();
 
                     return new Response("OK");
                 }

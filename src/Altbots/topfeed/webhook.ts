@@ -30,8 +30,8 @@ const mediaSchema = z.object({
 const userSchema = z.object({
   userName: z.string(),
   name: z.string(),
-  profilePicture: z.string().url().optional(),
-  coverPicture: z.string().url().optional(),
+  profilePicture: z.string().optional().nullable(),
+  coverPicture: z.string().optional().nullable(),
 });
 
 const quotedOrRetweetedSchema = z

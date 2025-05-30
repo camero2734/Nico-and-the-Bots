@@ -36,6 +36,7 @@ import { z } from "zod";
 import { channelIDs, roles } from "../../Configuration/config";
 import topfeedBot from "./topfeed";
 import F from "../../Helpers/funcs";
+import { prisma } from "../../Helpers/prisma-init";
 
 const videoInfoSchema = z.object({
   aspect_ratio: z.tuple([z.number(), z.number()]),
@@ -72,6 +73,7 @@ const quotedOrRetweetedSchema = z
   .partial();
 
 const tweetSchema = z.object({
+  id: z.string(),
   text: z.string(),
   url: z.string().url(),
   author: userSchema,
@@ -269,6 +271,19 @@ export async function handleWebhook() {
       throw new Error(`Tweet from unknown user: ${tweetName}`);
     }
 
+    const existing = await prisma.topfeedPost.findFirst({
+      where: {
+        type: "Twitter",
+        handle: tweetName,
+        id: tweet.id,
+      }
+    });
+
+    if (existing) {
+      console.log(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
+      continue; // Skip if tweet already exists
+    }
+
     const { roleId, channelId } = usernameData[tweetName];
     const components = await tweetToComponents(tweet, roleId);
 
@@ -281,6 +296,24 @@ export async function handleWebhook() {
       components: [components],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] },
+    });
+
+    await prisma.topfeedPost.create({
+      data: {
+        id: tweet.id,
+        type: "Twitter",
+        handle: tweetName,
+        data: {
+          userName: tweet.author.userName,
+          name: tweet.author.name,
+          profilePicture: tweet.author.profilePicture || null,
+          coverPicture: tweet.author.coverPicture || null,
+          text: tweet.text,
+          url: tweet.url,
+          createdAt: new Date(tweet.createdAt),
+          extendedEntities: tweet.extendedEntities ? tweet.extendedEntities.media : [],
+        },
+      },
     });
   }
 }

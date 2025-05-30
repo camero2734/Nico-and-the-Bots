@@ -1,7 +1,7 @@
 import { subMinutes } from "date-fns";
 import secrets from "../../Configuration/secrets";
 
-const usernamesToWatch = ['camero2734', 'twentyonepilots'];
+const usernamesToWatch = ['camero_2734', 'twentyonepilots'];
 
 import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags } from "discord.js";
 import { z } from "zod";

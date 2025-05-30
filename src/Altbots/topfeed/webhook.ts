@@ -262,10 +262,11 @@ export async function handleWebhook() {
 
   const result = await fetch(url.toString(), options).then(r => r.json());
   const parsedResult = responseSchema.parse(result);
+  
+  // Sort tweets from oldest to newest so we process them in the order they were posted
+  const sortedTweets = parsedResult.tweets.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-  console.log(parsedResult);
-
-  for (const tweet of parsedResult.tweets) {
+  for (const tweet of sortedTweets) {
     const tweetName = tweet.author.userName as typeof usernamesToWatch[number];
     if (!usernamesToWatch.includes(tweetName)) {
       throw new Error(`Tweet from unknown user: ${tweetName}`);
@@ -283,6 +284,9 @@ export async function handleWebhook() {
       console.log(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
       continue; // Skip if tweet already exists
     }
+
+    console.log(`Processing tweet ${tweet.id} from ${tweetName}`);
+    console.log(JSON.stringify(tweet, null, 2));
 
     const { roleId, channelId } = usernameData[tweetName];
     const components = await tweetToComponents(tweet, roleId);

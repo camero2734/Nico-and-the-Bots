@@ -249,6 +249,12 @@ export async function handleWebhook() {
 
   const query = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
 
+  const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
+
+  if (testChannel?.isSendable()) {
+    await testChannel.send(`Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null)
+  }
+
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");
   url.searchParams.append('query', `(${query}) since_time:${sinceTs}`);
   url.searchParams.append('queryType', 'Latest');
@@ -262,6 +268,11 @@ export async function handleWebhook() {
 
   const result = await fetch(url.toString(), options).then(r => r.json());
   const parsedResult = responseSchema.parse(result);
+
+  if (testChannel?.isSendable()) {
+    const urls = parsedResult.tweets.map(tweet => tweet.url).join('\n');
+    await testChannel.send(`Found ${parsedResult.tweets.length} tweet(s)\n${urls}`).catch(() => null);
+  }
   
   // Sort tweets from oldest to newest so we process them in the order they were posted
   const sortedTweets = parsedResult.tweets.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());

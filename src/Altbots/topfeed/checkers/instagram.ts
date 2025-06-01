@@ -165,8 +165,7 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   void channelId;
   const components = await instaPostToComponents(post, roleId);
 
-  // const channel = await topfeedBot.guild.channels.fetch(channelId);
-  const channel = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  const channel = await topfeedBot.guild.channels.fetch(channelId);
   if (!channel || !channel.isTextBased()) {
     throw new Error("Channel not found or is not text-based");
   }
@@ -183,7 +182,6 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   await channel.send({
     components: [components],
     flags: MessageFlags.IsComponentsV2,
-    allowedMentions: { parse: [] },
   });
 }
 

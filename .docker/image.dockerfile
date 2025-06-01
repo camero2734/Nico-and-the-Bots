@@ -11,7 +11,7 @@ RUN apt update -qq && apt install -qq -y curl gnupg lsb-release && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 # NPM packages
-COPY bun.lock package.json ./
+COPY bun.lock package.json patches ./
 RUN bun install --frozen-lockfile --production --no-cache && bun pm cache rm
 
 FROM build

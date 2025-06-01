@@ -7,21 +7,6 @@ import { prisma } from '../../../Helpers/prisma-init';
 import topfeedBot from '../topfeed';
 import { addDays } from 'date-fns';
 
-const ig = new IgApiClient();
-ig.state.generateDevice(secrets.apis.instagram.username);
-
-let initialized = false;
-async function initializeInstagram() {
-  if (initialized) return;
-
-  await ig.simulate.preLoginFlow().catch((error) => console.log('Pre-login flow error:', error?.message));
-  const loggedInUser = await ig.account.login(secrets.apis.instagram.username, secrets.apis.instagram.password);
-  void loggedInUser;
-
-  await ig.simulate.postLoginFlow().catch((error) => console.log('Post-login flow error:', error?.message));
-  initialized = true;
-}
-
 type InstagramMedia = { url: string; type: 'image' | 'video' };
 interface FormattedInstagramPost {
   code: string;
@@ -32,14 +17,12 @@ interface FormattedInstagramPost {
   media: InstagramMedia[];
   postedAt: Date;
 }
-
-const usernamesToWatch = ['twentyonepilots', 'tylerrjoseph', 'joshuadun'];
-
 type DataForUsername = {
   roleId: typeof roles.topfeed.selectable[keyof typeof roles.topfeed.selectable];
   channelId: typeof channelIDs.topfeed[keyof typeof channelIDs.topfeed];
 }
 
+const usernamesToWatch = ['twentyonepilots', 'tylerrjoseph', 'joshuadun'];
 const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
   "twentyonepilots": {
     roleId: roles.topfeed.selectable.band,
@@ -53,6 +36,21 @@ const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = 
     roleId: roles.topfeed.selectable.josh,
     channelId: channelIDs.topfeed.josh,
   },
+}
+
+const ig = new IgApiClient();
+ig.state.generateDevice(secrets.apis.instagram.username);
+
+let initialized = false;
+async function initializeInstagram() {
+  if (initialized) return;
+
+  await ig.simulate.preLoginFlow().catch((error) => console.log('Pre-login flow error:', error?.message));
+  const loggedInUser = await ig.account.login(secrets.apis.instagram.username, secrets.apis.instagram.password);
+  void loggedInUser;
+
+  await ig.simulate.postLoginFlow().catch((error) => console.log('Post-login flow error:', error?.message));
+  initialized = true;
 }
 
 // Extract the best media URL from a post or carousel item

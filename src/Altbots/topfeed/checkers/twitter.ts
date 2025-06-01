@@ -42,15 +42,18 @@ export async function checkTwitter() {
     auth_token: secrets.apis.twitter.auth_token
   });
 
-  const sinceTs = addMinutes(new Date(), -5).getTime() / 1000;
+  const sinceTs = addMinutes(new Date(), -60).getTime() / 1000;
 
   const fromQuery = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
   const query = `(${fromQuery}) since_time:${sinceTs}`;
 
+  console.log("Going to check Twitter with query:", query);
   const result = await withRateLimit(() => client.getTweetApi().getSearchTimeline({
     rawQuery: query,
     count: 1,
   }));
+
+  console.log(JSON.stringify(result, null, 2), /RESULT/);
 
   if (result.data.data?.[0]?.tweet) {
     console.log("There are new tweets to fetch.");

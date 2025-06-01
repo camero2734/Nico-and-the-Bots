@@ -307,11 +307,6 @@ export async function handleWebhook() {
       throw new Error("Channel not found or is not text-based");
     }
 
-    await channel.send({
-      components: [components],
-      flags: MessageFlags.IsComponentsV2,
-    });
-
     await prisma.topfeedPost.create({
       data: {
         id: tweet.id,
@@ -328,6 +323,11 @@ export async function handleWebhook() {
           extendedEntities: tweet.extendedEntities ? tweet.extendedEntities.media : [],
         },
       },
+    });
+
+    await channel.send({
+      components: [components],
+      flags: MessageFlags.IsComponentsV2,
     });
   }
 }

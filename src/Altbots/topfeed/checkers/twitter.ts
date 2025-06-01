@@ -51,14 +51,19 @@ export async function checkTwitter() {
 
   console.log("Going to check Twitter with query:", query);
   const result = await withRateLimit(async () => {
-    console.log("Before getSearchTimeline()");
-    const timeline = await client.getTweetApi().getSearchTimeline({
-      rawQuery: query,
-      count: 1,
-    });
+    try {
+      console.log("Before getSearchTimeline()");
+      const timeline = await client.getTweetApi().getSearchTimeline({
+        rawQuery: query,
+        count: 1,
+      });
 
-    console.log("After getSearchTimeline()");
-    return timeline;
+      console.log("After getSearchTimeline()");
+      return timeline;
+    } catch (error) {
+      console.error("Error fetching Twitter timeline:", error);
+      throw error;
+    }
   });
 
   console.log(JSON.stringify(result, null, 2), /RESULT/);

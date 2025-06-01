@@ -41,10 +41,6 @@ type DataForUsername = {
 }
 
 const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
-  "pootusmaximus": {
-    roleId: "572568489320120353" as any,
-    channelId: channelIDs.bottest as any,
-  },
   "twentyonepilots": {
     roleId: roles.topfeed.selectable.band,
     channelId: channelIDs.topfeed.band,

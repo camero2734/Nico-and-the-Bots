@@ -2,6 +2,7 @@ import { Queue, QueueScheduler, Worker } from "bullmq";
 import IORedis from "ioredis";
 import { checkTwitter } from "./checkers/twitter";
 import topfeedBot from "./topfeed";
+import { checkInstagram } from "./checkers/instagram";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };
@@ -10,7 +11,7 @@ export type JobType = "YOUTUBE" | "WEBSITES";
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 
-export const queue = new Queue<any, any, JobType | "TWITTER">(QUEUE_NAME, {
+export const queue = new Queue<any, any, JobType | "TWITTER" | "INSTAGRAM">(QUEUE_NAME, {
     ...redisOpts,
     defaultJobOptions: {
         removeOnComplete: true
@@ -28,6 +29,10 @@ export const worker = new Worker(
             console.log(`Checking Twitter group: ${name}`);
             await checkTwitter();
             return;
+        } else if (name === "INSTAGRAM") {
+            console.log(`Checking Instagram group: ${name}`);
+            await checkInstagram();
+            return;  
         } else {
             console.log(`Checking group: ${name}`);
             await topfeedBot.checkGroup(name);

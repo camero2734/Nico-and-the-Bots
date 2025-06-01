@@ -114,7 +114,6 @@ export async function checkInstagram() {
   let postCountChanged = false;
   for (const username of usernamesToWatch) {
     try {
-      await testChan.send(`Checking Instagram post count for ${username}`).catch(console.error);
       const postCount = await fetchOpengraphData(username);
       if (postCountMap[username] !== postCount) {
         postCountChanged = true;
@@ -135,11 +134,8 @@ export async function checkInstagram() {
 
   if (!postCountChanged && Math.random() < 0.05) {
     console.log("No post changes detected, but randomly checking Instagram anyway.");
-    await testChan.send(`No post count changes detected, skipping Instagram check.`);
-    return;
   } else if (!postCountChanged) {
     console.log("No post count changes detected, skipping Instagram check.");
-    await testChan.send(`No post count changes detected, skipping Instagram check.`);
     return;
   }
 

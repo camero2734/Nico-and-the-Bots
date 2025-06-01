@@ -3,7 +3,9 @@ import { IgApiClient, TimelineFeedResponseMedia_or_ad } from 'instagram-private-
 import { channelIDs, roles, userIDs } from '../../../Configuration/config';
 import secrets from '../../../Configuration/secrets';
 import F from '../../../Helpers/funcs';
+import { prisma } from '../../../Helpers/prisma-init';
 import topfeedBot from '../topfeed';
+import { addDays } from 'date-fns';
 
 const ig = new IgApiClient();
 ig.state.generateDevice(secrets.apis.instagram.username);
@@ -135,24 +137,24 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     return;
   }
 
-  // const existing = await prisma.topfeedPost.findFirst({
-  //   where: {
-  //     type: "Instagram",
-  //     handle: post.author,
-  //     id: post.code,
-  //   }
-  // });
+  const existing = await prisma.topfeedPost.findFirst({
+    where: {
+      type: "Instagram",
+      handle: post.author,
+      id: post.code,
+    }
+  });
 
-  // if (existing) {
-  //   console.log(`IG post ${post.code} from ${post.author} already exists in the database.`);
-  //   return; // Skip if post already exists
-  // }
+  if (existing) {
+    console.log(`IG post ${post.code} from ${post.author} already exists in the database.`);
+    return; // Skip if post already exists
+  }
 
-  // if (addDays(new Date(post.postedAt), 1) < new Date()) {
-  //   console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
-  //   await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
-  //   return;
-  // }
+  if (addDays(new Date(post.postedAt), 1) < new Date()) {
+    console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+    await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
+    return;
+  }
 
   console.log(`Processing IG post ${post.code} from ${post.author}`);
   console.log(JSON.stringify(post, null, 2));
@@ -169,14 +171,14 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     throw new Error("Channel not found or is not text-based");
   }
 
-  // await prisma.topfeedPost.create({
-  //   data: {
-  //     id: post.code,
-  //     type: "Instagram",
-  //     handle: post.author,
-  //     data: { ...post },
-  //   },
-  // });
+  await prisma.topfeedPost.create({
+    data: {
+      id: post.code,
+      type: "Instagram",
+      handle: post.author,
+      data: { ...post },
+    },
+  });
 
   await channel.send({
     components: [components],

@@ -65,6 +65,10 @@ async function fetchOpengraphData(user: string) {
     throw new Error(`Failed to fetch Instagram page for ${user}`);
   }
   const text = await response.text();
+
+  console.log("Opengraph data for", user);
+  console.log(text);
+
   const descriptionMatch = text.match(/<meta property="og:description" content="([^"]+)"/);
   if (!descriptionMatch) {
     throw new Error(`No OpenGraph description found for ${user}`);
@@ -118,7 +122,7 @@ export async function checkInstagram() {
       if (postCountMap[username] !== postCount) {
         postCountChanged = true;
         if (postCountMap[username] !== 0) {
-          console.log(`Post count for ${username} changed to ${postCount}`);
+          console.log(`Post count for ${username} changed from ${postCountMap[username]} to ${postCount}`);
           testChan.send(`${userMention(userIDs.me)} Post count for ${username} changed to ${postCount}`).catch(console.error);
         }
       } else {

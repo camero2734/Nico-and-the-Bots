@@ -22,7 +22,9 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
     }
   }
 
+  console.log("Before f()");
   const response = await f();
+  console.log("After f()");
 
   rateLimit.remaining = response.header.rateLimitRemaining;
   rateLimit.limit = response.header.rateLimitLimit;
@@ -48,10 +50,16 @@ export async function checkTwitter() {
   const query = `(${fromQuery}) since_time:${sinceTs}`;
 
   console.log("Going to check Twitter with query:", query);
-  const result = await withRateLimit(() => client.getTweetApi().getSearchTimeline({
-    rawQuery: query,
-    count: 1,
-  }));
+  const result = await withRateLimit(async () => {
+    console.log("Before getSearchTimeline()");
+    const timeline = await client.getTweetApi().getSearchTimeline({
+      rawQuery: query,
+      count: 1,
+    });
+
+    console.log("After getSearchTimeline()");
+    return timeline;
+  });
 
   console.log(JSON.stringify(result, null, 2), /RESULT/);
 

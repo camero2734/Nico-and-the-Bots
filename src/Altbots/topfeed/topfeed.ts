@@ -144,6 +144,9 @@ class TopfeedBot {
 
         console.log(await queue.getDelayedCount());
 
+        // Remove all existing jobs bullmq
+        await queue.obliterate({ force: true });
+
         for (const [jobType, mins] of F.entries(numMinutes)) {
             await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins) } });
         }

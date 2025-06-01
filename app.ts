@@ -1,6 +1,8 @@
 import { GlobalFonts } from "@napi-rs/canvas";
+import Cron from "croner";
 import * as Discord from "discord.js";
 import { KeonsBot } from "./src/Altbots/shop";
+import { fetchTwitter } from "./src/Altbots/topfeed/fetchers/twitter";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
@@ -11,6 +13,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
+import { prisma } from "./src/Helpers/prisma-init";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
@@ -24,9 +27,6 @@ import {
     ReplyHandlers,
     SlashCommands
 } from "./src/Structures/data";
-import Cron from "croner";
-import { prisma } from "./src/Helpers/prisma-init";
-import { handleWebhook } from "./src/Altbots/topfeed/webhook";
 
 export const client = new Discord.Client({
     intents: [
@@ -266,7 +266,7 @@ function startPingServer() {
                         return new Response("Unauthorized", { status: 401 });
                     }
 
-                    handleWebhook();
+                    fetchTwitter("webhook");
 
                     return new Response("OK");
                 }

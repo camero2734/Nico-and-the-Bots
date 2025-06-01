@@ -1,7 +1,13 @@
 import { subMinutes } from "date-fns";
-import secrets from "../../Configuration/secrets";
+import secrets from "../../../Configuration/secrets";
+import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
+import { z } from "zod";
+import { channelIDs, roles } from "../../../Configuration/config";
+import topfeedBot from "../topfeed";
+import { prisma } from "../../../Helpers/prisma-init";
+import F from "../../../Helpers/funcs";
 
-const usernamesToWatch = ['pootusmaximus', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
+export const usernamesToWatch = ['pootusmaximus', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
 
 type DataForUsername = {
   roleId: typeof roles.topfeed.selectable[keyof typeof roles.topfeed.selectable];
@@ -31,12 +37,7 @@ const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = 
   },
 }
 
-import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
-import { z } from "zod";
-import { channelIDs, roles } from "../../Configuration/config";
-import topfeedBot from "./topfeed";
-import F from "../../Helpers/funcs";
-import { prisma } from "../../Helpers/prisma-init";
+
 
 const videoInfoSchema = z.object({
   aspect_ratio: z.tuple([z.number(), z.number()]),
@@ -241,18 +242,18 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
   return container;
 }
 
-export async function handleWebhook() {
+export async function fetchTwitter(source: "webhook" | "scheduled", sinceTs?: number) {
   if (!secrets.twitterAlternateApiKey) {
     throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
   }
-  const sinceTs = Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
+  sinceTs ||= Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
 
   const query = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
 
   const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
 
   if (testChannel?.isSendable()) {
-    await testChannel.send(`Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null)
+    await testChannel.send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null)
   }
 
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");
@@ -307,11 +308,6 @@ export async function handleWebhook() {
       throw new Error("Channel not found or is not text-based");
     }
 
-    await channel.send({
-      components: [components],
-      flags: MessageFlags.IsComponentsV2,
-    });
-
     await prisma.topfeedPost.create({
       data: {
         id: tweet.id,
@@ -328,6 +324,11 @@ export async function handleWebhook() {
           extendedEntities: tweet.extendedEntities ? tweet.extendedEntities.media : [],
         },
       },
+    });
+
+    await channel.send({
+      components: [components],
+      flags: MessageFlags.IsComponentsV2,
     });
   }
 }

@@ -311,6 +311,8 @@ model TopfeedPost {
   data Json
 
   createdAt DateTime @default(now())
+
+  @@unique([id, type, subtype, handle])
 }
 
 model ChannelPermissionsBackup {

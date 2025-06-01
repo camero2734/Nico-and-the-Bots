@@ -135,7 +135,7 @@ export async function checkInstagram() {
 
   if (!postCountChanged) {
     console.log("No post count changes detected, skipping Instagram check.");
-    await testChan.send(`${userMention(userIDs.me)} No post count changes detected, skipping Instagram check.`);
+    await testChan.send(`No post count changes detected, skipping Instagram check.`);
     return;
   }
 

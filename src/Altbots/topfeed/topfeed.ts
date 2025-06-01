@@ -150,7 +150,7 @@ class TopfeedBot {
         }
 
         await queue.add("TWITTER", "", { repeat: { every: secondsToMilliseconds(19) } });
-        await queue.add("INSTAGRAM", "", { repeat: { every: secondsToMilliseconds(130) } });
+        await queue.add("INSTAGRAM", "", { repeat: { every: secondsToMilliseconds(30) } });
     }
 }
 

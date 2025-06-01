@@ -4,7 +4,7 @@ import { addMinutes } from "date-fns";
 import { fetchTwitter, usernamesToWatch } from "../fetchers/twitter";
 
 const twitter = new TwitterOpenApi();
-const twitterClient: TwitterOpenApiClient | null = null;
+let twitterClient: TwitterOpenApiClient | null = null;
 
 const rateLimit = {
   remaining: 0,
@@ -22,9 +22,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
     }
   }
 
-  console.log("Before f()");
   const response = await f();
-  console.log("After f()");
 
   rateLimit.remaining = response.header.rateLimitRemaining;
   rateLimit.limit = response.header.rateLimitLimit;
@@ -43,30 +41,25 @@ export async function checkTwitter() {
     ct0: secrets.apis.twitter.ct0,
     auth_token: secrets.apis.twitter.auth_token
   });
+  twitterClient = client;
 
   const sinceTs = Math.floor(addMinutes(new Date(), -60).getTime() / 1000);
 
   const fromQuery = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
   const query = `(${fromQuery}) since_time:${sinceTs}`;
 
-  console.log("Going to check Twitter with query:", query);
   const result = await withRateLimit(async () => {
     try {
-      console.log("Before getSearchTimeline()");
-      const timeline = await client.getTweetApi().getSearchTimeline({
+      return await client.getTweetApi().getSearchTimeline({
         rawQuery: query,
         count: 1,
+        product: "Latest",
       });
-
-      console.log("After getSearchTimeline()");
-      return timeline;
     } catch (error) {
       console.error("Error fetching Twitter timeline:", error);
       throw error;
     }
   });
-
-  console.log(JSON.stringify(result, null, 2), /RESULT/);
 
   if (result.data.data?.[0]?.tweet) {
     console.log("There are new tweets to fetch.");

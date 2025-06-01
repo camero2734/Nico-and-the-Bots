@@ -52,7 +52,7 @@
         "spotify-web-api-node": "^5.0.2",
         "string-progressbar": "^1.0.4",
         "twitter-api-v2": "1.10.0",
-        "twitter-openapi-typescript": "^0.0.27",
+        "twitter-openapi-typescript": "^0.0.55",
         "video-url-link": "^0.1.5",
         "wikijs": "6.3.3",
         "ws": "^8.5.0",
@@ -1184,6 +1184,8 @@
 
     "node-gyp-build-optional-packages": ["node-gyp-build-optional-packages@5.0.7", "", { "bin": { "node-gyp-build-optional-packages": "bin.js", "node-gyp-build-optional-packages-optional": "optional.js", "node-gyp-build-optional-packages-test": "build-test.js" } }, "sha512-YlCCc6Wffkx0kHkmam79GKvDQ6x+QZkMjFGrIMxgFNILFvGSbCp2fCBC55pGTT9gVaz8Na5CLmxt/urtzRv36w=="],
 
+    "node-html-parser": ["node-html-parser@7.0.1", "", { "dependencies": { "css-select": "^5.1.0", "he": "1.2.0" } }, "sha512-KGtmPY2kS0thCWGK0VuPyOS+pBKhhe8gXztzA2ilAOhbUbxa9homF1bOyKvhGzMLXUoRds9IOmr/v5lr/lqNmA=="],
+
     "node-sass-tilde-importer": ["node-sass-tilde-importer@1.0.2", "", { "dependencies": { "find-parent-dir": "^0.3.0" } }, "sha512-Swcmr38Y7uB78itQeBm3mThjxBy9/Ah/ykPIaURY/L6Nec9AyRoL/jJ7ECfMR+oZeCTVQNxVMu/aHU+TLRVbdg=="],
 
     "nodemon": ["nodemon@2.0.22", "", { "dependencies": { "chokidar": "^3.5.2", "debug": "^3.2.7", "ignore-by-default": "^1.0.1", "minimatch": "^3.1.2", "pstree.remy": "^1.1.8", "semver": "^5.7.1", "simple-update-notifier": "^1.0.7", "supports-color": "^5.5.0", "touch": "^3.1.0", "undefsafe": "^2.0.5" }, "bin": "bin/nodemon.js" }, "sha512-B8YqaKMmyuCO7BowF1Z1/mkPqLk6cs/l63Ojtd6otKjMx47Dq1utxfRxcavH1I7VSaL8n5BUaoutadnsX3AAVQ=="],
@@ -1530,9 +1532,9 @@
 
     "twitter-api-v2": ["twitter-api-v2@1.10.0", "", {}, "sha512-T/0D5XZdSCaNwx1eQJv2CB2GZa198mdinLJws80is/BRwRYWwXJfKMrFmwJmQwob69/myYVqylFfLYp3rYViyg=="],
 
-    "twitter-openapi-typescript": ["twitter-openapi-typescript@0.0.27", "https://registry.yarnpkg.com/twitter-openapi-typescript/-/twitter-openapi-typescript-0.0.27.tgz", { "dependencies": { "twitter-openapi-typescript-generated": "^0.0.16" } }, ""],
+    "twitter-openapi-typescript": ["twitter-openapi-typescript@0.0.55", "", { "dependencies": { "twitter-openapi-typescript-generated": "^0.0.38", "x-client-transaction-id-generater": "^0.0.7" } }, "sha512-VuvrUMHtMOWumTRxRxtr+MmTHExvtycKoR3cL9sY8L0ZQ5LhqlZVWnUyHW3hCwaSlfeiqQJPA8rWnW3GDUZHgg=="],
 
-    "twitter-openapi-typescript-generated": ["twitter-openapi-typescript-generated@0.0.16", "https://registry.yarnpkg.com/twitter-openapi-typescript-generated/-/twitter-openapi-typescript-generated-0.0.16.tgz", {}, ""],
+    "twitter-openapi-typescript-generated": ["twitter-openapi-typescript-generated@0.0.38", "", {}, "sha512-7BvPYNeq7W1eAk6H1ZcQLZ8oyA9ma2OGT279+8BbeuNqFpITMK/odqhJbBsQ7dG/dgCcCTkRv49gShtUHCSxng=="],
 
     "type-check": ["type-check@0.4.0", "", { "dependencies": { "prelude-ls": "^1.2.1" } }, "sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew=="],
 
@@ -1613,6 +1615,8 @@
     "write-file-atomic": ["write-file-atomic@2.4.3", "", { "dependencies": { "graceful-fs": "^4.1.11", "imurmurhash": "^0.1.4", "signal-exit": "^3.0.2" } }, "sha512-GaETH5wwsX+GcnzhPgKcKjJ6M2Cq3/iZp1WyY/X1CSqrW+jVNM9Y7D8EC2sM4ZG/V8wZlSniJnCKWPmBYAucRQ=="],
 
     "ws": ["ws@8.13.0", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA=="],
+
+    "x-client-transaction-id-generater": ["x-client-transaction-id-generater@0.0.7", "", { "dependencies": { "node-html-parser": "^7.0.1" } }, "sha512-lLIozd8PLITaCwVGvlaOcCczkI/Q/C2zeu69DrBUpIj9rI/Gb0nsxk+f9jS0sexo3frsouxc0JeEw9Bv3C9lxw=="],
 
     "xdg-basedir": ["xdg-basedir@3.0.0", "", {}, "sha512-1Dly4xqlulvPD3fZUQJLY+FUIeqN3N2MM3uqe4rCJftAvOjFa3jFGfctOgluGx4ahPbUCsZkmJILiP0Vi4T6lQ=="],
 

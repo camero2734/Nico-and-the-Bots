@@ -18,7 +18,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   console.log(`Rate limit: ${rateLimit.remaining}/${rateLimit.limit}/${rateLimit.reset} (in ${differenceInSeconds(rateLimit.reset ? new Date(rateLimit.reset * 1000) : new Date(), new Date())} seconds)`);
 
   const waitTime = rateLimit.reset !== undefined ? rateLimit.reset - Math.floor(Date.now() / 1000) : undefined;
-  if (rateLimit.reset !== undefined && rateLimit.remaining <= 5) {
+  if (rateLimit.reset !== undefined && rateLimit.remaining <= 0) {
     if (waitTime && waitTime > 0) {
       console.log(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
       topfeedBot.guild.channels.fetch(channelIDs.bottest).then((channel) => {

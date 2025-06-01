@@ -113,6 +113,7 @@ export async function checkInstagram() {
   let postCountChanged = false;
   for (const username of usernamesToWatch) {
     try {
+      await testChan.send(`Checking Instagram post count for ${username}`).catch(console.error);
       const postCount = await fetchOpengraphData(username);
       if (postCountMap[username] !== postCount) {
         postCountChanged = true;

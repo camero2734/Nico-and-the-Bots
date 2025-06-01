@@ -36,6 +36,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   return response;
 }
 
+let lastCheckTime: number = Math.floor(addMinutes(new Date(), -5).getTime() / 1000);
 export async function checkTwitter() {
   const client = twitterClient || await twitter.getClientFromCookies({
     ct0: secrets.apis.twitter.ct0,
@@ -43,10 +44,8 @@ export async function checkTwitter() {
   });
   twitterClient = client;
 
-  const sinceTs = Math.floor(addMinutes(new Date(), -60).getTime() / 1000);
-
   const fromQuery = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
-  const query = `(${fromQuery}) since_time:${sinceTs}`;
+  const query = `(${fromQuery}) since_time:${lastCheckTime}`;
 
   const result = await withRateLimit(async () => {
     try {
@@ -60,6 +59,8 @@ export async function checkTwitter() {
       throw error;
     }
   });
+
+  lastCheckTime = Math.floor(addMinutes(new Date(), -1).getTime() / 1000);
 
   if (result.data.data?.[0]?.tweet) {
     console.log("There are new tweets to fetch.");

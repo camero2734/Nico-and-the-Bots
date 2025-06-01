@@ -1,4 +1,4 @@
-import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns";
+import { secondsToMilliseconds } from "date-fns";
 import { Client, EmbedBuilder, Guild, TextChannel } from "discord.js";
 import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
@@ -136,17 +136,17 @@ class TopfeedBot {
 
     async registerChecks(): Promise<void> {
         await this.ready;
-        const numMinutes: Record<JobType, number> = {
-            YOUTUBE: 2,
+        const numSeconds: Record<JobType, number> = {
+            YOUTUBE: 120,
             // INSTAGRAM: 15,
-            WEBSITES: 0.1
+            WEBSITES: 6
         };
 
         // Remove all existing jobs bullmq
         await queue.obliterate({ force: true });
 
-        for (const [jobType, mins] of F.entries(numMinutes)) {
-            await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins) } });
+        for (const [jobType, seconds] of F.entries(numSeconds)) {
+            await queue.add(jobType, "", { repeat: { every: secondsToMilliseconds(seconds) } });
         }
 
         await queue.add("TWITTER", "", { repeat: { every: secondsToMilliseconds(18) } });

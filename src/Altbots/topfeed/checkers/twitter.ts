@@ -2,6 +2,9 @@ import { TwitterApiUtilsResponse, TwitterOpenApi, TwitterOpenApiClient } from "t
 import secrets from "../../../Configuration/secrets";
 import { addMinutes } from "date-fns";
 import { fetchTwitter, usernamesToWatch } from "../fetchers/twitter";
+import topfeedBot from "../topfeed";
+import { channelIDs, userIDs } from "../../../Configuration/config";
+import { userMention } from "discord.js";
 
 const twitter = new TwitterOpenApi();
 let twitterClient: TwitterOpenApiClient | null = null;
@@ -18,6 +21,11 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   if (rateLimit.reset !== undefined && rateLimit.remaining <= 5) {
     if (waitTime && waitTime > 0) {
       console.log(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
+      topfeedBot.guild.channels.fetch(channelIDs.bottest).then((channel) => {
+        if (channel && channel.isTextBased()) {
+          channel.send(`${userMention(userIDs.me)} Twitter check rate limit reached. Must wait for ${waitTime} seconds.`);
+        }
+      });
       throw new Error("Rate limit reached. Aborting...");
     }
   }

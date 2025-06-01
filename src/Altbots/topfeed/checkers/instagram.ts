@@ -53,27 +53,24 @@ async function initializeInstagram() {
   initialized = true;
 }
 
-/**
- * Instagram provides this in the opengraph data:
- *     <meta property="og:description"
- *       content="0 Followers, 0 Following, 1 Posts - See Instagram photos and videos from USER" />
- * We use this to pull the number of posts.
- */
 async function fetchOpengraphData(user: string) {
-  const response = await fetch(`https://www.instagram.com/${user}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Instagram page for ${user}`);
-  }
-  const text = await response.text();
+  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  if (!testChan || !testChan.isSendable()) throw new Error("Test channel not found or is not text-based");
 
-  console.log("Opengraph data for", user);
-  console.log(text);
+  const m = await testChan.send(`https://www.instagram.com/${user}?t=${Date.now()}`);
 
-  const descriptionMatch = text.match(/<meta property="og:description" content="([^"]+)"/);
-  if (!descriptionMatch) {
-    throw new Error(`No OpenGraph description found for ${user}`);
+  await new Promise(resolve => setTimeout(resolve, 2_000));
+
+  const fetchedMessage = await m.fetch(true);
+  m.delete();
+
+  if (fetchedMessage.embeds.length === 0) {
+    throw new Error(`No OpenGraph data found for ${user}`);
   }
-  const description = descriptionMatch[1];
+  const description = fetchedMessage.embeds[0].description;
+  if (!description) {
+    throw new Error(`No description found in OpenGraph data for ${user}`);
+  }
   const postCountMatch = description.match(/(\d+) Posts/);
   if (!postCountMatch) {
     throw new Error(`No post count found in OpenGraph description for ${user}`);

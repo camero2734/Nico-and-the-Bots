@@ -137,12 +137,6 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     return;
   }
 
-  if (addDays(new Date(post.postedAt), 1) < new Date()) {
-    console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
-    await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
-    return;
-  }
-
   const existing = await prisma.topfeedPost.findFirst({
     where: {
       type: "Instagram",
@@ -154,6 +148,12 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   if (existing) {
     console.log(`IG post ${post.code} from ${post.author} already exists in the database.`);
     return; // Skip if post already exists
+  }
+
+  if (addDays(new Date(post.postedAt), 1) < new Date()) {
+    console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+    await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
+    return;
   }
 
   console.log(`Processing IG post ${post.code} from ${post.author}`);

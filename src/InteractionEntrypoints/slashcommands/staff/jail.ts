@@ -179,7 +179,7 @@ const intArgs = <const>["actionType", "base64idarray"];
 const genActionId = command.addInteractionListener("jailunmuteall", intArgs, async (ctx, args) => {
     const base64idarray = args.base64idarray;
 
-    await ctx.deferReply({ ephemeral: true });
+    await ctx.deferReply();
 
     // Staff only
     const staffMember = await ctx.guild.members.fetch(ctx.user.id);

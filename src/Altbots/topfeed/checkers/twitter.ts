@@ -1,6 +1,6 @@
 import { TwitterApiUtilsResponse, TwitterOpenApi, TwitterOpenApiClient } from "twitter-openapi-typescript";
 import secrets from "../../../Configuration/secrets";
-import { addMinutes } from "date-fns";
+import { addMinutes, differenceInSeconds } from "date-fns";
 import { fetchTwitter, usernamesToWatch } from "../fetchers/twitter";
 import topfeedBot from "../topfeed";
 import { channelIDs, userIDs } from "../../../Configuration/config";
@@ -15,7 +15,7 @@ const rateLimit = {
   reset: undefined as number | undefined,
 }
 export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(f: () => Promise<T>): Promise<T> {
-  console.log(`Rate limit: ${rateLimit.remaining}/${rateLimit.limit}/${rateLimit.reset}`);
+  console.log(`Rate limit: ${rateLimit.remaining}/${rateLimit.limit}/${rateLimit.reset} (in ${differenceInSeconds(rateLimit.reset ? new Date(rateLimit.reset * 1000) : new Date(), new Date())} seconds)`);
 
   const waitTime = rateLimit.reset !== undefined ? rateLimit.reset - Math.floor(Date.now() / 1000) : undefined;
   if (rateLimit.reset !== undefined && rateLimit.remaining <= 5) {

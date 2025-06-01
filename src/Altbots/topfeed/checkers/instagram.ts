@@ -22,7 +22,7 @@ type DataForUsername = {
   channelId: typeof channelIDs.topfeed[keyof typeof channelIDs.topfeed];
 }
 
-const usernamesToWatch = ['twentyonepilots', 'tylerrjoseph', 'joshuadun'];
+const usernamesToWatch = ['twentyonepilots', 'tylerrjoseph', 'joshuadun'] as const;
 const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
   "twentyonepilots": {
     roleId: roles.topfeed.selectable.band,
@@ -53,6 +53,30 @@ async function initializeInstagram() {
   initialized = true;
 }
 
+/**
+ * Instagram provides this in the opengraph data:
+ *     <meta property="og:description"
+ *       content="0 Followers, 0 Following, 1 Posts - See Instagram photos and videos from USER" />
+ * We use this to pull the number of posts.
+ */
+async function fetchOpengraphData(user: string) {
+  const response = await fetch(`https://www.instagram.com/${user}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Instagram page for ${user}`);
+  }
+  const text = await response.text();
+  const descriptionMatch = text.match(/<meta property="og:description" content="([^"]+)"/);
+  if (!descriptionMatch) {
+    throw new Error(`No OpenGraph description found for ${user}`);
+  }
+  const description = descriptionMatch[1];
+  const postCountMatch = description.match(/(\d+) Posts/);
+  if (!postCountMatch) {
+    throw new Error(`No post count found in OpenGraph description for ${user}`);
+  }
+  return Number.parseInt(postCountMatch[1], 10);
+}
+
 // Extract the best media URL from a post or carousel item
 function extractMedia(item: TimelineFeedResponseMedia_or_ad): InstagramMedia[] {
   const media: InstagramMedia[] = [];
@@ -75,9 +99,43 @@ function extractMedia(item: TimelineFeedResponseMedia_or_ad): InstagramMedia[] {
   return media;
 }
 
+const postCountMap: Record<typeof usernamesToWatch[number], number> = {
+  "twentyonepilots": 0,
+  "tylerrjoseph": 0,
+  "joshuadun": 0,
+};
+
 export async function checkInstagram() {
   const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
+
+  // First, check if the opengraph data shows that the number of posts has changed
+  let postCountChanged = false;
+  for (const username of usernamesToWatch) {
+    try {
+      const postCount = await fetchOpengraphData(username);
+      if (postCountMap[username] !== postCount) {
+        postCountChanged = true;
+        if (postCountMap[username] !== 0) {
+          console.log(`Post count for ${username} changed to ${postCount}`);
+          testChan.send(`${userMention(userIDs.me)} Post count for ${username} changed to ${postCount}`).catch(console.error);
+        }
+      } else {
+        console.log(`Post count for ${username} has not changed (${postCount})`);
+      }
+      postCountMap[username] = postCount;
+    } catch (error) {
+      console.error(`Error fetching opengraph data for ${username}:`, error);
+      postCountChanged = true; // Assume it's changed if we can't fetch the data
+      await testChan.send(`${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${username}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  if (!postCountChanged) {
+    console.log("No post count changes detected, skipping Instagram check.");
+    await testChan.send(`${userMention(userIDs.me)} No post count changes detected, skipping Instagram check.`);
+    return;
+  }
 
   try {
     await initializeInstagram();
@@ -126,7 +184,7 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
-  if (!usernamesToWatch.includes(post.author)) {
+  if (!usernamesToWatch.includes(post.author as typeof usernamesToWatch[number])) {
     console.log(`Skipping post from ${post.author} as they are not in the watchlist.`);
     return;
   }
@@ -155,7 +213,7 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
 
   await testChan.send(`Processing IG post ${post.url} from ${post.author}`).catch(console.error);
 
-  const { roleId, channelId } = usernameData[post.author];
+  const { roleId, channelId } = usernameData[post.author as typeof usernamesToWatch[number]];
   void channelId;
   const components = await instaPostToComponents(post, roleId);
 

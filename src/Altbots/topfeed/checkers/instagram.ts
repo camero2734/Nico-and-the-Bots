@@ -1,11 +1,10 @@
-import { IgApiClient, TimelineFeedResponseMedia_or_ad } from 'instagram-private-api';
+import { addDays } from 'date-fns';
 import { APIComponentInContainer, ComponentType, ContainerBuilder, MessageFlags, roleMention, userMention } from 'discord.js';
-import secrets from '../../../Configuration/secrets';
+import { IgApiClient, TimelineFeedResponseMedia_or_ad } from 'instagram-private-api';
 import { channelIDs, roles, userIDs } from '../../../Configuration/config';
-import { prisma } from '../../../Helpers/prisma-init';
+import secrets from '../../../Configuration/secrets';
 import F from '../../../Helpers/funcs';
 import topfeedBot from '../topfeed';
-import { addDays } from 'date-fns';
 
 const ig = new IgApiClient();
 ig.state.generateDevice(secrets.apis.instagram.username);
@@ -137,18 +136,18 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     return;
   }
 
-  const existing = await prisma.topfeedPost.findFirst({
-    where: {
-      type: "Instagram",
-      handle: post.author,
-      id: post.code,
-    }
-  });
+  // const existing = await prisma.topfeedPost.findFirst({
+  //   where: {
+  //     type: "Instagram",
+  //     handle: post.author,
+  //     id: post.code,
+  //   }
+  // });
 
-  if (existing) {
-    console.log(`IG post ${post.code} from ${post.author} already exists in the database.`);
-    return; // Skip if post already exists
-  }
+  // if (existing) {
+  //   console.log(`IG post ${post.code} from ${post.author} already exists in the database.`);
+  //   return; // Skip if post already exists
+  // }
 
   if (addDays(new Date(post.postedAt), 1) < new Date()) {
     console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
@@ -171,14 +170,14 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     throw new Error("Channel not found or is not text-based");
   }
 
-  await prisma.topfeedPost.create({
-    data: {
-      id: post.code,
-      type: "Instagram",
-      handle: post.author,
-      data: { ...post },
-    },
-  });
+  // await prisma.topfeedPost.create({
+  //   data: {
+  //     id: post.code,
+  //     type: "Instagram",
+  //     handle: post.author,
+  //     data: { ...post },
+  //   },
+  // });
 
   await channel.send({
     components: [components],
@@ -190,6 +189,9 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
 export async function instaPostToComponents(post: FormattedInstagramPost, roleId: string) {
   // Compose author line
   const authorLine = `**[${post.author}](https://instagram.com/${post.author})**`;
+
+  const role = await topfeedBot.guild.roles.fetch(roleId);
+  if (!role) throw new Error(`Role with ID ${roleId} not found`);
 
   // Compose main post section
   const mainSection: APIComponentInContainer[] = [
@@ -246,6 +248,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
       ...mediaSection,
       ...footerSection,
     ],
+    accent_color: role.color,
   });
 
   return container;

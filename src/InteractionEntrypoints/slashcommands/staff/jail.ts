@@ -231,7 +231,6 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
             .setLabel("Remute Users");
     });
 
-
     await msg.edit({ components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)] });
 }
 

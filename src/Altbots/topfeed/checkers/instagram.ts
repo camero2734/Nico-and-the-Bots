@@ -5,6 +5,7 @@ import { channelIDs, roles, userIDs } from '../../../Configuration/config';
 import { prisma } from '../../../Helpers/prisma-init';
 import F from '../../../Helpers/funcs';
 import topfeedBot from '../topfeed';
+import { addDays } from 'date-fns';
 
 const ig = new IgApiClient();
 ig.state.generateDevice(secrets.apis.instagram.username);
@@ -128,8 +129,17 @@ export async function checkInstagram() {
 }
 
 async function sendInstagramPost(post: FormattedInstagramPost) {
+  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
+
   if (!usernamesToWatch.includes(post.author)) {
     console.log(`Skipping post from ${post.author} as they are not in the watchlist.`);
+    return;
+  }
+
+  if (addDays(new Date(post.postedAt), 1) < new Date()) {
+    console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+    await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
     return;
   }
 
@@ -148,9 +158,6 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
 
   console.log(`Processing IG post ${post.code} from ${post.author}`);
   console.log(JSON.stringify(post, null, 2));
-
-  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
-  if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   await testChan.send(`Processing IG post ${post.url} from ${post.author}`).catch(console.error);
 
@@ -222,7 +229,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
             type: ComponentType.MediaGallery,
             items: post.media.map((mediaItem) => ({
               media: { url: mediaItem.url }
-            })),
+            })).slice(0, 10), // Limit to 10 items
           },
         ]
       : [];

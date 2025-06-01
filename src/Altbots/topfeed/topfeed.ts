@@ -149,7 +149,7 @@ class TopfeedBot {
             await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins) } });
         }
 
-        await queue.add("TWITTER", "", { repeat: { every: secondsToMilliseconds(20) } });
+        await queue.add("TWITTER", "", { repeat: { every: secondsToMilliseconds(10) } });
     }
 }
 

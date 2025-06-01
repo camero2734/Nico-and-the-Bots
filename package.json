@@ -45,6 +45,7 @@
         "glob": "^8.0.1",
         "google-spreadsheet": "3.2.0",
         "husky": "^7.0.4",
+        "instagram-private-api": "^1.46.1",
         "ioredis": "4.28.5",
         "iso-3166-1-alpha-2": "^1.0.1",
         "metascraper": "^5.44.0",
@@ -104,5 +105,8 @@
     },
     "overrides": {
         "re2": "npm:@dashevo/wasm-re2"
+    },
+    "patchedDependencies": {
+        "instagram-private-api@1.46.1": "patches/instagram-private-api@1.46.1.patch"
     }
 }

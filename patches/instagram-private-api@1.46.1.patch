@@ -1,0 +1,52 @@
+diff --git a/dist/feeds/timeline.feed.d.ts b/dist/feeds/timeline.feed.d.ts
+index cd45b303ca5e830dd0f82b9e00ef71b2383bb60b..e233722fd733a524b6630ea1f5483d320d3bd58f 100644
+--- a/dist/feeds/timeline.feed.d.ts
++++ b/dist/feeds/timeline.feed.d.ts
+@@ -7,5 +7,5 @@ export declare class TimelineFeed extends Feed<TimelineFeedResponse, TimelineFee
+     reason: TimelineFeedReason;
+     set state(body: any);
+     request(options?: TimelineFeedsOptions): Promise<TimelineFeedResponse>;
+-    items(): Promise<TimelineFeedResponseMedia_or_ad[]>;
++    items(additionalParams?: Record<string, any>): Promise<TimelineFeedResponseMedia_or_ad[]>;
+ }
+diff --git a/dist/feeds/timeline.feed.js b/dist/feeds/timeline.feed.js
+index 2e2627e502d652bed7f00b43ea6cc99f268e570a..c573ed92c99adbf18940e11c7986891e5dd10ce2 100644
+--- a/dist/feeds/timeline.feed.js
++++ b/dist/feeds/timeline.feed.js
+@@ -44,6 +44,7 @@ class TimelineFeed extends feed_1.Feed {
+             recovered_from_crash: options.recoveredFromCrash,
+             push_disabled: options.pushDisabled,
+             latest_story_pk: options.latestStoryPk,
++            ...options.additionalParams,
+         };
+         if (this.nextMaxId) {
+             form = Object.assign(form, {
+@@ -57,6 +58,7 @@ class TimelineFeed extends feed_1.Feed {
+                 is_pull_to_refresh: this.reason === 'pull_to_refresh' ? '1' : '0',
+             });
+         }
++        console.log(form, /FORM/);
+         const { body } = await this.client.request.send({
+             url: `/api/v1/feed/timeline/`,
+             method: 'POST',
+@@ -71,8 +73,8 @@ class TimelineFeed extends feed_1.Feed {
+         this.state = body;
+         return body;
+     }
+-    async items() {
+-        const response = await this.request();
++    async items(additionalParams = {}) {
++        const response = await this.request({ additionalParams });
+         return response.feed_items.filter(i => i.media_or_ad).map(i => i.media_or_ad);
+     }
+ }
+diff --git a/dist/types/timeline-feed.types.d.ts b/dist/types/timeline-feed.types.d.ts
+index 81828c6b8ec167a57ae9ab2644ea2fb239d57329..f6f9c81b96edb8a395333a1cc503a6c3da4e0810 100644
+--- a/dist/types/timeline-feed.types.d.ts
++++ b/dist/types/timeline-feed.types.d.ts
+@@ -4,4 +4,5 @@ export interface TimelineFeedsOptions {
+     recoveredFromCrash?: string;
+     pushDisabled?: boolean;
+     latestStoryPk?: string | number;
++    additionalParams?: Record<string, any>;
+ }

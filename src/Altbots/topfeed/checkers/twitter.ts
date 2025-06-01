@@ -42,7 +42,7 @@ export async function checkTwitter() {
     auth_token: secrets.apis.twitter.auth_token
   });
 
-  const sinceTs = addMinutes(new Date(), -60).getTime() / 1000;
+  const sinceTs = Math.floor(addMinutes(new Date(), -60).getTime() / 1000);
 
   const fromQuery = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
   const query = `(${fromQuery}) since_time:${sinceTs}`;

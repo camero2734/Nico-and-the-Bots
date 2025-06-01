@@ -97,6 +97,9 @@ const responseSchema = z.object({
 export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];
 
+  const role = await topfeedBot.guild.roles.fetch(roleId);
+  if (!role) throw new Error(`Role with ID ${roleId} not found`);
+
   const mediaItems: APIMediaGalleryItem[] = media
     .map((item) => {
       if (item.type === "video" && item.video_info) {
@@ -237,6 +240,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
       ...contextSection,
       ...footerSection,
     ],
+    accent_color: role.color,
   });
 
   return container;

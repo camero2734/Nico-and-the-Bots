@@ -1,4 +1,3 @@
-import { addDays } from 'date-fns';
 import { APIComponentInContainer, ComponentType, ContainerBuilder, MessageFlags, roleMention, userMention } from 'discord.js';
 import { IgApiClient, TimelineFeedResponseMedia_or_ad } from 'instagram-private-api';
 import { channelIDs, roles, userIDs } from '../../../Configuration/config';
@@ -149,11 +148,11 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   //   return; // Skip if post already exists
   // }
 
-  if (addDays(new Date(post.postedAt), 1) < new Date()) {
-    console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
-    await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
-    return;
-  }
+  // if (addDays(new Date(post.postedAt), 1) < new Date()) {
+  //   console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+  //   await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
+  //   return;
+  // }
 
   console.log(`Processing IG post ${post.code} from ${post.author}`);
   console.log(JSON.stringify(post, null, 2));

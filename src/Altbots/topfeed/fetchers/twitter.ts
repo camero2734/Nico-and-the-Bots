@@ -1,7 +1,13 @@
 import { subMinutes } from "date-fns";
-import secrets from "../../Configuration/secrets";
+import secrets from "../../../Configuration/secrets";
+import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
+import { z } from "zod";
+import { channelIDs, roles } from "../../../Configuration/config";
+import topfeedBot from "../topfeed";
+import { prisma } from "../../../Helpers/prisma-init";
+import F from "../../../Helpers/funcs";
 
-const usernamesToWatch = ['pootusmaximus', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
+export const usernamesToWatch = ['pootusmaximus', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
 
 type DataForUsername = {
   roleId: typeof roles.topfeed.selectable[keyof typeof roles.topfeed.selectable];
@@ -31,12 +37,7 @@ const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = 
   },
 }
 
-import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
-import { z } from "zod";
-import { channelIDs, roles } from "../../Configuration/config";
-import topfeedBot from "./topfeed";
-import F from "../../Helpers/funcs";
-import { prisma } from "../../Helpers/prisma-init";
+
 
 const videoInfoSchema = z.object({
   aspect_ratio: z.tuple([z.number(), z.number()]),
@@ -241,7 +242,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
   return container;
 }
 
-export async function handleWebhook() {
+export async function fetchTwitter(source: "webhook" | "scheduled") {
   if (!secrets.twitterAlternateApiKey) {
     throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
   }
@@ -252,7 +253,7 @@ export async function handleWebhook() {
   const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
 
   if (testChannel?.isSendable()) {
-    await testChannel.send(`Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null)
+    await testChannel.send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null)
   }
 
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");

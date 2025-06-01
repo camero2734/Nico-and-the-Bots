@@ -4,7 +4,6 @@ import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
 import { Watcher } from "./types/base";
-import { TwitterWatcher } from "./types/twitter";
 import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
 import { JobType, queue } from "./worker";
@@ -17,7 +16,6 @@ class TopfeedBot {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     websites: SiteWatcher<any>[] = [];
     // instagrams: InstaWatcher[] = [];
-    twitters: TwitterWatcher[] = [];
     youtubes: YoutubeWatcher[] = [];
     constructor() {
         this.client = new Client({
@@ -56,13 +54,6 @@ class TopfeedBot {
             new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML"]),
             new SiteWatcher("http://dmaorg.info/found/103_37/clancy.html", "DMAORG 103.37 Page", ["HTML"]),
             new SiteWatcher("http://dmaorg.info/found/103_37/Violation_Code_DMA-8325.mp4", "DMAORG Violation MP4", ["HEADERS"]),
-        ];
-
-        this.twitters = [
-            new TwitterWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band, 1),
-            new TwitterWatcher("tylerrjoseph", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler, 4),
-            new TwitterWatcher("joshuadun", channelIDs.topfeed.josh, roles.topfeed.selectable.josh, 10),
-            new TwitterWatcher("blurryface", channelIDs.topfeed.dmaorg, roles.topfeed.selectable.dmaorg, 1)
         ];
 
         this.youtubes = [
@@ -137,7 +128,6 @@ class TopfeedBot {
         const methods: Record<JobType, () => void> = {
             YOUTUBE: () => this.#checkGroup(this.youtubes),
             // INSTAGRAM: () => this.#checkGroup(this.instagrams),
-            TWITTER: () => this.#checkGroup(this.twitters),
             WEBSITES: () => this.#checkGroup(this.websites)
         };
         if (methods[jobType]) methods[jobType]();
@@ -149,7 +139,6 @@ class TopfeedBot {
         const numMinutes: Record<JobType, number> = {
             YOUTUBE: 2,
             // INSTAGRAM: 15,
-            TWITTER: 4,
             WEBSITES: 0.1
         };
 
@@ -158,6 +147,8 @@ class TopfeedBot {
         for (const [jobType, mins] of F.entries(numMinutes)) {
             await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins) } });
         }
+
+        await queue.add("TWITTER", "", { repeat: { every: minutesToMilliseconds(1) } });
     }
 }
 

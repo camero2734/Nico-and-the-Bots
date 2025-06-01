@@ -60,10 +60,9 @@ export async function checkTwitter() {
     }
   });
 
-  lastCheckTime = Math.floor(addMinutes(new Date(), -1).getTime() / 1000);
-
   if (result.data.data?.[0]?.tweet) {
     console.log("There are new tweets to fetch.");
-    await fetchTwitter("scheduled");
+    await fetchTwitter("scheduled", lastCheckTime);
   }
+  lastCheckTime = Math.floor(addMinutes(new Date(), -1).getTime() / 1000);
 }

@@ -1,4 +1,4 @@
-import { minutesToMilliseconds } from "date-fns";
+import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns";
 import { Client, EmbedBuilder, Guild, TextChannel } from "discord.js";
 import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
@@ -142,8 +142,6 @@ class TopfeedBot {
             WEBSITES: 0.1
         };
 
-        console.log(await queue.getDelayedCount());
-
         // Remove all existing jobs bullmq
         await queue.obliterate({ force: true });
 
@@ -151,7 +149,7 @@ class TopfeedBot {
             await queue.add(jobType, "", { repeat: { every: minutesToMilliseconds(mins) } });
         }
 
-        await queue.add("TWITTER", "", { repeat: { every: minutesToMilliseconds(1) } });
+        await queue.add("TWITTER", "", { repeat: { every: secondsToMilliseconds(20) } });
     }
 }
 

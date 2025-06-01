@@ -242,11 +242,11 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
   return container;
 }
 
-export async function fetchTwitter(source: "webhook" | "scheduled") {
+export async function fetchTwitter(source: "webhook" | "scheduled", sinceTs?: number) {
   if (!secrets.twitterAlternateApiKey) {
     throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
   }
-  const sinceTs = Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
+  sinceTs ||= Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
 
   const query = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
 

@@ -177,6 +177,7 @@ export async function checkInstagram() {
 
   if (!postCountChanged && Math.random() < 0.05) {
     console.log("No post changes detected, but randomly checking Instagram anyway.");
+    await testChan.send(`[random] Randomly checking Instagram even though no post changes detected.`);
   } else if (!postCountChanged) {
     console.log("No post count changes detected, skipping Instagram check.");
     return;
@@ -191,7 +192,7 @@ export async function checkInstagram() {
     return
   }
 
-  await testChan.send(`[scheduled] Fetching recent IG posts`).catch(console.error);
+  if (postCountChanged) await testChan.send(`[scheduled] Fetching recent IG posts`).catch(console.error);
 
   try {
     const feed = ig.feed.timeline("warm_start_fetch");

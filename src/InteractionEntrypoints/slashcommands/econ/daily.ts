@@ -164,10 +164,11 @@ command.setHandler(async (ctx) => {
 	const tokenMessage = (() => {
 		if (tokenSum === newTokens) {
 			return `You earned ${tokensToGive} token${F.plural(tokensToGive)}!`;
-		}if (newTokens === currentTokens) {
-			return "You have the maximum number of tokens, so you did not earn any today. Spend them with the \`/econ resupply\` command";
 		}
-			return "You have reached the maximum number of tokens! Spend one with the \`/econ resupply\` command to ensure you earn one tomorrow.";
+		if (newTokens === currentTokens) {
+			return "You have the maximum number of tokens, so you did not earn any today. Spend them with the `/econ resupply` command";
+		}
+		return "You have reached the maximum number of tokens! Spend one with the `/econ resupply` command to ensure you earn one tomorrow.";
 	})();
 
 	const facts = [

@@ -1,5 +1,10 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { type Message, EmbedBuilder, type BaseMessageOptions, Colors } from "discord.js";
+import {
+	type Message,
+	EmbedBuilder,
+	type BaseMessageOptions,
+	Colors,
+} from "discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -90,7 +95,7 @@ const update = async (msg: Message) => {
 		embed.addFields([
 			{
 				name: "Upgrade almost finished...",
-				value: "Expected to finish \`soon\`",
+				value: "Expected to finish `soon`",
 			},
 		]);
 		embed.setColor(Colors.Red);

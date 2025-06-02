@@ -107,10 +107,10 @@ export class SlashCommand<
 		ctx.send = async (payload) => {
 			if (ctx.replied || ctx.deferred)
 				return ctx.editReply(payload) as Promise<Message>;
-			
-				return ctx.reply(
-					payload as unknown as MessagePayload,
-				) as unknown as Promise<Message<boolean>>;
+
+			return ctx.reply(
+				payload as unknown as MessagePayload,
+			) as unknown as Promise<Message<boolean>>;
 		};
 		ctx.opts =
 			opts ||

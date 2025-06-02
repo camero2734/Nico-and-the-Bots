@@ -209,7 +209,10 @@ export class LevelCalculator {
 		if (level <= 0) return 0;
 
 		const y = level;
-		return Math.ceil((LevelCalculator.limit * y * y) / (y + LevelCalculator.adder) + LevelCalculator.yIntercept);
+		return Math.ceil(
+			(LevelCalculator.limit * y * y) / (y + LevelCalculator.adder) +
+				LevelCalculator.yIntercept,
+		);
 	}
 
 	/**

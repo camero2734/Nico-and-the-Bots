@@ -557,7 +557,8 @@ const genButtonId = entrypoint.addInteractionListener(
 				content: `You already voted for ${song.name} on the album ${album.name}. But thanks for confirming.`,
 			});
 			return;
-		}invalidateCache(`sb:vote-${pollId}-${ctx.user.id}`);
+		}
+		invalidateCache(`sb:vote-${pollId}-${ctx.user.id}`);
 
 		// Create or update the vote
 		await prisma.vote.upsert({

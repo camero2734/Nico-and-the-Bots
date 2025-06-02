@@ -288,8 +288,7 @@ export function toSongId(song: SongContender, album: Album) {
 
 export function fromSongId(id: string): { song: SongContender; album: Album } {
 	const [songName, albumName] = id.split(DELIMITER);
-	const songs = albums
-		.flatMap((a) => a.songs.map((s) => ({ ...s, album: a })));
+	const songs = albums.flatMap((a) => a.songs.map((s) => ({ ...s, album: a })));
 	const song = songs.find(
 		(s) => s.name === songName && s.album.name === albumName,
 	);
@@ -396,10 +395,11 @@ export function determineResult(poll: Poll & { votes: Vote[] }): Result {
 
 	if (song1Votes > song2Votes) {
 		return Result.Song1;
-	}if (song2Votes > song1Votes) {
+	}
+	if (song2Votes > song1Votes) {
 		return Result.Song2;
 	}
-		return Result.Tie;
+	return Result.Tie;
 }
 
 export function findFirstUnmatchedSongs(

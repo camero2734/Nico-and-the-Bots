@@ -40,7 +40,8 @@ command.setHandler(async (ctx) => {
 		.addFields([
 			{
 				name: "How do I choose one?",
-				value: "To equip one of the roles you own, search for it in the input bar below",
+				value:
+					"To equip one of the roles you own, search for it in the input bar below",
 			},
 		]);
 

@@ -129,7 +129,8 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
 						url: highestBitrateVariant.url,
 					},
 				};
-			}if (item.type === "photo") {
+			}
+			if (item.type === "photo") {
 				return {
 					media: {
 						url: item.media_url_https,
@@ -274,7 +275,8 @@ export async function fetchTwitter(
 	if (!secrets.twitterAlternateApiKey) {
 		throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
 	}
-	const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
+	const sinceTs =
+		_sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
 
 	const query = usernamesToWatch
 		.map((username) => `from:${username}`)

@@ -39,13 +39,14 @@ export const worker = new Worker(
 			console.log(`Checking Twitter group: ${name}`);
 			await checkTwitter();
 			return;
-		}if (name === "INSTAGRAM") {
+		}
+		if (name === "INSTAGRAM") {
 			console.log(`Checking Instagram group: ${name}`);
 			await checkInstagram();
 			return;
 		}
-			console.log(`Checking group: ${name}`);
-			await topfeedBot.checkGroup(name);
+		console.log(`Checking group: ${name}`);
+		await topfeedBot.checkGroup(name);
 	},
 	redisOpts,
 );

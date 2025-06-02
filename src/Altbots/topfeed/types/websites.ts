@@ -151,7 +151,8 @@ export class SiteWatcher<
 			const att = new AttachmentBuilder(file, { name: "file.png" });
 			embed.setImage("attachment://file.png");
 			return [[{ embeds: [embed], files: [att], components: [actionRow] }]];
-		}return [[{ embeds: [embed], components: [actionRow] }]];
+		}
+		return [[{ embeds: [embed], components: [actionRow] }]];
 	}
 
 	override async afterCheck(msg: Message): Promise<void> {

@@ -39,5 +39,6 @@ export const getFMUsername = async (
 	if (!fm) {
 		const whose = mentionedId ? "The mentioned user's'" : "Your";
 		throw new CommandError(`${whose} Last.FM username isn't connected!`);
-	}return fm.username;
+	}
+	return fm.username;
 };

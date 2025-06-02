@@ -1,5 +1,8 @@
 import type { Poll, Vote } from "@prisma/client";
-import type { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v10";
+import type {
+	APIEmbedField,
+	APIMessageComponentEmoji,
+} from "discord-api-types/v10";
 import {
 	ActionRowBuilder,
 	ApplicationCommandOptionType,
@@ -250,7 +253,9 @@ function generateStatsDescription(
 		);
 		const emoji = opt.emoji ? `${opt.emoji} ` : "";
 		const basePercent = (100 * count) / totalVotes;
-		const percent = (Number.isFinite(basePercent) ? basePercent : 0).toPrecision(3);
+		const percent = (
+			Number.isFinite(basePercent) ? basePercent : 0
+		).toPrecision(3);
 
 		tempEmbed.addFields([
 			{

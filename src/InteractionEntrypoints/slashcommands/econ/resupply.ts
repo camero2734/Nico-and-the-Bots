@@ -169,8 +169,8 @@ const genSelectId = command.addInteractionListener(
 		const isCaught = ran < CHANCE_CAUGHT;
 
 		if (isCaught) return memberCaught(ctx, district, dbUser.dailyBox);
-		
-			return memberWon(ctx, district, dbUser as User & { dailyBox: DailyBox });
+
+		return memberWon(ctx, district, dbUser as User & { dailyBox: DailyBox });
 	},
 );
 
@@ -300,7 +300,8 @@ async function memberWon(
 					create: { amountPaid: 0, roleId: prize.id, userId: member.id },
 				});
 
-				prizeDescription = "You may equip this role using the \`/roles colors\` command.";
+				prizeDescription =
+					"You may equip this role using the `/roles colors` command.";
 			} else await member.roles.add(prize.id);
 			break;
 		}

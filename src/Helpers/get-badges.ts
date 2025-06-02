@@ -260,7 +260,8 @@ async function* getBadge(
 		if (result && ignore.indexOf(fileName) === -1) {
 			const img = await loadImage(fileWithPath);
 			return img;
-		}return undefined;
+		}
+		return undefined;
 	}
 }
 

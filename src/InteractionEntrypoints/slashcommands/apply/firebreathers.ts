@@ -63,19 +63,20 @@ command.setHandler(async (ctx) => {
 			throw new CommandError(
 				`You have already recently applied! You can apply again ${timestamp}`,
 			);
-		}if (!activeApplication.submittedAt) {
+		}
+		if (!activeApplication.submittedAt) {
 			const link = genApplicationLink(applicationId);
 			throw new CommandError(
 				`You have not submitted your previous application (${applicationId}). To do so, visit [this link](${link}).\n\nIf you believe this is a mistake, please contact the staff.`,
 			);
 		}
-			const timestamp = F.discordTimestamp(
-				activeApplication.submittedAt || new Date(),
-				"relative",
-			);
-			throw new CommandError(
-				`Your previous application (${applicationId}) has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,
-			);
+		const timestamp = F.discordTimestamp(
+			activeApplication.submittedAt || new Date(),
+			"relative",
+		);
+		throw new CommandError(
+			`Your previous application (${applicationId}) has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,
+		);
 	}
 
 	// Start a new application

@@ -112,7 +112,8 @@ const genActionId = command.addInteractionListener(
 				components: actionRow ? [actionRow] : undefined,
 			});
 			return;
-		}if (actionType === ActionTypes.DeleteReminder) {
+		}
+		if (actionType === ActionTypes.DeleteReminder) {
 			console.log("delete", /SELECT/);
 			if (!ctx.isButton()) return;
 			ctx.deferred = true;

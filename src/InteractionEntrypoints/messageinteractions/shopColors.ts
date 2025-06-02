@@ -76,8 +76,7 @@ const genSubmenuId = msgInt.addInteractionListener(
 			.addFields([
 				{
 					name: "\u200b",
-					value:
-						`${category.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
+					value: `${category.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
 				},
 			])
 			.setFooter({
@@ -326,8 +325,7 @@ async function generateMainMenuEmbed(
 		MenuEmbed.addFields([
 			{
 				name: name,
-				value:
-					`${italic(item.description)}\n${item.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
+				value: `${italic(item.description)}\n${item.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
 			},
 		]);
 	}

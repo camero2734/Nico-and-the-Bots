@@ -20,7 +20,7 @@ const getReplyMethod = async (ctx: CommandInteraction) => {
 		if (ctx.channel?.isSendable()) {
 			return ctx.channel.send;
 		}
-			return () => {};
+		return () => {};
 	}
 
 	if (!ctx.deferred && !ctx.replied) {

@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { TopfeedPost, TopfeedType } from ".prisma/client";
 import type { Prisma } from "@prisma/client";
 import type { BaseMessageOptions, Message, Snowflake } from "discord.js";
 import { NicoClient } from "../../../../app";
 import { prisma } from "../../../Helpers/prisma-init";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { TopfeedPost, TopfeedType } from ".prisma/client";
 
 export interface Checked<T extends object> {
 	uniqueIdentifier: string;
@@ -48,7 +48,10 @@ export abstract class Watcher<T extends object> {
 				id: item.uniqueIdentifier,
 				type: this.type,
 				handle: this.handle,
-				subtype: "subtype" in item._data && typeof item._data.subtype === "string" ? item._data.subtype : undefined,
+				subtype:
+					"subtype" in item._data && typeof item._data.subtype === "string"
+						? item._data.subtype
+						: undefined,
 				data: item._data as Prisma.InputJsonArray,
 			})),
 		});

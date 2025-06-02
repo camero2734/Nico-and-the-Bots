@@ -10,6 +10,7 @@ import {
 	SelectMenuOptionBuilder,
 	type TextChannel,
 } from "discord.js";
+import type { Writeable } from "zod";
 import { roles } from "../../Configuration/config";
 import {
 	CommandError,
@@ -19,7 +20,6 @@ import {
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
-import type { Writeable } from "zod";
 
 const ReportReasons = <const>{
 	BEING_RUDE: "Being rude or bothersome to others",

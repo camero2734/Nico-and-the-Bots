@@ -1,9 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { glob as g } from "glob";
 import path from "node:path";
 import { promisify } from "node:util";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { glob as g } from "glob";
 import type { InteractionEntrypoint } from "../Structures/EntrypointBase";
-import { ContextMenu, type TargetTypes } from "../Structures/EntrypointContextMenu";
+import {
+	ContextMenu,
+	type TargetTypes,
+} from "../Structures/EntrypointContextMenu";
 import { ManualEntrypoint } from "../Structures/EntrypointManual";
 import { SlashCommand } from "../Structures/EntrypointSlashCommand";
 
@@ -50,7 +53,9 @@ async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
 	return slashCommands;
 }
 
-async function getAllContextMenus(): Promise<[Path, ContextMenu<keyof TargetTypes>][]> {
+async function getAllContextMenus(): Promise<
+	[Path, ContextMenu<keyof TargetTypes>][]
+> {
 	const paths = await getAllFilesRecursive(
 		"src/InteractionEntrypoints/contextmenus",
 	);
@@ -67,7 +72,9 @@ async function getAllContextMenus(): Promise<[Path, ContextMenu<keyof TargetType
 				}
 			}),
 		)
-	).filter((cmd): cmd is [Path, ContextMenu<keyof TargetTypes>] => cmd !== null);
+	).filter(
+		(cmd): cmd is [Path, ContextMenu<keyof TargetTypes>] => cmd !== null,
+	);
 
 	return contextMenus;
 }

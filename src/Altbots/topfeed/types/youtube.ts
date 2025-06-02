@@ -1,8 +1,8 @@
-import { EmbedBuilder, type BaseMessageOptions } from "discord.js";
+import { parseISO } from "date-fns";
+import { type BaseMessageOptions, EmbedBuilder } from "discord.js";
+import Youtube from "youtube.ts";
 import secrets from "../../../Configuration/secrets";
 import { type Checked, Watcher } from "./base";
-import Youtube from "youtube.ts";
-import { parseISO } from "date-fns";
 
 type YoutubeType = {
 	url: string;

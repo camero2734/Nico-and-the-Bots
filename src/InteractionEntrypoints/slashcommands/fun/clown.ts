@@ -1,8 +1,8 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
+import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({

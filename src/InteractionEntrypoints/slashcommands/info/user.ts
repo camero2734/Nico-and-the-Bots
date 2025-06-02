@@ -1,6 +1,6 @@
-import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import ordinal from "ordinal";
+import { CommandError } from "../../../Configuration/definitions";
 import { queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

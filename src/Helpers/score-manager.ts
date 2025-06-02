@@ -1,19 +1,19 @@
+import type { User } from "@prisma/client";
 import { startOfDay } from "date-fns";
 import {
 	DiscordAPIError,
-	type Message,
 	EmbedBuilder,
+	type Message,
 	type MessageReference,
+	MessageReferenceType,
 	type Snowflake,
 	type TextChannel,
-	MessageReferenceType,
 } from "discord.js";
 import { prisma } from "./prisma-init";
-import type { User } from "@prisma/client";
 
 import { Queue, Worker } from "bullmq";
-import { NicoClient } from "../../app";
 import IORedis from "ioredis";
+import { NicoClient } from "../../app";
 
 const QUEUE_NAME = "ScoreUpdate";
 

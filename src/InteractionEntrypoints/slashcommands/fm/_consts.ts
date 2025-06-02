@@ -1,8 +1,8 @@
+import SimpleFM from "@solely/simple-fm";
 import type { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
-import { prisma } from "../../../Helpers/prisma-init";
 import secrets from "../../../Configuration/secrets";
-import SimpleFM from "@solely/simple-fm";
+import { prisma } from "../../../Helpers/prisma-init";
 
 export type RankedAlbum = Awaited<
 	ReturnType<SimpleFM["user"]["getTopAlbums"]>

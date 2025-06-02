@@ -1,5 +1,4 @@
 import { subMinutes } from "date-fns";
-import secrets from "../../../Configuration/secrets";
 import {
 	type APIComponentInContainer,
 	type APIMediaGalleryItem,
@@ -11,9 +10,10 @@ import {
 } from "discord.js";
 import { z } from "zod";
 import { channelIDs, roles } from "../../../Configuration/config";
-import topfeedBot from "../topfeed";
-import { prisma } from "../../../Helpers/prisma-init";
+import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import topfeedBot from "../topfeed";
 
 export const usernamesToWatch = [
 	"pootusmaximus",

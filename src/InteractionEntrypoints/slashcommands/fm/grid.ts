@@ -1,4 +1,4 @@
-import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
+import { Image, createCanvas, loadImage } from "@napi-rs/canvas";
 import { ApplicationCommandOptionType, Colors, EmbedBuilder } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

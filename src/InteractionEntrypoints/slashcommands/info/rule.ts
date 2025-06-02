@@ -1,6 +1,6 @@
-import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import Fuse from "fuse.js";
+import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 class Rule {

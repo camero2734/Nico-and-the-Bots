@@ -1,8 +1,8 @@
 import { type Image, createCanvas, loadImage } from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
+import { roles } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
-import { roles } from "../Configuration/config";
 
 interface BadgeLoaderOptions {
 	numBadges?: number;

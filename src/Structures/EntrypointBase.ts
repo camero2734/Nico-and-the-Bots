@@ -13,12 +13,6 @@ import {
 } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
-import {
-	ApplicationData,
-	InteractionHandlers,
-	ReactionHandlers,
-	ReplyHandlers,
-} from "./data";
 import { ErrorHandler } from "./Errors";
 import { EntrypointEvents } from "./Events";
 import {
@@ -28,6 +22,12 @@ import {
 } from "./ListenerInteraction";
 import type { ReactionListener } from "./ListenerReaction";
 import type { ReplyListener } from "./ListenerReply";
+import {
+	ApplicationData,
+	InteractionHandlers,
+	ReactionHandlers,
+	ReplyHandlers,
+} from "./data";
 
 type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 

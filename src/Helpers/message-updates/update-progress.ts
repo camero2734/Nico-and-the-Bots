@@ -1,9 +1,9 @@
 import { differenceInMilliseconds, parse } from "date-fns";
 import {
-	type Message,
-	EmbedBuilder,
 	type BaseMessageOptions,
 	Colors,
+	EmbedBuilder,
+	type Message,
 } from "discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";

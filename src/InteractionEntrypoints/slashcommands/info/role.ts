@@ -1,11 +1,11 @@
 import {
+	ApplicationCommandOptionType,
 	EmbedBuilder,
 	type Snowflake,
-	ApplicationCommandOptionType,
 } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import F from "../../../Helpers/funcs";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const names = <const>["role1", "role2", "role3", "role4", "role5"];
 

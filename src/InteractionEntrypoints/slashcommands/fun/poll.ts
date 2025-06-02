@@ -16,9 +16,9 @@ import {
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { CommandError } from "../../../Configuration/definitions";
 
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 

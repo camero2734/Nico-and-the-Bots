@@ -1,13 +1,13 @@
-import { guildID } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
 import {
+	ApplicationCommandOptionType,
 	EmbedBuilder,
 	type Snowflake,
 	type TextChannel,
-	ApplicationCommandOptionType,
 } from "discord.js";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
+import { guildID } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

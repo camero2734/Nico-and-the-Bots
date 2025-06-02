@@ -1,10 +1,10 @@
 import {
 	ActionRowBuilder,
 	ApplicationCommandOptionType,
+	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	AttachmentBuilder,
 	type TextChannel,
 } from "discord.js";
 import FileType from "file-type";

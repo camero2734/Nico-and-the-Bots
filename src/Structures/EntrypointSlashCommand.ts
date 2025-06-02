@@ -9,6 +9,7 @@ import {
 	type ButtonComponent,
 	ButtonStyle,
 	type ChatInputApplicationCommandData,
+	type ChatInputCommandInteraction,
 	Collection,
 	type CommandInteractionOptionResolver,
 	ComponentType,
@@ -19,7 +20,6 @@ import {
 	type MessagePayload,
 	type Snowflake,
 	type TextChannel,
-	type ChatInputCommandInteraction,
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";

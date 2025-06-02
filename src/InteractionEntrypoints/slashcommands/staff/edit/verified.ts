@@ -1,7 +1,7 @@
+import { addYears } from "date-fns";
 import { ApplicationCommandOptionType } from "discord.js";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
-import { addYears } from "date-fns";
 
 const command = new SlashCommand({
 	description: "Edits a user's verified status",

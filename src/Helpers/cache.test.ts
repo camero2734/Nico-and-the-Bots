@@ -1,6 +1,6 @@
-import { expect, test, describe, setSystemTime } from "bun:test";
-import { Cache, withCache, invalidateCache } from "./cache";
+import { describe, expect, setSystemTime, test } from "bun:test";
 import { addSeconds } from "date-fns";
+import { Cache, invalidateCache, withCache } from "./cache";
 
 describe("Cache", () => {
 	test("get", () => {

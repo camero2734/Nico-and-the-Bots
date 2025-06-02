@@ -1,12 +1,12 @@
+import type { BishopType } from "@prisma/client";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
-import { sendViolationNotice } from "../../../Helpers/dema-notice";
-import type { BishopType } from "@prisma/client";
 
 const command = new SlashCommand({
 	description:

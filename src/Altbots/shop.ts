@@ -1,14 +1,14 @@
 import {
-	Client,
+	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonStyle,
+	Client,
 	EmbedBuilder,
 	type TextChannel,
-	ActionRowBuilder,
-	ButtonStyle,
 } from "discord.js";
-import secrets from "../Configuration/secrets";
-import { channelIDs, guildID } from "../Configuration/config";
 import { NicoClient } from "../../app";
+import { channelIDs, guildID } from "../Configuration/config";
+import secrets from "../Configuration/secrets";
 import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
 

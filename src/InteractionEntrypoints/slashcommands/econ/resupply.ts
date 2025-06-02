@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import type { BishopType, DailyBox, User } from "@prisma/client";
 import { format } from "date-fns";
 import {
@@ -12,7 +13,6 @@ import {
 	type StringSelectMenuInteraction,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import fs from "node:fs";
 import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";

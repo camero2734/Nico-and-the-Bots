@@ -4,8 +4,8 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 } from "discord.js";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { CommandError } from "../../../Configuration/definitions";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
 	description: "Sends a link to the first message in the thread",

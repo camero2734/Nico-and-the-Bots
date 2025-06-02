@@ -1,10 +1,9 @@
-import { en, Faker } from "@faker-js/faker";
+import { Faker, en } from "@faker-js/faker";
 import {
-	ActionRowBuilder,
 	type APIButtonComponent,
+	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	channelMention,
 	ComponentType,
 	EmbedBuilder,
 	type GuildMember,
@@ -16,6 +15,7 @@ import {
 	type TextChannel,
 	TextInputBuilder,
 	TextInputStyle,
+	channelMention,
 } from "discord.js";
 import { guild } from "../../../../app";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
@@ -26,12 +26,12 @@ import type { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
-	caesarEncode,
-	generateWords,
-	morseEncode,
 	PreviousAnswersEncoder,
 	QuestionIDEncoder,
 	VerifiedQuizConsts,
+	caesarEncode,
+	generateWords,
+	morseEncode,
 } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
 

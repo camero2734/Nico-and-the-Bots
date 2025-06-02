@@ -1,4 +1,3 @@
-import type { FirebreatherApplication } from ".prisma/client";
 import type { Faker } from "@faker-js/faker";
 import { hoursToMilliseconds, subDays } from "date-fns";
 import type { Snowflake } from "discord.js";
@@ -6,6 +5,7 @@ import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import type { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
+import type { FirebreatherApplication } from ".prisma/client";
 
 const VERIFIED_DELAY_HOURS = 12;
 export const VerifiedQuizConsts = {

@@ -1,4 +1,5 @@
 import { Cron } from "croner";
+import { addHours } from "date-fns";
 import {
 	AttachmentBuilder,
 	ButtonStyle,
@@ -31,7 +32,6 @@ import {
 	getTotalMatches,
 	toSongId,
 } from "./songbattle.consts";
-import { addHours } from "date-fns";
 
 const entrypoint = new ManualEntrypoint();
 

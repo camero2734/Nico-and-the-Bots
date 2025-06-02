@@ -1,11 +1,11 @@
 import type { VerifiedQuizAnswer } from "@prisma/client";
-import { EmbedBuilder, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import R from "ramda";
 import progressBar from "string-progressbar";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
 	description: "Shows stats about verified questions",

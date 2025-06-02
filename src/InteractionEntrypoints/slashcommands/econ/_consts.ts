@@ -1,9 +1,9 @@
+import { Faker, en } from "@faker-js/faker";
+import { startOfDay } from "date-fns";
 import type { Snowflake } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
-import { Faker, en } from "@faker-js/faker";
-import { startOfDay } from "date-fns";
 
 export const BOUNTY_NUM_CREDITS = 1000;
 

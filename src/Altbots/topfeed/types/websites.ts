@@ -11,11 +11,11 @@ import {
 	type Message,
 	type Snowflake,
 } from "discord.js";
+import type { Headers } from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { type Checked, Watcher } from "./base";
-import type { Headers } from "node-fetch";
 
 const watchMethods = <const>["VISUAL", "HTML", "HEADERS", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = (typeof watchMethods)[number];
@@ -36,7 +36,7 @@ type CheckObj = {
 type CheckReturn = CheckObj[WATCH_METHOD]["_data"];
 
 export class SiteWatcher<
-	T extends ReadonlyArray<WATCH_METHOD> = Array<WATCH_METHOD>
+	T extends ReadonlyArray<WATCH_METHOD> = Array<WATCH_METHOD>,
 > extends Watcher<CheckReturn> {
 	static hash(input: string): string {
 		return crypto.createHash("sha256").update(input).digest("base64");
@@ -151,7 +151,8 @@ export class SiteWatcher<
 			const att = new AttachmentBuilder(file, { name: "file.png" });
 			embed.setImage("attachment://file.png");
 			return [[{ embeds: [embed], files: [att], components: [actionRow] }]];
-		}return [[{ embeds: [embed], components: [actionRow] }]];
+		}
+		return [[{ embeds: [embed], components: [actionRow] }]];
 	}
 
 	override async afterCheck(msg: Message): Promise<void> {

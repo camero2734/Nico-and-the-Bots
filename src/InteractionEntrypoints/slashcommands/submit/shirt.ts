@@ -6,9 +6,9 @@ import {
 	EmbedBuilder,
 	type Message,
 } from "discord.js";
+import { guild } from "../../../../app";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { guild } from "../../../../app";
 
 const command = new SlashCommand({
 	description: "Submit a suggestion for a #shirt-discussion announcement",

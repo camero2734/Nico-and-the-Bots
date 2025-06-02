@@ -1,14 +1,14 @@
+import { addMinutes, differenceInSeconds } from "date-fns";
+import { userMention } from "discord.js";
 import {
 	type TwitterApiUtilsResponse,
 	TwitterOpenApi,
 	type TwitterOpenApiClient,
 } from "twitter-openapi-typescript";
-import secrets from "../../../Configuration/secrets";
-import { addMinutes, differenceInSeconds } from "date-fns";
-import { fetchTwitter, usernamesToWatch } from "./fetch-and-send";
-import topfeedBot from "../topfeed";
 import { channelIDs, userIDs } from "../../../Configuration/config";
-import { userMention } from "discord.js";
+import secrets from "../../../Configuration/secrets";
+import topfeedBot from "../topfeed";
+import { fetchTwitter, usernamesToWatch } from "./fetch-and-send";
 
 const twitter = new TwitterOpenApi();
 let twitterClient: TwitterOpenApiClient | null = null;

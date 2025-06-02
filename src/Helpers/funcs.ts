@@ -1,6 +1,9 @@
-import type { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import * as bigintConversion from "bigint-conversion";
 import * as crypto from "node:crypto";
+import { Faker, en } from "@faker-js/faker";
+import type { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import type { BishopType } from "@prisma/client";
+import * as bigintConversion from "bigint-conversion";
+import { type TCountryCode, continents, getCountryData } from "countries-list";
 import type {
 	BaseMessageOptions,
 	Guild,
@@ -10,13 +13,10 @@ import type {
 	Snowflake,
 	TextChannel,
 } from "discord.js";
+import countries from "iso-3166-1-alpha-2";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
 import { channelIDs, roles } from "../Configuration/config";
-import { Faker, en } from "@faker-js/faker";
-import type { BishopType } from "@prisma/client";
-import countries from "iso-3166-1-alpha-2";
-import { type TCountryCode, continents, getCountryData } from "countries-list";
 /**
  * Just some commonly used short functions
  */

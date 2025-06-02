@@ -1,16 +1,16 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
 	ActionRowBuilder,
+	AttachmentBuilder,
 	ButtonBuilder,
+	ButtonStyle,
 	Client,
 	EmbedBuilder,
 	type GuildMember,
-	AttachmentBuilder,
 	type MessageComponentInteraction,
 	type PartialGuildMember,
 	type Snowflake,
 	type TextChannel,
-	ButtonStyle,
 } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";

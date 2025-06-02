@@ -2,8 +2,8 @@ import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
 import { KeonsBot } from "./src/Altbots/shop";
-import { fetchTwitter } from "./src/Altbots/topfeed/twitter/fetch-and-send";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
+import { fetchTwitter } from "./src/Altbots/topfeed/twitter/fetch-and-send";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
@@ -23,6 +23,7 @@ import {
 	type AutocompleteListener,
 	transformAutocompleteInteraction,
 } from "./src/Structures/ListenerAutocomplete";
+import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 import {
 	ContextMenus,
 	InteractionHandlers,
@@ -30,7 +31,6 @@ import {
 	ReplyHandlers,
 	SlashCommands,
 } from "./src/Structures/data";
-import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 
 export const client = new Discord.Client({
 	intents: [

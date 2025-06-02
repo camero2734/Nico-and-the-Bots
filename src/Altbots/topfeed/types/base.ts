@@ -2,7 +2,6 @@ import type { Prisma } from "@prisma/client";
 import type { BaseMessageOptions, Message, Snowflake } from "discord.js";
 import { NicoClient } from "../../../../app";
 import { prisma } from "../../../Helpers/prisma-init";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { TopfeedPost, TopfeedType } from ".prisma/client";
 
 export interface Checked<T extends object> {

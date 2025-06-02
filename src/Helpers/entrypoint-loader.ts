@@ -1,6 +1,5 @@
 import path from "node:path";
 import { promisify } from "node:util";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { glob as g } from "glob";
 import type { InteractionEntrypoint } from "../Structures/EntrypointBase";
 import {

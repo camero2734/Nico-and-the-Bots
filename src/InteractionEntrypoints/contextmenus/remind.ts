@@ -75,7 +75,7 @@ const genHandleId = ctxMenu.addInteractionListener(
 		});
 
 		if (remindersCount >= REMINDER_LIMIT) {
-			throw new CommandError(ERRORS.TOO_MANY_REMINDERS); // prettier-ignore
+			throw new CommandError(ERRORS.TOO_MANY_REMINDERS);
 		}
 
 		const sendAt = addMilliseconds(new Date(), durationMs);

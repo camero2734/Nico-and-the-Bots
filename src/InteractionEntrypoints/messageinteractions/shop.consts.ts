@@ -74,7 +74,7 @@ export function getColorRoleCategories(roleManager: RoleManager) {
 		credits: 50000,
 		level: 100,
 		DE: true,
-	}); // prettier-ignore
+	});
 
 	return {
 		"The Scaled Back Collection": {

@@ -42,7 +42,7 @@ const F = {
 		str
 			.split(" ")
 			.map((a) => `${a[0].toUpperCase()}${a.slice(1).toLowerCase()}`)
-			.join(" "), // prettier-ignore
+			.join(" "),
 	lerp: (n: number, low: number, high: number): number =>
 		n * (high - low) + low,
 	unlerp: (n: number, low: number, high: number): number =>
@@ -116,7 +116,7 @@ const F = {
 		}
 		return Uint8Array.from(arr);
 	},
-	// prettier-ignore
+
 	canvasFitText(
 		ctx: SKRSContext2D,
 		canvas: Canvas,

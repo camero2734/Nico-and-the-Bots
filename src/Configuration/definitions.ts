@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { nanoid } from "nanoid";
 
 export class CommandError extends Error {

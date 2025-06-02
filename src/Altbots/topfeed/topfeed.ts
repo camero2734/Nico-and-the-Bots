@@ -13,9 +13,7 @@ class TopfeedBot {
 	client: Client;
 	guild: Guild;
 	ready: Promise<void>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	websites: SiteWatcher[] = [];
-	// instagrams: InstaWatcher[] = [];
 	youtubes: YoutubeWatcher[] = [];
 	constructor() {
 		this.client = new Client({
@@ -48,7 +46,6 @@ class TopfeedBot {
 	}
 
 	async #createWatchers(): Promise<void> {
-		// prettier-ignore
 		this.websites = [
 			new SiteWatcher("http://dmaorg.info", "DMAORG 404 Page", ["HTML"]),
 			new SiteWatcher(
@@ -119,7 +116,7 @@ class TopfeedBot {
 				const threadStarter = await chan.send({
 					...mainMsg,
 					content: `<@&${watcher.pingedRole}>\n${mainMsg.content ?? ""}`,
-				}); // prettier-ignore
+				});
 				if (threadedMsgs.length < 1) {
 					watcher.afterCheck(threadStarter);
 					continue;

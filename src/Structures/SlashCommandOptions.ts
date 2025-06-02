@@ -22,7 +22,7 @@ type ApplicationDataType = ApplicationCommandOptionData &
 	Pick<ApplicationCommandChoicesData, "choices" | "required">;
 
 export type CommandOptions = DeepReadonly<ApplicationDataType[]>;
-// prettier-ignore
+
 export type SlashCommandData<T extends CommandOptions = ApplicationDataType[]> =
 	Omit<ApplicationCommandData, "options" | "name"> & {
 		description: string;
@@ -35,7 +35,7 @@ type SnowflakeTypes =
 	| ApplicationCommandOptionType.Mentionable
 	| ApplicationCommandOptionType.Role
 	| ApplicationCommandOptionType.Attachment;
-// prettier-ignore
+
 type ToPrimitiveType<OType> = OType extends SnowflakeTypes
 	? Snowflake
 	: OType extends ApplicationCommandOptionType.Boolean
@@ -61,7 +61,6 @@ type ChoicesUnion<
 	P,
 > = T[number]["value"] extends P ? T[number]["value"] : never;
 
-// prettier-ignore
 type ToObject<T extends DeepReadonly<CommandOptions[number]>> =
 	AsArray<T> extends readonly [
 		infer Key,
@@ -93,7 +92,7 @@ type UnionToIntersection<U> = (
 		: never
 ) extends (k: infer I) => void
 	? I
-	: never; // prettier-ignore
+	: never;
 
 export type OptsType<T> = T extends SlashCommandData<infer U>
 	? UnionToIntersection<ToObjectsArray<U>[number]>

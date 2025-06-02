@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	ButtonBuilder,
 	ButtonStyle,
@@ -81,7 +80,7 @@ const genSubmenuId = msgInt.addInteractionListener(
 			])
 			.setFooter({
 				text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
-			}); // prettier-ignore
+			});
 
 		const cantAfford = dbUser.credits < category.data.credits;
 		const missingCredits = category.data.credits - dbUser.credits;
@@ -161,14 +160,14 @@ const genItemId = msgInt.addInteractionListener(
 			? F.randomizeLetters(
 					"thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
 					0.1,
-				) // prettier-ignore
+				)
 			: "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: title, iconURL: shopImage })
 			.setTitle(role.name)
 			.setColor(role.color)
-			.setFooter({ text: footer }); // prettier-ignore
+			.setFooter({ text: footer });
 
 		if (actionType === ActionTypes.View) {
 			embed
@@ -241,7 +240,7 @@ const genItemId = msgInt.addInteractionListener(
 			embed
 				.setDescription(
 					`Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`,
-				) // prettier-ignore
+				)
 				.addFields([
 					{
 						name: `How do I "equip" this role?`,
@@ -260,7 +259,7 @@ const genItemId = msgInt.addInteractionListener(
 				embed.setFields([]);
 				embed.setDescription(
 					`${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`,
-				); // prettier-ignore
+				);
 
 				await ctx.editReply({ embeds: [embed], components: [] });
 			}
@@ -297,7 +296,7 @@ async function generateMainMenuEmbed(
 		)
 		.setFooter({
 			text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
-		}); // prettier-ignore
+		});
 
 	const actionRows = MessageTools.allocateButtonsIntoRows(
 		Object.entries(categories).map(([label, item], idx) => {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
 	Guild,
 	GuildMember,
@@ -73,7 +72,7 @@ export const createInteractionListener = <T extends Readonly<string[]>>(
 		const ordered = F.entries(args).sort(
 			([key1], [key2]) =>
 				pattern.args.indexOf(key1) - pattern.args.indexOf(key2),
-		); // prettier-ignore
+		);
 		const values = ordered.map((a) => a[1]);
 		return [encodedName, ...values].join(pattern.delimiter);
 	};

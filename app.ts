@@ -207,7 +207,7 @@ client.on("guildMemberUpdate", async (oldMem, newMem) => {
 	) {
 		const fbAnnouncementChannel = (await newMem.guild.channels.fetch(
 			channelIDs.fairlyannouncements,
-		)) as Discord.TextChannel; // prettier-ignore
+		)) as Discord.TextChannel;
 		const embed = new Discord.EmbedBuilder()
 			.setAuthor({
 				name: newMem.displayName,
@@ -296,11 +296,10 @@ client.on("interactionCreate", async (interaction) => {
 				`Failed to find command ${commandIdentifier} for autocomplete`,
 			);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const autocomplete = slashcommand.autocompleteListeners.get(
 			optionIdentifier,
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		) as AutocompleteListener<any, any> | undefined; // prettier-ignore
+		) as AutocompleteListener<any, any> | undefined;
 		if (!autocomplete)
 			return console.log(
 				`Failed to find autocomplete ${commandIdentifier}::${optionIdentifier}`,

@@ -89,7 +89,7 @@ export const MessageTools = {
 			const previousSize = allMessages.size;
 			const msgs: Collection<Snowflake, Message> = await channel.messages.fetch(
 				{ limit: MAX_MESSAGES_FETCH, before },
-			); // prettier-ignore
+			);
 			allMessages = allMessages.concat(msgs);
 
 			if (allMessages.size === previousSize) break; // No new messages

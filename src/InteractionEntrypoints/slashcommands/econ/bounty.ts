@@ -74,17 +74,17 @@ command.setHandler(async (ctx) => {
 	if (user === userIDs.me)
 		throw new CommandError(
 			`The Dema Council has no interest in prosecuting <@${userIDs.me}>.`,
-		); // prettier-ignore
+		);
 	if (dailyBox.steals < 1)
 		throw new CommandError(
 			"You have no bounties to use. Try to get some by using `/econ resupply`.",
-		); // prettier-ignore
+		);
 
 	const member = await ctx.member.guild.members.fetch(user);
 	if (!member || member.user.bot)
 		throw new CommandError(
 			`${member.displayName} investigated himself and found no wrong-doing. Case closed.`,
-		); // prettier-ignore
+		);
 
 	const otherDBUser = await queries.findOrCreateUser(member.id, {
 		dailyBox: true,
@@ -101,7 +101,7 @@ command.setHandler(async (ctx) => {
 		})
 		.setFooter({ text: `Bounties remaining: ${dailyBox.steals - 1}` });
 
-	const assignedBishop = F.randomValueInArray(districts); // prettier-ignore
+	const assignedBishop = F.randomValueInArray(districts);
 
 	// Some dramatic waiting time
 	const waitEmbed = EmbedBuilder.from(embed)
@@ -137,7 +137,7 @@ command.setHandler(async (ctx) => {
 
 		const failedEmbed = EmbedBuilder.from(embed).setDescription(
 			`<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed.`,
-		); // prettier-ignore
+		);
 
 		await ctx.editReply({ embeds: [failedEmbed] });
 	} else {

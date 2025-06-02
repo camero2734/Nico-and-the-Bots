@@ -135,7 +135,7 @@ command.setHandler(async (ctx) => {
 	const jailEmbed = new EmbedBuilder()
 		.setDescription(
 			"You have been added to jail, which means your conduct has fallen below what is expected of this server.\n\n**Please wait for a staff member.**",
-		) // prettier-ignore
+		)
 		.addFields([
 			{
 				name: "Note for staff",
@@ -367,7 +367,6 @@ async function closeChannel(
 
 	await msg.edit({ components: [] });
 
-	// prettier-ignore
 	const warningEmbed = new EmbedBuilder()
 		.setDescription(
 			"This channel is currently being archived. Once that is done, the channel will be deleted. You may cancel this by pressing the cancel button within the next 2 minutes.",

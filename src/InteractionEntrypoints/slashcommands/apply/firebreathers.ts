@@ -187,7 +187,6 @@ export async function sendToStaff(
 				.setFooter({ text: `${totalWarnings} total warning(s)` });
 			if (userWarnings.length > 0) {
 				for (const warn of userWarnings) {
-					// prettier-ignore
 					warningsEmbed.addFields([
 						{
 							name: `${warn.reason.substring(0, 200)} [${warn.severity}]`,

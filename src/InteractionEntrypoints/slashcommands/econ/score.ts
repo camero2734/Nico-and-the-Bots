@@ -34,7 +34,7 @@ command.setHandler(async (ctx) => {
 	if (member?.user?.bot)
 		throw new CommandError(
 			"Bots scores are confidential. Please provide an access card to Area 51 to continue.",
-		); // prettier-ignore
+		);
 
 	const buffer = await generateScoreCard(member);
 	await ctx.editReply({
@@ -100,7 +100,6 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
 	const img = await loadImage(avatar_url);
 	const goldcircle = await loadImage("./src/Assets/badges/goldcircle.png");
 
-	// prettier-ignore
 	const backgroundName = {
 		[albumRoles.ST]: "self_titled",
 		[albumRoles.RAB]: "rab",

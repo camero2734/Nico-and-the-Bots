@@ -13,7 +13,7 @@ const colors = {
 	...roles.colors.tier3,
 	...roles.colors.tier4,
 	...roles.colors.DExclusive,
-}; // prettier-ignore
+};
 
 const _changes: Partial<Record<keyof typeof colors, Change>> = {
 	"Rebel Red": { from: "#ff0060", to: "#D30E3B" },

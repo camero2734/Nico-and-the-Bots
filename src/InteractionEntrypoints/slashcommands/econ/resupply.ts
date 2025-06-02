@@ -50,7 +50,6 @@ command.setHandler(async (ctx) => {
 		userBishop?.name || F.randomValueInArray(F.keys(roles.districts)),
 	);
 
-	// prettier-ignore
 	const description = wrapCode(
 		[
 			`<DemaOS/Guest>: Welcome to DEMAtronix™ Telephony System. You have ${tokens} token${tokens === 1 ? "" : "s"} token available for use. Unauthorized access is strictly prohibited.`,
@@ -292,7 +291,7 @@ async function memberWon(
 		case PrizeType.Role: {
 			const isColorRole = Object.values(roles.colors).some((group) =>
 				Object.values(group).some((id) => id === prize.id),
-			); // prettier-ignore
+			);
 			if (isColorRole) {
 				await prisma.colorRole.upsert({
 					where: { roleId_userId: { roleId: prize.id, userId: member.id } },

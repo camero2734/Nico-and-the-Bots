@@ -212,7 +212,7 @@ async function generateImage(
 				.replace(/ {2,}/g, " ")
 				.trim() ||
 			member?.displayName ||
-			"Missing user"; // prettier-ignore
+			"Missing user";
 		let textInfo = cctx.measureText(displayedName);
 		if (
 			member &&

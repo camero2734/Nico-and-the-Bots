@@ -135,7 +135,6 @@ export class District {
 	}
 }
 
-// prettier-ignore
 export const districts: Array<District> = [
 	new District(0).setDifficulty("Easiest").setCredits(500),
 

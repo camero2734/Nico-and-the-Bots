@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
 		const timestamp = F.discordTimestamp(nextDaily, "relative");
 		throw new CommandError(
 			`You have already used daily today! You can get your next daily ${timestamp}`,
-		); // prettier-ignore
+		);
 	}
 
 	// Daily count
@@ -85,7 +85,7 @@ command.setHandler(async (ctx) => {
 	});
 
 	// CHANGE BACKGROUND BASED ON ALBUM ROLE
-	// prettier-ignore
+
 	const src = Object.values(albumRoles).find((r) =>
 		ctx.member.roles.cache.has(r),
 	);

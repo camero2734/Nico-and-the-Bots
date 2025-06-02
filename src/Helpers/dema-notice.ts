@@ -123,7 +123,7 @@ export async function sendViolationNotice(
 		mx,
 		540,
 		width - 2 * mx,
-	); // prettier-ignore
+	);
 
 	// Infraction No.
 	cctx.font = "50px FiraCode";
@@ -167,7 +167,7 @@ export async function sendViolationNotice(
 		files: [
 			new AttachmentBuilder(canvas.toBuffer("image/png"), { name: fileName }),
 		],
-	}); // prettier-ignore
+	});
 }
 
 function formatInfractionNumber(infractionNo: number) {

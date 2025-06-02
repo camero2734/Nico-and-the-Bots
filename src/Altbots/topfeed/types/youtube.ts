@@ -53,7 +53,7 @@ export class YoutubeWatcher extends Watcher<YoutubeType> {
 					name: `New Youtube video from ${this.handle}`,
 					iconURL: YOUTUBE_IMG,
 					url: item._data.url,
-				}) // prettier-ignore
+				})
 				.setThumbnail(item._data.thumbnail)
 				.setDescription(item._data.description.substring(0, 250))
 				.setColor(0xff0000);

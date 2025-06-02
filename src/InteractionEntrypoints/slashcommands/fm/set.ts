@@ -29,7 +29,6 @@ command.setHandler(async (ctx) => {
 
 	const fmUsername = ctx.opts.username;
 	if (!fmUsername) {
-		// prettier-ignore
 		const instructions = `**To set up your fm account:**
 
             \`1.\` Go to <https://www.last.fm/> and set up your fm account.

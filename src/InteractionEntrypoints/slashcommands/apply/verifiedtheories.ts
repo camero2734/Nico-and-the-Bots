@@ -314,7 +314,7 @@ const genModalSubmitId = command.addInteractionListener(
 			answerEncoder,
 			questionIDs,
 			ctx.member,
-		); // prettier-ignore
+		);
 
 		await ctx.editReply({ embeds: [quizEmbed], components: quizComponents });
 	},

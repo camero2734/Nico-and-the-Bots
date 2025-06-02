@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
 	CollectorFilter,
 	Message,
@@ -42,7 +41,7 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
 
 					const filter: CollectorFilter<[MessageComponentInteraction]> = (
 						interaction,
-					) => interaction.customId === customID && inFilter(interaction); // prettier-ignore
+					) => interaction.customId === customID && inFilter(interaction);
 					const collector = this.ctx.channel?.createMessageComponentCollector({
 						filter,
 					});

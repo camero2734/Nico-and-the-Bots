@@ -79,7 +79,6 @@ export class SiteWatcher<
 		}) as Promise<CheckObj[WATCH_METHOD]["_data"]>[];
 
 		try {
-			// eslint-disable-next-line no-var
 			// biome-ignore lint/style/noVar: <explanation>
 			// biome-ignore lint/correctness/noInnerDeclarations: <explanation>
 			var response = await Promise.all(promises);

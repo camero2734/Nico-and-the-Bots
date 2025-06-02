@@ -139,7 +139,7 @@ async function handleGold(
 			name: "\u200b",
 			value: "**Would you like to give gold to this message?**",
 		},
-	]); // prettier-ignore
+	]);
 	if (isAdditionalGold) {
 		askEmbed = new EmbedBuilder()
 			.setAuthor({
@@ -193,7 +193,7 @@ async function handleGold(
 		1 +
 		(isAdditionalGold
 			? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } })
-			: 0); // prettier-ignore
+			: 0);
 	const goldsUntilCertified = NUM_GOLDS_FOR_CERTIFICATION - numGolds;
 
 	const goldActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
@@ -268,7 +268,7 @@ async function handleGold(
 			return m;
 		},
 		{ timeout: 15000, maxWait: 15000 },
-	); // prettier-ignore
+	);
 
 	const replyEmbed = new EmbedBuilder().setDescription(
 		"Gold successfully given",

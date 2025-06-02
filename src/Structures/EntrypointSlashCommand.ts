@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	ActionRowBuilder,
 	type ApplicationCommandOptionData,
@@ -234,7 +233,7 @@ export class SlashCommand<
 				};
 				const upvoteButton = getMessageButtonWithEmoji("upvote");
 				const downvoteButton = getMessageButtonWithEmoji("downvote");
-				if (!upvoteButton || !downvoteButton) return; // prettier-ignore
+				if (!upvoteButton || !downvoteButton) return;
 
 				if (isUpvote) upvoteButton.setStyle(ButtonStyle.Success);
 				else downvoteButton.setStyle(ButtonStyle.Danger);

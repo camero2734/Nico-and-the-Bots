@@ -14,7 +14,7 @@ class TopfeedBot {
 	guild: Guild;
 	ready: Promise<void>;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	websites: SiteWatcher<any>[] = [];
+	websites: SiteWatcher[] = [];
 	// instagrams: InstaWatcher[] = [];
 	youtubes: YoutubeWatcher[] = [];
 	constructor() {
@@ -82,7 +82,7 @@ class TopfeedBot {
 		];
 	}
 
-	async #checkGroup<U>(watchers: Watcher<U>[]): Promise<void> {
+	async #checkGroup<U extends object>(watchers: Watcher<U>[]): Promise<void> {
 		if (watchers.length === 0) return;
 
 		const watchersType = watchers[0].type;

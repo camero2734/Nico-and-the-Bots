@@ -29,6 +29,7 @@ function fillParagraph(
 		if (testWidth > maxWidth) {
 			ctx.fillText(line, x, y);
 			line = `${words[n]} `;
+			// biome-ignore lint/style/noParameterAssign: <explanation>
 			y += lineHeight;
 		} else {
 			line = testLine;

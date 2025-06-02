@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
 			include: { dailyBox: true },
 		});
 
-		(<const>["credits", "score"]).forEach((v) => {
+		for (const v of <const>["credits", "score"]) {
 			const value = result[v] as number;
 			if (value < 0)
 				throw new CommandError(
@@ -87,9 +87,9 @@ command.setHandler(async (ctx) => {
 				);
 
 			embed.addFields([{ name: v, value: `${value}`, inline: true }]);
-		});
+		}
 
-		(<const>["steals", "blocks", "tokens", "dailyCount"]).forEach((v) => {
+		for (const v of <const>["steals", "blocks", "tokens", "dailyCount"]) {
 			const value = result.dailyBox?.[v] as number;
 			if (value < 0)
 				throw new CommandError(
@@ -97,7 +97,7 @@ command.setHandler(async (ctx) => {
 				);
 
 			embed.addFields([{ name: v, value: `${value}`, inline: true }]);
-		});
+		}
 	});
 
 	await ctx.editReply({ embeds: [embed] });

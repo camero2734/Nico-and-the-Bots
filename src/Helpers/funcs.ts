@@ -48,6 +48,7 @@ const F = {
 	unlerp: (n: number, low: number, high: number): number =>
 		(n - low) / (high - low),
 	// the default Object.entries function does not retain type information
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	entries: <T extends { [K in any]: any }>(obj: T): [keyof T, T[keyof T]][] =>
 		Object.entries(obj) as [keyof T, T[keyof T]][],
 
@@ -188,7 +189,7 @@ const F = {
 	hashToInt(text: string): number {
 		let h1 = 0xdeadbeef;
 		let h2 = 0x41c6ce57;
-		for (let i = 0, ch; i < text.length; i++) {
+		for (let i = 0, ch: number; i < text.length; i++) {
 			ch = text.charCodeAt(i);
 			h1 = Math.imul(h1 ^ ch, 2654435761);
 			h2 = Math.imul(h2 ^ ch, 1597334677);
@@ -279,6 +280,7 @@ const F = {
 		const codePoints = country
 			.toUpperCase()
 			.split("")
+			// biome-ignore lint/style/noNonNullAssertion: <explanation>
 			.map((c) => c.codePointAt(0)! - 65 + 0x1f1e6);
 		return String.fromCodePoint(...codePoints);
 	},

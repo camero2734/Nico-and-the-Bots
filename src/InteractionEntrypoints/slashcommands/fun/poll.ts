@@ -243,7 +243,7 @@ function generateStatsDescription(
 	const emptyEmoji = toEmoji(emojiIDs.poll.empty);
 	const endEmoji = toEmoji(emojiIDs.poll.end);
 
-	optionsWithVotes.forEach(({ opt, count }) => {
+	for (const { opt, count } of optionsWithVotes) {
 		const [progress] = progressBar.filledBar(
 			totalVotes === 0 ? 1 : totalVotes,
 			count,
@@ -263,7 +263,7 @@ function generateStatsDescription(
 				value: `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`,
 			},
 		]);
-	});
+	}
 
 	return tempEmbed.data.fields || [];
 }

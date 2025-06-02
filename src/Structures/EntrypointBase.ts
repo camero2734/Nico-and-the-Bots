@@ -32,10 +32,15 @@ import type { ReplyListener } from "./ListenerReply";
 type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 
 export abstract class InteractionEntrypoint<
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	HandlerType extends (...args: any[]) => Promise<unknown>,
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	HandlerArgs extends any[] = [],
 > {
-	public interactionListeners = new Collection<string, InteractionListener>();
+	public interactionListeners = new Collection<
+		string,
+		InteractionListener<Readonly<string[]>>
+	>();
 	public reactionListeners = new Collection<string, ReactionListener>();
 	public replyListeners = new Collection<string, ReplyListener>();
 

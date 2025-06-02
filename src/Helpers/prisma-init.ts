@@ -70,14 +70,14 @@ export const queries = {
 	async findOrCreateUser<T extends Prisma.UserInclude>(
 		id: string,
 		include?: T,
-	): Promise<Prisma.UserGetPayload<{ include: T }>> {
+	) {
 		const res = await prisma.user.upsert({
 			where: { id },
 			include: include,
 			create: { id, dailyBox: { create: {} } },
 			update: {},
 		});
-		return res as any; // The return type is correct but Typescript is being a boomwhacker
+		return res as Prisma.UserGetPayload<{ include: T }>; // The return type is correct but Typescript is being a boomwhacker
 	},
 	async getJoinedNum(date: Date): Promise<number> {
 		const numJoinedBefore = await prisma.user.count({

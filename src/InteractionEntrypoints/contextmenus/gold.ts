@@ -336,7 +336,8 @@ new Cron("12 * * * *", async () => {
 	const toRemove = hasGoldRoleSet.difference(receivedGoldRecentlySet);
 
 	for (const userId of toRemove) {
-		const member = usersWithGoldRole.find((m) => m.id === userId)!;
+		const member = usersWithGoldRole.find((m) => m.id === userId);
+		if (!member) continue;
 		await member.roles.remove(goldRole);
 	}
 });

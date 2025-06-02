@@ -29,6 +29,7 @@ export const VerifiedQuizConsts = {
  * So: 10 questions = 10 characters, 15 questions = 15 characters
  */
 
+// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class QuestionIDEncoder {
 	static decode(base256: string): Question[] {
 		const bitValues = F.base256Decode(base256);

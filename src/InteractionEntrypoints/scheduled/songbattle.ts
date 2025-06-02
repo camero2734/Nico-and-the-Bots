@@ -112,7 +112,8 @@ export async function songBattleCron() {
 	await updatePreviousSongBattleMessage();
 
 	const startsAt = new Date();
-	const endsAt = cron.nextRun()!;
+	const endsAt = cron.nextRun();
+	if (!endsAt) throw new CommandError("Failed to determine end time");
 
 	// Ping message
 	const mention = roleMention(roles.songBattles);

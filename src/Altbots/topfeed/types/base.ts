@@ -5,13 +5,13 @@ import type { BaseMessageOptions, Message, Snowflake } from "discord.js";
 import { NicoClient } from "../../../../app";
 import { prisma } from "../../../Helpers/prisma-init";
 
-export interface Checked<T> {
+export interface Checked<T extends object> {
 	uniqueIdentifier: string;
 	ping: boolean;
 	_data: T;
 }
 
-export abstract class Watcher<T> {
+export abstract class Watcher<T extends object> {
 	constructor(
 		public handle: string,
 		public channel: Snowflake,
@@ -48,7 +48,7 @@ export abstract class Watcher<T> {
 				id: item.uniqueIdentifier,
 				type: this.type,
 				handle: this.handle,
-				subtype: (<any>item._data).subtype,
+				subtype: "subtype" in item._data && typeof item._data.subtype === "string" ? item._data.subtype : undefined,
 				data: item._data as Prisma.InputJsonArray,
 			})),
 		});

@@ -11,7 +11,7 @@ import { CommandError } from "../Configuration/definitions";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { ApplicationData, ContextMenus } from "./data";
 
-type TargetTypes = {
+export type TargetTypes = {
 	[ApplicationCommandType.Message]: Message;
 	[ApplicationCommandType.User]: GuildMember;
 };
@@ -54,7 +54,10 @@ export abstract class ContextMenu<
 	_register(): string {
 		ApplicationData.push(this.commandData);
 
-		ContextMenus.set(this.name, this);
+		ContextMenus.set(
+			this.name,
+			this as unknown as ContextMenu<keyof TargetTypes>,
+		);
 		return this.name;
 	}
 }

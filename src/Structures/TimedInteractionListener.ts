@@ -29,7 +29,7 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
 				10,
 			);
 			return `eph&${n}${hash}`;
-		}) as any;
+		}) as IDsMapped<IDs>;
 	}
 	async wait(
 		timeOutMs = 30000,

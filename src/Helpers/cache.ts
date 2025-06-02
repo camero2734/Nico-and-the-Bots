@@ -2,7 +2,7 @@ import { secondsToMilliseconds } from "date-fns";
 import type { DeepReadonly } from "../Structures/SlashCommandOptions";
 
 export class Cache {
-	private cache: Map<string, { data: any; expires: number }>;
+	private cache: Map<string, { data: unknown; expires: number }>;
 
 	constructor(private gcSeconds = 60) {
 		this.cache = new Map();
@@ -16,7 +16,7 @@ export class Cache {
 			this.del(key);
 			return undefined;
 		}
-		return cached.data;
+		return cached.data as T;
 	}
 
 	set<T>(key: string, value: T, ttlSeconds: number) {

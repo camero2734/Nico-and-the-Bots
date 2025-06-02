@@ -62,13 +62,13 @@ command.setHandler(async (ctx) => {
 	const [trackRes, artistRes, albumRes] = await Promise.allSettled([
 		fm.track.getInfo({
 			track: track.name,
-			artist: track.artist!,
+			artist: track.artist || "",
 			username: username,
 		}),
-		fm.artist.getInfo({ artist: track.artist!, username: username }),
+		fm.artist.getInfo({ artist: track.artist || "", username: username }),
 		fm.album.getInfo({
-			album: track.album!,
-			artist: track.artist!,
+			album: track.album || "",
+			artist: track.artist || "",
 			username: username,
 		}),
 	]);

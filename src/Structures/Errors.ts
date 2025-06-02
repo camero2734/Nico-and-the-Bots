@@ -37,7 +37,8 @@ const getErrorChannel = async () => {
 	const channel = await guild?.channels.fetch(channelIDs.errorlog);
 	if (!channel || channel.type !== ChannelType.GuildText) return null;
 
-	return (errorChannel = channel);
+	errorChannel = channel;
+	return errorChannel;
 };
 
 const getChannelName = (ctx: TextBasedChannel | Interaction): string => {

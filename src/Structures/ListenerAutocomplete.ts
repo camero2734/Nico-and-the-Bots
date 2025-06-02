@@ -8,7 +8,7 @@ import type {
 } from "discord.js";
 import { extractOptsFromInteraction } from "./SlashCommandOptions";
 
-type Tuple<Type = any> = [Type?, ...Type[]];
+type Tuple<Type = unknown> = [Type?, ...Type[]];
 
 type RequiredDiscordValues = {
 	member: GuildMember;
@@ -47,11 +47,11 @@ export type AutocompleteNameOption<RawOptionsData extends Readonly<Tuple>> =
 
 export const transformAutocompleteInteraction = (
 	int: AutocompleteInteraction,
-): AutocompleteContext<any, any> => {
+): AutocompleteContext<unknown, unknown> => {
 	const focused = int.options.getFocused(true)?.name;
 	const opts = extractOptsFromInteraction(int);
 
-	const ctx = int as AutocompleteContext<any, any>;
+	const ctx = int as AutocompleteContext<unknown, unknown>;
 	ctx.opts = opts;
 	ctx.focused = focused;
 

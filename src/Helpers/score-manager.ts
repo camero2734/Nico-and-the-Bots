@@ -178,6 +178,7 @@ async function onEarnPoint(
 	};
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class LevelCalculator {
 	static limit = 2100; // Determines the limit of the derivative (2100 in this case)
 	static yIntercept = 80; // Determines the value of L(0)

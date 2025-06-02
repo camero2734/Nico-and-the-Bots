@@ -30,6 +30,7 @@ import {
 	ReplyHandlers,
 	SlashCommands,
 } from "./src/Structures/data";
+import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 
 export const client = new Discord.Client({
 	intents: [
@@ -272,7 +273,7 @@ client.on("interactionCreate", async (interaction) => {
 		try {
 			console.log("Handling interaction via:", interactionHandler.name);
 			await interactionHandler.handler(
-				interaction as any,
+				interaction as ListenerInteraction,
 				interactionHandler.pattern.toDict(interaction.customId),
 			);
 		} catch (e) {
@@ -298,6 +299,7 @@ client.on("interactionCreate", async (interaction) => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const autocomplete = slashcommand.autocompleteListeners.get(
 			optionIdentifier,
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		) as AutocompleteListener<any, any> | undefined; // prettier-ignore
 		if (!autocomplete)
 			return console.log(

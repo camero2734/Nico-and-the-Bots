@@ -16,6 +16,7 @@ export type JobType = "YOUTUBE" | "WEBSITES";
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 
+// biome-ignore lint/suspicious/noExplicitAny: any is the default type anyway
 export const queue = new Queue<any, any, JobType | "TWITTER" | "INSTAGRAM">(
 	QUEUE_NAME,
 	{

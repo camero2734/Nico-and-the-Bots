@@ -19,6 +19,7 @@ import {
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
+import type { Writeable } from "zod";
 
 const ReportReasons = <const>{
 	BEING_RUDE: "Being rude or bothersome to others",
@@ -124,7 +125,9 @@ const genId = ctxMenu.addInteractionListener(
 			if (btn?.type !== ComponentType.Button)
 				throw new Error("The button disappeared");
 
-			(btn as any).label = NUM_PEOPLE_TEXT(priorReports.length + 1);
+			(btn as Writeable<typeof btn>).label = NUM_PEOPLE_TEXT(
+				priorReports.length + 1,
+			);
 
 			const embed = new EmbedBuilder()
 				.setDescription("A new report was added for this message")

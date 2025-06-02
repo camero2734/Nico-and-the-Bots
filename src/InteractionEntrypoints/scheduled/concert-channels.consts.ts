@@ -100,14 +100,14 @@ export class ConcertChannel {
 
 	get flagEmoji() {
 		const code = F.countryNameToCode(this.country);
-		if (!code) return;
+		if (!code) return undefined;
 
 		return F.isoCountryToEmoji(code);
 	}
 
 	get continent() {
 		const code = F.countryNameToCode(this.country);
-		if (!code) return;
+		if (!code) return undefined;
 
 		return F.isoCountryToContinent(code);
 	}

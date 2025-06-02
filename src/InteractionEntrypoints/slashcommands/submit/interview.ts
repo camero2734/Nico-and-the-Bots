@@ -142,7 +142,7 @@ const genYesID = command.addInteractionListener(
 
 		const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
 			new ButtonBuilder()
-				.setURL(embed.data.url!)
+				.setURL(embed.data.url || "")
 				.setLabel("View on YouTube")
 				.setStyle(ButtonStyle.Link),
 		]);

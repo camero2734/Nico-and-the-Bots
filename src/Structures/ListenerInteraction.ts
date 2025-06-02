@@ -47,19 +47,19 @@ export class CustomIDPattern<T extends Readonly<string[]>> {
 	}
 }
 
-export type InteractionListener = {
+export type InteractionListener<T extends Readonly<string[]>> = {
 	name: string;
-	handler: ListenerCustomIdGenerator<any>;
-	pattern: CustomIDPattern<any>;
+	handler: ListenerCustomIdGenerator<T>;
+	pattern: CustomIDPattern<T>;
 };
 
-export const createInteractionListener = <T extends Readonly<string[]> = any>(
+export const createInteractionListener = <T extends Readonly<string[]>>(
 	name: string,
 	args: T,
 	interactionHandler: ListenerCustomIdGenerator<T>,
 ): [
 	string,
-	InteractionListener,
+	InteractionListener<T>,
 	(args: ReturnType<CustomIDPattern<T>["toDict"]>) => string,
 ] => {
 	const argsHash = F.hash(args.join(",")).slice(0, 4); // Invalidate interactions when args are updated

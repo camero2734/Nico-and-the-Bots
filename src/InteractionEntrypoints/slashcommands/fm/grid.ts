@@ -67,7 +67,7 @@ command.setHandler(async (ctx) => {
 	const res = await fm.user.getTopAlbums({
 		username,
 		period: date,
-	} as any);
+	} as { username: typeof username });
 	const topAlbums = res.albums;
 
 	const collected = topAlbums.slice(0, num).map((a) => new Album(a));
@@ -111,8 +111,8 @@ command.setHandler(async (ctx) => {
 			cctx.fillRect(x, y, 200, 200);
 		}
 
-		cctx.strokeText(album.name!, x, y + 10);
-		cctx.fillText(album.name!, x, y + 10);
+		cctx.strokeText(album.name || "", x, y + 10);
+		cctx.fillText(album.name || "", x, y + 10);
 	}
 
 	const lastFMIcon =

@@ -3,10 +3,11 @@ import type { Poll, Vote } from "@prisma/client";
 import {
 	CategoryScale,
 	Chart,
+	type ChartItem,
 	Legend,
-	LinearScale,
 	LineController,
 	LineElement,
+	LinearScale,
 	PointElement,
 } from "chart.js";
 import { setHours, startOfDay } from "date-fns";
@@ -556,7 +557,9 @@ export async function createResultsChart(pollId: number) {
 	// Optionally, make the Y axis cumulative for each choice
 	let cumulative0 = 0;
 	let cumulative1 = 0;
+	// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
 	const cumulativeCounts0 = voteCounts0.map((count) => (cumulative0 += count));
+	// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
 	const cumulativeCounts1 = voteCounts1.map((count) => (cumulative1 += count));
 
 	const song1 = fromSongId(poll.options[0]);
@@ -565,7 +568,7 @@ export async function createResultsChart(pollId: number) {
 	const song1Wins = cumulative0 > cumulative1;
 
 	const canvas = new Canvas(1000, 500);
-	const chart = new Chart(canvas as any, {
+	const chart = new Chart(canvas as unknown as ChartItem, {
 		type: "line",
 		data: {
 			labels,

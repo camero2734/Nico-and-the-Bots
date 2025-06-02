@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import secrets from "../../Configuration/secrets";
 
 type GeniusQueryHit = {

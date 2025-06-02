@@ -8,7 +8,6 @@ import {
   type TextChannel,
 } from "discord.js";
 import FileType from "file-type";
-import fetch from "node-fetch";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -62,12 +61,14 @@ command.setHandler(async (ctx) => {
   // Validate and fetch url
   if (!F.isValidURL(url)) throw new CommandError("Invalid URL given");
 
-  const res = await fetch(url, { size: MAX_FILE_SIZE }).catch((e) => {
+  const res = await fetch(url, {
+    body: JSON.stringify({ size: MAX_FILE_SIZE }),
+  }).catch((e) => {
     console.log(e);
     throw new CommandError("Unable to get the file from that URL.");
   });
 
-  const buffer = await res.buffer();
+  const buffer = await res.arrayBuffer();
 
   const fileType = await FileType.fromBuffer(buffer);
   if (!fileType) throw new CommandError("An error occurred while parsing your file");
@@ -126,7 +127,7 @@ command.setHandler(async (ctx) => {
   embed.setDescription("");
   embed.setFields([]);
 
-  const attachment = new AttachmentBuilder(buffer, { name: fileName });
+  const attachment = new AttachmentBuilder(Buffer.from(buffer), { name: fileName });
 
   if (fileType.mime.startsWith("image")) {
     embed.setImage(`attachment://${fileName}`);

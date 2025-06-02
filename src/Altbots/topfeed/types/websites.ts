@@ -11,7 +11,6 @@ import {
   type Message,
   type Snowflake,
 } from "discord.js";
-import type { Headers } from "node-fetch";
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
@@ -188,7 +187,8 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD> = Array<WATCH_MET
       tls: { rejectUnauthorized: false },
       method: "HEAD",
     });
-    const headers = [...(res.headers as unknown as Headers).entries()]
+
+    const headers = [...Object.values(res.headers.toJSON())]
       // Filter out some headers that we don't care about
       .filter(([k]) => !["date", "keep-alive", "connection"].includes(k.toLowerCase()))
       // Ensure the headers are always in the same order

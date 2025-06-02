@@ -21,7 +21,6 @@ import {
   type TextChannel,
   UserSelectMenuBuilder,
 } from "discord.js";
-import fetch from "node-fetch";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
@@ -363,7 +362,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
       for (const a of attachments) {
         if (a.name?.endsWith("png") || a.name?.endsWith("gif") || a.name?.endsWith("jpg")) {
           const _file = await fetch(a.url);
-          const base64 = (await _file.buffer()).toString("base64");
+          const base64 = Buffer.from(await _file.arrayBuffer()).toString("base64");
           mhtml += `\n<img src="data:image/jpeg;base64,${base64}"><br><br>`;
         }
       }

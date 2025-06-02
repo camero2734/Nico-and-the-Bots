@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM",
+    ],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
@@ -18,10 +21,12 @@
     "noImplicitAny": true,
     "resolveJsonModule": true,
     "baseUrl": "./src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": [
+      "bun"
+    ]
   },
-  "ts-node": {
-    "swc": true
-  },
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts"
+  ],
 }

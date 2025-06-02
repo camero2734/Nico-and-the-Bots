@@ -6,5 +6,5 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.preferences.importModuleSpecifier": "relative",
     "explorer.compactFolders": false,
-    "editor.tabSize": 4
+    "editor.tabSize": 2
 }

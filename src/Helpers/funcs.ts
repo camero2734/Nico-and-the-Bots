@@ -1,6 +1,6 @@
 import type { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import * as bigintConversion from "bigint-conversion";
-import * as crypto from "crypto";
+import * as crypto from "node:crypto";
 import type {
 	BaseMessageOptions,
 	Guild,
@@ -144,7 +144,7 @@ const F = {
 	},
 	truncate(text: string, len: number): string {
 		if (text.length <= len) return text;
-		else return text.substring(0, len - 3) + "...";
+		return `${text.substring(0, len - 3)}...`;
 	},
 	discordTimestamp<T extends keyof typeof timestampTypes = "shortDateTime">(
 		d: Date,
@@ -186,8 +186,8 @@ const F = {
 		return crypto.createHash(algorithm).update(text).digest("base64");
 	},
 	hashToInt(text: string): number {
-		let h1 = 0xdeadbeef,
-			h2 = 0x41c6ce57;
+		let h1 = 0xdeadbeef;
+		let h2 = 0x41c6ce57;
 		for (let i = 0, ch; i < text.length; i++) {
 			ch = text.charCodeAt(i);
 			h1 = Math.imul(h1 ^ ch, 2654435761);
@@ -238,7 +238,7 @@ const F = {
 	},
 	ellipseText(text: string, maxLength: number): string {
 		if (text.length <= maxLength) return text;
-		else return text.substring(0, maxLength - 3) + "...";
+		return `${text.substring(0, maxLength - 3)}...`;
 	},
 	capitalize(text: string): string {
 		return text.charAt(0).toUpperCase() + text.slice(1);

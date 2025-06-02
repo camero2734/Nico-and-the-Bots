@@ -23,12 +23,12 @@ function fillParagraph(
 	const lineHeight = 50;
 
 	for (let n = 0; n < words.length; n++) {
-		const testLine = line + words[n] + " ";
+		const testLine = `${line + words[n]} `;
 		const metrics = ctx.measureText(testLine);
 		const testWidth = metrics.width;
 		if (testWidth > maxWidth) {
 			ctx.fillText(line, x, y);
-			line = words[n] + " ";
+			line = `${words[n]} `;
 			y += lineHeight;
 		} else {
 			line = testLine;

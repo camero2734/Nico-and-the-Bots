@@ -35,7 +35,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
 				`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`,
 			);
 			topfeedBot.guild.channels.fetch(channelIDs.bottest).then((channel) => {
-				if (channel && channel.isTextBased()) {
+				if (channel?.isTextBased()) {
 					channel.send(
 						`${userMention(userIDs.me)} Twitter check rate limit reached. Must wait for ${waitTime} seconds.`,
 					);

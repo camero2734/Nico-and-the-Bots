@@ -5,7 +5,7 @@
  * Purposefully .gitignored so no one can cheat :)
  */
 
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 
 export class Question<T extends Readonly<string[]> = Readonly<string[]>> {
 	static QUESTION_NUMBER = 0;

@@ -162,7 +162,7 @@ const genPollResId = command.addInteractionListener(
 		const { pollId } = args;
 		const indices = ctx.values
 			?.map((n) => Number.parseInt(n))
-			.filter((n) => n >= 0 && !isNaN(n));
+			.filter((n) => n >= 0 && !Number.isNaN(n));
 		const guild = ctx.guild;
 		if (indices.length < 1 || !guild) return;
 
@@ -250,7 +250,7 @@ function generateStatsDescription(
 		);
 		const emoji = opt.emoji ? `${opt.emoji} ` : "";
 		const basePercent = (100 * count) / totalVotes;
-		const percent = (isFinite(basePercent) ? basePercent : 0).toPrecision(3);
+		const percent = (Number.isFinite(basePercent) ? basePercent : 0).toPrecision(3);
 
 		tempEmbed.addFields([
 			{

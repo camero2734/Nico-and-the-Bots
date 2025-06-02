@@ -19,9 +19,8 @@ const getReplyMethod = async (ctx: CommandInteraction) => {
 	if (!ctx.isRepliable() || !ctx.isChatInputCommand()) {
 		if (ctx.channel?.isSendable()) {
 			return ctx.channel.send;
-		} else {
-			return () => {};
 		}
+			return () => {};
 	}
 
 	if (!ctx.deferred && !ctx.replied) {
@@ -129,7 +128,7 @@ export const ErrorHandler = async (
 			allowedMentions: { users: [], roles: [] },
 		});
 	} else {
-		console.log(`Unknown error:`, e);
+		console.log("Unknown error:", e);
 		const embed = new EmbedBuilder()
 			.setTitle("An unknown error occurred!")
 			.setFooter({

@@ -31,7 +31,9 @@ type DataForUsername = {
 const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> =
 	{
 		pootusmaximus: {
+			// biome-ignore lint/suspicious/noExplicitAny: purposeful
 			roleId: "572568489320120353" as any,
+			// biome-ignore lint/suspicious/noExplicitAny: purposeful
 			channelId: channelIDs.bottest as any,
 		},
 		blurryface: {
@@ -127,7 +129,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
 						url: highestBitrateVariant.url,
 					},
 				};
-			} else if (item.type === "photo") {
+			}if (item.type === "photo") {
 				return {
 					media: {
 						url: item.media_url_https,
@@ -267,12 +269,12 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
 
 export async function fetchTwitter(
 	source: "webhook" | "scheduled",
-	sinceTs?: number,
+	_sinceTs?: number,
 ) {
 	if (!secrets.twitterAlternateApiKey) {
 		throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
 	}
-	sinceTs ||= Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
+	const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
 
 	const query = usernamesToWatch
 		.map((username) => `from:${username}`)

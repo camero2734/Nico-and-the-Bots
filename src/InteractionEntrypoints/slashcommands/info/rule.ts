@@ -139,7 +139,7 @@ command.setHandler(async (ctx) => {
 	const { rule } = ctx.opts;
 
 	const ruleNum = Number(rule);
-	if (isNaN(ruleNum)) {
+	if (Number.isNaN(ruleNum)) {
 		const results = fuse.search(rule);
 		if (results.length === 0) throw new CommandError("Rule not found");
 		results[0].item.send(ctx);

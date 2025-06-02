@@ -12,7 +12,7 @@ import {
 	type StringSelectMenuInteraction,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import fs from "fs";
+import fs from "node:fs";
 import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
@@ -54,11 +54,11 @@ command.setHandler(async (ctx) => {
 	const description = wrapCode(
 		[
 			`<DemaOS/Guest>: Welcome to DEMAtronix™ Telephony System. You have ${tokens} token${tokens === 1 ? "" : "s"} token available for use. Unauthorized access is strictly prohibited.`,
-			`\tbanditos.exe: Rerouting connection through Vulture VPN...`,
+			"\tbanditos.exe: Rerouting connection through Vulture VPN...",
 			`\tvvpn.exe: Uplink established successfully at ${format(new Date(), "k:mm 'on' d MMMM yyyy")}.`,
-			`\tbanditos.exe: Granting admin access...`,
+			"\tbanditos.exe: Granting admin access...",
 			`<DemaOS/Admin>: Welcome, ${bishop}!`,
-			`\tbishops.exe: Accessing district supply lists... Please make a selection.`,
+			"\tbishops.exe: Accessing district supply lists... Please make a selection.",
 		].join("\n"),
 	);
 
@@ -128,7 +128,7 @@ const genSelectId = command.addInteractionListener(
 		await ctx.deferUpdate();
 
 		const districtNum = Number(ctx.values.at(0));
-		if (isNaN(districtNum)) return;
+		if (Number.isNaN(districtNum)) return;
 
 		const district = districts[districtNum];
 
@@ -169,7 +169,7 @@ const genSelectId = command.addInteractionListener(
 		const isCaught = ran < CHANCE_CAUGHT;
 
 		if (isCaught) return memberCaught(ctx, district, dbUser.dailyBox);
-		else
+		
 			return memberWon(ctx, district, dbUser as User & { dailyBox: DailyBox });
 	},
 );
@@ -253,7 +253,7 @@ async function memberCaught(
 		.setTitle(`VIOLATION DETECTED BY ${issuingBishop.toUpperCase()}`)
 		.setAuthor({ name: issuingBishop, iconURL: emojiURL })
 		.setDescription(
-			`You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.`,
+			"You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.",
 		)
 		.setFooter({
 			text: `You win nothing. ${tokensRemaining}`,
@@ -300,7 +300,7 @@ async function memberWon(
 					create: { amountPaid: 0, roleId: prize.id, userId: member.id },
 				});
 
-				prizeDescription = `You may equip this role using the \`/roles colors\` command.`;
+				prizeDescription = "You may equip this role using the \`/roles colors\` command.";
 			} else await member.roles.add(prize.id);
 			break;
 		}

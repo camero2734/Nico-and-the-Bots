@@ -112,7 +112,7 @@ const genActionId = command.addInteractionListener(
 				components: actionRow ? [actionRow] : undefined,
 			});
 			return;
-		} else if (actionType === ActionTypes.DeleteReminder) {
+		}if (actionType === ActionTypes.DeleteReminder) {
 			console.log("delete", /SELECT/);
 			if (!ctx.isButton()) return;
 			ctx.deferred = true;
@@ -135,7 +135,7 @@ const genActionId = command.addInteractionListener(
 		} else if (actionType === ActionTypes.SelectReminder) {
 			if (!ctx.isSelectMenu()) return;
 			const id = +ctx.values[0];
-			if (!id || isNaN(id)) return;
+			if (!id || Number.isNaN(id)) return;
 
 			const reminder = await prisma.reminder.findUnique({ where: { id } });
 			if (!reminder || reminder.userId !== ctx.member.id) return;

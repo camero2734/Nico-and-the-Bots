@@ -109,7 +109,7 @@ export abstract class InteractionEntrypoint<
 				throw new Error(`Handler not registered for ${this.constructor.name}`);
 
 			const member = ctx.member as GuildMember;
-			if (!member) throw new Error(`No member`);
+			if (!member) throw new Error("No member");
 
 			const isStaffCommand =
 				ctx.isChatInputCommand() && ctx.commandName === "staff";

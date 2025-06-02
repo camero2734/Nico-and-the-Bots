@@ -36,7 +36,7 @@ command.setHandler(async (ctx) => {
 	const { user, time, reason } = ctx.opts;
 	await ctx.deferReply();
 
-	const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
+	const timeStr = Number.isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
 
 	const durationMs = parseDuration(timeStr);
 	if (!durationMs) throw new CommandError("Unable to parse duration.");

@@ -65,7 +65,7 @@ const genHandleId = ctxMenu.addInteractionListener(
 		let text = `**👋 You asked me to remind you about this message:** https://discord.com/channels/${ctx.guildId}/${ctx.channelId}/${args.originalMessageId}`;
 		if (extraText) text += `\n\n**You also said:**\n${extraText}`;
 
-		const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
+		const timeStr = Number.isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
 		const durationMs = parseDuration(timeStr);
 
 		if (!durationMs) throw new CommandError("Unable to parse duration.");

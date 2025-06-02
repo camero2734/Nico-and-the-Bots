@@ -83,7 +83,7 @@ command.setHandler(async (ctx) => {
 	embed.addFields([
 		{
 			name: "Link",
-			value: "[Click Here](https://youtu.be/" + id + ")",
+			value: `[Click Here](https://youtu.be/${id})`,
 			inline: true,
 		},
 	]);

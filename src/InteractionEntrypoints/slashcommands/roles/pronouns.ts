@@ -62,7 +62,7 @@ const genSelectId = command.addInteractionListener(
 				name: ctx.member.displayName,
 				iconURL: ctx.user.displayAvatarURL(),
 			})
-			.setDescription(`Your pronoun roles have been updated!`);
+			.setDescription("Your pronoun roles have been updated!");
 
 		await ctx.editReply({ embeds: [embed], components: [] });
 	},

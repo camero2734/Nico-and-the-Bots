@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import * as Diff from "diff";
 import {
 	ActionRowBuilder,
@@ -80,6 +80,8 @@ export class SiteWatcher<
 
 		try {
 			// eslint-disable-next-line no-var
+			// biome-ignore lint/style/noVar: <explanation>
+			// biome-ignore lint/correctness/noInnerDeclarations: <explanation>
 			var response = await Promise.all(promises);
 		} catch (e) {
 			console.error(e);
@@ -149,7 +151,7 @@ export class SiteWatcher<
 			const att = new AttachmentBuilder(file, { name: "file.png" });
 			embed.setImage("attachment://file.png");
 			return [[{ embeds: [embed], files: [att], components: [actionRow] }]];
-		} else return [[{ embeds: [embed], components: [actionRow] }]];
+		}return [[{ embeds: [embed], components: [actionRow] }]];
 	}
 
 	override async afterCheck(msg: Message): Promise<void> {
@@ -172,7 +174,7 @@ export class SiteWatcher<
 			!this.watchMethods.includes("HEADERS") &&
 			(await this.#archivePage(this.url));
 
-		actionRow["components"].splice(actionRow["components"].length - 1, 1);
+		actionRow.components.splice(actionRow.components.length - 1, 1);
 		if (savedUrl) {
 			actionRow.addComponents([
 				new ButtonBuilder()

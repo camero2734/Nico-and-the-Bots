@@ -76,8 +76,7 @@ const genSubmenuId = msgInt.addInteractionListener(
 				{
 					name: "\u200b",
 					value:
-						category.data.roles.map((r) => `<@&${r.id}>`).join("\n") +
-						"\n\u2063",
+						`${category.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
 				},
 			])
 			.setFooter({
@@ -173,7 +172,7 @@ const genItemId = msgInt.addInteractionListener(
 
 		if (actionType === ActionTypes.View) {
 			embed
-				.setDescription(`Would you like to purchase this item?`)
+				.setDescription("Would you like to purchase this item?")
 				.addFields([
 					{ name: "Cost", value: `${category.data.credits}`, inline: true },
 				])
@@ -307,7 +306,7 @@ async function generateMainMenuEmbed(
 				.setLabel(
 					unlocked
 						? `${idx + 1}. ${label}`
-						: `Level ${item.data.level}${item.data.requiresDE ? ` & Firebreathers` : ""}`,
+						: `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`,
 				)
 				.setCustomId(
 					unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID(),
@@ -326,9 +325,7 @@ async function generateMainMenuEmbed(
 			{
 				name: name,
 				value:
-					`${italic(item.description)}\n` +
-					item.data.roles.map((r) => `<@&${r.id}>`).join("\n") +
-					"\n\u2063",
+					`${italic(item.description)}\n${item.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
 			},
 		]);
 	}

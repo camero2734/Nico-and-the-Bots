@@ -128,7 +128,7 @@ command.setHandler(async (ctx) => {
 		checkingSize > 5
 	) {
 		checkingSize--;
-		cctx.font = checkingSize + "px Futura";
+		cctx.font = `${checkingSize}px Futura`;
 		const textInfo = cctx.measureText(ctx.member.displayName);
 		measuredTextWidth = textInfo.width;
 		measuredTextHeight =
@@ -137,7 +137,7 @@ command.setHandler(async (ctx) => {
 
 	//DRAW NAME
 	cctx.fillStyle = ctx.member.displayHexColor;
-	cctx.font = checkingSize + "px Futura";
+	cctx.font = `${checkingSize}px Futura`;
 	cctx.fillText(ctx.member.displayName, 120, 65);
 
 	//DRAW GOT CREDITS & BADGE
@@ -164,11 +164,10 @@ command.setHandler(async (ctx) => {
 	const tokenMessage = (() => {
 		if (tokenSum === newTokens) {
 			return `You earned ${tokensToGive} token${F.plural(tokensToGive)}!`;
-		} else if (newTokens === currentTokens) {
-			return `You have the maximum number of tokens, so you did not earn any today. Spend them with the \`/econ resupply\` command`;
-		} else {
-			return `You have reached the maximum number of tokens! Spend one with the \`/econ resupply\` command to ensure you earn one tomorrow.`;
+		}if (newTokens === currentTokens) {
+			return "You have the maximum number of tokens, so you did not earn any today. Spend them with the \`/econ resupply\` command";
 		}
+			return "You have reached the maximum number of tokens! Spend one with the \`/econ resupply\` command to ensure you earn one tomorrow.";
 	})();
 
 	const facts = [

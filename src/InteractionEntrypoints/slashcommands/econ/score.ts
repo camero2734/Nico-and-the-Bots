@@ -131,7 +131,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
 		checkingSize > 5
 	) {
 		checkingSize--;
-		cctx.font = checkingSize + "px Futura";
+		cctx.font = `${checkingSize}px Futura`;
 		const textInfo = cctx.measureText(username);
 		measuredTextWidth = textInfo.width;
 		measuredTextHeight =
@@ -150,7 +150,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
 	cctx.translate(325, 170);
 
 	//USERNAME
-	cctx.font = "bold " + checkingSize + "px Futura";
+	cctx.font = `bold ${checkingSize}px Futura`;
 	cctx.textAlign = "start";
 	cctx.strokeText(username, 0, 0);
 	cctx.fillText(username, 0, 0);

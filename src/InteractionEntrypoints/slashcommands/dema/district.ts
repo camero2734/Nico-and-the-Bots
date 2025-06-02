@@ -133,7 +133,7 @@ const genModalSubmitId = command.addInteractionListener(
 			);
 		}
 
-		const citizenId = ctx.user.id.slice(0, -2) + "_" + ctx.user.id.slice(-2);
+		const citizenId = `${ctx.user.id.slice(0, -2)}_${ctx.user.id.slice(-2)}`;
 
 		const districtRoleIds = Object.values(roles.districts);
 

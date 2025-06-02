@@ -63,7 +63,7 @@ class ConcertChannelManager {
 
 			return true;
 		} catch (e) {
-			console.warn(`Failed to fetch concerts`, e);
+			console.warn("Failed to fetch concerts", e);
 			return false;
 		}
 	}
@@ -89,7 +89,7 @@ class ConcertChannelManager {
 
 			return true;
 		} catch (e) {
-			console.warn(`Failed to check channels`, e);
+			console.warn("Failed to check channels", e);
 			return false;
 		}
 	}
@@ -97,11 +97,11 @@ class ConcertChannelManager {
 	async #registerConcert(toAdd: ConcertChannel): Promise<void> {
 		const referenceRole = await this.guild.roles.fetch(roles.topfeed.divider);
 		if (!referenceRole) {
-			console.log(`[Concert Channels] Reference role not found`);
+			console.log("[Concert Channels] Reference role not found");
 			return;
 		}
 		if (!this.#forumChannel) {
-			console.log(`[Concert Channels] Forum channel not found`);
+			console.log("[Concert Channels] Forum channel not found");
 			return;
 		}
 

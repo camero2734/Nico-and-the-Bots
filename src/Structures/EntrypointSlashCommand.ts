@@ -48,7 +48,7 @@ type SlashCommandInteraction<T extends CommandOptions = []> =
 		guildId: Snowflake;
 		send(
 			payload: BaseMessageOptions & { ephemeral?: boolean },
-		): Promise<Message | void>;
+		): Promise<Message | undefined>;
 	};
 type SlashCommandHandler<T extends CommandOptions = []> = (
 	ctx: SlashCommandInteraction<T>,
@@ -107,7 +107,7 @@ export class SlashCommand<
 		ctx.send = async (payload) => {
 			if (ctx.replied || ctx.deferred)
 				return ctx.editReply(payload) as Promise<Message>;
-			else
+			
 				return ctx.reply(
 					payload as unknown as MessagePayload,
 				) as unknown as Promise<Message<boolean>>;

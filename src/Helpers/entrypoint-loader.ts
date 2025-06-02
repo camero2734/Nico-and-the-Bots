@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { glob as g } from "glob";
-import path from "path";
-import { promisify } from "util";
+import path from "node:path";
+import { promisify } from "node:util";
 import type { InteractionEntrypoint } from "../Structures/EntrypointBase";
 import { ContextMenu } from "../Structures/EntrypointContextMenu";
 import { ManualEntrypoint } from "../Structures/EntrypointManual";

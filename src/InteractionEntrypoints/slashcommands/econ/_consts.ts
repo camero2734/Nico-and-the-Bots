@@ -47,9 +47,9 @@ type Prize = PercentlessPrize & { percent: number };
 export function getPrizeName(prize: Prize): string {
 	if (prize.type === PrizeType.Credits)
 		return `crate of ${prize.amount} credits`;
-	else if (prize.type === PrizeType.Role) return `<@&${prize.id}> role`;
-	else if (prize.type === PrizeType.Item) return `${prize.item}`;
-	else return "prize";
+	if (prize.type === PrizeType.Role) return `<@&${prize.id}> role`;
+	if (prize.type === PrizeType.Item) return `${prize.item}`;
+	return "prize";
 }
 
 export class District {

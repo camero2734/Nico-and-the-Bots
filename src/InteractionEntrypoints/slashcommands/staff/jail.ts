@@ -469,7 +469,7 @@ async function closeChannel(
 	if (cancelled) {
 		await finalM.delete();
 		return;
-	} else finished = true;
+	}finished = true;
 	// No turning back now
 	await chan.send("Sending channel archive...");
 

@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 const keyStr = "thisdoesntreallymatteritsnotreallythatsecret";
 const key = crypto
@@ -35,7 +35,7 @@ export class FooterEncoder<T extends Record<keyof T, string | number>> {
 		);
 		const orderedEntries = decrypted
 			.split(this.JOIN_STR)
-			.map((v, i) => [orderedKeys[i], isNaN(Number(v)) ? v : +v]) as [
+			.map((v, i) => [orderedKeys[i], Number.isNaN(Number(v)) ? v : +v]) as [
 			string,
 			string,
 		][];

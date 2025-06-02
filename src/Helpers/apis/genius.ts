@@ -49,7 +49,7 @@ class Genius {
 		});
 		const json = (await res.json()) as GeniusResult<GeniusQueryResponse>;
 		if (json.meta.status !== 200 || !json.response) return null;
-		else return json.response.hits[0];
+		return json.response.hits[0];
 	}
 }
 

@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import secrets from "../../Configuration/secrets";
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 
 const CloudflareR2 = new S3Client({
 	region: "auto",
@@ -29,7 +29,7 @@ export async function uploadImageToCloudflareStorage(
 	).catch(() => null);
 
 	// If the file exists and the new file is the same, don't reupload
-	if (existing && existing.ETag?.includes(await calculateEtag(buffer))) {
+	if (existing?.ETag?.includes(await calculateEtag(buffer))) {
 		console.log(existing, /EXISTING/);
 	} else {
 		const result = await CloudflareR2.send(

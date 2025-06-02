@@ -90,7 +90,7 @@ const update = async (msg: Message) => {
 		embed.addFields([
 			{
 				name: "Upgrade almost finished...",
-				value: `Expected to finish \`soon\``,
+				value: "Expected to finish \`soon\`",
 			},
 		]);
 		embed.setColor(Colors.Red);

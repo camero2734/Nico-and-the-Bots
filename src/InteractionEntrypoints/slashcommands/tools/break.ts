@@ -25,7 +25,7 @@ command.setHandler(async (ctx) => {
 	const { time } = ctx.opts;
 	const member = ctx.member;
 
-	const timeStr = isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
+	const timeStr = Number.isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
 
 	const durationMs = parseDuration(timeStr);
 	if (!durationMs) throw new CommandError("Unable to parse duration.");

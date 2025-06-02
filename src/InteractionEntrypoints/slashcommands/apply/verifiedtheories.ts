@@ -83,7 +83,7 @@ command.setHandler(async (ctx) => {
 				"It's recommended you do this part from a computer if possible, but it's not required.",
 				"## Part 2: Multiple choice questions",
 				`This quiz asks various questions related to the lore of the band. There are ${VerifiedQuizConsts.NUM_QUESTIONS} questions and you must answer them *all* correctly.`,
-				`*Note:* Select your answers very carefully - **once you select an answer, it is final.**`,
+				"*Note:* Select your answers very carefully - **once you select an answer, it is final.**",
 				"If you aren't ready to take the quiz, you can safely dismiss this message. When you're ready, hit Begin below.",
 				"## Part 3: You're in! Rules and guidelines",
 				"If you pass the quiz, you will be granted access to the channel. There's some rules and guidelines you must follow to keep your access. You'll be presented with these after you pass the quiz.",
@@ -482,7 +482,7 @@ async function sendFinalEmbed(
 		.setDescription(
 			`You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
 				passed
-					? `**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them.`
+					? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
 					: `You may apply again in ${hours} hours.`
 			}`,
 		);

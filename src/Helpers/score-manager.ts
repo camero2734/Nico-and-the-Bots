@@ -91,7 +91,7 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
 	let earnedPoint = true;
 	if (timeSince < IDEAL_TIME_MS) {
 		// Calculate probability of earning a point for this message
-		const P = Math.pow(timeSince / IDEAL_TIME_MS, 2);
+		const P = (timeSince / IDEAL_TIME_MS) ** 2;
 		earnedPoint = Math.random() < P;
 	}
 
@@ -193,10 +193,10 @@ export class LevelCalculator {
 	 * @returns The level corresponding to the score
 	 */
 	static calculateLevel(score: number) {
-		if (score < this.yIntercept) return 0;
+		if (score < LevelCalculator.yIntercept) return 0;
 
 		const x = score;
-		const A = (x - this.yIntercept) / this.limit; // Helper substitute variable
+		const A = (x - LevelCalculator.yIntercept) / LevelCalculator.limit; // Helper substitute variable
 		return Math.floor(0.5 * (A + Math.sqrt(A * (A + 560))) + Number.EPSILON);
 	}
 
@@ -209,15 +209,15 @@ export class LevelCalculator {
 		if (level <= 0) return 0;
 
 		const y = level;
-		return Math.ceil((this.limit * y * y) / (y + this.adder) + this.yIntercept);
+		return Math.ceil((LevelCalculator.limit * y * y) / (y + LevelCalculator.adder) + LevelCalculator.yIntercept);
 	}
 
 	/**
 	 * Calculates points remaining until the next level
 	 */
 	static pointsToNextLevel(score: number) {
-		const nextLevel = this.calculateLevel(score) + 1;
-		const scoreRequired = this.calculateScore(nextLevel);
+		const nextLevel = LevelCalculator.calculateLevel(score) + 1;
+		const scoreRequired = LevelCalculator.calculateScore(nextLevel);
 
 		return scoreRequired - score;
 	}

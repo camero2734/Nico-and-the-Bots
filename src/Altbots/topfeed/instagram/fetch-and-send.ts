@@ -98,9 +98,10 @@ function extractMedia(item: TimelineFeedResponseMedia_or_ad): InstagramMedia[] {
 			continue;
 		}
 
-		const bestImage = mediaItem.image_versions2!.candidates.sort(
+		const bestImage = mediaItem.image_versions2?.candidates.sort(
 			(a, b) => b.width - a.width,
 		)[0];
+		if (!bestImage) continue; // Skip if no image found
 		media.push({ url: bestImage.url, type: "image" });
 	}
 

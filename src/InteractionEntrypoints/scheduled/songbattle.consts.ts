@@ -396,11 +396,10 @@ export function determineResult(poll: Poll & { votes: Vote[] }): Result {
 
 	if (song1Votes > song2Votes) {
 		return Result.Song1;
-	} else if (song2Votes > song1Votes) {
+	}if (song2Votes > song1Votes) {
 		return Result.Song2;
-	} else {
-		return Result.Tie;
 	}
+		return Result.Tie;
 }
 
 export function findFirstUnmatchedSongs(

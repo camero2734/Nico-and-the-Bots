@@ -131,7 +131,7 @@ command.setHandler(async (ctx) => {
 			iconURL: member.user.displayAvatarURL(),
 		});
 		confirmationEmbed.setFooter({
-			text: `Please refrain from committing these infractions again. Any questions can be directed to the staff!`,
+			text: "Please refrain from committing these infractions again. Any questions can be directed to the staff!",
 			iconURL: member.user.displayAvatarURL(),
 		});
 		await dm.send({ embeds: [confirmationEmbed] });

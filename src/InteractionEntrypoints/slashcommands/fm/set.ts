@@ -75,7 +75,7 @@ command.setHandler(async (ctx) => {
 			iconURL: avatar,
 			url: `https://www.last.fm/user/${fmUsername}`,
 		})
-		.setTitle(`You have not scrobbled any songs yet. Is this your profile?`)
+		.setTitle("You have not scrobbled any songs yet. Is this your profile?")
 		.setDescription(
 			`Please ensure you are linking the correct profile by going here\n**-->** https://www.last.fm/user/${fmUsername}\n\nThis should link to **your** last.fm profile.`,
 		)
@@ -152,7 +152,7 @@ command.setHandler(async (ctx) => {
 			name: res.tracks[0].name || "No Track",
 			image: res.tracks[0].image?.pop()?.url || "",
 			date: res.tracks[0].dateAdded
-				? "Played: " + res.tracks[0].dateAdded
+				? `Played: ${res.tracks[0].dateAdded}`
 				: "Now playing",
 		};
 	}

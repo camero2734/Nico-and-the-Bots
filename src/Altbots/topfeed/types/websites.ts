@@ -188,7 +188,7 @@ export class SiteWatcher<T extends ReadonlyArray<WATCH_METHOD> = Array<WATCH_MET
       method: "HEAD",
     });
 
-    const headers = [...Object.values(res.headers.toJSON())]
+    const headers = [...Object.entries(res.headers.toJSON())]
       // Filter out some headers that we don't care about
       .filter(([k]) => !["date", "keep-alive", "connection"].includes(k.toLowerCase()))
       // Ensure the headers are always in the same order

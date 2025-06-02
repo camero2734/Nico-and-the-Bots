@@ -38,7 +38,6 @@
         "emittery": "^0.9.2",
         "emoji-regex": "10.0.0",
         "env-var": "^7.1.1",
-        "eslint": "^7.26.0",
         "file-type": "^16.5.0",
         "fuse.js": "6.5.3",
         "glob": "^8.0.1",
@@ -93,12 +92,9 @@
         "@types/spotify-web-api-node": "^5.0.3",
         "@types/twit": "^2.2.29",
         "@types/ws": "8.2.2",
-        "@typescript-eslint/eslint-plugin": "^4.8.1",
-        "@typescript-eslint/parser": "^4.8.1",
         "dotenv-run-script": "^0.2.0",
         "nodemon": "^2.0.12",
         "npm-check": "^5.9.2",
-        "prettier": "2.5.1",
         "typescript": "^5.5.1-rc"
     },
     "overrides": {

@@ -1,6 +1,0 @@
-{
-    "watch": ["src", "types", "app.ts"],
-    "ext": "ts,mjs,js,json,graphql",
-    "exec": "yarn start",
-    "legacyWatch": true
-}

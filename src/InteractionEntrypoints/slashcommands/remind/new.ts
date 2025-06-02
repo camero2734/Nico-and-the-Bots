@@ -8,60 +8,57 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { ERRORS, REMINDER_LIMIT } from "./_consts";
 
 const command = new SlashCommand({
-	description: "Sets up a reminder from Nico",
-	options: [
-		{
-			name: "text",
-			description: "What you want to be reminded about",
-			required: true,
-			type: ApplicationCommandOptionType.String,
-		},
-		{
-			name: "time",
-			description:
-				'A duration string, like "4 hours and 30 minutes". A number by itself is interpreted as hours',
-			required: true,
-			type: ApplicationCommandOptionType.String,
-		},
-	],
+  description: "Sets up a reminder from Nico",
+  options: [
+    {
+      name: "text",
+      description: "What you want to be reminded about",
+      required: true,
+      type: ApplicationCommandOptionType.String,
+    },
+    {
+      name: "time",
+      description: 'A duration string, like "4 hours and 30 minutes". A number by itself is interpreted as hours',
+      required: true,
+      type: ApplicationCommandOptionType.String,
+    },
+  ],
 });
 
 command.setHandler(async (ctx) => {
-	await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ ephemeral: true });
 
-	const { text, time } = ctx.opts;
+  const { text, time } = ctx.opts;
 
-	const timeStr = Number.isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
-	const durationMs = parseDuration(timeStr);
+  const timeStr = Number.isNaN(+time) ? time : `${time}hr`; // Interpret a number by itself as hours
+  const durationMs = parseDuration(timeStr);
 
-	if (!durationMs) throw new CommandError("Unable to parse duration.");
+  if (!durationMs) throw new CommandError("Unable to parse duration.");
 
-	const remindersCount = await prisma.reminder.count({
-		where: { userId: ctx.user.id },
-	});
+  const remindersCount = await prisma.reminder.count({
+    where: { userId: ctx.user.id },
+  });
 
-	if (remindersCount >= REMINDER_LIMIT) {
-		throw new CommandError(ERRORS.TOO_MANY_REMINDERS);
-	}
+  if (remindersCount >= REMINDER_LIMIT) {
+    throw new CommandError(ERRORS.TOO_MANY_REMINDERS);
+  }
 
-	const sendAt = addMilliseconds(new Date(), durationMs);
+  const sendAt = addMilliseconds(new Date(), durationMs);
 
-	const confirmEmbed = new EmbedBuilder()
-		.setTitle("Created reminder")
-		.setAuthor({
-			name: ctx.member.displayName,
-			iconURL: ctx.member.user.displayAvatarURL(),
-		})
-		.addFields([{ name: "Reminder", value: text }])
-		.addFields([
-			{ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") },
-		]);
+  const confirmEmbed = new EmbedBuilder()
+    .setTitle("Created reminder")
+    .setAuthor({
+      name: ctx.member.displayName,
+      iconURL: ctx.member.user.displayAvatarURL(),
+    })
+    .addFields([{ name: "Reminder", value: text }])
+    .addFields([{ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") }]);
 
-	await prisma.reminder.create({
-		data: { userId: ctx.user.id, text, sendAt },
-	});
+  await prisma.reminder.create({
+    data: { userId: ctx.user.id, text, sendAt },
+  });
 
-	await ctx.editReply({ embeds: [confirmEmbed] });
+  await ctx.editReply({ embeds: [confirmEmbed] });
 });
 
 export default command;

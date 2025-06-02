@@ -3,34 +3,34 @@ import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-	description: "Enables slow mode in the channel",
-	options: [
-		{
-			name: "time",
-			description: "Time for slowmode in seconds. 0 = off",
-			required: true,
-			type: ApplicationCommandOptionType.Integer,
-		},
-	],
+  description: "Enables slow mode in the channel",
+  options: [
+    {
+      name: "time",
+      description: "Time for slowmode in seconds. 0 = off",
+      required: true,
+      type: ApplicationCommandOptionType.Integer,
+    },
+  ],
 });
 
 command.setHandler(async (ctx) => {
-	if (ctx.opts.time < 0) throw new CommandError("Must be non-negative");
+  if (ctx.opts.time < 0) throw new CommandError("Must be non-negative");
 
-	await ctx.deferReply();
+  await ctx.deferReply();
 
-	await ctx.channel.setRateLimitPerUser(ctx.opts.time);
+  await ctx.channel.setRateLimitPerUser(ctx.opts.time);
 
-	const embed = new EmbedBuilder().setAuthor({
-		name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
-		iconURL: ctx.client.user?.displayAvatarURL(),
-	});
+  const embed = new EmbedBuilder().setAuthor({
+    name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
+    iconURL: ctx.client.user?.displayAvatarURL(),
+  });
 
-	if (ctx.opts.time) {
-		embed.addFields([{ name: "Time (seconds)", value: `${ctx.opts.time}` }]);
-	}
+  if (ctx.opts.time) {
+    embed.addFields([{ name: "Time (seconds)", value: `${ctx.opts.time}` }]);
+  }
 
-	await ctx.editReply({ embeds: [embed] });
+  await ctx.editReply({ embeds: [embed] });
 });
 
 export default command;

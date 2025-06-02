@@ -1,17 +1,14 @@
 import type { Poll, Vote } from "@prisma/client";
-import type {
-	APIEmbedField,
-	APIMessageComponentEmoji,
-} from "discord-api-types/v10";
+import type { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
-	ActionRowBuilder,
-	ApplicationCommandOptionType,
-	ComponentType,
-	EmbedBuilder,
-	type GuildEmoji,
-	type Message,
-	SelectMenuBuilder,
-	SelectMenuOptionBuilder,
+  ActionRowBuilder,
+  ApplicationCommandOptionType,
+  ComponentType,
+  EmbedBuilder,
+  type GuildEmoji,
+  type Message,
+  SelectMenuBuilder,
+  SelectMenuOptionBuilder,
 } from "discord.js";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
@@ -23,249 +20,225 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 const options = <const>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const command = new SlashCommand({
-	description: "Creates a message that users can react to to receive a role",
-	options: [
-		{
-			name: "title",
-			description: "The title for the poll",
-			required: true,
-			type: ApplicationCommandOptionType.String,
-		},
+  description: "Creates a message that users can react to to receive a role",
+  options: [
+    {
+      name: "title",
+      description: "The title for the poll",
+      required: true,
+      type: ApplicationCommandOptionType.String,
+    },
 
-		...options.map(
-			(num) =>
-				<const>{
-					name: `option${num}`,
-					description: `Option #${num}`,
-					required: num <= 2,
-					type: ApplicationCommandOptionType.String,
-				},
-		),
-		{
-			name: "min_choices",
-			description: "The min number of choices a user must choose",
-			required: false,
-			type: ApplicationCommandOptionType.Integer,
-		},
-		{
-			name: "max_choices",
-			description: "The max number of choices a user must choose",
-			required: false,
-			type: ApplicationCommandOptionType.Integer,
-		},
-	],
+    ...options.map(
+      (num) =>
+        <const>{
+          name: `option${num}`,
+          description: `Option #${num}`,
+          required: num <= 2,
+          type: ApplicationCommandOptionType.String,
+        },
+    ),
+    {
+      name: "min_choices",
+      description: "The min number of choices a user must choose",
+      required: false,
+      type: ApplicationCommandOptionType.Integer,
+    },
+    {
+      name: "max_choices",
+      description: "The max number of choices a user must choose",
+      required: false,
+      type: ApplicationCommandOptionType.Integer,
+    },
+  ],
 });
 
 type ParsedOption = { text: string; emoji?: string };
 command.setHandler(async (ctx) => {
-	await ctx.deferReply();
+  await ctx.deferReply();
 
-	const shouldCreateThread = ctx.channel.id === channelIDs.polls;
+  const shouldCreateThread = ctx.channel.id === channelIDs.polls;
 
-	const { title, option1, option2, min_choices, max_choices, ...optDict } =
-		ctx.opts;
+  const { title, option1, option2, min_choices, max_choices, ...optDict } = ctx.opts;
 
-	if (!option1 || !option2)
-		throw new Error("First two options should be required");
+  if (!option1 || !option2) throw new Error("First two options should be required");
 
-	const options: string[] = [
-		option1,
-		option2,
-		...Object.values(optDict).filter((a): a is string => a !== undefined),
-	].map((o) => o?.toString().trim());
+  const options: string[] = [
+    option1,
+    option2,
+    ...Object.values(optDict).filter((a): a is string => a !== undefined),
+  ].map((o) => o?.toString().trim());
 
-	const discordEmojiRegex = /<a{0,1}:(?<name>.*?):(?<id>\d+)>/;
+  const discordEmojiRegex = /<a{0,1}:(?<name>.*?):(?<id>\d+)>/;
 
-	const parsedOptions: ParsedOption[] = [];
+  const parsedOptions: ParsedOption[] = [];
 
-	for (const option of options) {
-		const discordMatch = option.match(discordEmojiRegex);
+  for (const option of options) {
+    const discordMatch = option.match(discordEmojiRegex);
 
-		// Has valid Discord emoji
-		if (discordMatch?.index === 0) {
-			const emoji = discordMatch[0];
-			parsedOptions.push({ text: option.replace(emoji, "").trim(), emoji });
-		}
-		// Doesn't have a Discord emoji, might have a unicode emoji
-		else {
-			const emojiReg = EmojiReg();
-			const possibleEmoji = option.split(" ")[0].trim();
-			const [emoji] = possibleEmoji.match(emojiReg) || [];
+    // Has valid Discord emoji
+    if (discordMatch?.index === 0) {
+      const emoji = discordMatch[0];
+      parsedOptions.push({ text: option.replace(emoji, "").trim(), emoji });
+    }
+    // Doesn't have a Discord emoji, might have a unicode emoji
+    else {
+      const emojiReg = EmojiReg();
+      const possibleEmoji = option.split(" ")[0].trim();
+      const [emoji] = possibleEmoji.match(emojiReg) || [];
 
-			const text = emoji ? option.replace(emoji, "").trim() : option;
-			parsedOptions.push({ text, emoji });
-		}
-	}
+      const text = emoji ? option.replace(emoji, "").trim() : option;
+      parsedOptions.push({ text, emoji });
+    }
+  }
 
-	// Create user if not exists
-	await queries.findOrCreateUser(ctx.user.id);
+  // Create user if not exists
+  await queries.findOrCreateUser(ctx.user.id);
 
-	const poll = await prisma.poll.create({
-		data: {
-			userId: ctx.user.id,
-			name: title,
-			options: parsedOptions.map((p) => p.text),
-		},
-		include: { votes: true },
-	});
+  const poll = await prisma.poll.create({
+    data: {
+      userId: ctx.user.id,
+      name: title,
+      options: parsedOptions.map((p) => p.text),
+    },
+    include: { votes: true },
+  });
 
-	const embed = new EmbedBuilder().setAuthor({
-		name: title,
-		iconURL: ctx.user.displayAvatarURL(),
-	});
+  const embed = new EmbedBuilder().setAuthor({
+    name: title,
+    iconURL: ctx.user.displayAvatarURL(),
+  });
 
-	embed.setFields([...generateStatsDescription(poll, parsedOptions)]);
+  embed.setFields([...generateStatsDescription(poll, parsedOptions)]);
 
-	const selectMenu = new SelectMenuBuilder()
-		.setCustomId(genPollResId({ pollId: poll.id.toString() }))
-		.setMinValues((min_choices as number) || 1)
-		.setMaxValues((max_choices as number) || 1)
-		.setPlaceholder("Select a poll choice");
+  const selectMenu = new SelectMenuBuilder()
+    .setCustomId(genPollResId({ pollId: poll.id.toString() }))
+    .setMinValues((min_choices as number) || 1)
+    .setMaxValues((max_choices as number) || 1)
+    .setPlaceholder("Select a poll choice");
 
-	for (let i = 0; i < parsedOptions.length; i++) {
-		const option = parsedOptions[i];
-		const emoji = option.emoji as APIMessageComponentEmoji;
-		selectMenu.addOptions([
-			new SelectMenuOptionBuilder({
-				label: option.text.substring(0, 100),
-				emoji,
-				value: `${i}`,
-			}).toJSON(),
-		]);
-	}
+  for (let i = 0; i < parsedOptions.length; i++) {
+    const option = parsedOptions[i];
+    const emoji = option.emoji as APIMessageComponentEmoji;
+    selectMenu.addOptions([
+      new SelectMenuOptionBuilder({
+        label: option.text.substring(0, 100),
+        emoji,
+        value: `${i}`,
+      }).toJSON(),
+    ]);
+  }
 
-	const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([
-		selectMenu,
-	]);
+  const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);
 
-	await ctx.send({ embeds: [embed], components: [actionRow] });
-	if (shouldCreateThread) {
-		const m = (await ctx.fetchReply()) as Message;
-		const thread = await ctx.channel.threads.create({
-			name: title,
-			autoArchiveDuration: 1440,
-			reason: "Auto poll thread",
-			startMessage: m,
-		});
-		await thread.send({
-			embeds: [
-				new EmbedBuilder({
-					description: "Welcome to the discussion for the poll!",
-				}),
-			],
-		});
-	}
+  await ctx.send({ embeds: [embed], components: [actionRow] });
+  if (shouldCreateThread) {
+    const m = (await ctx.fetchReply()) as Message;
+    const thread = await ctx.channel.threads.create({
+      name: title,
+      autoArchiveDuration: 1440,
+      reason: "Auto poll thread",
+      startMessage: m,
+    });
+    await thread.send({
+      embeds: [
+        new EmbedBuilder({
+          description: "Welcome to the discussion for the poll!",
+        }),
+      ],
+    });
+  }
 });
 
-const genPollResId = command.addInteractionListener(
-	"pollresponse",
-	["pollId"],
-	async (ctx, args) => {
-		if (!ctx.isSelectMenu()) return;
-		const { pollId } = args;
-		const indices = ctx.values
-			?.map((n) => Number.parseInt(n))
-			.filter((n) => n >= 0 && !Number.isNaN(n));
-		const guild = ctx.guild;
-		if (indices.length < 1 || !guild) return;
+const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], async (ctx, args) => {
+  if (!ctx.isSelectMenu()) return;
+  const { pollId } = args;
+  const indices = ctx.values?.map((n) => Number.parseInt(n)).filter((n) => n >= 0 && !Number.isNaN(n));
+  const guild = ctx.guild;
+  if (indices.length < 1 || !guild) return;
 
-		const msg = ctx.message as Message;
+  const msg = ctx.message as Message;
 
-		const poll = await prisma.poll.findUnique({
-			where: { id: +pollId },
-			include: { votes: true },
-		});
-		if (!poll) return;
+  const poll = await prisma.poll.findUnique({
+    where: { id: +pollId },
+    include: { votes: true },
+  });
+  if (!poll) return;
 
-		// Ensure user hasn't voted
-		const previousVote = poll.votes.find((vote) => vote.userId === ctx.user.id);
+  // Ensure user hasn't voted
+  const previousVote = poll.votes.find((vote) => vote.userId === ctx.user.id);
 
-		const castVote = await prisma.vote.upsert({
-			where: { id: previousVote?.id || -1 },
-			update: { choices: indices },
-			create: { choices: indices, userId: ctx.user.id, pollId: poll.id },
-		});
+  const castVote = await prisma.vote.upsert({
+    where: { id: previousVote?.id || -1 },
+    update: { choices: indices },
+    create: { choices: indices, userId: ctx.user.id, pollId: poll.id },
+  });
 
-		// Update poll object
-		if (previousVote) previousVote.choices = castVote.choices;
-		else poll.votes.push(castVote);
+  // Update poll object
+  if (previousVote) previousVote.choices = castVote.choices;
+  else poll.votes.push(castVote);
 
-		const parsedOptions: ParsedOption[] = [];
-		for (const actionRow of msg.components) {
-			if (actionRow.type !== ComponentType.ActionRow)
-				throw new CommandError("Invalid action row");
-			const selectMenu = actionRow.components[0];
-			if (selectMenu.type !== ComponentType.StringSelect) return;
+  const parsedOptions: ParsedOption[] = [];
+  for (const actionRow of msg.components) {
+    if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
+    const selectMenu = actionRow.components[0];
+    if (selectMenu.type !== ComponentType.StringSelect) return;
 
-			for (const option of selectMenu.options) {
-				const emoji = option.emoji as GuildEmoji;
-				const emojiString = emoji?.id
-					? (await guild.emojis.fetch(emoji.id.toSnowflake())).toString()
-					: emoji?.name;
-				parsedOptions.push({
-					text: option.label as string,
-					emoji: emojiString as string | undefined,
-				});
-			}
-		}
+    for (const option of selectMenu.options) {
+      const emoji = option.emoji as GuildEmoji;
+      const emojiString = emoji?.id ? (await guild.emojis.fetch(emoji.id.toSnowflake())).toString() : emoji?.name;
+      parsedOptions.push({
+        text: option.label as string,
+        emoji: emojiString as string | undefined,
+      });
+    }
+  }
 
-		const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-		embed.setFields(generateStatsDescription(poll, parsedOptions));
+  const embed = EmbedBuilder.from(ctx.message.embeds[0]);
+  embed.setFields(generateStatsDescription(poll, parsedOptions));
 
-		await ctx.update({ embeds: [embed] });
-	},
-);
+  await ctx.update({ embeds: [embed] });
+});
 
 type PollWithVotes = Poll & { votes: Vote[] };
-function generateStatsDescription(
-	poll: PollWithVotes,
-	parsedOptions: ParsedOption[],
-): APIEmbedField[] {
-	// Calculate votes for each option
-	const votes = parsedOptions.map(() => 0);
-	const totalVotes = poll.votes.length;
+function generateStatsDescription(poll: PollWithVotes, parsedOptions: ParsedOption[]): APIEmbedField[] {
+  // Calculate votes for each option
+  const votes = parsedOptions.map(() => 0);
+  const totalVotes = poll.votes.length;
 
-	for (const vote of poll.votes) {
-		for (const choice of vote.choices) {
-			votes[choice]++;
-		}
-	}
+  for (const vote of poll.votes) {
+    for (const choice of vote.choices) {
+      votes[choice]++;
+    }
+  }
 
-	const optionsWithVotes = parsedOptions
-		.map((opt, idx) => ({ opt, count: votes[idx] }))
-		.sort((opt1, opt2) => opt2.count - opt1.count);
+  const optionsWithVotes = parsedOptions
+    .map((opt, idx) => ({ opt, count: votes[idx] }))
+    .sort((opt1, opt2) => opt2.count - opt1.count);
 
-	const tempEmbed = new EmbedBuilder();
+  const tempEmbed = new EmbedBuilder();
 
-	const toEmoji = (id: string) => `<:name:${id}>`;
-	const startEmoji = toEmoji(emojiIDs.poll.start);
-	const filledEmoji = toEmoji(emojiIDs.poll.filled);
-	const emptyEmoji = toEmoji(emojiIDs.poll.empty);
-	const endEmoji = toEmoji(emojiIDs.poll.end);
+  const toEmoji = (id: string) => `<:name:${id}>`;
+  const startEmoji = toEmoji(emojiIDs.poll.start);
+  const filledEmoji = toEmoji(emojiIDs.poll.filled);
+  const emptyEmoji = toEmoji(emojiIDs.poll.empty);
+  const endEmoji = toEmoji(emojiIDs.poll.end);
 
-	for (const { opt, count } of optionsWithVotes) {
-		const [progress] = progressBar.filledBar(
-			totalVotes === 0 ? 1 : totalVotes,
-			count,
-			8,
-			emptyEmoji,
-			filledEmoji,
-		);
-		const emoji = opt.emoji ? `${opt.emoji} ` : "";
-		const basePercent = (100 * count) / totalVotes;
-		const percent = (
-			Number.isFinite(basePercent) ? basePercent : 0
-		).toPrecision(3);
+  for (const { opt, count } of optionsWithVotes) {
+    const [progress] = progressBar.filledBar(totalVotes === 0 ? 1 : totalVotes, count, 8, emptyEmoji, filledEmoji);
+    const emoji = opt.emoji ? `${opt.emoji} ` : "";
+    const basePercent = (100 * count) / totalVotes;
+    const percent = (Number.isFinite(basePercent) ? basePercent : 0).toPrecision(3);
 
-		tempEmbed.addFields([
-			{
-				name: `${emoji}${opt.text}`.trim(),
-				value: `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`,
-			},
-		]);
-	}
+    tempEmbed.addFields([
+      {
+        name: `${emoji}${opt.text}`.trim(),
+        value: `${startEmoji}${progress}${endEmoji} ${count} (${percent}%)`,
+      },
+    ]);
+  }
 
-	return tempEmbed.data.fields || [];
+  return tempEmbed.data.fields || [];
 }
 
 export default command;

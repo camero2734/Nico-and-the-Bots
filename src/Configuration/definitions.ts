@@ -3,9 +3,12 @@
 import { nanoid } from "nanoid";
 
 export class CommandError extends Error {
-    constructor(message?: string, public sendEphemeral = false) {
-        super(message);
-    }
+	constructor(
+		message?: string,
+		public sendEphemeral = false,
+	) {
+		super(message);
+	}
 }
 
 export const NULL_CUSTOM_ID_PREFIX = "__null__";

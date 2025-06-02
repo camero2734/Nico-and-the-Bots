@@ -2,53 +2,56 @@ import { Colors, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
 
 interface Ping {
-    ping: number;
-    time: number;
+	ping: number;
+	time: number;
 }
 
 const previousPings: Ping[] = [];
 
 const command = new SlashCommand({
-    description: "Checks the bot's ping",
-    options: []
+	description: "Checks the bot's ping",
+	options: [],
 });
 
 command.setHandler(async (ctx) => {
-    const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
+	const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
 
-    await ctx.send({ content: "Pinging..." });
+	await ctx.send({ content: "Pinging..." });
 
-    const prior = Date.now();
-    const after = ctx.createdAt.getTime();
+	const prior = Date.now();
+	const after = ctx.createdAt.getTime();
 
-    const currentPing = Math.abs(after - prior);
+	const currentPing = Math.abs(after - prior);
 
-    previousPings.push({ ping: currentPing, time: Date.now() });
+	previousPings.push({ ping: currentPing, time: Date.now() });
 
-    let pingSum = 0;
-    let pingCount = 0;
+	let pingSum = 0;
+	let pingCount = 0;
 
-    for (let i = previousPings.length - 1; i >= 0; i--) {
-        if (previousPings[i].time + PING_TIME >= Date.now()) {
-            pingSum += previousPings[i].ping;
-            pingCount++;
-        } else {
-            previousPings.splice(i, 1);
-        }
-    }
+	for (let i = previousPings.length - 1; i >= 0; i--) {
+		if (previousPings[i].time + PING_TIME >= Date.now()) {
+			pingSum += previousPings[i].ping;
+			pingCount++;
+		} else {
+			previousPings.splice(i, 1);
+		}
+	}
 
-    previousPings[0].time;
+	previousPings[0].time;
 
-    const average = Math.floor(pingSum / pingCount);
+	const average = Math.floor(pingSum / pingCount);
 
-    const embed = new EmbedBuilder()
-        .setColor(Colors.Gold)
-        .setTitle(`${currentPing}ms ping`)
-        .addFields([
-            { name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` },
-            { name: "Average ping", value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}` }
-        ]);
-    await ctx.editReply({ embeds: [embed] });
+	const embed = new EmbedBuilder()
+		.setColor(Colors.Gold)
+		.setTitle(`${currentPing}ms ping`)
+		.addFields([
+			{ name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` },
+			{
+				name: "Average ping",
+				value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}`,
+			},
+		]);
+	await ctx.editReply({ embeds: [embed] });
 });
 
 export default command;

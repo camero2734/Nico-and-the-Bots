@@ -6,42 +6,49 @@ import normalizeUrl from "normalize-url";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-    description: "Put an image onto a clown's monitor 🤡",
-    options: [
-        {
-            name: "image",
-            description: "The URL to the image",
-            required: true,
-            type: ApplicationCommandOptionType.String
-        }
-    ]
+	description: "Put an image onto a clown's monitor 🤡",
+	options: [
+		{
+			name: "image",
+			description: "The URL to the image",
+			required: true,
+			type: ApplicationCommandOptionType.String,
+		},
+	],
 });
 
 command.setHandler(async (ctx) => {
-    await ctx.deferReply();
+	await ctx.deferReply();
 
-    const url = normalizeUrl(ctx.opts.image, { stripProtocol: true, stripAuthentication: true });
-    const filePath = url.split("/").slice(1).join(""); // website.something.com/path/to/image.png => path/to/image.png
+	const url = normalizeUrl(ctx.opts.image, {
+		stripProtocol: true,
+		stripAuthentication: true,
+	});
+	const filePath = url.split("/").slice(1).join(""); // website.something.com/path/to/image.png => path/to/image.png
 
-    const mime = Mime.lookup(filePath);
-    if (!mime || !mime.startsWith("image")) throw new CommandError("The URL provided is not an image");
+	const mime = Mime.lookup(filePath);
+	if (!mime || !mime.startsWith("image"))
+		throw new CommandError("The URL provided is not an image");
 
-    const scale = 2;
+	const scale = 2;
 
-    const canvas = createCanvas(856 * scale, 480 * scale);
-    const cctx = canvas.getContext("2d");
+	const canvas = createCanvas(856 * scale, 480 * scale);
+	const cctx = canvas.getContext("2d");
 
-    const bg = await loadImage("./src/Assets/images/clown.png");
-    const img = await loadImage(ctx.opts.image);
+	const bg = await loadImage("./src/Assets/images/clown.png");
+	const img = await loadImage(ctx.opts.image);
 
-    cctx.drawImage(bg, 0, 0, 856 * scale, 480 * scale);
-    cctx.translate(23 * scale, 110 * scale);
-    cctx.rotate(-Math.PI / 15.0);
-    cctx.drawImage(img, 0, 0, 174 * scale, 147 * scale);
+	cctx.drawImage(bg, 0, 0, 856 * scale, 480 * scale);
+	cctx.translate(23 * scale, 110 * scale);
+	cctx.rotate(-Math.PI / 15.0);
+	cctx.drawImage(img, 0, 0, 174 * scale, 147 * scale);
 
-    const embed = new EmbedBuilder().setImage("attachment://clown.png");
+	const embed = new EmbedBuilder().setImage("attachment://clown.png");
 
-    await ctx.send({ embeds: [embed], files: [{ name: "clown.png", attachment: canvas.toBuffer('image/png') }] });
+	await ctx.send({
+		embeds: [embed],
+		files: [{ name: "clown.png", attachment: canvas.toBuffer("image/png") }],
+	});
 });
 
 export default command;

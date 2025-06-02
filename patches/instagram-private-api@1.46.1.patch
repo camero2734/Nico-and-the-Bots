@@ -1,0 +1,60 @@
+diff --git a/dist/feeds/timeline.feed.d.ts b/dist/feeds/timeline.feed.d.ts
+index cd45b303ca5e830dd0f82b9e00ef71b2383bb60b..e233722fd733a524b6630ea1f5483d320d3bd58f 100644
+--- a/dist/feeds/timeline.feed.d.ts
++++ b/dist/feeds/timeline.feed.d.ts
+@@ -7,5 +7,5 @@ export declare class TimelineFeed extends Feed<TimelineFeedResponse, TimelineFee
+     reason: TimelineFeedReason;
+     set state(body: any);
+     request(options?: TimelineFeedsOptions): Promise<TimelineFeedResponse>;
+-    items(): Promise<TimelineFeedResponseMedia_or_ad[]>;
++    items(additionalParams?: Record<string, any>): Promise<TimelineFeedResponseMedia_or_ad[]>;
+ }
+diff --git a/dist/feeds/timeline.feed.js b/dist/feeds/timeline.feed.js
+index 2e2627e502d652bed7f00b43ea6cc99f268e570a..e0c26b35b63976fd57f742cf0ce8fa7acdab381d 100644
+--- a/dist/feeds/timeline.feed.js
++++ b/dist/feeds/timeline.feed.js
+@@ -44,6 +44,7 @@ class TimelineFeed extends feed_1.Feed {
+             recovered_from_crash: options.recoveredFromCrash,
+             push_disabled: options.pushDisabled,
+             latest_story_pk: options.latestStoryPk,
++            ...options.additionalParams,
+         };
+         if (this.nextMaxId) {
+             form = Object.assign(form, {
+@@ -71,8 +72,8 @@ class TimelineFeed extends feed_1.Feed {
+         this.state = body;
+         return body;
+     }
+-    async items() {
+-        const response = await this.request();
++    async items(additionalParams = {}) {
++        const response = await this.request({ additionalParams });
+         return response.feed_items.filter(i => i.media_or_ad).map(i => i.media_or_ad);
+     }
+ }
+diff --git a/dist/responses/timeline.feed.response.d.ts b/dist/responses/timeline.feed.response.d.ts
+index 47da987e5d01acf672742f00759fef2d8adda861..4a5cb92dbfe87976538e7875e324f5c4148a4667 100644
+--- a/dist/responses/timeline.feed.response.d.ts
++++ b/dist/responses/timeline.feed.response.d.ts
+@@ -1,3 +1,5 @@
++import { TagFeedResponseVideoVersionsItem } from "instagram-private-api/dist/responses/tag.feed.response";
++
+ export interface TimelineFeedResponse {
+     num_results: number;
+     more_available: boolean;
+@@ -36,6 +38,7 @@ export interface TimelineFeedResponseMedia_or_ad {
+     inline_composer_display_condition?: string;
+     inline_composer_imp_trigger_time?: number;
+     image_versions2?: TimelineFeedResponseImage_versions2;
++    video_versions: TagFeedResponseVideoVersionsItem[];
+     original_width?: number;
+     original_height?: number;
+     is_dash_eligible?: number;
+@@ -203,6 +206,7 @@ export interface TimelineFeedResponseCarouselMediaItem {
+     id: string;
+     media_type: number;
+     image_versions2: TimelineFeedResponseImage_versions2;
++    video_versions: TagFeedResponseVideoVersionsItem[];
+     original_width: number;
+     original_height: number;
+     pk: string;

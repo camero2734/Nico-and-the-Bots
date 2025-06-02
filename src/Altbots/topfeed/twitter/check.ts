@@ -1,7 +1,7 @@
 import { TwitterApiUtilsResponse, TwitterOpenApi, TwitterOpenApiClient } from "twitter-openapi-typescript";
 import secrets from "../../../Configuration/secrets";
 import { addMinutes, differenceInSeconds } from "date-fns";
-import { fetchTwitter, usernamesToWatch } from "../fetchers/twitter";
+import { fetchTwitter, usernamesToWatch } from "./fetch-and-send";
 import topfeedBot from "../topfeed";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { userMention } from "discord.js";

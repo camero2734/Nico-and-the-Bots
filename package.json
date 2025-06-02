@@ -11,7 +11,6 @@
         "deploy": "fish ./deploy.fish",
         "prepare": "husky install",
         "prisma:update": "prisma migrate dev",
-        "postinstall": "patch-package",
         "docker:dev": "docker compose up --force-recreate --remove-orphans",
         "docker:build": "docker-compose build",
         "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",
@@ -45,6 +44,7 @@
         "glob": "^8.0.1",
         "google-spreadsheet": "3.2.0",
         "husky": "^7.0.4",
+        "instagram-private-api": "^1.46.1",
         "ioredis": "4.28.5",
         "iso-3166-1-alpha-2": "^1.0.1",
         "metascraper": "^5.44.0",
@@ -59,7 +59,6 @@
         "normalize-url": "^4.5.0",
         "ordinal": "^1.0.3",
         "parse-duration": "^1.1.0",
-        "patch-package": "^6.4.7",
         "prisma": "5.9.1",
         "radix-64": "^1.0.4",
         "ramda": "^0.27.1",
@@ -104,5 +103,8 @@
     },
     "overrides": {
         "re2": "npm:@dashevo/wasm-re2"
+    },
+    "patchedDependencies": {
+        "instagram-private-api@1.46.1": "patches/instagram-private-api@1.46.1.patch"
     }
 }

@@ -179,6 +179,8 @@ const intArgs = <const>["actionType", "base64idarray"];
 const genActionId = command.addInteractionListener("jailunmuteall", intArgs, async (ctx, args) => {
     const base64idarray = args.base64idarray;
 
+    await ctx.deferReply();
+
     // Staff only
     const staffMember = await ctx.guild.members.fetch(ctx.user.id);
     if (!staffMember?.roles.cache.has(roles.staff)) return;
@@ -222,13 +224,12 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
         if (c.type === ComponentType.RoleSelect) return RoleSelectMenuBuilder.from(c);
         if (c.type === ComponentType.MentionableSelect) return MentionableSelectMenuBuilder.from(c);
         if (c.type === ComponentType.ChannelSelect) return ChannelSelectMenuBuilder.from(c);
-        if (c.type !== ComponentType.Button) return c;
+        if (c.type !== ComponentType.Button || c.label !== "Unmute Users") return ButtonBuilder.from(c);
 
         return ButtonBuilder.from(c as ButtonComponent)
             .setCustomId(genActionId({ base64idarray: args.base64idarray, actionType: ActionTypes.REMUTE_ALL.toString() }))
             .setLabel("Remute Users");
     });
-
 
     await msg.edit({ components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)] });
 }

@@ -2,7 +2,7 @@ import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
 import { KeonsBot } from "./src/Altbots/shop";
-import { fetchTwitter } from "./src/Altbots/topfeed/fetchers/twitter";
+import { fetchTwitter } from "./src/Altbots/topfeed/twitter/fetch-and-send";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";

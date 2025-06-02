@@ -1,8 +1,8 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import IORedis from "ioredis";
-import { checkTwitter } from "./checkers/twitter";
+import { checkTwitter } from "./twitter/check";
 import topfeedBot from "./topfeed";
-import { checkInstagram } from "./checkers/instagram";
+import { checkInstagram } from "./instagram/check";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = { connection: new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null, enableReadyCheck: false }) };

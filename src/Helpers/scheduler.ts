@@ -5,14 +5,14 @@
 import { differenceInHours, secondsToMilliseconds, subDays } from "date-fns";
 import {
 	ChannelType,
-	Client,
+	type Client,
 	Collection,
 	EmbedBuilder,
-	Guild,
-	GuildMember,
-	Snowflake,
-	TextChannel,
-	VoiceChannel,
+	type Guild,
+	type GuildMember,
+	type Snowflake,
+	type TextChannel,
+	type VoiceChannel,
 } from "discord.js";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles } from "../Configuration/config";

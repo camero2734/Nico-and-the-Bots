@@ -6,11 +6,11 @@ import {
 	ButtonStyle,
 	Colors,
 	EmbedBuilder,
-	Guild,
+	type Guild,
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
-	TextChannel,
+	type TextChannel,
 	TextInputBuilder,
 	TextInputStyle,
 } from "discord.js";
@@ -32,8 +32,8 @@ import {
 } from "./_consts";
 
 enum ActionTypes {
-	Accept,
-	Deny,
+	Accept = 0,
+	Deny = 1,
 }
 
 const command = new SlashCommand({

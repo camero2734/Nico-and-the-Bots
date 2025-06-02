@@ -1,5 +1,5 @@
-import { Image, createCanvas, loadImage } from "@napi-rs/canvas";
-import { GuildMember } from "discord.js";
+import { type Image, createCanvas, loadImage } from "@napi-rs/canvas";
+import type { GuildMember } from "discord.js";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 import { roles } from "../Configuration/config";
@@ -14,9 +14,9 @@ export const badgeLoader = async (
 	member: GuildMember,
 	options: BadgeLoaderOptions = {},
 ): Promise<Image[]> => {
-	let numBadges = options.numBadges || Infinity;
+	let numBadges = options.numBadges || Number.POSITIVE_INFINITY;
 	const numGolds = options.numGolds || 0;
-	const placeNum = options.placeNum || Infinity;
+	const placeNum = options.placeNum || Number.POSITIVE_INFINITY;
 
 	const badgeGenerator = getBadge(member, numGolds, placeNum);
 

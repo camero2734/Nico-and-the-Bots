@@ -10,8 +10,8 @@ import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 enum ActionTypes {
-	Give,
-	Remove,
+	Give = 0,
+	Remove = 1,
 }
 
 const command = new SlashCommand({

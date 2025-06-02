@@ -61,7 +61,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
 		if (!match) {
 			throw new Error("Failed to parse the number of posts from the response.");
 		}
-		const postCount = parseInt(match, 10);
+		const postCount = Number.parseInt(match, 10);
 		if (isNaN(postCount)) {
 			throw new Error("Parsed post count is not a valid number.");
 		}

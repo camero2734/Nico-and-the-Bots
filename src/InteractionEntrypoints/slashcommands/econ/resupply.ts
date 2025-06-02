@@ -1,15 +1,15 @@
-import { BishopType, DailyBox, User } from "@prisma/client";
+import type { BishopType, DailyBox, User } from "@prisma/client";
 import { format } from "date-fns";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	GuildMember,
-	Message,
-	MessageComponentInteraction,
+	type GuildMember,
+	type Message,
+	type MessageComponentInteraction,
 	StringSelectMenuBuilder,
-	StringSelectMenuInteraction,
+	type StringSelectMenuInteraction,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
 import fs from "fs";

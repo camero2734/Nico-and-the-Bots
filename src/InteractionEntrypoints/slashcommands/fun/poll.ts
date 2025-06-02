@@ -1,12 +1,12 @@
-import { Poll, Vote } from "@prisma/client";
-import { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v10";
+import type { Poll, Vote } from "@prisma/client";
+import type { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
 	ActionRowBuilder,
 	ApplicationCommandOptionType,
 	ComponentType,
 	EmbedBuilder,
-	GuildEmoji,
-	Message,
+	type GuildEmoji,
+	type Message,
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
 } from "discord.js";
@@ -161,7 +161,7 @@ const genPollResId = command.addInteractionListener(
 		if (!ctx.isSelectMenu()) return;
 		const { pollId } = args;
 		const indices = ctx.values
-			?.map((n) => parseInt(n))
+			?.map((n) => Number.parseInt(n))
 			.filter((n) => n >= 0 && !isNaN(n));
 		const guild = ctx.guild;
 		if (indices.length < 1 || !guild) return;

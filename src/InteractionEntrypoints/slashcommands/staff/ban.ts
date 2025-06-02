@@ -2,7 +2,7 @@ import {
 	ApplicationCommandOptionType,
 	Colors,
 	EmbedBuilder,
-	TextChannel,
+	type TextChannel,
 } from "discord.js";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

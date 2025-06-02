@@ -6,7 +6,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	GuildMember,
+	type GuildMember,
 } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";

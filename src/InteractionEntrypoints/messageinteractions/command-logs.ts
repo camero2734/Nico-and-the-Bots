@@ -4,7 +4,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	TextChannel,
+	type TextChannel,
 } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";

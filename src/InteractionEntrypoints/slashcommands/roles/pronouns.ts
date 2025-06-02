@@ -3,7 +3,7 @@ import {
 	EmbedBuilder,
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
-	Snowflake,
+	type Snowflake,
 } from "discord.js";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";

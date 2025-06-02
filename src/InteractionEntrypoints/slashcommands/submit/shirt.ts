@@ -4,7 +4,7 @@ import {
 	ButtonStyle,
 	DiscordAPIError,
 	EmbedBuilder,
-	Message,
+	type Message,
 } from "discord.js";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

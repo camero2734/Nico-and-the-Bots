@@ -1,13 +1,13 @@
 import {
 	ChannelType,
-	CommandInteraction,
-	DMChannel,
+	type CommandInteraction,
+	type DMChannel,
 	EmbedBuilder,
-	GuildTextBasedChannel,
-	Interaction,
+	type GuildTextBasedChannel,
+	type Interaction,
 	InteractionType,
-	TextBasedChannel,
-	TextChannel,
+	type TextBasedChannel,
+	type TextChannel,
 } from "discord.js";
 import { nanoid } from "nanoid";
 import { guild } from "../../app";

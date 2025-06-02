@@ -1,7 +1,7 @@
 import {
 	ApplicationCommandOptionType,
 	EmbedBuilder,
-	Snowflake,
+	type Snowflake,
 	userMention,
 } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";

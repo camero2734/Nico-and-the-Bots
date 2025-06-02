@@ -1,15 +1,15 @@
 import { startOfDay } from "date-fns";
 import {
 	DiscordAPIError,
-	Message,
+	type Message,
 	EmbedBuilder,
-	MessageReference,
-	Snowflake,
-	TextChannel,
+	type MessageReference,
+	type Snowflake,
+	type TextChannel,
 	MessageReferenceType,
 } from "discord.js";
 import { prisma } from "./prisma-init";
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 
 import { Queue, Worker } from "bullmq";
 import { NicoClient } from "../../app";

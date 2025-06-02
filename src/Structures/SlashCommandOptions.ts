@@ -2,7 +2,7 @@
  *  Extracts the type for opts so they don't have to be manually typed
  */
 
-import {
+import type {
 	ApplicationCommandChoicesData,
 	ApplicationCommandData,
 	ApplicationCommandOptionChoiceData,

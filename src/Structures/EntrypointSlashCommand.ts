@@ -1,25 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	ActionRowBuilder,
-	ApplicationCommandOptionData,
+	type ApplicationCommandOptionData,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
-	BaseMessageOptions,
+	type BaseMessageOptions,
 	ButtonBuilder,
-	ButtonComponent,
+	type ButtonComponent,
 	ButtonStyle,
-	ChatInputApplicationCommandData,
+	type ChatInputApplicationCommandData,
 	Collection,
-	CommandInteractionOptionResolver,
+	type CommandInteractionOptionResolver,
 	ComponentType,
-	Guild,
-	GuildMember,
-	Interaction,
-	Message,
-	MessagePayload,
-	Snowflake,
-	TextChannel,
-	ChatInputCommandInteraction,
+	type Guild,
+	type GuildMember,
+	type Interaction,
+	type Message,
+	type MessagePayload,
+	type Snowflake,
+	type TextChannel,
+	type ChatInputCommandInteraction,
 } from "discord.js";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
@@ -27,14 +27,14 @@ import F from "../Helpers/funcs";
 import { prisma } from "../Helpers/prisma-init";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { EntrypointEvents } from "./Events";
-import {
+import type {
 	AutocompleteListener,
 	AutocompleteNameOption,
 } from "./ListenerAutocomplete";
 import {
-	CommandOptions,
-	OptsType,
-	SlashCommandData,
+	type CommandOptions,
+	type OptsType,
+	type SlashCommandData,
 	extractOptsFromInteraction,
 } from "./SlashCommandOptions";
 import { ApplicationData, SlashCommands } from "./data";

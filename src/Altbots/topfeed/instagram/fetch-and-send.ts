@@ -1,6 +1,6 @@
 import { addDays } from "date-fns";
 import {
-	APIComponentInContainer,
+	type APIComponentInContainer,
 	ComponentType,
 	ContainerBuilder,
 	MessageFlags,
@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import {
 	IgApiClient,
-	TimelineFeedResponseMedia_or_ad,
+	type TimelineFeedResponseMedia_or_ad,
 } from "instagram-private-api";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";

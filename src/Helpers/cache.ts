@@ -1,5 +1,5 @@
 import { secondsToMilliseconds } from "date-fns";
-import { DeepReadonly } from "../Structures/SlashCommandOptions";
+import type { DeepReadonly } from "../Structures/SlashCommandOptions";
 
 export class Cache {
 	private cache: Map<string, { data: any; expires: number }>;

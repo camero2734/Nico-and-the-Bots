@@ -1,9 +1,9 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { Message, EmbedBuilder, BaseMessageOptions, Colors } from "discord.js";
+import { type Message, EmbedBuilder, type BaseMessageOptions, Colors } from "discord.js";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
-import { MessageUpdate } from "./_queue";
+import type { MessageUpdate } from "./_queue";
 
 const startDate = parse(
 	"02 October 2021 12:00",

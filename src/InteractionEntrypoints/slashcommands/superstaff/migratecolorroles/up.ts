@@ -1,6 +1,6 @@
-import { Snowflake } from "discord.js";
+import type { Snowflake } from "discord.js";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
-import { Change, changes } from "./_consts";
+import { type Change, changes } from "./_consts";
 
 const command = new SlashCommand({
 	description: "Makes changes",

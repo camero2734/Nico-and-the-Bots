@@ -1,7 +1,7 @@
 import {
-	TwitterApiUtilsResponse,
+	type TwitterApiUtilsResponse,
 	TwitterOpenApi,
-	TwitterOpenApiClient,
+	type TwitterOpenApiClient,
 } from "twitter-openapi-typescript";
 import secrets from "../../../Configuration/secrets";
 import { addMinutes, differenceInSeconds } from "date-fns";

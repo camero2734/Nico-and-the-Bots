@@ -2,7 +2,7 @@ import {
 	Client,
 	ButtonBuilder,
 	EmbedBuilder,
-	TextChannel,
+	type TextChannel,
 	ActionRowBuilder,
 	ButtonStyle,
 } from "discord.js";

@@ -1,11 +1,11 @@
 import {
-	ApplicationCommandData,
+	type ApplicationCommandData,
 	ApplicationCommandType,
-	GuildMember,
-	Interaction,
-	Message,
-	MessageContextMenuCommandInteraction,
-	UserContextMenuCommandInteraction,
+	type GuildMember,
+	type Interaction,
+	type Message,
+	type MessageContextMenuCommandInteraction,
+	type UserContextMenuCommandInteraction,
 } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
 import { InteractionEntrypoint } from "./EntrypointBase";

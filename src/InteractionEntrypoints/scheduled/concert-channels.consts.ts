@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ForumChannel } from "discord.js";
+import type { ForumChannel } from "discord.js";
 import F from "../../Helpers/funcs";
 
 export const CONCERT_URL =

@@ -3,19 +3,19 @@ import * as Diff from "diff";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
-	BaseMessageOptions,
+	type BaseMessageOptions,
 	ButtonBuilder,
 	ButtonStyle,
 	ComponentType,
 	EmbedBuilder,
-	Message,
-	Snowflake,
+	type Message,
+	type Snowflake,
 } from "discord.js";
 import normalizeURL from "normalize-url";
 import R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
-import { Checked, Watcher } from "./base";
-import { Headers } from "node-fetch";
+import { type Checked, Watcher } from "./base";
+import type { Headers } from "node-fetch";
 
 const watchMethods = <const>["VISUAL", "HTML", "HEADERS", "LAST_MODIFIED"]; // Ordered by importance
 type WATCH_METHOD = (typeof watchMethods)[number];

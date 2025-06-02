@@ -3,8 +3,8 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	GuildMember,
-	InteractionEditReplyOptions,
+	type GuildMember,
+	type InteractionEditReplyOptions,
 	italic,
 } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
@@ -16,8 +16,8 @@ import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONTRABAND_WORDS, getSongRoleCategories } from "./shop.consts";
 
 enum ActionTypes {
-	View,
-	Purchase,
+	View = 0,
+	Purchase = 1,
 }
 
 const msgInt = new ManualEntrypoint();

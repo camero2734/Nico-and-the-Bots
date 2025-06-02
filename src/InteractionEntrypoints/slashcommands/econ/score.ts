@@ -2,8 +2,8 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
 	ApplicationCommandOptionType,
 	AttachmentBuilder,
-	GuildMember,
-	Snowflake,
+	type GuildMember,
+	type Snowflake,
 } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

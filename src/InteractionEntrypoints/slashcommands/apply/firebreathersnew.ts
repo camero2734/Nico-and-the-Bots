@@ -4,8 +4,8 @@ import {
 	ButtonBuilder,
 	Colors,
 	EmbedBuilder,
-	InteractionReplyOptions,
-	MessageEditOptions,
+	type InteractionReplyOptions,
+	type MessageEditOptions,
 	ModalBuilder,
 	TextInputBuilder,
 } from "discord.js";

@@ -2,7 +2,7 @@
 import { glob as g } from "glob";
 import path from "path";
 import { promisify } from "util";
-import { InteractionEntrypoint } from "../Structures/EntrypointBase";
+import type { InteractionEntrypoint } from "../Structures/EntrypointBase";
 import { ContextMenu } from "../Structures/EntrypointContextMenu";
 import { ManualEntrypoint } from "../Structures/EntrypointManual";
 import { SlashCommand } from "../Structures/EntrypointSlashCommand";

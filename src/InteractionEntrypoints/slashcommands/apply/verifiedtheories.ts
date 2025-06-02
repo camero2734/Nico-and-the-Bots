@@ -1,19 +1,19 @@
 import { en, Faker } from "@faker-js/faker";
 import {
 	ActionRowBuilder,
-	APIButtonComponent,
+	type APIButtonComponent,
 	ButtonBuilder,
 	ButtonStyle,
 	channelMention,
 	ComponentType,
 	EmbedBuilder,
-	GuildMember,
-	Message,
-	MessageActionRowComponentBuilder,
+	type GuildMember,
+	type Message,
+	type MessageActionRowComponentBuilder,
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
-	TextChannel,
+	type TextChannel,
 	TextInputBuilder,
 	TextInputStyle,
 } from "discord.js";
@@ -22,7 +22,7 @@ import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
-import { Question } from "../../../Helpers/verified-quiz/question";
+import type { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
@@ -164,7 +164,7 @@ const genModalId = command.addInteractionListener(
 	async (ctx, args) => {
 		if (!ctx.isButton()) return;
 
-		const seed = parseInt(args.seed36, 36);
+		const seed = Number.parseInt(args.seed36, 36);
 
 		const modal = new ModalBuilder()
 			.setTitle("Verified Theories Quiz -- Part 1")
@@ -235,7 +235,7 @@ const genModalSubmitId = command.addInteractionListener(
 		await ctx.deferUpdate({ fetchReply: true });
 
 		// Determine if they entered the correct answers to part one
-		const seed = parseInt(args.seed36, 36);
+		const seed = Number.parseInt(args.seed36, 36);
 		const partOne = generatePartOne(seed);
 
 		const normalize = (str: string) =>
@@ -570,7 +570,7 @@ const genPartThreeBtnId = command.addInteractionListener(
 		if (!passed) return;
 
 		// Disable this select menu
-		const idx = parseInt(args.idx);
+		const idx = Number.parseInt(args.idx);
 
 		const newActionRows = ctx.message.components.map((row, i) => {
 			if (i !== idx) return row;

@@ -1,4 +1,4 @@
-import { EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
+import type { EmojiIdentifierResolvable, Message, Snowflake } from "discord.js";
 import Mime from "mime-types";
 import { channelIDs } from "../Configuration/config";
 

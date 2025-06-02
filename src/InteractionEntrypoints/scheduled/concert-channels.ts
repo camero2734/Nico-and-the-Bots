@@ -3,8 +3,8 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	ChannelType,
-	ForumChannel,
-	Guild,
+	type ForumChannel,
+	type Guild,
 } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
@@ -13,7 +13,7 @@ import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
 	CONCERT_URL,
 	ConcertChannel,
-	ConcertEntry,
+	type ConcertEntry,
 	ROLE_HEX,
 } from "./concert-channels.consts";
 import Cron from "croner";
@@ -183,7 +183,7 @@ const genBtnId = entrypoint.addInteractionListener(
 );
 
 let concertChannelManager: ConcertChannelManager;
-export const getConcertChannelManager = function (guild: Guild) {
+export const getConcertChannelManager = (guild: Guild) => {
 	if (!concertChannelManager)
 		concertChannelManager = new ConcertChannelManager(guild);
 

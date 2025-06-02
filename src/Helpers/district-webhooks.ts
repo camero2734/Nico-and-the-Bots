@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { TextChannel, Webhook, WebhookClient } from "discord.js";
-import { channelIDs, roles, userIDs } from "../Configuration/config";
+import { type TextChannel, type Webhook, WebhookClient } from "discord.js";
+import { type channelIDs, roles, userIDs } from "../Configuration/config";
 import { uploadImageToCloudflareStorage } from "./apis/cloudflare";
 import F from "./funcs";
 

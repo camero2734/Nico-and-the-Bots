@@ -1,8 +1,8 @@
 import { subMinutes } from "date-fns";
 import secrets from "../../../Configuration/secrets";
 import {
-	APIComponentInContainer,
-	APIMediaGalleryItem,
+	type APIComponentInContainer,
+	type APIMediaGalleryItem,
 	ButtonStyle,
 	ComponentType,
 	ContainerBuilder,

@@ -1,4 +1,4 @@
-import { ColorResolvable, Snowflake } from "discord.js";
+import type { ColorResolvable, Snowflake } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 

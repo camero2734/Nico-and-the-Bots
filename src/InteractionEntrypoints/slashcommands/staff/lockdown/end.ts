@@ -1,4 +1,4 @@
-import { EmbedBuilder, OverwriteResolvable } from "discord.js";
+import { EmbedBuilder, type OverwriteResolvable } from "discord.js";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";

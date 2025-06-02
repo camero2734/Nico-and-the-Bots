@@ -2,9 +2,9 @@
 import { test, describe, expect } from "bun:test";
 import {
 	findFirstUnmatchedSongs,
-	SongBattleHistory,
+	type SongBattleHistory,
 } from "./songbattle.consts";
-import { Poll } from "@prisma/client";
+import type { Poll } from "@prisma/client";
 
 const constructPoll = (...options: string[]): Poll => ({
 	options,

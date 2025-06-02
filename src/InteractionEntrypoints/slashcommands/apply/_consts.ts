@@ -1,10 +1,10 @@
-import { FirebreatherApplication } from ".prisma/client";
+import type { FirebreatherApplication } from ".prisma/client";
 import type { Faker } from "@faker-js/faker";
 import { hoursToMilliseconds, subDays } from "date-fns";
-import { Snowflake } from "discord.js";
+import type { Snowflake } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
-import { Question } from "../../../Helpers/verified-quiz/question";
+import type { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 
 const VERIFIED_DELAY_HOURS = 12;

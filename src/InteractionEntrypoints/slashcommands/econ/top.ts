@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ApplicationCommandOptionType, GuildMember } from "discord.js";
+import { ApplicationCommandOptionType, type GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { badgeLoader } from "../../../Helpers";
 import { prisma, queries } from "../../../Helpers/prisma-init";

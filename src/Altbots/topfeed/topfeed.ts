@@ -1,12 +1,12 @@
 import { secondsToMilliseconds } from "date-fns";
-import { Client, EmbedBuilder, Guild, TextChannel } from "discord.js";
+import { Client, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
 import { channelIDs, guildID, roles } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
-import { Watcher } from "./types/base";
+import type { Watcher } from "./types/base";
 import { SiteWatcher } from "./types/websites";
 import { YoutubeWatcher } from "./types/youtube";
-import { JobType, queue } from "./worker";
+import { type JobType, queue } from "./worker";
 
 const onHeroku = process.env.ON_HEROKU === "1";
 class TopfeedBot {

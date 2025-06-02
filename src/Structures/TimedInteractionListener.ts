@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
+import type {
 	CollectorFilter,
 	Message,
 	MessageComponentInteraction,
 } from "discord.js";
 import F from "../Helpers/funcs";
-import { ContextMenu } from "./EntrypointContextMenu";
-import { SlashCommand } from "./EntrypointSlashCommand";
+import type { ContextMenu } from "./EntrypointContextMenu";
+import type { SlashCommand } from "./EntrypointSlashCommand";
 
 type IDsMapped<IDs extends Readonly<string[]>> = {
 	[Index in keyof IDs]: IDs[Index] extends string

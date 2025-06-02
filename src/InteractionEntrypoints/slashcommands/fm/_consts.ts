@@ -1,4 +1,4 @@
-import { GuildMember } from "discord.js";
+import type { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import secrets from "../../../Configuration/secrets";

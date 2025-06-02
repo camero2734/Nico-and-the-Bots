@@ -1,5 +1,5 @@
 import { Canvas } from "@napi-rs/canvas";
-import { Poll, Vote } from "@prisma/client";
+import type { Poll, Vote } from "@prisma/client";
 import {
 	CategoryScale,
 	Chart,
@@ -10,7 +10,7 @@ import {
 	PointElement,
 } from "chart.js";
 import { setHours, startOfDay } from "date-fns";
-import { ButtonStyle, ColorResolvable } from "discord.js";
+import { ButtonStyle, type ColorResolvable } from "discord.js";
 import { emojiIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -289,8 +289,7 @@ export function toSongId(song: SongContender, album: Album) {
 export function fromSongId(id: string): { song: SongContender; album: Album } {
 	const [songName, albumName] = id.split(DELIMITER);
 	const songs = albums
-		.map((a) => a.songs.map((s) => ({ ...s, album: a })))
-		.flat();
+		.flatMap((a) => a.songs.map((s) => ({ ...s, album: a })));
 	const song = songs.find(
 		(s) => s.name === songName && s.album.name === albumName,
 	);
@@ -307,9 +306,9 @@ export interface SongBattleHistory {
 }
 
 export enum Result {
-	Song1,
-	Song2,
-	Tie,
+	Song1 = 0,
+	Song2 = 1,
+	Tie = 2,
 }
 
 export async function calculateHistory() {
@@ -408,8 +407,8 @@ export function findFirstUnmatchedSongs(
 	sorted: [string, SongBattleHistory][],
 	previousBattlesRaw: Poll[],
 ) {
-	let maximumRound1 = Infinity;
-	let maximumRound2 = Infinity;
+	let maximumRound1 = Number.POSITIVE_INFINITY;
+	let maximumRound2 = Number.POSITIVE_INFINITY;
 	let finalSong1Id: string | undefined;
 	let finalSong2Id: string | undefined;
 
@@ -599,9 +598,9 @@ export async function createResultsChart(pollId: number) {
 					},
 					ticks: {
 						// Display fewer ticks for readability when many data points
-						callback: function (_, index) {
+						callback: (_, index) => {
 							// Only show whole hour labels
-							const hourValue = parseFloat(labels[index]);
+							const hourValue = Number.parseFloat(labels[index]);
 							return Number.isInteger(hourValue) ? hourValue.toString() : "";
 						},
 						autoSkip: true,

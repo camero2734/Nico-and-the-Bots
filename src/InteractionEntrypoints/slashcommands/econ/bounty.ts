@@ -6,7 +6,7 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
-import { BishopType } from "@prisma/client";
+import type { BishopType } from "@prisma/client";
 
 const command = new SlashCommand({
 	description:

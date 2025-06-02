@@ -1,5 +1,5 @@
-import { User } from "@prisma/client";
-import { GuildMember, Role, RoleManager, Snowflake } from "discord.js";
+import type { User } from "@prisma/client";
+import type { GuildMember, Role, RoleManager, Snowflake } from "discord.js";
 import { roles } from "../../Configuration/config";
 
 export class ShopCategory {

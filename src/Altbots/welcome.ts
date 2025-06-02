@@ -4,12 +4,12 @@ import {
 	ButtonBuilder,
 	Client,
 	EmbedBuilder,
-	GuildMember,
+	type GuildMember,
 	AttachmentBuilder,
-	MessageComponentInteraction,
-	PartialGuildMember,
-	Snowflake,
-	TextChannel,
+	type MessageComponentInteraction,
+	type PartialGuildMember,
+	type Snowflake,
+	type TextChannel,
 	ButtonStyle,
 } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";

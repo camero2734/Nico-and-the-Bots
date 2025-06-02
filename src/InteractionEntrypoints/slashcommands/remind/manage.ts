@@ -3,10 +3,10 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	GuildMember,
+	type GuildMember,
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
-	MessageActionRowComponentBuilder,
+	type MessageActionRowComponentBuilder,
 } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -14,9 +14,9 @@ import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { formatReminderDate } from "./_consts";
 
 enum ActionTypes {
-	SelectReminder,
-	ShowList,
-	DeleteReminder,
+	SelectReminder = 0,
+	ShowList = 1,
+	DeleteReminder = 2,
 }
 
 const command = new SlashCommand({

@@ -5,7 +5,7 @@ import {
 	ButtonStyle,
 	EmbedBuilder,
 	AttachmentBuilder,
-	TextChannel,
+	type TextChannel,
 } from "discord.js";
 import FileType from "file-type";
 import fetch from "node-fetch";

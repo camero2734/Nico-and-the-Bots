@@ -2,8 +2,8 @@ import { guildID } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import {
 	EmbedBuilder,
-	Snowflake,
-	TextChannel,
+	type Snowflake,
+	type TextChannel,
 	ApplicationCommandOptionType,
 } from "discord.js";
 import normalizeURL from "normalize-url";

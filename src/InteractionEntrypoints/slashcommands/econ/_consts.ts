@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js";
+import type { Snowflake } from "discord.js";
 import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
@@ -20,10 +20,10 @@ export const districtOrder = <const>[
 ];
 
 export enum PrizeType {
-	Credits,
-	Role,
-	Badge,
-	Item,
+	Credits = 0,
+	Role = 1,
+	Badge = 2,
+	Item = 3,
 }
 
 type ItemType = "BOUNTY" | "JUMPSUIT";
@@ -63,7 +63,7 @@ export class District {
 	}
 
 	static convPercent(percent: number): string {
-		return `${parseFloat((100 * percent).toFixed(2))}%`;
+		return `${Number.parseFloat((100 * percent).toFixed(2))}%`;
 	}
 
 	constructor(public idx: number) {}

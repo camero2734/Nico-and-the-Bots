@@ -1,7 +1,7 @@
 import { channelIDs } from "../../../Configuration/config";
 import {
 	EmbedBuilder,
-	TextChannel,
+	type TextChannel,
 	ApplicationCommandOptionType,
 } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

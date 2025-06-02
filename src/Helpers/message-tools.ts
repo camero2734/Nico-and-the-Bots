@@ -2,14 +2,14 @@ import {
 	ActionRowBuilder,
 	Collection,
 	EmbedBuilder,
-	GuildMember,
-	Message,
-	BaseMessageOptions,
-	Snowflake,
-	TextChannel,
+	type GuildMember,
+	type Message,
+	type BaseMessageOptions,
+	type Snowflake,
+	type TextChannel,
 	ButtonBuilder,
-	MessageActionRowComponentBuilder,
-	ButtonComponent,
+	type MessageActionRowComponentBuilder,
+	type ButtonComponent,
 } from "discord.js";
 import { constants } from "../Configuration/config";
 
@@ -78,7 +78,7 @@ export const MessageTools = {
 
 	async fetchAllMessages(
 		channel: TextChannel,
-		num = Infinity,
+		num = Number.POSITIVE_INFINITY,
 	): Promise<Collection<Snowflake, Message>> {
 		const MAX_MESSAGES_FETCH = 100;
 		let before: Snowflake | undefined = undefined;

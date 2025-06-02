@@ -3,22 +3,22 @@ import {
 	ApplicationCommandOptionType,
 	AttachmentBuilder,
 	ButtonBuilder,
-	ButtonComponent,
+	type ButtonComponent,
 	ButtonStyle,
 	ChannelSelectMenuBuilder,
 	ChannelType,
 	ComponentType,
 	EmbedBuilder,
-	GuildMember,
-	GuildMemberRoleManager,
+	type GuildMember,
+	type GuildMemberRoleManager,
 	MentionableSelectMenuBuilder,
-	MessageActionRowComponentBuilder,
-	MessageComponentInteraction,
-	OverwriteData,
+	type MessageActionRowComponentBuilder,
+	type MessageComponentInteraction,
+	type OverwriteData,
 	RoleSelectMenuBuilder,
-	Snowflake,
+	type Snowflake,
 	StringSelectMenuBuilder,
-	TextChannel,
+	type TextChannel,
 	UserSelectMenuBuilder,
 } from "discord.js";
 import fetch from "node-fetch";
@@ -27,7 +27,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { ListenerInteraction } from "../../../Structures/ListenerInteraction";
+import type { ListenerInteraction } from "../../../Structures/ListenerInteraction";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 
 const command = new SlashCommand({
@@ -59,9 +59,9 @@ const command = new SlashCommand({
 });
 
 enum ActionTypes {
-	UNMUTE_ALL,
-	REMUTE_ALL,
-	CLOSE_JAIL,
+	UNMUTE_ALL = 0,
+	REMUTE_ALL = 1,
+	CLOSE_JAIL = 2,
 }
 
 command.setHandler(async (ctx) => {

@@ -4,7 +4,7 @@ import {
 	ButtonStyle,
 	ComponentType,
 	ContainerBuilder,
-	MessageEditOptions,
+	type MessageEditOptions,
 	MessageFlags,
 	ThreadAutoArchiveDuration,
 	roleMention,
@@ -18,10 +18,10 @@ import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
-	Album,
+	type Album,
 	PREFIX,
 	Result,
-	SongContender,
+	type SongContender,
 	calculateHistory,
 	createResultsChart,
 	determineNextMatchup,
@@ -526,7 +526,7 @@ const genButtonId = entrypoint.addInteractionListener(
 		const { song, album } = fromSongId(args.songId);
 
 		// Find associated poll
-		const pollId = parseInt(args.pollId);
+		const pollId = Number.parseInt(args.pollId);
 		const poll = await withCache(
 			`sb:poll-${pollId}`,
 			() =>

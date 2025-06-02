@@ -1,4 +1,4 @@
-import { ApplicationCommandData } from "discord.js";
+import type { ApplicationCommandData } from "discord.js";
 import { InteractionEntrypoint } from "./EntrypointBase";
 
 // This only exists as a nice way of adding interaction listeners that aren't attached to a specific command/context menu/whatever

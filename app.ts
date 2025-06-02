@@ -20,7 +20,7 @@ import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
 import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import {
-	AutocompleteListener,
+	type AutocompleteListener,
 	transformAutocompleteInteraction,
 } from "./src/Structures/ListenerAutocomplete";
 import {

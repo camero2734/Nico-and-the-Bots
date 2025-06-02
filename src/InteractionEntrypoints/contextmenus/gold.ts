@@ -5,9 +5,9 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	EmbedBuilder,
-	Message,
-	Snowflake,
-	TextChannel,
+	type Message,
+	type Snowflake,
+	type TextChannel,
 } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
@@ -15,7 +15,7 @@ import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 import {
-	ContextMenu,
+	type ContextMenu,
 	MessageContextMenu,
 } from "../../Structures/EntrypointContextMenu";
 import { TimedInteractionListener } from "../../Structures/TimedInteractionListener";

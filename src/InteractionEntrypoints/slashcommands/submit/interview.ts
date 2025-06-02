@@ -4,7 +4,7 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	TextChannel,
+	type TextChannel,
 } from "discord.js";
 import metascraper from "metascraper";
 import metascraperDate from "metascraper-date";

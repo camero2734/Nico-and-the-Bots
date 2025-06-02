@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	ActionRowBuilder,
-	ApplicationCommandData,
+	type ApplicationCommandData,
 	ButtonBuilder,
 	ButtonStyle,
-	Client,
+	type Client,
 	Collection,
-	Guild,
-	GuildMember,
-	Interaction,
-	Snowflake,
+	type Guild,
+	type GuildMember,
+	type Interaction,
+	type Snowflake,
 } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
@@ -22,12 +22,12 @@ import {
 import { ErrorHandler } from "./Errors";
 import { EntrypointEvents } from "./Events";
 import {
-	InteractionListener,
-	ListenerCustomIdGenerator,
+	type InteractionListener,
+	type ListenerCustomIdGenerator,
 	createInteractionListener,
 } from "./ListenerInteraction";
-import { ReactionListener } from "./ListenerReaction";
-import { ReplyListener } from "./ListenerReply";
+import type { ReactionListener } from "./ListenerReaction";
+import type { ReplyListener } from "./ListenerReply";
 
 type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 

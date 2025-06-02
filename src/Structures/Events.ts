@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Emittery from "emittery";
-import { InteractionEntrypoint } from "./EntrypointBase";
-import { SlashCommand } from "./EntrypointSlashCommand";
-import { Interaction } from "discord.js";
+import type { InteractionEntrypoint } from "./EntrypointBase";
+import type { SlashCommand } from "./EntrypointSlashCommand";
+import type { Interaction } from "discord.js";
 
 export const EntrypointEvents = new Emittery<{
 	entrypointStarted: {

@@ -1,6 +1,6 @@
 import {
 	ActionRowBuilder,
-	AnyThreadChannel,
+	type AnyThreadChannel,
 	ButtonBuilder,
 	ButtonStyle,
 } from "discord.js";

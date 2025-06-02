@@ -2,10 +2,10 @@ import {
 	ActionRowBuilder,
 	ApplicationCommandOptionType,
 	EmbedBuilder,
-	GuildMember,
+	type GuildMember,
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
-	Snowflake,
+	type Snowflake,
 } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

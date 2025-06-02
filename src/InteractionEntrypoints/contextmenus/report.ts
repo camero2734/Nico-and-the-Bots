@@ -1,14 +1,14 @@
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
-	BaseMessageOptions,
+	type BaseMessageOptions,
 	ButtonBuilder,
 	ButtonStyle,
 	ComponentType,
 	EmbedBuilder,
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
-	TextChannel,
+	type TextChannel,
 } from "discord.js";
 import { roles } from "../../Configuration/config";
 import {

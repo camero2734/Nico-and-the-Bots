@@ -1,6 +1,6 @@
 import {
 	EmbedBuilder,
-	Snowflake,
+	type Snowflake,
 	ApplicationCommandOptionType,
 } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";

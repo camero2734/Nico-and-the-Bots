@@ -1,10 +1,10 @@
 import { QueueScheduler, Worker } from "bullmq";
 import {
-	BaseMessageOptions,
+	type BaseMessageOptions,
 	Collection,
-	Message,
-	Snowflake,
-	TextChannel,
+	type Message,
+	type Snowflake,
+	type TextChannel,
 } from "discord.js";
 import IORedis from "ioredis";
 import { NicoClient } from "../../../app";

@@ -1,10 +1,11 @@
 {
-    "editor.formatOnSave": true,
-    "[prisma]": {
-        "editor.defaultFormatter": "Prisma.prisma"
-    },
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.preferences.importModuleSpecifier": "relative",
-    "explorer.compactFolders": false,
-    "editor.tabSize": 4
+  "editor.formatOnSave": true,
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "explorer.compactFolders": false,
+  "editor.tabSize": 2,
+  "typescript.experimental.useTsgo": true
 }

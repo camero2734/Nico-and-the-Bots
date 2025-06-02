@@ -1,50 +1,50 @@
 {
-	// Place your Nico-next workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
-	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
-	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
-	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
-	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
-	// Placeholders with the same ids are connected.
-	// Example:
-	// "Print to console": {
-	// 	"scope": "javascript,typescript",
-	// 	"prefix": "log",
-	// 	"body": [
-	// 		"console.log('$1');",
-	// 		"$2"
-	// 	],
-	// 	"description": "Log output to console"
-	// }
+  // Place your Nico-next workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and
+  // description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope
+  // is left empty or omitted, the snippet gets applied to all languages. The prefix is what is
+  // used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+  // $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders.
+  // Placeholders with the same ids are connected.
+  // Example:
+  // "Print to console": {
+  // 	"scope": "javascript,typescript",
+  // 	"prefix": "log",
+  // 	"body": [
+  // 		"console.log('$1');",
+  // 		"$2"
+  // 	],
+  // 	"description": "Log output to console"
+  // }
 
-	"Create command": {
-		"prefix": "command",
-		"body": [
-		  "import { Command, CommandError, CommandMessage } from \"configuration/definitions\";",
-		  "import { Connection } from \"typeorm\";",
-		  "",
-		  "export default new Command({",
-		  "    name: \"$1\",",
-		  "    description: \"$2\",",
-		  "    category: \"$3\",",
-		  "    usage: \"!$1 $4\",",
-		  "    example: \"!$1 $5\",",
-		  "    async cmd(msg: CommandMessage, connection: Connection): Promise<void> {",
-		  "        $0",
-		  "    }",
-		  "});",
-		  ""
-		],
-		"description": "Create a command for the bot"
-	},
-	"Add interactive part": {
-		"prefix": "interactive",
-		"body": [
-		  "async interactive(msg, connection, reaction) {",
-		  "    /** VERIFY INTERACTION BELONGS TO MESSAGE */",
-		  "    $0",
-		  "    /** PERFORM ACTION */",
-		  "}"
-		],
-		"description": "Add interactive function to command"
-	  }
+  "Create command": {
+    "prefix": "command",
+    "body": [
+      "import { Command, CommandError, CommandMessage } from \"configuration/definitions\";",
+      "import { Connection } from \"typeorm\";",
+      "",
+      "export default new Command({",
+      "    name: \"$1\",",
+      "    description: \"$2\",",
+      "    category: \"$3\",",
+      "    usage: \"!$1 $4\",",
+      "    example: \"!$1 $5\",",
+      "    async cmd(msg: CommandMessage, connection: Connection): Promise<void> {",
+      "        $0",
+      "    }",
+      "});",
+      ""
+    ],
+    "description": "Create a command for the bot"
+  },
+  "Add interactive part": {
+    "prefix": "interactive",
+    "body": [
+      "async interactive(msg, connection, reaction) {",
+      "    /** VERIFY INTERACTION BELONGS TO MESSAGE */",
+      "    $0",
+      "    /** PERFORM ACTION */",
+      "}"
+    ],
+    "description": "Add interactive function to command"
+  }
 }

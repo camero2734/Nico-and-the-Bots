@@ -1,43 +1,57 @@
 import { subMinutes } from "date-fns";
-import secrets from "../../../Configuration/secrets";
-import { APIComponentInContainer, APIMediaGalleryItem, ButtonStyle, ComponentType, ContainerBuilder, MessageFlags, roleMention } from "discord.js";
+import {
+  type APIComponentInContainer,
+  type APIMediaGalleryItem,
+  ButtonStyle,
+  ComponentType,
+  ContainerBuilder,
+  MessageFlags,
+  roleMention,
+} from "discord.js";
 import { z } from "zod";
 import { channelIDs, roles } from "../../../Configuration/config";
-import topfeedBot from "../topfeed";
-import { prisma } from "../../../Helpers/prisma-init";
+import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
+import { prisma } from "../../../Helpers/prisma-init";
+import topfeedBot from "../topfeed";
 
-export const usernamesToWatch = ['pootusmaximus', 'twentyonepilots', 'blurryface', 'tylerrjoseph', 'joshuadun'] as const;
+export const usernamesToWatch = [
+  "pootusmaximus",
+  "twentyonepilots",
+  "blurryface",
+  "tylerrjoseph",
+  "joshuadun",
+] as const;
 
 type DataForUsername = {
-  roleId: typeof roles.topfeed.selectable[keyof typeof roles.topfeed.selectable];
-  channelId: typeof channelIDs.topfeed[keyof typeof channelIDs.topfeed];
-}
+  roleId: (typeof roles.topfeed.selectable)[keyof typeof roles.topfeed.selectable];
+  channelId: (typeof channelIDs.topfeed)[keyof typeof channelIDs.topfeed];
+};
 
-const usernameData: Record<typeof usernamesToWatch[number], DataForUsername>  = {
-  "pootusmaximus": {
+const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
+  pootusmaximus: {
+    // biome-ignore lint/suspicious/noExplicitAny: purposeful
     roleId: "572568489320120353" as any,
+    // biome-ignore lint/suspicious/noExplicitAny: purposeful
     channelId: channelIDs.bottest as any,
   },
-  "blurryface": {
+  blurryface: {
     roleId: roles.topfeed.selectable.dmaorg,
     channelId: channelIDs.topfeed.dmaorg,
   },
-  "twentyonepilots": {
+  twentyonepilots: {
     roleId: roles.topfeed.selectable.band,
     channelId: channelIDs.topfeed.band,
   },
-  "tylerrjoseph": {
+  tylerrjoseph: {
     roleId: roles.topfeed.selectable.tyler,
     channelId: channelIDs.topfeed.tyler,
   },
-  "joshuadun": {
+  joshuadun: {
     roleId: roles.topfeed.selectable.josh,
     channelId: channelIDs.topfeed.josh,
   },
-}
-
-
+};
 
 const videoInfoSchema = z.object({
   aspect_ratio: z.tuple([z.number(), z.number()]),
@@ -47,7 +61,7 @@ const videoInfoSchema = z.object({
       content_type: z.string(),
       url: z.string().url(),
       bitrate: z.number().optional(),
-    })
+    }),
   ),
 });
 
@@ -114,7 +128,8 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
             url: highestBitrateVariant.url,
           },
         };
-      } else if (item.type === "photo") {
+      }
+      if (item.type === "photo") {
         return {
           media: {
             url: item.media_url_https,
@@ -193,13 +208,17 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
       accessory: {
         type: ComponentType.Thumbnail,
         media: {
-          url: tweet.author.profilePicture || "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
-        }
+          url:
+            tweet.author.profilePicture ||
+            "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+        },
       },
-      components: [{
-        type: ComponentType.TextDisplay,
-        content: authorLine,
-      }],
+      components: [
+        {
+          type: ComponentType.TextDisplay,
+          content: authorLine,
+        },
+      ],
     },
     {
       type: ComponentType.TextDisplay,
@@ -227,63 +246,67 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
         ]
       : [];
 
-  const footerSection: APIComponentInContainer[] = [{
-    type: ComponentType.TextDisplay,
-    content: `-# ${roleMention(roleId)} | Posted ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
-  }];
+  const footerSection: APIComponentInContainer[] = [
+    {
+      type: ComponentType.TextDisplay,
+      content: `-# ${roleMention(roleId)} | Posted ${F.discordTimestamp(new Date(tweet.createdAt), "relative")}`,
+    },
+  ];
 
   // Build the container
   const container = new ContainerBuilder({
-    components: [
-      ...mainSection,
-      ...mediaSection,
-      ...contextSection,
-      ...footerSection,
-    ],
+    components: [...mainSection, ...mediaSection, ...contextSection, ...footerSection],
     accent_color: role.color,
   });
 
   return container;
 }
 
-export async function fetchTwitter(source: "webhook" | "scheduled", sinceTs?: number) {
+export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: number) {
   if (!secrets.twitterAlternateApiKey) {
     throw new Error("Unable to handle webhook: MISSING_TWITTER_API_KEY");
   }
-  sinceTs ||= Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
+  const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
 
-  const query = usernamesToWatch.map(username => `from:${username}`).join(' OR ');
+  const query = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
 
   const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
 
   if (testChannel?.isSendable()) {
-    await testChannel.send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null)
+    await testChannel
+      .send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`)
+      .catch(() => null);
   }
 
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");
-  url.searchParams.append('query', `(${query}) since_time:${sinceTs}`);
-  url.searchParams.append('queryType', 'Latest');
+  url.searchParams.append("query", `(${query}) since_time:${sinceTs}`);
+  url.searchParams.append("queryType", "Latest");
 
   console.log(`Fetching tweets with query: ${url.toString()}`);
 
   const options = {
-    method: 'GET',
-    headers: {'X-API-Key': secrets.twitterAlternateApiKey, 'Content-Type': 'application/json'},
+    method: "GET",
+    headers: {
+      "X-API-Key": secrets.twitterAlternateApiKey,
+      "Content-Type": "application/json",
+    },
   };
 
-  const result = await fetch(url.toString(), options).then(r => r.json());
+  const result = await fetch(url.toString(), options).then((r) => r.json());
   const parsedResult = responseSchema.parse(result);
 
   if (testChannel?.isSendable()) {
-    const urls = parsedResult.tweets.map(tweet => tweet.url).join('\n');
+    const urls = parsedResult.tweets.map((tweet) => tweet.url).join("\n");
     await testChannel.send(`Found ${parsedResult.tweets.length} tweet(s)\n${urls}`).catch(() => null);
   }
-  
+
   // Sort tweets from oldest to newest so we process them in the order they were posted
-  const sortedTweets = parsedResult.tweets.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const sortedTweets = parsedResult.tweets.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
 
   for (const tweet of sortedTweets) {
-    const tweetName = tweet.author.userName as typeof usernamesToWatch[number];
+    const tweetName = tweet.author.userName as (typeof usernamesToWatch)[number];
     if (!usernamesToWatch.includes(tweetName)) {
       throw new Error(`Tweet from unknown user: ${tweetName}`);
     }
@@ -293,7 +316,7 @@ export async function fetchTwitter(source: "webhook" | "scheduled", sinceTs?: nu
         type: "Twitter",
         handle: tweetName,
         id: tweet.id,
-      }
+      },
     });
 
     if (existing) {

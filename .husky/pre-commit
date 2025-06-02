@@ -2,6 +2,6 @@
 . "$(dirname "$0")/_/husky.sh"
 
 echo "Typescript check running"
-echo "> tsc --noEmit"
-bunx tsc --noEmit
+echo "> tsgo --noEmit"
+bunx tsgo --noEmit
 echo "Typescript check passed"

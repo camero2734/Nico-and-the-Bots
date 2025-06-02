@@ -11,7 +11,6 @@
 // const accessKey = secrets.apis.minio.accessKey;
 // const secretKey = secrets.apis.minio.secretKey;
 
-
 // if (!accessKey || !secretKey) {
 //     throw new Error("Must provide Minio keys")
 // }

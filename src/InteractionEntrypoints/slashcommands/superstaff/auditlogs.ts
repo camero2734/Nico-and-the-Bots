@@ -16,7 +16,7 @@ command.setHandler(async (ctx) => {
   // 26 May 2025
   const date = new Date("2025-05-26T00:00:00Z");
 
-  const usersWithRole = [];
+  const usersWithRole = new Set<string>();
 
   let lastId: string | undefined;
 
@@ -31,6 +31,7 @@ command.setHandler(async (ctx) => {
     if (logs.entries.size === 0) break;
 
     for (const entry of logs.entries.values()) {
+      if (!entry.targetId) continue;
       if (entry.createdAt < date) break outer;
 
       if (
@@ -38,7 +39,7 @@ command.setHandler(async (ctx) => {
           (change) => change.key === "$add" && change.new?.map((x) => x.id).includes("1373674037204484167"),
         )
       ) {
-        usersWithRole.push(entry.targetId);
+        usersWithRole.add(entry.targetId);
       }
 
       if (
@@ -46,16 +47,18 @@ command.setHandler(async (ctx) => {
           (change) => change.key === "$add" && change.new?.map((x) => x.id).includes("1373724238695108761"),
         )
       ) {
-        usersWithRole.push(entry.targetId);
+        usersWithRole.add(entry.targetId);
       }
+
+      lastId = entry.id;
     }
   }
 
-  const txtFile = Buffer.from(usersWithRole.join("\n"), "utf-8");
+  const txtFile = Buffer.from([...usersWithRole.values()].join("\n"), "utf-8");
   const fileName = `users-with-role-${Date.now().toString()}.txt`;
 
   await ctx.editReply({
-    content: `Found ${usersWithRole.length} users with the role.`,
+    content: `Found ${usersWithRole.size} users with the role.`,
     files: [new AttachmentBuilder(txtFile, { name: fileName })],
   });
 });

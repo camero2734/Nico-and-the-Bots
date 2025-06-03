@@ -1,7 +1,8 @@
-import { AttachmentBuilder, AuditLogEvent } from "discord.js";
+import { AuditLogEvent } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { prisma } from "../../../Helpers/prisma-init";
 
 const command = new SlashCommand({
   description: "Audit logs",
@@ -62,12 +63,26 @@ command.setHandler(async (ctx) => {
 
   console.log(`Reached ${lastDate}, last ID: ${lastId}`);
 
-  const txtFile = Buffer.from([...usersWithRole.values()].join("\n"), "utf-8");
-  const fileName = `users-with-role-${Date.now().toString()}.txt`;
+  const dbUsersWithRole = await prisma.badge.findMany({ where: { type: "BFX" }, select: { userId: true } });
+
+  const dbUsersSet = new Set(dbUsersWithRole.map((u) => u.userId));
+
+  const usersWithoutRole = usersWithRole.difference(dbUsersSet);
 
   await ctx.editReply({
-    content: `Found ${usersWithRole.size} users with the role.`,
-    files: [new AttachmentBuilder(txtFile, { name: fileName })],
+    content: `Found ${usersWithRole.size} users that had the role since May 26th, ${usersWithoutRole.size} of which are not in the database. Giving them the badge.`,
+  });
+
+  for (const userId of usersWithRole) {
+    await prisma.badge.upsert({
+      where: { userId_type: { userId, type: "BFX" } },
+      create: { userId, type: "BFX" },
+      update: {},
+    });
+  }
+
+  await ctx.editReply({
+    content: `Done giving the badge to ${usersWithRole.size} users.`,
   });
 });
 

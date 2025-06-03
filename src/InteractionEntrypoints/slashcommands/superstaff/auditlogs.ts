@@ -32,7 +32,10 @@ command.setHandler(async (ctx) => {
 
     for (const entry of logs.entries.values()) {
       if (!entry.targetId) continue;
-      if (entry.createdAt < date) break outer;
+      if (entry.createdAt < date) {
+        console.log("Reached logs before the specified date, stopping.");
+        break outer;
+      }
 
       if (
         entry.changes.some(

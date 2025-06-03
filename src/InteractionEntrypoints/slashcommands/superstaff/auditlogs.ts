@@ -19,8 +19,9 @@ command.setHandler(async (ctx) => {
   const usersWithRole = new Set<string>();
 
   let lastId: string | undefined;
+  let lastDate: Date | undefined;
 
-  outer: for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 100; i++) {
     console.log(`Fetching audit logs, iteration ${i + 1}`);
     const logs = await ctx.guild.fetchAuditLogs({
       type: AuditLogEvent.MemberRoleUpdate,
@@ -30,12 +31,13 @@ command.setHandler(async (ctx) => {
 
     if (logs.entries.size === 0) break;
 
+    if (lastDate && lastDate < date) {
+      console.log("Reached logs before the specified date, stopping.");
+      break;
+    }
+
     for (const entry of logs.entries.values()) {
       if (!entry.targetId) continue;
-      if (entry.createdAt < date) {
-        console.log("Reached logs before the specified date, stopping.");
-        break outer;
-      }
 
       if (
         entry.changes.some(
@@ -54,8 +56,11 @@ command.setHandler(async (ctx) => {
       }
 
       lastId = entry.id;
+      lastDate = entry.createdAt;
     }
   }
+
+  console.log(`Reached ${lastDate}, last ID: ${lastId}`);
 
   const txtFile = Buffer.from([...usersWithRole.values()].join("\n"), "utf-8");
   const fileName = `users-with-role-${Date.now().toString()}.txt`;

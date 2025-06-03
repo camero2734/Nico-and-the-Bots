@@ -74,11 +74,18 @@ command.setHandler(async (ctx) => {
   });
 
   for (const userId of usersWithRole) {
-    await prisma.badge.upsert({
-      where: { userId_type: { userId, type: "BFX" } },
-      create: { userId, type: "BFX" },
-      update: {},
-    });
+    try {
+      await prisma.badge.upsert({
+        where: { userId_type: { userId, type: "BFX" } },
+        create: { userId, type: "BFX" },
+        update: {},
+      });
+    } catch (error) {
+      console.error(`Failed to give badge to user ${userId}:`, error);
+      await ctx.editReply({
+        content: `Failed to give badge to user <@${userId}>: ${error instanceof Error ? error.message : "Unknown error"}`,
+      });
+    }
   }
 
   await ctx.editReply({

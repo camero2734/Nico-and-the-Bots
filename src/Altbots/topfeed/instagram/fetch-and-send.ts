@@ -254,8 +254,10 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     },
   });
 
-  await channel.send({
+  const m = await channel.send({
     components: [components],
     flags: MessageFlags.IsComponentsV2,
   });
+
+  if (m.crosspostable) await m.crosspost();
 }

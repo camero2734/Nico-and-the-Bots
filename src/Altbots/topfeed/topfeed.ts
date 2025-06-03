@@ -90,6 +90,11 @@ class TopfeedBot {
           ...mainMsg,
           content: `<@&${watcher.pingedRole}>\n${mainMsg.content ?? ""}`,
         });
+
+        if (threadStarter.crosspostable) {
+          await threadStarter.crosspost().catch(console.error);
+        }
+
         if (threadedMsgs.length < 1) {
           watcher.afterCheck(threadStarter);
           continue;

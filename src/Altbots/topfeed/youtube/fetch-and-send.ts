@@ -10,7 +10,7 @@ import {
 import { channelIDs, type roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
-// import { prisma } from "../../../Helpers/prisma-init";
+import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
 
 type DataForUsername = {
@@ -176,18 +176,18 @@ export async function fetchYoutube({
       continue;
     }
 
-    // const existing = await prisma.topfeedPost.findFirst({
-    //   where: {
-    //     type: "Youtube",
-    //     handle: username,
-    //     id: videoId,
-    //   },
-    // });
+    const existing = await prisma.topfeedPost.findFirst({
+      where: {
+        type: "Youtube",
+        handle: username,
+        id: videoId,
+      },
+    });
 
-    // if (existing) {
-    //   logger(`YT video already exists for ${username}: ${videoId}`);
-    //   continue;
-    // }
+    if (existing) {
+      logger(`YT video already exists for ${username}: ${videoId}`);
+      continue;
+    }
 
     const formattedPost: FormattedYoutubePost = {
       title: upload.snippet?.title || "*No title*",
@@ -205,14 +205,14 @@ export async function fetchYoutube({
 
     const components = await youtubeVideoToComponents(formattedPost, roleId);
 
-    // await prisma.topfeedPost.create({
-    //   data: {
-    //     id: videoId,
-    //     type: "Youtube",
-    //     handle: username,
-    //     data: { ...formattedPost },
-    //   },
-    // });
+    await prisma.topfeedPost.create({
+      data: {
+        id: videoId,
+        type: "Youtube",
+        handle: username,
+        data: { ...formattedPost },
+      },
+    });
 
     const m = await targetChannel.send({
       components: [components],

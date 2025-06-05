@@ -62,6 +62,7 @@ export async function checkYoutube() {
         channel.snippet?.thumbnails?.default?.url ||
         "https://www.iconpacks.net/icons/2/free-youtube-logo-icon-2431-thumb.png";
 
+      logger(`Fetching new posts for ${username} with thumbnail: ${authorThumbnail}`);
       await fetchYoutube({
         username,
         authorThumbnail,

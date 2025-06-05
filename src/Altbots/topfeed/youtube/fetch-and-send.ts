@@ -135,6 +135,7 @@ export async function fetchYoutube({
   authorThumbnail,
   source,
 }: { username: keyof typeof usernameData; authorThumbnail: string; source: "scheduled" }) {
+  logger("Here");
   const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
@@ -150,6 +151,7 @@ export async function fetchYoutube({
     return;
   }
 
+  logger(`Fetching recent YouTube posts for ${username} (${source})`);
   await testChan.send(`[${source}] Fetching recent YouTube posts for ${username}`).catch(console.error);
 
   const uploadsPlaylistId = usernameData[username as keyof typeof usernameData]?.youtubeChannelId;

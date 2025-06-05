@@ -81,11 +81,7 @@ export async function youtubeVideoToComponents(post: FormattedYoutubePost, roleI
         },
         {
           type: ComponentType.TextDisplay,
-          content: `**${post.title}**`,
-        },
-        {
-          type: ComponentType.TextDisplay,
-          content: post.description,
+          content: `**${post.title}**\n\n${post.description}`,
         },
         {
           type: ComponentType.TextDisplay,

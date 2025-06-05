@@ -54,7 +54,6 @@ async function fetchOpengraphData(user: string): Promise<number> {
     const text = await data.text();
 
     const match = text.split('posts_count\\":')[1].split(",")[0];
-    logger(match);
     if (!match) {
       throw new Error("Failed to parse the number of posts from the response.");
     }

@@ -25,6 +25,8 @@ export async function checkYoutube() {
     return;
   }
 
+  logger(`Found ${response.data.items.length} YouTube channels.`);
+
   for (const channel of response.data.items) {
     const username = Object.keys(usernameData).find(
       (key) => usernameData[key as (typeof usernamesToWatch)[number]].youtubeChannelId === channel.id,
@@ -42,6 +44,8 @@ export async function checkYoutube() {
     }
 
     const postCount = Number.parseInt(videoCountStr, 10);
+
+    logger(`User ${username} has ${postCount} posts (previously ${postCountMap[username]})`);
 
     if (postCount !== postCountMap[username]) {
       if (postCountMap[username] !== 0) {

@@ -12,6 +12,7 @@ import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
+import { addDays } from "date-fns";
 
 type DataForUsername = {
   youtubeChannelId: string;
@@ -123,7 +124,6 @@ export async function fetchYoutube({
   authorThumbnail,
   source,
 }: { username: keyof typeof usernameData; authorThumbnail: string; source: "scheduled" }) {
-  logger("Here");
   const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
@@ -194,6 +194,14 @@ export async function fetchYoutube({
       author: username,
       postedAt: new Date(upload.snippet?.publishedAt || Date.now()),
     };
+
+    if (addDays(new Date(formattedPost.postedAt), 1) < new Date()) {
+      logger(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`);
+      await testChan
+        .send(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`)
+        .catch(console.error);
+      continue;
+    }
 
     const components = await youtubeVideoToComponents(formattedPost, roleId);
 

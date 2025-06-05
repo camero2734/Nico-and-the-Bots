@@ -7,7 +7,7 @@ import {
   roleMention,
   userMention,
 } from "discord.js";
-import { channelIDs, type roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -24,21 +24,13 @@ const logger = (...args: unknown[]) => console.log("[YT:Fetch]", ...args);
 export const usernamesToWatch = ["twentyonepilots", "slushieguys"] as const;
 export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
   twentyonepilots: {
-    // roleId: roles.topfeed.selectable.band,
-    // channelId: channelIDs.topfeed.band,
-    // biome-ignore lint/suspicious/noExplicitAny: purposeful
-    roleId: "572568489320120353" as any,
-    // biome-ignore lint/suspicious/noExplicitAny: purposeful
-    channelId: channelIDs.bottest as any,
+    roleId: roles.topfeed.selectable.band,
+    channelId: channelIDs.topfeed.band,
     youtubeChannelId: "UCBQZwaNPFfJ1gZ1fLZpAEGw",
   },
   slushieguys: {
-    // roleId: roles.topfeed.selectable.tyler,
-    // channelId: channelIDs.topfeed.tyler,
-    // biome-ignore lint/suspicious/noExplicitAny: purposeful
-    roleId: "572568489320120353" as any,
-    // biome-ignore lint/suspicious/noExplicitAny: purposeful
-    channelId: channelIDs.bottest as any,
+    roleId: roles.topfeed.selectable.tyler,
+    channelId: channelIDs.topfeed.tyler,
     youtubeChannelId: "UCITp_ri9o-MBpLLaYZalTTQ",
   },
 };

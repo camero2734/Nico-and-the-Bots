@@ -151,7 +151,7 @@ export async function fetchYoutube({
     return;
   }
 
-  const uploadsPlaylistId = usernameData[username as keyof typeof usernameData]?.youtubeChannelId;
+  const uploadsPlaylistId = usernameData[username as keyof typeof usernameData]?.youtubeChannelId?.replace(/^UC/, "UU");
   if (!uploadsPlaylistId) {
     await testChan
       .send(`${userMention(userIDs.me)} No uploads playlist ID found for username: ${username}`)

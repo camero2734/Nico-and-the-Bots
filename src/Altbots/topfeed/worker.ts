@@ -1,8 +1,9 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import IORedis from "ioredis";
 import { checkInstagram } from "./instagram/check";
-import topfeedBot from "./topfeed";
 import { checkTwitter } from "./twitter/check";
+import { checkYoutube } from "./youtube/check";
+import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = {
@@ -12,12 +13,12 @@ const redisOpts = {
   }),
 };
 
-export type JobType = "YOUTUBE" | "WEBSITES";
+export type JobType = "WEBSITES";
 
 export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 
 // biome-ignore lint/suspicious/noExplicitAny: any is the default type anyway
-export const queue = new Queue<any, any, JobType | "TWITTER" | "INSTAGRAM">(QUEUE_NAME, {
+export const queue = new Queue<any, any, JobType | "TWITTER" | "INSTAGRAM" | "YOUTUBE">(QUEUE_NAME, {
   ...redisOpts,
   defaultJobOptions: {
     removeOnComplete: true,
@@ -39,6 +40,11 @@ export const worker = new Worker(
     if (name === "INSTAGRAM") {
       console.log(`Checking Instagram group: ${name}`);
       await checkInstagram();
+      return;
+    }
+    if (name === "YOUTUBE") {
+      console.log(`Checking YouTube group: ${name}`);
+      await checkYoutube();
       return;
     }
     console.log(`Checking group: ${name}`);

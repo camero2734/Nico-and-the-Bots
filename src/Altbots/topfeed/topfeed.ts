@@ -1,11 +1,10 @@
 import { secondsToMilliseconds } from "date-fns";
 import { Client, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
-import { channelIDs, guildID, roles } from "../../Configuration/config";
+import { guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import F from "../../Helpers/funcs";
 import type { Watcher } from "./types/base";
 import { SiteWatcher } from "./types/websites";
-import { YoutubeWatcher } from "./types/youtube";
 import { type JobType, queue } from "./worker";
 
 const onHeroku = process.env.ON_HEROKU === "1";
@@ -14,7 +13,6 @@ class TopfeedBot {
   guild: Guild;
   ready: Promise<void>;
   websites: SiteWatcher[] = [];
-  youtubes: YoutubeWatcher[] = [];
   constructor() {
     this.client = new Client({
       intents: [
@@ -53,11 +51,6 @@ class TopfeedBot {
       new SiteWatcher("http://dmaorg.info/found/103_37/Violation_Code_DMA-8325.mp4", "DMAORG Violation MP4", [
         "HEADERS",
       ]),
-    ];
-
-    this.youtubes = [
-      new YoutubeWatcher("twentyonepilots", channelIDs.topfeed.band, roles.topfeed.selectable.band),
-      new YoutubeWatcher("slushieguys", channelIDs.topfeed.tyler, roles.topfeed.selectable.tyler),
     ];
   }
 
@@ -132,8 +125,6 @@ class TopfeedBot {
 
   async checkGroup(jobType: JobType): Promise<void> {
     const methods: Record<JobType, () => void> = {
-      YOUTUBE: () => this.#checkGroup(this.youtubes),
-      // INSTAGRAM: () => this.#checkGroup(this.instagrams),
       WEBSITES: () => this.#checkGroup(this.websites),
     };
     if (methods[jobType]) methods[jobType]();
@@ -143,8 +134,6 @@ class TopfeedBot {
   async registerChecks(): Promise<void> {
     await this.ready;
     const numSeconds: Record<JobType, number> = {
-      YOUTUBE: 120,
-      // INSTAGRAM: 15,
       WEBSITES: 6,
     };
 
@@ -161,6 +150,9 @@ class TopfeedBot {
       repeat: { every: secondsToMilliseconds(19) },
     });
     await queue.add("INSTAGRAM", "", {
+      repeat: { every: secondsToMilliseconds(30) },
+    });
+    await queue.add("YOUTUBE", "", {
       repeat: { every: secondsToMilliseconds(30) },
     });
   }

@@ -6,6 +6,8 @@ import secrets from "../../../Configuration/secrets";
 import topfeedBot from "../topfeed";
 import { fetchTwitter, usernamesToWatch } from "./fetch-and-send";
 
+const logger = (...args: unknown[]) => console.log("[TW:Check]", ...args);
+
 const twitter = new TwitterOpenApi();
 let twitterClient: TwitterOpenApiClient | null = null;
 
@@ -15,14 +17,14 @@ const rateLimit = {
   reset: undefined as number | undefined,
 };
 export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(f: () => Promise<T>): Promise<T> {
-  console.log(
+  logger(
     `Rate limit: ${rateLimit.remaining}/${rateLimit.limit}/${rateLimit.reset} (in ${differenceInSeconds(rateLimit.reset ? new Date(rateLimit.reset * 1000) : new Date(), new Date())} seconds)`,
   );
 
   const waitTime = rateLimit.reset !== undefined ? rateLimit.reset - Math.floor(Date.now() / 1000) : undefined;
   if (rateLimit.reset !== undefined && rateLimit.remaining <= 0) {
     if (waitTime && waitTime > 0) {
-      console.log(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
+      logger(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
       topfeedBot.guild.channels.fetch(channelIDs.bottest).then((channel) => {
         if (channel?.isTextBased()) {
           channel.send(
@@ -44,7 +46,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
     const newRequestsPerSecond = rateLimit.reset
       ? Math.floor(rateLimit.remaining / (rateLimit.reset - Math.floor(Date.now() / 1000)))
       : -1;
-    console.log("Rate limit reset. New requests per second: ", newRequestsPerSecond);
+    logger("Rate limit reset. New requests per second: ", newRequestsPerSecond);
   }
 
   return response;
@@ -77,7 +79,7 @@ export async function checkTwitter() {
   });
 
   if (result.data.data?.[0]?.tweet) {
-    console.log("There are new tweets to fetch.");
+    logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", lastCheckTime);
   }
   lastCheckTime = Math.floor(addMinutes(new Date(), -1).getTime() / 1000);

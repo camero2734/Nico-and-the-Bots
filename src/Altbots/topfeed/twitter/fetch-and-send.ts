@@ -15,6 +15,8 @@ import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
 
+const logger = (...args: unknown[]) => console.log("[TW:Fetch]", ...args);
+
 export const usernamesToWatch = [
   "pootusmaximus",
   "twentyonepilots",
@@ -108,6 +110,7 @@ const responseSchema = z.object({
   tweets: z.array(tweetSchema),
 });
 
+const twitterEmojiId = "1380283149489143929";
 export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];
 
@@ -141,7 +144,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
     .filter((item): item is APIMediaGalleryItem => item !== undefined);
 
   // Compose author line
-  const authorLine = `**[${tweet.author.name} (@${tweet.author.userName})](https://x.com/${tweet.author.userName})**`;
+  const authorLine = `<:twitter:${twitterEmojiId}> **[${tweet.author.name} (@${tweet.author.userName})](https://x.com/${tweet.author.userName})**`;
 
   // Compose retweet/quote info
   let contextSection: APIComponentInContainer[] = [];
@@ -218,15 +221,15 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
           type: ComponentType.TextDisplay,
           content: authorLine,
         },
+        {
+          type: ComponentType.TextDisplay,
+          content: tweet.text,
+        },
+        {
+          type: ComponentType.TextDisplay,
+          content: `[View on Twitter](${tweet.url})`,
+        },
       ],
-    },
-    {
-      type: ComponentType.TextDisplay,
-      content: tweet.text,
-    },
-    {
-      type: ComponentType.TextDisplay,
-      content: `[View on Twitter](${tweet.url})`,
     },
   ];
 
@@ -282,7 +285,7 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
   url.searchParams.append("query", `(${query}) since_time:${sinceTs}`);
   url.searchParams.append("queryType", "Latest");
 
-  console.log(`Fetching tweets with query: ${url.toString()}`);
+  logger(`Fetching tweets with query: ${url.toString()}`);
 
   const options = {
     method: "GET",
@@ -320,12 +323,12 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
     });
 
     if (existing) {
-      console.log(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
+      logger(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
       continue; // Skip if tweet already exists
     }
 
-    console.log(`Processing tweet ${tweet.id} from ${tweetName}`);
-    console.log(JSON.stringify(tweet, null, 2));
+    logger(`Processing tweet ${tweet.id} from ${tweetName}`);
+    logger(JSON.stringify(tweet, null, 2));
 
     const { roleId, channelId } = usernameData[tweetName];
     const components = await tweetToComponents(tweet, roleId);
@@ -353,9 +356,11 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
       },
     });
 
-    await channel.send({
+    const m = await channel.send({
       components: [components],
       flags: MessageFlags.IsComponentsV2,
     });
+
+    if (m.crosspostable) await m.crosspost();
   }
 }

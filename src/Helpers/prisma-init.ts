@@ -38,7 +38,7 @@ export const queries = {
     try {
       const results = await prisma.messageHistory.groupBy({
         by: ["userId"],
-        where: { date: { gte: monthAgo } },
+        where: { date: { gte: monthAgo }, user: { currentlyInServer: true } },
         _sum: { pointsEarned: true },
         orderBy: { _sum: { pointsEarned: "desc" } },
         skip,
@@ -57,7 +57,7 @@ export const queries = {
   },
   async alltimePlaceNum(score: number): Promise<number> {
     try {
-      const res = await prisma.user.count({ where: { score: { gt: score } } });
+      const res = await prisma.user.count({ where: { score: { gt: score }, currentlyInServer: true } });
       return res + 1;
     } catch {
       return 1;

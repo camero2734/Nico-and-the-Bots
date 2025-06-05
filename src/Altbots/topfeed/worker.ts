@@ -32,23 +32,28 @@ export const worker = new Worker(
   async (job) => {
     const name = job.name as QueueJobType;
 
-    if (name === "TWITTER") {
-      console.log(`Checking Twitter group: ${name}`);
-      await checkTwitter();
-      return;
+    try {
+      if (name === "TWITTER") {
+        console.log(`Checking Twitter group: ${name}`);
+        await checkTwitter();
+        return;
+      }
+      if (name === "INSTAGRAM") {
+        console.log(`Checking Instagram group: ${name}`);
+        await checkInstagram();
+        return;
+      }
+      if (name === "YOUTUBE") {
+        console.log(`Checking YouTube group: ${name}`);
+        await checkYoutube();
+        return;
+      }
+      console.log(`Checking group: ${name}`);
+      await topfeedBot.checkGroup(name);
+    } catch (error) {
+      console.error(`Error processing job ${name}:`, error);
+      throw error;
     }
-    if (name === "INSTAGRAM") {
-      console.log(`Checking Instagram group: ${name}`);
-      await checkInstagram();
-      return;
-    }
-    if (name === "YOUTUBE") {
-      console.log(`Checking YouTube group: ${name}`);
-      await checkYoutube();
-      return;
-    }
-    console.log(`Checking group: ${name}`);
-    await topfeedBot.checkGroup(name);
   },
   redisOpts,
 );

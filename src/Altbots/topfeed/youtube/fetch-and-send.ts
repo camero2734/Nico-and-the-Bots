@@ -148,7 +148,7 @@ export async function fetchYoutube({
     return;
   }
 
-  await testChan.send(`[${source}] Fetching recent YouTube posts`).catch(console.error);
+  await testChan.send(`[${source}] Fetching recent YouTube posts for ${username}`).catch(console.error);
 
   const uploadsPlaylistId = usernameData[username as keyof typeof usernameData]?.youtubeChannelId;
   if (!uploadsPlaylistId) {

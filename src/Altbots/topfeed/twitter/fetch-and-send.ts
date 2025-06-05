@@ -218,15 +218,15 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
           type: ComponentType.TextDisplay,
           content: authorLine,
         },
+        {
+          type: ComponentType.TextDisplay,
+          content: tweet.text,
+        },
+        {
+          type: ComponentType.TextDisplay,
+          content: `[View on Twitter](${tweet.url})`,
+        },
       ],
-    },
-    {
-      type: ComponentType.TextDisplay,
-      content: tweet.text,
-    },
-    {
-      type: ComponentType.TextDisplay,
-      content: `[View on Twitter](${tweet.url})`,
     },
   ];
 

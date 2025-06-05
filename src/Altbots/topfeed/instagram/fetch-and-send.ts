@@ -108,15 +108,15 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
           type: ComponentType.TextDisplay,
           content: authorLine,
         },
+        {
+          type: ComponentType.TextDisplay,
+          content: post.caption,
+        },
+        {
+          type: ComponentType.TextDisplay,
+          content: `[View on Instagram](${post.url})`,
+        },
       ],
-    },
-    {
-      type: ComponentType.TextDisplay,
-      content: post.caption,
-    },
-    {
-      type: ComponentType.TextDisplay,
-      content: `[View on Instagram](${post.url})`,
     },
   ];
 

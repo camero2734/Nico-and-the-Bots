@@ -6,7 +6,7 @@ import { fetchYoutube, type usernamesToWatch, usernameData, youtube } from "./fe
 const logger = (...args: unknown[]) => console.log("[YT:Check]", ...args);
 
 const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
-  twentyonepilots: 0,
+  twentyonepilots: 1,
   slushieguys: 0,
 };
 

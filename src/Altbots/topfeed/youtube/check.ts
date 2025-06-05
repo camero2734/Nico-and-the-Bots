@@ -3,6 +3,8 @@ import { channelIDs, userIDs } from "../../../Configuration/config";
 import topfeedBot from "../topfeed";
 import { fetchYoutube, type usernamesToWatch, usernameData, youtube } from "./fetch-and-send";
 
+const logger = (...args: unknown[]) => console.log("[YT:Check]", ...args);
+
 const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
   twentyonepilots: 0,
   slushieguys: 0,
@@ -19,7 +21,7 @@ export async function checkYoutube() {
   });
 
   if (!response.data.items || response.data.items.length === 0) {
-    console.log("No YouTube channels found.");
+    logger("No YouTube channels found.");
     return;
   }
 
@@ -29,13 +31,13 @@ export async function checkYoutube() {
     ) as (typeof usernamesToWatch)[number] | undefined;
 
     if (!username) {
-      console.log(`No matching username found for channel ID: ${channel.id}`);
+      logger(`No matching username found for channel ID: ${channel.id}`);
       continue;
     }
 
     const videoCountStr = channel.statistics?.videoCount;
     if (!videoCountStr) {
-      console.log(`No video count found for channel ID: ${channel.id}`);
+      logger(`No video count found for channel ID: ${channel.id}`);
       continue;
     }
 
@@ -43,7 +45,7 @@ export async function checkYoutube() {
 
     if (postCount !== postCountMap[username]) {
       if (postCountMap[username] !== 0) {
-        console.log(`New posts for ${username}: ${postCount - postCountMap[username]} (Total: ${postCount})`);
+        logger(`New posts for ${username}: ${postCount - postCountMap[username]} (Total: ${postCount})`);
         await testChan.send(
           `${userMention(userIDs.me)} YouTube posts for ${username} went from ${postCountMap[username]} to ${postCount}.`,
         );
@@ -62,7 +64,7 @@ export async function checkYoutube() {
         source: "scheduled",
       });
     } else {
-      console.log(`No new posts for ${username}. Current count: ${postCount}`);
+      logger(`No new posts for ${username}. Current count: ${postCount}`);
     }
   }
 }

@@ -19,6 +19,8 @@ type DataForUsername = {
   channelId: (typeof channelIDs.topfeed)[keyof typeof channelIDs.topfeed];
 };
 
+const logger = (...args: unknown[]) => console.log("[YT:Fetch]", ...args);
+
 export const usernamesToWatch = ["twentyonepilots", "slushieguys"] as const;
 export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
   twentyonepilots: {
@@ -165,14 +167,14 @@ export async function fetchYoutube({
   });
 
   if (!uploads.data.items || uploads.data.items.length === 0) {
-    console.log("No YouTube uploads found.");
+    logger("No YouTube uploads found.");
     return;
   }
 
   for (const upload of uploads.data.items) {
     const videoId = upload.contentDetails?.videoId;
     if (!videoId) {
-      console.log("No video ID found for upload:", upload);
+      logger("No video ID found for upload:", upload);
       continue;
     }
 
@@ -185,7 +187,7 @@ export async function fetchYoutube({
     // });
 
     // if (existing) {
-    //   console.log(`YT video already exists for ${username}: ${videoId}`);
+    //   logger(`YT video already exists for ${username}: ${videoId}`);
     //   continue;
     // }
 

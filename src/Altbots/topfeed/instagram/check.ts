@@ -3,6 +3,8 @@ import { channelIDs, userIDs } from "../../../Configuration/config";
 import topfeedBot from "../topfeed";
 import { fetchInstagram, usernamesToWatch } from "./fetch-and-send";
 
+const logger = (...args: unknown[]) => console.log("[IG:Check]", ...args);
+
 async function fetchOpengraphDataBackup(user: string) {
   const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isSendable()) throw new Error("Test channel not found or is not text-based");
@@ -52,7 +54,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
     const text = await data.text();
 
     const match = text.split('posts_count\\":')[1].split(",")[0];
-    console.log(match);
+    logger(match);
     if (!match) {
       throw new Error("Failed to parse the number of posts from the response.");
     }
@@ -93,13 +95,13 @@ export async function checkInstagram() {
       if (postCountMap[username] !== postCount) {
         postCountChanged = true;
         if (postCountMap[username] !== 0) {
-          console.log(`Post count for ${username} changed from ${postCountMap[username]} to ${postCount}`);
+          logger(`Post count for ${username} changed from ${postCountMap[username]} to ${postCount}`);
           testChan
             .send(`${userMention(userIDs.me)} Post count for ${username} changed to ${postCount}`)
             .catch(console.error);
         }
       } else {
-        console.log(`Post count for ${username} has not changed (${postCount})`);
+        logger(`Post count for ${username} has not changed (${postCount})`);
       }
       postCountMap[username] = postCount;
     } catch (error) {
@@ -112,9 +114,9 @@ export async function checkInstagram() {
   }
 
   if (!postCountChanged && Math.random() < 0.05) {
-    console.log("No post changes detected, but randomly checking Instagram anyway.");
+    logger("No post changes detected, but randomly checking Instagram anyway.");
   } else if (!postCountChanged) {
-    console.log("No post count changes detected, skipping Instagram check.");
+    logger("No post count changes detected, skipping Instagram check.");
     return;
   }
 

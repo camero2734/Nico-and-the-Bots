@@ -29,6 +29,8 @@ type DataForUsername = {
   channelId: (typeof channelIDs.topfeed)[keyof typeof channelIDs.topfeed];
 };
 
+const logger = (...args: unknown[]) => console.log("[IG:Fetch]", ...args);
+
 export const usernamesToWatch = ["twentyonepilots", "tylerrjoseph", "joshuadun"] as const;
 const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
   twentyonepilots: {
@@ -52,11 +54,11 @@ let initialized = false;
 async function initializeInstagram() {
   if (initialized) return;
 
-  await ig.simulate.preLoginFlow().catch((error) => console.log("Pre-login flow error:", error?.message));
+  await ig.simulate.preLoginFlow().catch((error) => logger("Pre-login flow error:", error?.message));
   const loggedInUser = await ig.account.login(secrets.apis.instagram.username, secrets.apis.instagram.password);
   void loggedInUser;
 
-  await ig.simulate.postLoginFlow().catch((error) => console.log("Post-login flow error:", error?.message));
+  await ig.simulate.postLoginFlow().catch((error) => logger("Post-login flow error:", error?.message));
   initialized = true;
 }
 
@@ -208,7 +210,7 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   if (!usernamesToWatch.includes(post.author as (typeof usernamesToWatch)[number])) {
-    console.log(`Skipping post from ${post.author} as they are not in the watchlist.`);
+    logger(`Skipping post from ${post.author} as they are not in the watchlist.`);
     return;
   }
 
@@ -221,18 +223,18 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   });
 
   if (existing) {
-    console.log(`IG post ${post.code} from ${post.author} already exists in the database.`);
+    logger(`IG post ${post.code} from ${post.author} already exists in the database.`);
     return; // Skip if post already exists
   }
 
   if (addDays(new Date(post.postedAt), 1) < new Date()) {
-    console.log(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+    logger(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
     await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
     return;
   }
 
-  console.log(`Processing IG post ${post.code} from ${post.author}`);
-  console.log(JSON.stringify(post, null, 2));
+  logger(`Processing IG post ${post.code} from ${post.author}`);
+  logger(JSON.stringify(post, null, 2));
 
   await testChan.send(`Processing IG post ${post.url} from ${post.author}`).catch(console.error);
 

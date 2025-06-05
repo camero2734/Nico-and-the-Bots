@@ -15,6 +15,8 @@ import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
 
+const logger = (...args: unknown[]) => console.log("[TW:Fetch]", ...args);
+
 export const usernamesToWatch = [
   "pootusmaximus",
   "twentyonepilots",
@@ -282,7 +284,7 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
   url.searchParams.append("query", `(${query}) since_time:${sinceTs}`);
   url.searchParams.append("queryType", "Latest");
 
-  console.log(`Fetching tweets with query: ${url.toString()}`);
+  logger(`Fetching tweets with query: ${url.toString()}`);
 
   const options = {
     method: "GET",
@@ -320,12 +322,12 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
     });
 
     if (existing) {
-      console.log(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
+      logger(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
       continue; // Skip if tweet already exists
     }
 
-    console.log(`Processing tweet ${tweet.id} from ${tweetName}`);
-    console.log(JSON.stringify(tweet, null, 2));
+    logger(`Processing tweet ${tweet.id} from ${tweetName}`);
+    logger(JSON.stringify(tweet, null, 2));
 
     const { roleId, channelId } = usernameData[tweetName];
     const components = await tweetToComponents(tweet, roleId);

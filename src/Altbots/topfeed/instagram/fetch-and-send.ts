@@ -88,9 +88,10 @@ function extractMedia(item: TimelineFeedResponseMedia_or_ad): InstagramMedia[] {
   return media;
 }
 
+const instagramEmojiId = "1380283905416106064";
 export async function instaPostToComponents(post: FormattedInstagramPost, roleId: string) {
   // Compose author line
-  const authorLine = `**[${post.author}](https://instagram.com/${post.author})**`;
+  const authorLine = `<:instagram:${instagramEmojiId}> **[${post.author}](https://instagram.com/${post.author})**`;
 
   const role = await topfeedBot.guild.roles.fetch(roleId);
   if (!role) throw new Error(`Role with ID ${roleId} not found`);

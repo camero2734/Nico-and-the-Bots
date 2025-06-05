@@ -110,6 +110,7 @@ const responseSchema = z.object({
   tweets: z.array(tweetSchema),
 });
 
+const twitterEmojiId = "1380283149489143929";
 export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];
 
@@ -143,7 +144,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
     .filter((item): item is APIMediaGalleryItem => item !== undefined);
 
   // Compose author line
-  const authorLine = `**[${tweet.author.name} (@${tweet.author.userName})](https://x.com/${tweet.author.userName})**`;
+  const authorLine = `<:twitter:${twitterEmojiId}> **[${tweet.author.name} (@${tweet.author.userName})](https://x.com/${tweet.author.userName})**`;
 
   // Compose retweet/quote info
   let contextSection: APIComponentInContainer[] = [];

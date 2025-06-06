@@ -153,7 +153,7 @@ class TopfeedBot {
       repeat: { every: secondsToMilliseconds(30) },
     });
     await queue.add("YOUTUBE", "", {
-      repeat: { every: secondsToMilliseconds(30) },
+      repeat: { every: secondsToMilliseconds(10) },
     });
   }
 }

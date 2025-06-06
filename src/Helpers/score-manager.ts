@@ -12,16 +12,17 @@ import {
 import { prisma } from "./prisma-init";
 
 import { Queue, Worker } from "bullmq";
-import IORedis from "ioredis";
+import { Redis } from "ioredis";
 import { NicoClient } from "../../app";
 
 const QUEUE_NAME = "ScoreUpdate";
 
 const redisOpts = {
-  connection: new IORedis(process.env.REDIS_URL, {
+  connection: new Redis(process.env.REDIS_URL as string, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
-  }),
+    // biome-ignore lint/suspicious/noExplicitAny: Temporary issue with ioredis types
+  }) as any,
 };
 
 const scoreQueue = new Queue(QUEUE_NAME, {

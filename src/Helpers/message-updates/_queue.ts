@@ -1,19 +1,18 @@
-import { QueueScheduler, Worker } from "bullmq";
+import { Worker } from "bullmq";
 import { type BaseMessageOptions, Collection, type Message, type Snowflake, type TextChannel } from "discord.js";
-import IORedis from "ioredis";
+import { Redis } from "ioredis";
 import { NicoClient } from "../../../app";
 import { guildID } from "../../Configuration/config";
 import { prisma } from "../prisma-init";
 
 const QUEUE_NAME = "MessageUpdates";
 const redisOpts = {
-  connection: new IORedis(process.env.REDIS_URL, {
+  connection: new Redis(process.env.REDIS_URL as string, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
-  }),
+    // biome-ignore lint/suspicious/noExplicitAny: Temporary issue with ioredis types
+  }) as any,
 };
-
-export const scheduler = new QueueScheduler(QUEUE_NAME, redisOpts);
 
 export interface MessageUpdate {
   name: string;

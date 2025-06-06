@@ -93,7 +93,7 @@ export async function checkTwitter() {
     await Bun.file(`tweet-${newTweet.tweet.restId}.json`).write(JSON.stringify(newTweet, null, 2));
 
     logger("There are new tweets to fetch.");
-    await fetchTwitter("scheduled", lastCheckTime);
+    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
   }
   lastCheckTime = addMinutes(new Date(), -1).getTime();
 }

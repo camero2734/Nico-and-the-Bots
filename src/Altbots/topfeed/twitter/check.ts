@@ -52,7 +52,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   return response;
 }
 
-let lastCheckTime: number = Math.floor(addMinutes(new Date(), -5).getTime() / 1000);
+let lastCheckTime: number = addMinutes(new Date(), -5).getTime();
 export async function checkTwitter() {
   const client =
     twitterClient ||
@@ -93,5 +93,5 @@ export async function checkTwitter() {
     logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", lastCheckTime);
   }
-  lastCheckTime = Math.floor(addMinutes(new Date(), -1).getTime() / 1000);
+  lastCheckTime = addMinutes(new Date(), -1).getTime();
 }

@@ -34,17 +34,17 @@ export const worker = new Worker(
 
     try {
       if (name === "TWITTER") {
-        console.log(`Checking Twitter group: ${name}`);
+        console.log(`Checking Twitter group: ${name} at ${Date.now()}`);
         await checkTwitter();
         return;
       }
       if (name === "INSTAGRAM") {
-        console.log(`Checking Instagram group: ${name}`);
+        console.log(`Checking Instagram group: ${name} at ${Date.now()}`);
         await checkInstagram();
         return;
       }
       if (name === "YOUTUBE") {
-        console.log(`Checking YouTube group: ${name}`);
+        console.log(`Checking YouTube group: ${name} at ${Date.now()}`);
         await checkYoutube();
         return;
       }

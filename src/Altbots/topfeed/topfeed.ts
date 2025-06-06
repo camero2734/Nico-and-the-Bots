@@ -2,7 +2,6 @@ import { secondsToMilliseconds } from "date-fns";
 import { Client, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
 import { guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
-import F from "../../Helpers/funcs";
 import type { Watcher } from "./types/base";
 import { SiteWatcher } from "./types/websites";
 import { type JobType, queue } from "./worker";
@@ -133,19 +132,13 @@ class TopfeedBot {
 
   async registerChecks(): Promise<void> {
     await this.ready;
-    const numSeconds: Record<JobType, number> = {
-      WEBSITES: 6,
-    };
 
     // Remove all existing jobs bullmq
     await queue.obliterate({ force: true });
 
-    for (const [jobType, seconds] of F.entries(numSeconds)) {
-      await queue.add(jobType, "", {
-        repeat: { every: secondsToMilliseconds(seconds) },
-      });
-    }
-
+    await queue.add("WEBSITES", "", {
+      repeat: { every: secondsToMilliseconds(6) },
+    });
     await queue.add("TWITTER", "", {
       repeat: { every: secondsToMilliseconds(5) },
     });

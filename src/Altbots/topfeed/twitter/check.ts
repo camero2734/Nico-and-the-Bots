@@ -62,23 +62,28 @@ export async function checkTwitter() {
     }));
   twitterClient = client;
 
-  const fromQuery = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
-  const query = `(${fromQuery}) since_time:${lastCheckTime}`;
-
   const result = await withRateLimit(async () => {
     try {
-      return await client.getTweetApi().getSearchTimeline({
-        rawQuery: query,
-        count: 1,
-        product: "Latest",
-      });
+      return await client.getTweetApi().getHomeLatestTimeline();
     } catch (error) {
       console.error("Error fetching Twitter timeline:", error);
       throw error;
     }
   });
 
-  if (result.data.data?.[0]?.tweet) {
+  const newTweet = result.data.data
+    ?.filter(
+      (t) =>
+        // Not an ad
+        t.user.legacy.screenName &&
+        usernamesToWatch.includes(t.user.legacy.screenName as (typeof usernamesToWatch)[number]) &&
+        // Not an old tweet
+        t.tweet.legacy?.createdAt &&
+        new Date(t.tweet.legacy.createdAt).getTime() >= lastCheckTime,
+    )
+    .at(0);
+
+  if (newTweet) {
     logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", lastCheckTime);
   }

@@ -83,13 +83,15 @@ export async function checkTwitter() {
     )
     .at(0);
 
-  console.log(
-    "New tweet found:",
-    `https://twitter.com/${newTweet?.user.legacy.screenName}/status/${newTweet?.tweet.restId}`,
-    newTweet?.tweet.legacy?.createdAt,
-  );
-
   if (newTweet) {
+    console.log(
+      "New tweet found:",
+      `https://twitter.com/${newTweet?.user.legacy.screenName}/status/${newTweet?.tweet.restId}`,
+      newTweet?.tweet.legacy?.createdAt,
+    );
+    // Just in case
+    await Bun.file(`tweet-${newTweet.tweet.restId}.json`).write(JSON.stringify(newTweet, null, 2));
+
     logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", lastCheckTime);
   }

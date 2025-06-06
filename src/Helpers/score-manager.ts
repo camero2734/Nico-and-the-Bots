@@ -79,11 +79,11 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
   });
 
   const now = Date.now();
-  const timeSince = now - dbUser.lastMessageSent.getTime();
+  const timeSince = Math.max(now - dbUser.lastMessageSent.getTime(), 0);
 
   await prisma.user.update({
     where: { id: dbUser.id },
-    data: { lastMessageSent: new Date() },
+    data: { lastMessageSent: msg.createdAt },
   });
 
   // Determine whether to award a point or not (i.e. spamming messages should award no points)
@@ -101,7 +101,7 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
   }
 
   // Add to message history
-  const startOfDate = startOfDay(new Date());
+  const startOfDate = startOfDay(msg.createdAt);
   const historyIdentifier = {
     date_userId: { date: startOfDate, userId: msg.author.id },
   };

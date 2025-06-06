@@ -270,9 +270,7 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
   const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
 
   if (testChannel?.isSendable()) {
-    await testChannel
-      .send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`)
-      .catch(() => null);
+    testChannel.send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null);
   }
 
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");

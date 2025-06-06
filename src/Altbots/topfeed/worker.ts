@@ -54,5 +54,8 @@ export const worker = new Worker(
       throw error;
     }
   },
-  redisOpts,
+  {
+    ...redisOpts,
+    concurrency: 4,
+  },
 );

@@ -138,15 +138,27 @@ class TopfeedBot {
 
     await queue.add("WEBSITES", "", {
       repeat: { every: secondsToMilliseconds(6) },
+      deduplication: {
+        id: "WEBSITES",
+      },
     });
     await queue.add("TWITTER", "", {
       repeat: { every: secondsToMilliseconds(5) },
+      deduplication: {
+        id: "TWITTER",
+      },
     });
     await queue.add("INSTAGRAM", "", {
       repeat: { every: secondsToMilliseconds(30) },
+      deduplication: {
+        id: "INSTAGRAM",
+      },
     });
     await queue.add("YOUTUBE", "", {
       repeat: { every: secondsToMilliseconds(10) },
+      deduplication: {
+        id: "YOUTUBE",
+      },
     });
   }
 }

@@ -86,7 +86,7 @@
     "@types/ramda": "^0.27.41",
     "@types/spotify-web-api-node": "^5.0.3",
     "@types/ws": "8.2.2",
-    "@typescript/native-preview": "^7.0.0-dev.20250602.1"
+    "@typescript/native-preview": "^7.0.0-dev.20250606.1"
   },
   "overrides": {
     "re2": "npm:@dashevo/wasm-re2"

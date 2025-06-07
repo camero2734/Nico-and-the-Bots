@@ -103,7 +103,7 @@ export async function checkTwitter() {
     if (currentCount !== postCountMap[username]) {
       if (postCountMap[username] !== 0) {
         logger(`Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`);
-        await testChan.send(`${userMention(userIDs.me)} Post count for ${username} changed to ${currentCount}`);
+        testChan.send(`${userMention(userIDs.me)} Post count for ${username} changed to ${currentCount}`);
       }
       postCountMap[username] = currentCount;
       changeDetected = true;
@@ -113,6 +113,8 @@ export async function checkTwitter() {
   if (changeDetected) {
     logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
+  } else if (Math.random() < 0.01) {
+    await testChan.send(`[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``);
   }
   lastCheckTime = addMinutes(new Date(), -1).getTime();
 }

@@ -117,8 +117,8 @@ export async function checkTwitter() {
   if (changeDetected) {
     logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
-    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
-    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
+    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000 - 60));
+    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000 - 120));
   } else if (Math.random() < 0.01) {
     await testChan.send(`[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``);
   }

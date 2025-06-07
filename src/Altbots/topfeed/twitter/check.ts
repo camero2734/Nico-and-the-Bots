@@ -93,7 +93,7 @@ export async function checkTwitter() {
 
   let changeDetected = false;
   for (const username of usernamesToWatch) {
-    if (!usernameToStatusesCount[username]) {
+    if (typeof usernameToStatusesCount[username] !== "number") {
       logger(`Username ${username} not found in the following list.`);
       await testChan.send(`${userMention(userIDs.me)} Username ${username} not found in the following list.`);
       continue;

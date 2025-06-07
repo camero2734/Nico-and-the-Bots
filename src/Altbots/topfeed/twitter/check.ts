@@ -52,6 +52,13 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   return response;
 }
 
+const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
+  camero_2734: 0,
+  twentyonepilots: 0,
+  tylerrjoseph: 0,
+  joshuadun: 0,
+  blurryface: 0,
+};
 let lastCheckTime: number = addMinutes(new Date(), -5).getTime();
 export async function checkTwitter() {
   const client =
@@ -62,49 +69,46 @@ export async function checkTwitter() {
     }));
   twitterClient = client;
 
+  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  if (!testChan?.isTextBased()) throw new Error("Test channel is not text-based");
+
   const result = await withRateLimit(async () => {
     try {
-      return await client.getTweetApi().getHomeLatestTimeline();
+      return await client.getUserListApi().getFollowing({
+        userId: "1733919401026400256",
+      });
     } catch (error) {
       console.error("Error fetching Twitter timeline:", error);
       throw error;
     }
   });
 
-  const addedComponent =
-    result.data.raw.instruction[0]?.type === "TimelineAddEntries" &&
-    result.data.raw.instruction[0]?.entries[0]?.content?.entryType === "TimelineTimelineItem" &&
-    result.data.raw.instruction[0]?.entries[0]?.content?.clientEventInfo?.component;
-
-  if (addedComponent === "verified_prompt") {
-    const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
-    if (testChan?.isTextBased()) {
-      await testChan.send(`${userMention(userIDs.me)} Twitter check rate limit reached, verified prompt shown.`);
-    }
-    throw new Error("Rate limit reached.");
+  const usernameToStatusesCount: Record<string, number> = {};
+  for (const { user } of result.data.data) {
+    if (!user?.legacy) continue;
+    usernameToStatusesCount[user.legacy.screenName] = user.legacy.statusesCount;
   }
 
-  const newTweet = result.data.data
-    ?.filter(
-      (t) =>
-        // Not an ad
-        t.user.legacy.screenName &&
-        usernamesToWatch.includes(t.user.legacy.screenName as (typeof usernamesToWatch)[number]) &&
-        // Not an old tweet
-        t.tweet.legacy?.createdAt &&
-        new Date(t.tweet.legacy.createdAt).getTime() >= lastCheckTime,
-    )
-    .at(0);
+  let changeDetected = false;
+  for (const username of usernamesToWatch) {
+    if (!usernameToStatusesCount[username]) {
+      logger(`Username ${username} not found in the following list.`);
+      await testChan.send(`${userMention(userIDs.me)} Username ${username} not found in the following list.`);
+      continue;
+    }
 
-  if (newTweet) {
-    console.log(
-      "New tweet found:",
-      `https://twitter.com/${newTweet?.user.legacy.screenName}/status/${newTweet?.tweet.restId}`,
-      newTweet?.tweet.legacy?.createdAt,
-    );
-    // Just in case
-    Bun.file(`tweet-${newTweet.tweet.restId}.json`).write(JSON.stringify(newTweet, null, 2));
+    const currentCount = usernameToStatusesCount[username];
+    if (currentCount !== postCountMap[username]) {
+      if (postCountMap[username] !== 0) {
+        logger(`Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`);
+        await testChan.send(`${userMention(userIDs.me)} Post count for ${username} changed to ${currentCount}`);
+      }
+      postCountMap[username] = currentCount;
+      changeDetected = true;
+    }
+  }
 
+  if (changeDetected) {
     logger("There are new tweets to fetch.");
     await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
   }

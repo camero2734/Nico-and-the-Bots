@@ -36,24 +36,21 @@ export const worker = new Worker(
       if (name === "TWITTER") {
         console.log(`Checking Twitter group: ${name} at ${Date.now()}`);
         await checkTwitter();
-        return;
-      }
-      if (name === "INSTAGRAM") {
+      } else if (name === "INSTAGRAM") {
         console.log(`Checking Instagram group: ${name} at ${Date.now()}`);
         await checkInstagram();
-        return;
-      }
-      if (name === "YOUTUBE") {
+      } else if (name === "YOUTUBE") {
         console.log(`Checking YouTube group: ${name} at ${Date.now()}`);
         await checkYoutube();
-        return;
+      } else {
+        console.log(`Checking group: ${name}`);
+        await topfeedBot.checkGroup(name);
       }
-      console.log(`Checking group: ${name}`);
-      await topfeedBot.checkGroup(name);
     } catch (error) {
       console.error(`Error processing job ${name}:`, error);
       throw error;
     }
+
     const duration = Date.now() - start;
     console.log(`Job ${name} completed in ${duration}ms`);
   },

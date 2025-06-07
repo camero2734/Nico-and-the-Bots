@@ -71,6 +71,19 @@ export async function checkTwitter() {
     }
   });
 
+  const addedComponent =
+    result.data.raw.instruction[0]?.type === "TimelineAddEntries" &&
+    result.data.raw.instruction[0]?.entries[0]?.content?.entryType === "TimelineTimelineItem" &&
+    result.data.raw.instruction[0]?.entries[0]?.content?.clientEventInfo?.component;
+
+  if (addedComponent === "verified_prompt") {
+    const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+    if (testChan?.isTextBased()) {
+      await testChan.send(`${userMention(userIDs.me)} Twitter check rate limit reached, verified prompt shown.`);
+    }
+    throw new Error("Rate limit reached.");
+  }
+
   const newTweet = result.data.data
     ?.filter(
       (t) =>

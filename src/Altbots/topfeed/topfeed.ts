@@ -143,7 +143,7 @@ class TopfeedBot {
       },
     });
     await queue.add("TWITTER", "", {
-      repeat: { every: secondsToMilliseconds(2) },
+      repeat: { every: secondsToMilliseconds(18) },
       deduplication: {
         id: "TWITTER",
       },

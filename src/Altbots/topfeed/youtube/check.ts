@@ -66,6 +66,10 @@ export async function checkYoutube() {
         authorThumbnail,
         source: "scheduled",
       });
+    } else if (Math.random() < 0.01) {
+      await testChan.send(
+        `[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``,
+      );
     }
   }
 }

@@ -7,9 +7,10 @@ import {
   ContainerBuilder,
   MessageFlags,
   roleMention,
+  userMention,
 } from "discord.js";
 import { z } from "zod";
-import { channelIDs, roles } from "../../../Configuration/config";
+import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -267,12 +268,6 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
 
   const query = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
 
-  const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
-
-  if (testChannel?.isSendable()) {
-    testChannel.send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null);
-  }
-
   const url = new URL("https://api.twitterapi.io/twitter/tweet/advanced_search");
   url.searchParams.append("query", `(${query}) since_time:${sinceTs}`);
   url.searchParams.append("queryType", "Latest");
@@ -290,7 +285,13 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
   const result = await fetch(url.toString(), options).then((r) => r.json());
   const parsedResult = responseSchema.parse(result);
 
+  const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
+
   if (testChannel?.isSendable()) {
+    await testChannel
+      .send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`)
+      .catch(() => null);
+
     const urls = parsedResult.tweets.map((tweet) => tweet.url).join("\n");
     await testChannel.send(`Found ${parsedResult.tweets.length} tweet(s)\n${urls}`).catch(() => null);
   }
@@ -303,7 +304,13 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
   for (const tweet of sortedTweets) {
     const tweetName = tweet.author.userName as (typeof usernamesToWatch)[number];
     if (!usernamesToWatch.includes(tweetName)) {
-      throw new Error(`Tweet from unknown user: ${tweetName}`);
+      logger(`Skipping tweet from unknown user: ${tweetName}`);
+      if (testChannel?.isSendable()) {
+        await testChannel
+          .send(`${userMention(userIDs.me)} Skipping tweet from unknown user: ${tweetName}`)
+          .catch(console.error);
+      }
+      continue;
     }
 
     const existing = await prisma.topfeedPost.findFirst({

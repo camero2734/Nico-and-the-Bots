@@ -103,7 +103,11 @@ export async function checkTwitter() {
     if (currentCount !== postCountMap[username]) {
       if (postCountMap[username] !== 0) {
         logger(`Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`);
-        testChan.send(`${userMention(userIDs.me)} Post count for ${username} changed to ${currentCount}`);
+        testChan
+          .send(
+            `${userMention(userIDs.me)} Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`,
+          )
+          .catch(console.error);
       }
       postCountMap[username] = currentCount;
       changeDetected = true;

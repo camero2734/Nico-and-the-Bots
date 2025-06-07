@@ -29,6 +29,7 @@ type QueueJobType = NonNullable<Awaited<ReturnType<typeof queue.getJob>>>["name"
 export const worker = new Worker(
   QUEUE_NAME,
   async (job) => {
+    const start = Date.now();
     const name = job.name as QueueJobType;
 
     try {
@@ -53,6 +54,8 @@ export const worker = new Worker(
       console.error(`Error processing job ${name}:`, error);
       throw error;
     }
+    const duration = Date.now() - start;
+    console.log(`Job ${name} completed in ${duration}ms`);
   },
   {
     ...redisOpts,

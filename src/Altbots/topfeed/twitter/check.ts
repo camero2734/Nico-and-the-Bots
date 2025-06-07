@@ -89,6 +89,8 @@ export async function checkTwitter() {
     usernameToStatusesCount[user.legacy.screenName] = user.legacy.statusesCount;
   }
 
+  logger("Statuses count for usernames:", usernameToStatusesCount);
+
   let changeDetected = false;
   for (const username of usernamesToWatch) {
     if (!usernameToStatusesCount[username]) {

@@ -374,9 +374,7 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
     const { fetchedAt, parsedResult } = fulfilled;
 
     if (testChannel?.isSendable()) {
-      await testChannel
-        .send(`[${source}/${dataSource}] Fetched tweets with query: (${query}) since_time:${sinceTs}`)
-        .catch(() => null);
+      await testChannel.send(`[${source}/${dataSource}] Fetched tweets with query: ${query}`).catch(() => null);
 
       const urls = parsedResult.tweets.map((tweet) => tweet.url).join("\n");
       await testChannel.send(`Found ${parsedResult.tweets.length} tweet(s)\n${urls}`).catch(() => null);

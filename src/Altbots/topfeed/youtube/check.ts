@@ -25,8 +25,6 @@ export async function checkYoutube() {
     return;
   }
 
-  logger(`Found ${response.data.items.length} YouTube channels.`);
-
   for (const channel of response.data.items) {
     const username = Object.keys(usernameData).find(
       (key) => usernameData[key as (typeof usernamesToWatch)[number]].youtubeChannelId === channel.id,
@@ -68,8 +66,6 @@ export async function checkYoutube() {
         authorThumbnail,
         source: "scheduled",
       });
-    } else {
-      logger(`No new posts for ${username}. Current count: ${postCount}`);
     }
   }
 }

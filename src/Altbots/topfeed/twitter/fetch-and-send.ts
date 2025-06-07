@@ -283,14 +283,13 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
   };
 
   const result = await fetch(url.toString(), options).then((r) => r.json());
+  const fetchedAt = Date.now();
   const parsedResult = responseSchema.parse(result);
 
   const testChannel = await topfeedBot.guild.channels.fetch(channelIDs.bottest).catch(() => null);
 
   if (testChannel?.isSendable()) {
-    await testChannel
-      .send(`[${source}] Fetching tweets with query: (${query}) since_time:${sinceTs}`)
-      .catch(() => null);
+    await testChannel.send(`[${source}] Fetched tweets with query: (${query}) since_time:${sinceTs}`).catch(() => null);
 
     const urls = parsedResult.tweets.map((tweet) => tweet.url).join("\n");
     await testChannel.send(`Found ${parsedResult.tweets.length} tweet(s)\n${urls}`).catch(() => null);
@@ -361,5 +360,13 @@ export async function fetchTwitter(source: "webhook" | "scheduled", _sinceTs?: n
     });
 
     if (m.crosspostable) await m.crosspost();
+
+    if (testChannel?.isSendable()) {
+      await testChannel
+        .send(
+          `Processed tweet ${tweet.id} from ${tweetName} in <#${channelId}>. Was delayed by: ${fetchedAt - new Date(tweet.createdAt).getTime()}ms`,
+        )
+        .catch(console.error);
+    }
   }
 }

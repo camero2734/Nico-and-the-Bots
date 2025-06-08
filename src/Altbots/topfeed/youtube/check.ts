@@ -25,8 +25,6 @@ export async function checkYoutube() {
     return;
   }
 
-  logger(`Found ${response.data.items.length} YouTube channels.`);
-
   for (const channel of response.data.items) {
     const username = Object.keys(usernameData).find(
       (key) => usernameData[key as (typeof usernamesToWatch)[number]].youtubeChannelId === channel.id,
@@ -68,8 +66,10 @@ export async function checkYoutube() {
         authorThumbnail,
         source: "scheduled",
       });
-    } else {
-      logger(`No new posts for ${username}. Current count: ${postCount}`);
+    } else if (Math.random() < 0.01) {
+      await testChan.send(
+        `[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``,
+      );
     }
   }
 }

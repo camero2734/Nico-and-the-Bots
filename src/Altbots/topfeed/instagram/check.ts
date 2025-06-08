@@ -99,8 +99,6 @@ export async function checkInstagram() {
             .send(`${userMention(userIDs.me)} Post count for ${username} changed to ${postCount}`)
             .catch(console.error);
         }
-      } else {
-        logger(`Post count for ${username} has not changed (${postCount})`);
       }
       postCountMap[username] = postCount;
     } catch (error) {

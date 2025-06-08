@@ -12,16 +12,17 @@ import {
 import { prisma } from "./prisma-init";
 
 import { Queue, Worker } from "bullmq";
-import IORedis from "ioredis";
+import { Redis } from "ioredis";
 import { NicoClient } from "../../app";
 
 const QUEUE_NAME = "ScoreUpdate";
 
 const redisOpts = {
-  connection: new IORedis(process.env.REDIS_URL, {
+  connection: new Redis(process.env.REDIS_URL as string, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
-  }),
+    // biome-ignore lint/suspicious/noExplicitAny: Temporary issue with ioredis types
+  }) as any,
 };
 
 const scoreQueue = new Queue(QUEUE_NAME, {
@@ -78,11 +79,11 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
   });
 
   const now = Date.now();
-  const timeSince = now - dbUser.lastMessageSent.getTime();
+  const timeSince = Math.max(now - dbUser.lastMessageSent.getTime(), 0);
 
   await prisma.user.update({
     where: { id: dbUser.id },
-    data: { lastMessageSent: new Date() },
+    data: { lastMessageSent: msg.createdAt },
   });
 
   // Determine whether to award a point or not (i.e. spamming messages should award no points)
@@ -100,7 +101,7 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
   }
 
   // Add to message history
-  const startOfDate = startOfDay(new Date());
+  const startOfDate = startOfDay(msg.createdAt);
   const historyIdentifier = {
     date_userId: { date: startOfDate, userId: msg.author.id },
   };

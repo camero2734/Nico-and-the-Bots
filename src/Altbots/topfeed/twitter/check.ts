@@ -52,7 +52,14 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   return response;
 }
 
-let lastCheckTime: number = Math.floor(addMinutes(new Date(), -5).getTime() / 1000);
+const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
+  camero_2734: 0,
+  twentyonepilots: 0,
+  tylerrjoseph: 0,
+  joshuadun: 0,
+  blurryface: 0,
+};
+let lastCheckTime: number = addMinutes(new Date(), -5).getTime();
 export async function checkTwitter() {
   const client =
     twitterClient ||
@@ -62,15 +69,13 @@ export async function checkTwitter() {
     }));
   twitterClient = client;
 
-  const fromQuery = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
-  const query = `(${fromQuery}) since_time:${lastCheckTime}`;
+  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  if (!testChan?.isTextBased()) throw new Error("Test channel is not text-based");
 
   const result = await withRateLimit(async () => {
     try {
-      return await client.getTweetApi().getSearchTimeline({
-        rawQuery: query,
-        count: 1,
-        product: "Latest",
+      return await client.getUserListApi().getFollowing({
+        userId: "1733919401026400256",
       });
     } catch (error) {
       console.error("Error fetching Twitter timeline:", error);
@@ -78,9 +83,44 @@ export async function checkTwitter() {
     }
   });
 
-  if (result.data.data?.[0]?.tweet) {
-    logger("There are new tweets to fetch.");
-    await fetchTwitter("scheduled", lastCheckTime);
+  const usernameToStatusesCount: Record<string, number> = {};
+  for (const { user } of result.data.data) {
+    if (!user?.legacy) continue;
+    usernameToStatusesCount[user.legacy.screenName] = user.legacy.statusesCount;
   }
-  lastCheckTime = Math.floor(addMinutes(new Date(), -1).getTime() / 1000);
+
+  logger("Statuses count for usernames:", usernameToStatusesCount);
+
+  let changeDetected = false;
+  for (const username of usernamesToWatch) {
+    if (typeof usernameToStatusesCount[username] !== "number") {
+      logger(`Username ${username} not found in the following list.`);
+      await testChan.send(`${userMention(userIDs.me)} Username ${username} not found in the following list.`);
+      continue;
+    }
+
+    const currentCount = usernameToStatusesCount[username];
+    if (currentCount !== postCountMap[username]) {
+      if (postCountMap[username] !== 0) {
+        logger(`Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`);
+        testChan
+          .send(
+            `${userMention(userIDs.me)} Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`,
+          )
+          .catch(console.error);
+      }
+      postCountMap[username] = currentCount;
+      changeDetected = true;
+    }
+  }
+
+  if (changeDetected) {
+    logger("There are new tweets to fetch.");
+    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
+    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000 - 60));
+    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000 - 120));
+  } else if (Math.random() < 0.01) {
+    await testChan.send(`[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``);
+  }
+  lastCheckTime = addMinutes(new Date(), -1).getTime();
 }

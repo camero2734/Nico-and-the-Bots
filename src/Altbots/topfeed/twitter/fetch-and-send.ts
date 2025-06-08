@@ -342,12 +342,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       },
     );
 
-    const eitherFoundNewTweets = values.some((value) =>
-      Either.match(value, {
-        onLeft: () => false,
-        onRight: (result) => result,
-      }),
-    );
+    const eitherFoundNewTweets = values.some((value) => Either.getOrElse(value, () => false));
 
     if (eitherFoundNewTweets) {
       yield* Effect.succeed(true);

@@ -315,12 +315,6 @@ export const handleTwitterResponse = (
     return yield* Effect.succeed(foundNewTweets);
   });
 
-const exponentialBackoff = Schedule.intersect(
-  // Exponential backoff, max 5 retries
-  Schedule.exponential(Duration.millis(200)),
-  Schedule.recurs(5),
-);
-
 export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number) =>
   Effect.gen(function* () {
     const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
@@ -350,5 +344,13 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       yield* Effect.fail(new TwitterNoNewTweetsFound());
     }
   })
-    .pipe(Effect.retry(exponentialBackoff))
+    .pipe(
+      Effect.retry(
+        Schedule.intersect(
+          // Exponential backoff with max retries
+          Schedule.exponential(Duration.millis(200), 2),
+          Schedule.recurs(_sinceTs ? 5 : 0),
+        ),
+      ),
+    )
     .pipe(Effect.provide(TwitterApiClient.Default));

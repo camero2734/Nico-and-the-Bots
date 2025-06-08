@@ -53,12 +53,12 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   return response;
 }
 
-const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
-  camero_2734: 0,
-  twentyonepilots: 0,
-  tylerrjoseph: 0,
-  joshuadun: 0,
-  blurryface: 0,
+const postCountMap: Record<(typeof usernamesToWatch)[number], number | undefined> = {
+  camero_2734: undefined,
+  twentyonepilots: undefined,
+  tylerrjoseph: undefined,
+  joshuadun: undefined,
+  blurryface: undefined,
 };
 let lastCheckTime: number = addMinutes(new Date(), -5).getTime();
 export async function checkTwitter() {
@@ -93,6 +93,7 @@ export async function checkTwitter() {
   logger("Statuses count for usernames:", usernameToStatusesCount);
 
   let changeDetected = false;
+  let isFirstRun = true;
   for (const username of usernamesToWatch) {
     if (typeof usernameToStatusesCount[username] !== "number") {
       logger(`Username ${username} not found in the following list.`);
@@ -101,8 +102,11 @@ export async function checkTwitter() {
     }
 
     const currentCount = usernameToStatusesCount[username];
+    const isUserFirstRun = postCountMap[username] === undefined;
+    if (!isUserFirstRun) isFirstRun = false;
+
     if (currentCount !== postCountMap[username]) {
-      if (postCountMap[username] !== 0) {
+      if (!isUserFirstRun) {
         logger(`Post count for ${username} changed from ${postCountMap[username]} to ${currentCount}`);
         testChan
           .send(
@@ -117,7 +121,7 @@ export async function checkTwitter() {
 
   if (changeDetected) {
     logger("There are new tweets to fetch.");
-    await Effect.runPromise(fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000)));
+    await Effect.runPromise(fetchTwitter("scheduled", isFirstRun ? undefined : Math.floor(lastCheckTime / 1000)));
   } else if (Math.random() < 0.01) {
     await testChan.send(`[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``);
   }

@@ -1,9 +1,9 @@
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
 import { checkInstagram } from "./instagram/check";
+import topfeedBot from "./topfeed";
 import { checkTwitter } from "./twitter/check";
 import { checkYoutube } from "./youtube/check";
-import topfeedBot from "./topfeed";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = {

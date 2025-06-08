@@ -1,5 +1,6 @@
 import { addMinutes, differenceInSeconds } from "date-fns";
 import { userMention } from "discord.js";
+import { Effect } from "effect";
 import { type TwitterApiUtilsResponse, TwitterOpenApi, type TwitterOpenApiClient } from "twitter-openapi-typescript";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
@@ -116,9 +117,7 @@ export async function checkTwitter() {
 
   if (changeDetected) {
     logger("There are new tweets to fetch.");
-    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000));
-    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000 - 60));
-    await fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000 - 120));
+    await Effect.runPromise(fetchTwitter("scheduled", Math.floor(lastCheckTime / 1000)));
   } else if (Math.random() < 0.01) {
     await testChan.send(`[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``);
   }

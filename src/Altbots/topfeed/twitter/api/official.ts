@@ -29,7 +29,7 @@ export const fetchTwitterOfficialApi = (query: string) =>
   Effect.gen(function* () {
     const client = yield* TwitterApiClient;
 
-    yield* Effect.log(`Fetching tweets with query: ${query}`);
+    yield* Effect.logDebug(`Fetching tweets with query: ${query}`);
 
     const result = yield* Effect.tryPromise(() =>
       client.getTweetApi().getSearchTimeline({

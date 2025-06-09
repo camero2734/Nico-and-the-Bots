@@ -25,6 +25,9 @@ ctxMenu.setHandler(async (ctx, msg) => {
   ];
 
   console.log("Forwarding message");
+  await dm.send({
+    content: "Hello",
+  });
   const m = await msg.forward(dm);
 
   console.log("Replying with components");

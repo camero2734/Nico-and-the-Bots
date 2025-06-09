@@ -9,8 +9,10 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
   const content = msg.attachments.map((attachment) => attachment.proxyURL).join("\n");
 
+  console.log("Creating dm");
   const dm = await msg.member.createDM();
 
+  console.log("Creating components");
   const components: APIComponentInContainer[] = [
     {
       type: ComponentType.TextDisplay,
@@ -22,7 +24,10 @@ ctxMenu.setHandler(async (ctx, msg) => {
     },
   ];
 
+  console.log("Forwarding message");
   const m = await msg.forward(dm);
+
+  console.log("Replying with components");
   await m.reply({
     components: [
       new ContainerBuilder({

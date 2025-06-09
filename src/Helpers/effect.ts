@@ -49,7 +49,7 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   const mainSection: APIComponentInContainer[] = [
     {
       type: ComponentType.TextDisplay,
-      content: `*## ${level.toUpperCase()}`,
+      content: `## ${level.toUpperCase()}`,
     },
     {
       type: ComponentType.TextDisplay,

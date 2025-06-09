@@ -118,15 +118,16 @@ export const handleTwitterResponse = (
     return yield* Effect.succeed(foundNewTweets);
   });
 
-const expScheudle = (sinceTs?: number) =>
+const expScheudle = (initialRun: boolean) =>
   Schedule.intersect(
     // Exponential backoff with max retries
     Schedule.exponential(Duration.millis(200), 2),
-    Schedule.recurs(sinceTs ? 5 : 1),
+    Schedule.recurs(initialRun ? 0 : 4),
   );
 
 export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number) =>
   Effect.gen(function* () {
+    const initialRun = _sinceTs === undefined;
     const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
     const queryUsernames = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
     const query = `(${queryUsernames}) since_time:${sinceTs}`;
@@ -135,19 +136,19 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       pipe(
         fetchTwitterOfficialApi(query),
         Effect.andThen((r) => handleTwitterResponse(r, source, "real")),
+        Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
-        Effect.tapError(Effect.logError),
-        Effect.retry(expScheudle(sinceTs)),
+        Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "real" }),
       ),
       pipe(
         fetchTwitterUnofficialApi(query),
         Effect.andThen((r) => handleTwitterResponse(r, source, "unofficial")),
+        Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
-        Effect.tapError(Effect.logError),
-        Effect.retry(expScheudle(sinceTs)),
+        Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "unofficial" }),
       ),
     );

@@ -30,7 +30,7 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   const { level, isSevere, message, annotations, cause } = log;
 
   // Determine accent color based on severity
-  const accentColor = isSevere ? 0xed4245 : 0x5865f2; // Red for severe, Blurple otherwise
+  const accentColor = isSevere ? 0xed4245 : 0x5865f2;
 
   // --- Component Sections ---
 
@@ -49,7 +49,7 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   const mainSection: APIComponentInContainer[] = [
     {
       type: ComponentType.TextDisplay,
-      content: `**Level:** ${level.toUpperCase()}`,
+      content: `*## ${level.toUpperCase()}`,
     },
     {
       type: ComponentType.TextDisplay,

@@ -3,7 +3,7 @@ import { MessageFlags } from "discord.js";
 import { Data, Duration, Effect, Schedule, pipe } from "effect";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
-import { TwitterApiClient, fetchTwitterOfficialApi } from "./api/official";
+import { fetchTwitterOfficialApi } from "./api/official";
 import { fetchTwitterUnofficialApi } from "./api/unofficial";
 import { tweetToComponents } from "./components";
 import { type Response, usernameData, usernamesToWatch } from "./constants";
@@ -14,7 +14,7 @@ export const handleTwitterResponse = (response: Response) =>
   Effect.gen(function* () {
     const { fetchedAt, parsedResult } = response;
 
-    yield* Effect.logInfo(`Found ${parsedResult.tweets.length} tweet(s)`);
+    yield* Effect.logDebug(`Found ${parsedResult.tweets.length} tweet(s)`);
     // Sort tweets from oldest to newest so we process them in the order they were posted
     const sortedTweets = parsedResult.tweets.sort(
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -39,14 +39,14 @@ export const handleTwitterResponse = (response: Response) =>
       );
 
       if (existing) {
-        yield* Effect.log(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
+        yield* Effect.logWarning(`Tweet ${tweet.id} from ${tweetName} already exists in the database.`);
         continue; // Skip if tweet already exists
       }
 
       foundNewTweets = true;
 
-      yield* Effect.log(`Processing tweet ${tweet.id} from ${tweetName}`);
-      yield* Effect.log(JSON.stringify(tweet, null, 2));
+      yield* Effect.logDebug(`Processing tweet ${tweet.id} from ${tweetName}`);
+      yield* Effect.logDebug(JSON.stringify(tweet, null, 2));
 
       const { roleId, channelId } = usernameData[tweetName];
       const components = yield* Effect.tryPromise(() => tweetToComponents(tweet, roleId));
@@ -127,6 +127,4 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
         Effect.annotateLogs({ dataSource: "unofficial" }),
       ),
     );
-  })
-    .pipe(Effect.annotateLogs({ bot: "keons", source }))
-    .pipe(Effect.provide(TwitterApiClient.Default));
+  }).pipe(Effect.annotateLogs({ bot: "keons", source }));

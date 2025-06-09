@@ -31,7 +31,7 @@ const discordOnlyLogger = Logger.make((log) => {
   const guild = botToLog === "keons" ? topfeedBot.guild : nicoGuild;
   if (!guild) return;
 
-  const jsonAnnotations = log.annotations.toJSON() as Record<string, unknown>;
+  const jsonAnnotations = Object.fromEntries(HashMap.toEntries(annotations));
 
   const info: LogInfo = {
     level: logLevel.label,

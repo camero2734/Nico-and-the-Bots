@@ -105,7 +105,7 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
 
 const discordOnlyLogger = Logger.make((log) => {
   const { annotations, logLevel } = log;
-  if (!LogLevel.greaterThanEqual(logLevel, LogLevel.Info)) return;
+  if (!LogLevel.greaterThanEqual(logLevel, LogLevel.Warning)) return;
 
   const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
   const guild = botToLog === "keons" ? topfeedBot.guild : nicoGuild;
@@ -113,7 +113,7 @@ const discordOnlyLogger = Logger.make((log) => {
 
   const info: LogInfo = {
     level: logLevel.label,
-    isSevere: LogLevel.greaterThanEqual(logLevel, LogLevel.Warning),
+    isSevere: LogLevel.greaterThan(logLevel, LogLevel.Warning),
     message: Array.isArray(log.message) ? log.message.map((x) => JSON.stringify(x)) : [JSON.stringify(log.message)],
     cause: log.cause.toString(),
     annotations: HashMap.toEntries(annotations),

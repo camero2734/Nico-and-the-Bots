@@ -4,9 +4,6 @@ import { checkInstagram } from "./instagram/check";
 import topfeedBot from "./topfeed";
 import { checkTwitter } from "./twitter/check";
 import { checkYoutube } from "./youtube/check";
-import { Effect, pipe, Logger, LogLevel } from "effect";
-import { TwitterApiClient } from "./twitter/api/official";
-import { DiscordLogProvider } from "../../Helpers/effect";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = {
@@ -38,14 +35,7 @@ export const worker = new Worker(
     try {
       if (name === "TWITTER") {
         console.log(`Checking Twitter group: ${name} at ${Date.now()}`);
-        await Effect.runPromise(
-          pipe(
-            checkTwitter, //
-            DiscordLogProvider,
-            Effect.provide(TwitterApiClient.Default),
-            Logger.withMinimumLogLevel(LogLevel.Debug),
-          ),
-        );
+        await checkTwitter();
       } else if (name === "INSTAGRAM") {
         console.log(`Checking Instagram group: ${name} at ${Date.now()}`);
         await checkInstagram();

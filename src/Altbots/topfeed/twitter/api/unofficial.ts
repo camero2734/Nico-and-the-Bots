@@ -15,7 +15,7 @@ export const fetchTwitterUnofficialApi = (query: string) =>
     url.searchParams.append("query", query);
     url.searchParams.append("queryType", "Latest");
 
-    yield* Effect.logDebug(`Fetching tweets with query: ${url.toString()}`);
+    yield* Effect.log(`Fetching tweets with query: ${url.toString()}`);
 
     const options = {
       method: "GET",

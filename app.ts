@@ -1,11 +1,10 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
-import { Effect, pipe, Logger, LogLevel } from "effect";
+import { Effect } from "effect";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
-import { TwitterApiClient } from "./src/Altbots/topfeed/twitter/api/official";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
@@ -299,14 +298,7 @@ function startPingServer() {
             return new Response("Unauthorized", { status: 401 });
           }
 
-          await Effect.runPromise(
-            pipe(
-              fetchTwitter("webhook"), //
-              DiscordLogProvider,
-              Effect.provide(TwitterApiClient.Default),
-              Logger.withMinimumLogLevel(LogLevel.Debug),
-            ),
-          );
+          await Effect.runPromise(fetchTwitter("webhook").pipe(DiscordLogProvider));
 
           fetchTwitter("webhook");
 

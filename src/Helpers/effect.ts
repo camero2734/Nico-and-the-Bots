@@ -1,4 +1,4 @@
-import { Effect, Logger, HashMap } from "effect";
+import { Effect, Logger, HashMap, Option } from "effect";
 import { guild as nicoGuild } from "../../app";
 import { channelIDs } from "../../src/Configuration/config";
 import topfeedBot from "../../src/Altbots/topfeed/topfeed";
@@ -26,7 +26,7 @@ const discordOnlyLogger = Logger.make((log) => {
   const { annotations, logLevel } = log;
   // if (LogLevel.lessThan(logLevel, LogLevel.Warning)) return;
 
-  const botToLog = HashMap.unsafeGet(annotations, "bot");
+  const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
   const guild = botToLog === "keons" ? topfeedBot.guild : nicoGuild;
   if (!guild) return;
 

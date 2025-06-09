@@ -10,7 +10,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
   const content = msg.attachments.map((attachment) => attachment.proxyURL).join("\n");
 
   console.log("Creating dm");
-  const dm = await msg.member.createDM();
+  const dm = await msg.member.createDM(true);
 
   console.log("Creating components");
   const components: APIComponentInContainer[] = [

@@ -5,12 +5,12 @@ const ctxMenu = new MessageContextMenu("🔗 Get media URLs");
 
 ctxMenu.setHandler(async (ctx, msg) => {
   if (!ctx.isMessageContextMenuCommand()) return;
-  if (!msg.member) throw new Error("Could not find member");
+  if (!ctx.member) throw new Error("Could not find member");
 
   const content = msg.attachments.map((attachment) => attachment.proxyURL).join("\n");
 
   console.log("Creating dm");
-  const dm = await msg.member.createDM(true);
+  const dm = await ctx.user.createDM(true);
 
   console.log("Creating components");
   const components: APIComponentInContainer[] = [

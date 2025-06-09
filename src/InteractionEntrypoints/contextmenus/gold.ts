@@ -274,8 +274,6 @@ async function handleGold(
   await dm.send({ embeds: [dmEmbed], components: [replyActionRow] });
 }
 
-ctxMenu.addPermission(roles.banditos, true);
-
 export default ctxMenu;
 
 // Remove gold role from users that haven't received golds in the last 3 days

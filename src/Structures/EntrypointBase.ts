@@ -8,7 +8,6 @@ import {
   type Guild,
   type GuildMember,
   type Interaction,
-  type Snowflake,
 } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
@@ -39,21 +38,7 @@ export abstract class InteractionEntrypoint<
   protected handler: HandlerType;
   public abstract commandData: ApplicationCommandData;
 
-  private commandPermissions = new Collection<Snowflake, boolean>([[roles.staff, true]]);
-
   private onBotReadyFuncs: Array<OnBotReadyFunc> = [];
-
-  public getPermissions() {
-    return this.commandPermissions.clone();
-  }
-
-  public addPermission(id: Snowflake, permission: boolean) {
-    this.commandPermissions.set(id, permission);
-  }
-
-  public clearPermissions() {
-    this.commandPermissions = new Collection<Snowflake, boolean>();
-  }
 
   setHandler(handler: HandlerType): this {
     this.handler = handler;

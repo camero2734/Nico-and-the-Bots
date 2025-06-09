@@ -1,7 +1,6 @@
 import { addMilliseconds } from "date-fns";
 import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import parseDuration from "parse-duration";
-import { roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -94,7 +93,5 @@ const genHandleId = ctxMenu.addInteractionListener(
     await ctx.editReply({ embeds: [confirmEmbed] });
   },
 );
-
-ctxMenu.addPermission(roles.banditos, true);
 
 export default ctxMenu;

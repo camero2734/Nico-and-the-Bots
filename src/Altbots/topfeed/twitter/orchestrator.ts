@@ -1,7 +1,6 @@
 import { subMinutes } from "date-fns";
-import { MessageFlags, userMention } from "discord.js";
+import { MessageFlags } from "discord.js";
 import { Data, Duration, Effect, Schedule, pipe } from "effect";
-import { channelIDs, userIDs } from "../../../Configuration/config";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
 import { fetchTwitterOfficialApi, TwitterApiClient } from "./api/official";
@@ -11,25 +10,11 @@ import { tweetToComponents } from "./components";
 
 class TwitterNoNewTweetsFound extends Data.TaggedError("TwitterNoNewTweetsFound") {}
 
-export const handleTwitterResponse = (
-  response: Response,
-  source: "scheduled" | "webhook",
-  dataSource: "real" | "unofficial",
-) =>
+export const handleTwitterResponse = (response: Response) =>
   Effect.gen(function* () {
-    const { fetchedAt, query, parsedResult } = response;
+    const { fetchedAt, parsedResult } = response;
 
-    const testChannel = yield* Effect.tryPromise(() => topfeedBot.guild.channels.fetch(channelIDs.bottest));
-
-    if (testChannel?.isSendable()) {
-      yield* Effect.tryPromise(async () => {
-        await testChannel.send(`[${source}/${dataSource}] Fetched tweets with query: ${query}`).catch(() => null);
-
-        const urls = parsedResult.tweets.map((tweet) => tweet.url).join("\n");
-        await testChannel.send(`Found ${parsedResult.tweets.length} tweet(s)\n${urls}`).catch(() => null);
-      }).pipe(Effect.either);
-    }
-
+    yield* Effect.logInfo(`Found ${parsedResult.tweets.length} tweet(s)`);
     // Sort tweets from oldest to newest so we process them in the order they were posted
     const sortedTweets = parsedResult.tweets.sort(
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -39,15 +24,7 @@ export const handleTwitterResponse = (
     for (const tweet of sortedTweets) {
       const tweetName = tweet.author.userName as (typeof usernamesToWatch)[number];
       if (!usernamesToWatch.includes(tweetName)) {
-        yield* Effect.log(`Skipping tweet from unknown user: ${tweetName}`);
-
-        if (testChannel?.isSendable()) {
-          yield* Effect.tryPromise(async () =>
-            testChannel
-              .send(`${userMention(userIDs.me)} Skipping tweet from unknown user: ${tweetName}`)
-              .catch(console.error),
-          ).pipe(Effect.either);
-        }
+        yield* Effect.logWarning(`Skipping tweet from unknown user: ${tweetName}`);
         continue;
       }
 
@@ -104,15 +81,13 @@ export const handleTwitterResponse = (
         });
 
         if (m.crosspostable) await m.crosspost();
-
-        if (testChannel?.isSendable()) {
-          await testChannel
-            .send(
-              `[${dataSource}] Processed tweet ${tweet.id} from ${tweetName} in <#${channelId}>. Was delayed by: ${fetchedAt - new Date(tweet.createdAt).getTime()}ms`,
-            )
-            .catch(console.error);
-        }
       });
+
+      yield* Effect.logInfo(
+        `Processed tweet ${tweet.id} from ${tweetName} in <#${channelId}>. Was delayed by: ${
+          fetchedAt - new Date(tweet.createdAt).getTime()
+        }ms`,
+      );
     }
 
     return yield* Effect.succeed(foundNewTweets);
@@ -135,7 +110,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
     yield* Effect.race(
       pipe(
         fetchTwitterOfficialApi(query),
-        Effect.andThen((r) => handleTwitterResponse(r, source, "real")),
+        Effect.andThen(handleTwitterResponse),
         Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
@@ -144,7 +119,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       ),
       pipe(
         fetchTwitterUnofficialApi(query),
-        Effect.andThen((r) => handleTwitterResponse(r, source, "unofficial")),
+        Effect.andThen(handleTwitterResponse),
         Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),

@@ -1,4 +1,4 @@
-import { Effect, Logger, HashMap, Option } from "effect";
+import { Effect, Logger, LogLevel, HashMap, Option } from "effect";
 import { guild as nicoGuild } from "../../app";
 import { channelIDs } from "../../src/Configuration/config";
 import topfeedBot from "../../src/Altbots/topfeed/topfeed";
@@ -6,7 +6,9 @@ import type { Guild } from "discord.js";
 
 interface LogInfo {
   level: string;
-  message: string;
+  isSevere: boolean;
+  message: string[];
+  annotations: Record<string, unknown>;
   cause: string;
 }
 
@@ -18,22 +20,25 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   }
 
   await channel.send({
-    content: `**${log.level}**: ${log.message}\n**Cause**: ${log.cause}`,
+    content: `**${log.level}**: ${log.message}\n**Cause**: ${log.cause}\n**Annotations**: ${JSON.stringify(log.annotations, null, 2)}`,
   });
 }
 
 const discordOnlyLogger = Logger.make((log) => {
   const { annotations, logLevel } = log;
-  // if (LogLevel.lessThan(logLevel, LogLevel.Warning)) return;
 
   const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
   const guild = botToLog === "keons" ? topfeedBot.guild : nicoGuild;
   if (!guild) return;
 
+  const jsonAnnotations = log.annotations.toJSON() as Record<string, unknown>;
+
   const info: LogInfo = {
     level: logLevel.label,
-    message: typeof log.message === "string" ? log.message : JSON.stringify(log.message),
+    isSevere: LogLevel.greaterThan(logLevel, LogLevel.Warning),
+    message: Array.isArray(log.message) ? log.message.map((x) => JSON.stringify(x)) : [JSON.stringify(log.message)],
     cause: log.cause.toString(),
+    annotations: jsonAnnotations,
   };
 
   sendToDiscordChannel(guild, info).catch(console.error);

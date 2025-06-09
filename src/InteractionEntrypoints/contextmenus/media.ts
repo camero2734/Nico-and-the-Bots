@@ -19,14 +19,13 @@ function visitAllComponents(component: AnyComponent, visitor: (c: AnyComponent) 
   }
   if (component.type === ComponentType.Section) {
     visitor(component.accessory);
+    if (!Array.isArray(component.components)) return;
+
     for (const child of component.components) {
       visitAllComponents(child, visitor);
     }
   }
-  if (component.type === ComponentType.Container) {
-    if (!("components" in component)) {
-      console.log("!!! component without components:", component);
-    }
+  if (component.type === ComponentType.Container && Array.isArray(component.components)) {
     for (const child of component.components) {
       visitAllComponents(child, visitor);
     }

@@ -1,6 +1,6 @@
 import { subMinutes } from "date-fns";
 import { MessageFlags, userMention } from "discord.js";
-import { Data, Duration, Effect, Either, Schedule } from "effect";
+import { Data, Duration, Effect, Schedule, pipe } from "effect";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
@@ -118,45 +118,39 @@ export const handleTwitterResponse = (
     return yield* Effect.succeed(foundNewTweets);
   });
 
+const expScheudle = (sinceTs?: number) =>
+  Schedule.intersect(
+    // Exponential backoff with max retries
+    Schedule.exponential(Duration.millis(200), 2),
+    Schedule.recurs(sinceTs ? 5 : 0),
+  );
+
 export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number) =>
   Effect.gen(function* () {
     const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
     const queryUsernames = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
     const query = `(${queryUsernames}) since_time:${sinceTs}`;
 
-    const values = yield* Effect.all(
-      [
-        fetchTwitterOfficialApi(query)
-          .pipe(Effect.annotateLogs({ source, dataSource: "real" }))
-          .pipe(Effect.tapError(Effect.logError))
-          .pipe(Effect.andThen((r) => handleTwitterResponse(r, source, "real"))),
-        fetchTwitterUnofficialApi(query)
-          .pipe(Effect.annotateLogs({ source, dataSource: "unofficial" }))
-          .pipe(Effect.tapError(Effect.logError))
-          .pipe(Effect.andThen((r) => handleTwitterResponse(r, source, "unofficial"))),
-      ],
-      {
-        mode: "either",
-        concurrency: "unbounded",
-      },
-    );
-
-    const eitherFoundNewTweets = values.some((value) => Either.getOrElse(value, () => false));
-
-    if (eitherFoundNewTweets) {
-      yield* Effect.succeed(true);
-    } else {
-      yield* Effect.fail(new TwitterNoNewTweetsFound());
-    }
-  })
-    .pipe(Effect.annotateLogs({ bot: "keons" }))
-    .pipe(
-      Effect.retry(
-        Schedule.intersect(
-          // Exponential backoff with max retries
-          Schedule.exponential(Duration.millis(200), 2),
-          Schedule.recurs(_sinceTs ? 5 : 0),
-        ),
+    yield* Effect.race(
+      pipe(
+        fetchTwitterOfficialApi(query),
+        Effect.andThen((r) => handleTwitterResponse(r, source, "real")),
+        // biome-ignore format:
+        Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
+        Effect.tapError(Effect.logError),
+        Effect.retry(expScheudle(sinceTs)),
+        Effect.annotateLogs({ dataSource: "real" }),
       ),
-    )
+      pipe(
+        fetchTwitterUnofficialApi(query),
+        Effect.andThen((r) => handleTwitterResponse(r, source, "unofficial")),
+        // biome-ignore format:
+        Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
+        Effect.tapError(Effect.logError),
+        Effect.retry(expScheudle(sinceTs)),
+        Effect.annotateLogs({ dataSource: "unofficial" }),
+      ),
+    );
+  })
+    .pipe(Effect.annotateLogs({ bot: "keons", source }))
     .pipe(Effect.provide(TwitterApiClient.Default));

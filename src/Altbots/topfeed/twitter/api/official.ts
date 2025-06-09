@@ -1,7 +1,7 @@
-import { Effect, Data } from "effect";
-import type { Response, Tweet } from "../constants";
+import { Data, Effect } from "effect";
 import { TwitterOpenApi } from "twitter-openapi-typescript";
 import secrets from "../../../../Configuration/secrets";
+import type { Response, Tweet } from "../constants";
 
 const twitter = new TwitterOpenApi();
 

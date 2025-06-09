@@ -3,10 +3,10 @@ import { MessageFlags } from "discord.js";
 import { Data, Duration, Effect, Schedule, pipe } from "effect";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
-import { fetchTwitterOfficialApi, TwitterApiClient } from "./api/official";
+import { TwitterApiClient, fetchTwitterOfficialApi } from "./api/official";
 import { fetchTwitterUnofficialApi } from "./api/unofficial";
-import { usernameData, usernamesToWatch, type Response } from "./constants";
 import { tweetToComponents } from "./components";
+import { type Response, usernameData, usernamesToWatch } from "./constants";
 
 class TwitterNoNewTweetsFound extends Data.TaggedError("TwitterNoNewTweetsFound") {}
 

@@ -1,7 +1,7 @@
 import { GlobalFonts } from "@napi-rs/canvas";
-import { Effect } from "effect";
 import Cron from "croner";
 import * as Discord from "discord.js";
+import { Effect } from "effect";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
@@ -14,6 +14,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
+import { DiscordLogProvider } from "./src/Helpers/effect";
 import { prisma } from "./src/Helpers/prisma-init";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
@@ -29,7 +30,6 @@ import {
   ReplyHandlers,
   SlashCommands,
 } from "./src/Structures/data";
-import { DiscordLogProvider } from "./src/Helpers/effect";
 
 export const client = new Discord.Client({
   intents: [

@@ -4,10 +4,10 @@ import { Effect } from "effect";
 import { type TwitterApiUtilsResponse, TwitterOpenApi, type TwitterOpenApiClient } from "twitter-openapi-typescript";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
-import topfeedBot from "../topfeed";
-import { fetchTwitter } from "./orchestrator";
-import { usernamesToWatch } from "./constants";
 import { DiscordLogProvider } from "../../../Helpers/effect";
+import topfeedBot from "../topfeed";
+import { usernamesToWatch } from "./constants";
+import { fetchTwitter } from "./orchestrator";
 
 const logger = (...args: unknown[]) => console.log("[TW:Check]", ...args);
 

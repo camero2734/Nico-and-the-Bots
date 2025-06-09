@@ -6,10 +6,10 @@ import {
   ContainerBuilder,
   roleMention,
 } from "discord.js";
-import topfeedBot from "../topfeed";
 import F from "../../../Helpers/funcs";
+import topfeedBot from "../topfeed";
 
-import { twitterEmojiId, type Tweet } from "./constants";
+import { type Tweet, twitterEmojiId } from "./constants";
 
 export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];

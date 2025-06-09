@@ -34,6 +34,10 @@ ctxMenu.setHandler(async (ctx, msg) => {
   if (!ctx.isMessageContextMenuCommand()) return;
   if (!ctx.member) throw new Error("Could not find member");
 
+  await ctx.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+
   const urls = new Set<string>();
   // Attachments
   for (const attachment of msg.attachments.values()) {
@@ -102,6 +106,10 @@ ctxMenu.setHandler(async (ctx, msg) => {
       }),
     ],
     flags: MessageFlags.IsComponentsV2,
+  });
+
+  await ctx.editReply({
+    content: "Media URLs have been sent to your DMs.",
   });
 });
 

@@ -65,7 +65,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
   // Components
   for (const component of msg.components) {
-    visitAllComponents(component.data, (c) => {
+    visitAllComponents(component.toJSON(), (c) => {
       if (c.type === ComponentType.MediaGallery) {
         for (const media of c.items) {
           if (media.media.proxy_url) urls.add(media.media.proxy_url);

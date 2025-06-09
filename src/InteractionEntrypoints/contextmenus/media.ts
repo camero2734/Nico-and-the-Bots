@@ -24,6 +24,9 @@ function visitAllComponents(component: AnyComponent, visitor: (c: AnyComponent) 
     }
   }
   if (component.type === ComponentType.Container) {
+    if (!("components" in component)) {
+      console.log("!!! component without components:", component);
+    }
     for (const child of component.components) {
       visitAllComponents(child, visitor);
     }

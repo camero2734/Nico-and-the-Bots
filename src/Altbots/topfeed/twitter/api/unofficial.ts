@@ -1,6 +1,6 @@
 import { Data, Effect } from "effect";
-import secrets from "../../../Configuration/secrets";
-import { type Response, responseSchema } from "./schemas";
+import secrets from "../../../../Configuration/secrets";
+import { type Response, responseSchema } from "../constants";
 
 class TwitterUnofficialApiError extends Data.TaggedError("TwitterUnofficialApiError") {}
 class UnableToParseResponseError extends Data.TaggedError("UnableToParseResponseError") {}

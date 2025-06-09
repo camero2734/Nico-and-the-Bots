@@ -1,6 +1,23 @@
-import { Effect } from "effect";
-import { TwitterApiClient } from "./client";
-import type { Response, Tweet } from "./schemas";
+import { Effect, Data } from "effect";
+import type { Response, Tweet } from "../constants";
+import { TwitterOpenApi } from "twitter-openapi-typescript";
+import secrets from "../../../../Configuration/secrets";
+
+const twitter = new TwitterOpenApi();
+
+class TwitterLoginError extends Data.TaggedError("HttpError") {}
+export class TwitterApiClient extends Effect.Service<TwitterApiClient>()("TwitterApiClient", {
+  effect: Effect.tryPromise({
+    try: async () => {
+      console.log("Logging in to Twitter API...");
+      return twitter.getClientFromCookies({
+        ct0: secrets.apis.twitter.ct0,
+        auth_token: secrets.apis.twitter.auth_token,
+      });
+    },
+    catch: () => new TwitterLoginError(),
+  }),
+}) {}
 
 export const fetchTwitterOfficialApi = (query: string) =>
   Effect.gen(function* () {

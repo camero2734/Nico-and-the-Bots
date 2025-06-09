@@ -1,4 +1,39 @@
 import { z } from "zod";
+import { roles, channelIDs } from "../../../Configuration/config";
+
+export const usernamesToWatch = ["camero_2734", "twentyonepilots", "blurryface", "tylerrjoseph", "joshuadun"] as const;
+
+type DataForUsername = {
+  roleId: (typeof roles.topfeed.selectable)[keyof typeof roles.topfeed.selectable];
+  channelId: (typeof channelIDs.topfeed)[keyof typeof channelIDs.topfeed];
+};
+
+export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
+  camero_2734: {
+    // biome-ignore lint/suspicious/noExplicitAny: purposeful
+    roleId: "572568489320120353" as any,
+    // biome-ignore lint/suspicious/noExplicitAny: purposeful
+    channelId: channelIDs.bottest as any,
+  },
+  blurryface: {
+    roleId: roles.topfeed.selectable.dmaorg,
+    channelId: channelIDs.topfeed.dmaorg,
+  },
+  twentyonepilots: {
+    roleId: roles.topfeed.selectable.band,
+    channelId: channelIDs.topfeed.band,
+  },
+  tylerrjoseph: {
+    roleId: roles.topfeed.selectable.tyler,
+    channelId: channelIDs.topfeed.tyler,
+  },
+  joshuadun: {
+    roleId: roles.topfeed.selectable.josh,
+    channelId: channelIDs.topfeed.josh,
+  },
+};
+
+export const twitterEmojiId = "1380283149489143929";
 
 const videoInfoSchema = z.object({
   aspect_ratio: z.tuple([z.number(), z.number()]),

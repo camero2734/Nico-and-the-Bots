@@ -5,7 +5,9 @@ import { type TwitterApiUtilsResponse, TwitterOpenApi, type TwitterOpenApiClient
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import topfeedBot from "../topfeed";
-import { fetchTwitter, usernamesToWatch } from "./fetch-and-send";
+import { fetchTwitter } from "./orchestrator";
+import { usernamesToWatch } from "./constants";
+import { Logger } from "effect";
 
 const logger = (...args: unknown[]) => console.log("[TW:Check]", ...args);
 
@@ -121,7 +123,11 @@ export async function checkTwitter() {
 
   if (changeDetected) {
     logger("There are new tweets to fetch.");
-    await Effect.runPromise(fetchTwitter("scheduled", isFirstRun ? undefined : Math.floor(lastCheckTime / 1000)));
+    await Effect.runPromise(
+      fetchTwitter("scheduled", isFirstRun ? undefined : Math.floor(lastCheckTime / 1000)).pipe(
+        Effect.provide(Logger.pretty),
+      ),
+    );
   } else if (Math.random() < 0.01) {
     await testChan.send(`[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``);
   }

@@ -1,6 +1,6 @@
 import { subMinutes } from "date-fns";
 import { MessageFlags } from "discord.js";
-import { Duration, Effect, Schedule, pipe } from "effect";
+import { Data, Duration, Effect, Schedule, pipe } from "effect";
 import { prisma } from "../../../Helpers/prisma-init";
 import topfeedBot from "../topfeed";
 import { TwitterApiClient, fetchTwitterOfficialApi } from "./api/official";
@@ -8,7 +8,7 @@ import { fetchTwitterUnofficialApi } from "./api/unofficial";
 import { tweetToComponents } from "./components";
 import { type Response, usernameData, usernamesToWatch } from "./constants";
 
-// class TwitterNoNewTweetsFound extends Data.TaggedError("TwitterNoNewTweetsFound") {}
+class TwitterNoNewTweetsFound extends Data.TaggedError("TwitterNoNewTweetsFound") {}
 
 export const handleTwitterResponse = (response: Response) =>
   Effect.gen(function* () {
@@ -121,7 +121,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
         fetchTwitterUnofficialApi(query),
         Effect.andThen(handleTwitterResponse),
         // biome-ignore format:
-        Effect.filterOrFail(newTweets => newTweets, () => Effect.fail("No new tweets found")),
+        Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
         Effect.tapError(Effect.logError),
         Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "unofficial" }),

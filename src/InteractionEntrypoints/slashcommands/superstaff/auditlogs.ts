@@ -1,8 +1,8 @@
 import { AuditLogEvent } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { prisma } from "../../../Helpers/prisma-init";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
   description: "Audit logs",

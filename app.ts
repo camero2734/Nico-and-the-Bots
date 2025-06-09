@@ -1,9 +1,10 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
+import { Effect } from "effect";
 import { KeonsBot } from "./src/Altbots/shop";
 import topfeedBot from "./src/Altbots/topfeed/topfeed";
-import { fetchTwitter } from "./src/Altbots/topfeed/twitter/fetch-and-send";
+import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
@@ -13,6 +14,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
+import { DiscordLogProvider } from "./src/Helpers/effect";
 import { prisma } from "./src/Helpers/prisma-init";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
@@ -295,6 +297,8 @@ function startPingServer() {
           if (req.headers.get("Authorization") !== secrets.webhookSecret) {
             return new Response("Unauthorized", { status: 401 });
           }
+
+          await Effect.runPromise(fetchTwitter("webhook").pipe(DiscordLogProvider));
 
           fetchTwitter("webhook");
 

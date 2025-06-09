@@ -1,7 +1,7 @@
 import { userMention } from "discord.js";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import topfeedBot from "../topfeed";
-import { fetchYoutube, type usernamesToWatch, usernameData, youtube } from "./fetch-and-send";
+import { fetchYoutube, usernameData, type usernamesToWatch, youtube } from "./fetch-and-send";
 
 const logger = (...args: unknown[]) => console.log("[YT:Check]", ...args);
 

@@ -11,7 +11,6 @@ import {
   type TextChannel,
 } from "discord.js";
 import type { Writeable } from "zod";
-import { roles } from "../../Configuration/config";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -184,7 +183,5 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
     components: [],
   });
 });
-
-ctxMenu.addPermission(roles.banditos, true);
 
 export default ctxMenu;

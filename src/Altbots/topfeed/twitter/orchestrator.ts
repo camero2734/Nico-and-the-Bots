@@ -83,7 +83,7 @@ export const handleTwitterResponse = (response: Response) =>
         if (m.crosspostable) await m.crosspost();
       });
 
-      yield* Effect.logInfo(
+      yield* Effect.logWarning(
         `Processed tweet ${tweet.id} from ${tweetName} in <#${channelId}>. Was delayed by: ${
           fetchedAt - new Date(tweet.createdAt).getTime()
         }ms`,
@@ -111,18 +111,18 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       pipe(
         fetchTwitterOfficialApi(query),
         Effect.andThen(handleTwitterResponse),
-        // biome-ignore format:
-        Effect.filterOrFail(newTweets => newTweets, () => Effect.fail("No new tweets found")),
         Effect.tapError(Effect.logError),
+        // biome-ignore format:
+        Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
         Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "real" }),
       ),
       pipe(
         fetchTwitterUnofficialApi(query),
         Effect.andThen(handleTwitterResponse),
+        Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
-        Effect.tapError(Effect.logError),
         Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "unofficial" }),
       ),

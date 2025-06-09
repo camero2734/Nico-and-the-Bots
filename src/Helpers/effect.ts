@@ -105,6 +105,7 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
 
 const discordOnlyLogger = Logger.make((log) => {
   const { annotations, logLevel } = log;
+  if (!LogLevel.greaterThanEqual(logLevel, LogLevel.Warning)) return;
 
   const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
   const guild = botToLog === "keons" ? topfeedBot.guild : nicoGuild;

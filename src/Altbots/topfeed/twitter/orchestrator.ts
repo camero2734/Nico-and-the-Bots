@@ -111,18 +111,18 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       pipe(
         fetchTwitterOfficialApi(query),
         Effect.andThen(handleTwitterResponse),
-        Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
+        Effect.tapError(Effect.logError),
         Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "real" }),
       ),
       pipe(
         fetchTwitterUnofficialApi(query),
         Effect.andThen(handleTwitterResponse),
-        Effect.tapError(Effect.logError),
         // biome-ignore format:
         Effect.filterOrFail(newTweets => newTweets, () => new TwitterNoNewTweetsFound()),
+        Effect.tapError(Effect.logError),
         Effect.retry(expScheudle(initialRun)),
         Effect.annotateLogs({ dataSource: "unofficial" }),
       ),

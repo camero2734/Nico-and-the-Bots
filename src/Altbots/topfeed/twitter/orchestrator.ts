@@ -122,7 +122,7 @@ const expScheudle = (sinceTs?: number) =>
   Schedule.intersect(
     // Exponential backoff with max retries
     Schedule.exponential(Duration.millis(200), 2),
-    Schedule.recurs(sinceTs ? 5 : 0),
+    Schedule.recurs(sinceTs ? 5 : 1),
   );
 
 export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number) =>

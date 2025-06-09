@@ -1,5 +1,5 @@
 import { GlobalFonts } from "@napi-rs/canvas";
-import { Effect, Logger } from "effect";
+import { Effect } from "effect";
 import Cron from "croner";
 import * as Discord from "discord.js";
 import { KeonsBot } from "./src/Altbots/shop";
@@ -29,6 +29,7 @@ import {
   ReplyHandlers,
   SlashCommands,
 } from "./src/Structures/data";
+import { DiscordLogProvider } from "./src/Helpers/effect";
 
 export const client = new Discord.Client({
   intents: [
@@ -297,7 +298,7 @@ function startPingServer() {
             return new Response("Unauthorized", { status: 401 });
           }
 
-          await Effect.runPromise(fetchTwitter("webhook").pipe(Effect.provide(Logger.pretty)));
+          await Effect.runPromise(fetchTwitter("webhook").pipe(DiscordLogProvider));
 
           fetchTwitter("webhook");
 

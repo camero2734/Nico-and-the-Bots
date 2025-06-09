@@ -149,6 +149,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs?: number)
       yield* Effect.fail(new TwitterNoNewTweetsFound());
     }
   })
+    .pipe(Effect.annotateLogs({ bot: "keons" }))
     .pipe(
       Effect.retry(
         Schedule.intersect(

@@ -1,30 +1,31 @@
-import { type APIComponentInContainer, ComponentType, MessageFlags, ContainerBuilder } from "discord.js";
+import {
+  type APIComponentInContainer,
+  ComponentType,
+  MessageFlags,
+  ContainerBuilder,
+  type AnyComponent,
+} from "discord.js";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 
 const ctxMenu = new MessageContextMenu("🔗 Get media URLs");
 
-function findValuesByKeyRecursive(obj: unknown, keyToFind: string, results: Set<string>): void {
-  if (typeof obj !== "object" || obj === null) {
-    return;
-  }
-
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      findValuesByKeyRecursive(item, keyToFind, results);
+function visitAllComponents(component: AnyComponent, visitor: (c: AnyComponent) => void): void {
+  visitor(component);
+  if (component.type === ComponentType.ActionRow) {
+    for (const child of component.components) {
+      visitAllComponents(child, visitor);
     }
     return;
   }
-
-  if (Object.prototype.hasOwnProperty.call(obj, keyToFind)) {
-    const value = (obj as { [keyToFind]: unknown })[keyToFind];
-    if (typeof value === "string") {
-      results.add(value);
+  if (component.type === ComponentType.Section) {
+    visitor(component.accessory);
+    for (const child of component.components) {
+      visitAllComponents(child, visitor);
     }
   }
-
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      findValuesByKeyRecursive((obj as { [key]: unknown })[key], keyToFind, results);
+  if (component.type === ComponentType.Container) {
+    for (const child of component.components) {
+      visitAllComponents(child, visitor);
     }
   }
 }
@@ -33,11 +34,49 @@ ctxMenu.setHandler(async (ctx, msg) => {
   if (!ctx.isMessageContextMenuCommand()) return;
   if (!ctx.member) throw new Error("Could not find member");
 
-  // const content = msg.attachments.map((attachment) => attachment.proxyURL).join("\n");
-  const results = new Set<string>();
-  findValuesByKeyRecursive(msg.toJSON(), "proxyURL", results);
+  const urls = new Set<string>();
+  // Attachments
+  for (const attachment of msg.attachments.values()) {
+    if (attachment.proxyURL) {
+      urls.add(attachment.proxyURL);
+    }
+  }
 
-  const content = Array.from(results).join("\n");
+  // Embeds
+  for (const embed of msg.embeds) {
+    if (embed.footer?.proxyIconURL) {
+      urls.add(embed.footer.proxyIconURL);
+    }
+    if (embed.thumbnail?.proxyURL) {
+      urls.add(embed.thumbnail.proxyURL);
+    }
+    if (embed.image?.proxyURL) {
+      urls.add(embed.image.proxyURL);
+    }
+    if (embed.video?.proxyURL) {
+      urls.add(embed.video.proxyURL);
+    }
+    if (embed.author?.proxyIconURL) {
+      urls.add(embed.author.proxyIconURL);
+    }
+  }
+
+  // Components
+  for (const component of msg.components) {
+    visitAllComponents(component.data, (c) => {
+      if (c.type === ComponentType.MediaGallery) {
+        for (const media of c.items) {
+          if (media.media.proxy_url) urls.add(media.media.proxy_url);
+        }
+      } else if (c.type === ComponentType.Thumbnail) {
+        if (c.media?.proxy_url) urls.add(c.media.proxy_url);
+      } else if (c.type === ComponentType.File) {
+        if (c.file.proxy_url) urls.add(c.file.proxy_url);
+      }
+    });
+  }
+
+  const content = Array.from(urls).join("\n");
 
   console.log("Creating dm");
   const dm = await ctx.user.createDM(true);

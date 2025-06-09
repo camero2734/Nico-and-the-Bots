@@ -11,21 +11,19 @@ const ctxMenu = new MessageContextMenu("🔗 Get media URLs");
 
 function visitAllComponents(component: AnyComponent, visitor: (c: AnyComponent) => void): void {
   visitor(component);
+
   if (component.type === ComponentType.ActionRow) {
     for (const child of component.components) {
       visitAllComponents(child, visitor);
     }
-    return;
-  }
-  if (component.type === ComponentType.Section) {
+  } else if (component.type === ComponentType.Section) {
     visitor(component.accessory);
     if (!Array.isArray(component.components)) return;
 
     for (const child of component.components) {
       visitAllComponents(child, visitor);
     }
-  }
-  if (component.type === ComponentType.Container && Array.isArray(component.components)) {
+  } else if (component.type === ComponentType.Container) {
     for (const child of component.components) {
       visitAllComponents(child, visitor);
     }
@@ -78,12 +76,10 @@ ctxMenu.setHandler(async (ctx, msg) => {
     });
   }
 
-  const content = Array.from(urls).join("\n");
+  const content = Array.from(urls).join("\n\n");
 
-  console.log("Creating dm");
   const dm = await ctx.user.createDM(true);
 
-  console.log("Creating components");
   const components: APIComponentInContainer[] = [
     {
       type: ComponentType.TextDisplay,
@@ -95,10 +91,6 @@ ctxMenu.setHandler(async (ctx, msg) => {
     },
   ];
 
-  console.log("Forwarding message");
-  await dm.send({
-    content: "Hello",
-  });
   const m = await msg.forward(dm);
 
   console.log("Replying with components");

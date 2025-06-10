@@ -23,10 +23,10 @@ export const checkHtml = (data: BasicDataForWebsite) =>
 
     const oldData = yield* Schema.decodeUnknown(WebsiteDataSchema)(latestItem?.data || {});
     const isNew = hash && oldData.hash !== hash;
-
     if (!isNew) return;
 
-    const diff = Diff.createPatch(data.url, oldData.html || "", text);
+    Effect.logWarning(`HTML hash changed for ${data.displayName} (${data.url}) from ${oldData.hash} to ${hash}`);
 
+    const diff = Diff.createPatch(data.url, oldData.html || "", text);
     yield* Effect.tryPromise(() => createMessageComponents(data, "HTML", text, diff));
   });

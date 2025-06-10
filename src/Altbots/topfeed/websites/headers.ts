@@ -36,6 +36,8 @@ export const checkHeaders = (data: BasicDataForWebsite) =>
 
     if (!isNew) return;
 
+    Effect.logWarning(`Headers hash changed for ${data.displayName} (${data.url}) from ${oldData.hash} to ${hash}`);
+
     const diff = Diff.createPatch(data.url, oldData.headers || "", headers);
 
     yield* Effect.tryPromise(() => createMessageComponents(data, "HEADERS", headers, diff));

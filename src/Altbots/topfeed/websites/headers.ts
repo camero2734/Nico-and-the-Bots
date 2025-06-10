@@ -57,6 +57,7 @@ export const checkHeaders = (data: BasicDataForWebsite) =>
         data: {
           id: `${hash}-${Date.now()}`,
           type: "Website",
+          subtype: "HEADERS",
           handle: data.url,
           data: {
             hash,

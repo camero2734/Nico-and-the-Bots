@@ -43,6 +43,7 @@ export const checkHtml = (data: BasicDataForWebsite) =>
         data: {
           id: `${hash}-${Date.now()}`,
           type: "Website",
+          subtype: "HTML",
           handle: data.url,
           data: {
             hash,

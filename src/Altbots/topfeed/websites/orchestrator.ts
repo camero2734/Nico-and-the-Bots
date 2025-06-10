@@ -44,7 +44,7 @@ export const websitesToWatch = [
     operator: checkHeaders,
   },
   {
-    url: "https://twentyonepilots.com/sitemap.xml",
+    url: "https://www.twentyonepilots.com/sitemap.xml",
     displayName: "Band Website Sitemap",
     expectedStatus: 200,
     roleId: roles.topfeed.selectable.band,

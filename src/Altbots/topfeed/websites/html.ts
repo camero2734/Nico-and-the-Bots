@@ -13,7 +13,7 @@ export const checkHtml = (data: BasicDataForWebsite) =>
     if (!channel || !channel.isTextBased())
       return yield* Effect.fail(new Error("Channel not found or is not text-based"));
 
-    let [{ text, status }, latestItem] = yield* Effect.all(
+    const [{ text, status }, latestItem] = yield* Effect.all(
       [
         Effect.tryPromise(() =>
           fetch(data.url, { tls: { rejectUnauthorized: false } }).then(async (res) => ({
@@ -30,9 +30,6 @@ export const checkHtml = (data: BasicDataForWebsite) =>
       ],
       { concurrency: "unbounded" },
     );
-
-    // REMOVE
-    text += "\n<!-- This is a test -->";
 
     if (data.expectedStatus && status !== data.expectedStatus) {
       return yield* Effect.fail(

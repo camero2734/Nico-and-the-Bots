@@ -1,12 +1,10 @@
 import { secondsToMilliseconds } from "date-fns";
-import { Client, EmbedBuilder, type Guild, type TextChannel } from "discord.js";
+import { Client, type Guild } from "discord.js";
 import { guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
-import type { Watcher } from "./types/base";
-import { SiteWatcher } from "./types/websites";
-import { type JobType, queue } from "./worker";
+import type { SiteWatcher } from "./types/websites";
+import { queue } from "./worker";
 
-const onHeroku = process.env.ON_HEROKU === "1";
 class TopfeedBot {
   client: Client;
   guild: Guild;
@@ -36,98 +34,9 @@ class TopfeedBot {
         const guild = await this.client.guilds.fetch(guildID);
         this.guild = guild;
 
-        await this.#createWatchers();
         resolve();
       });
     });
-  }
-
-  async #createWatchers(): Promise<void> {
-    this.websites = [
-      new SiteWatcher("http://dmaorg.info", "DMAORG 404 Page", ["HTML"]),
-      new SiteWatcher("http://dmaorg.info/found/15398642_14/clancy.html", "DMAORG Clancy Page", ["HTML"]),
-      new SiteWatcher("http://dmaorg.info/found/103_37/clancy.html", "DMAORG 103.37 Page", ["HTML"]),
-      new SiteWatcher("http://dmaorg.info/found/103_37/Violation_Code_DMA-8325.mp4", "DMAORG Violation MP4", [
-        "HEADERS",
-      ]),
-    ];
-  }
-
-  async #checkGroup<U extends object>(watchers: Watcher<U>[]): Promise<void> {
-    if (watchers.length === 0) return;
-
-    const watchersType = watchers[0].type;
-
-    // Instagram doesn't run in dev since logging in so often gets the account flagged
-    if (watchersType === "Instagram" && !onHeroku) return;
-
-    for (const watcher of watchers) {
-      if (watcher.type !== watchersType) {
-        throw new Error("checkGroup must be called with an array of the same types of watchers");
-      }
-
-      const chan = (await this.guild.channels.fetch(watcher.channel)) as TextChannel;
-
-      const [_items, allMsgs] = await watcher.fetchNewItems();
-      for (const post of allMsgs) {
-        // First msg is sent to channel, rest are threaded
-        const [mainMsg, ...threadedMsgs] = post;
-
-        const embed = mainMsg.embeds?.[0] && EmbedBuilder.from(mainMsg.embeds?.[0]);
-
-        const partialTitle = `${embed?.data?.description?.substring(0, 20)}...` || `${watchersType} post`;
-        const threadTitle = `${partialTitle} - Media Content`.replaceAll("\n", " ").trim();
-
-        const threadStarter = await chan.send({
-          ...mainMsg,
-          content: `<@&${watcher.pingedRole}>\n${mainMsg.content ?? ""}`,
-        });
-
-        if (threadStarter.crosspostable) {
-          await threadStarter.crosspost().catch(console.error);
-        }
-
-        if (threadedMsgs.length < 1) {
-          watcher.afterCheck(threadStarter);
-          continue;
-        }
-
-        const shouldAvoidThread = watcher.type === "Youtube";
-        if (shouldAvoidThread) {
-          for (const msg of threadedMsgs) {
-            await chan.send(msg);
-          }
-          watcher.afterCheck(threadStarter);
-          continue;
-        }
-
-        const thread = await threadStarter.startThread({
-          name: threadTitle,
-          autoArchiveDuration: 60,
-        });
-
-        try {
-          for (const msg of threadedMsgs) {
-            await thread.send(msg);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-
-        // Automatically archive the channel
-        await thread.setArchived(true);
-
-        watcher.afterCheck(threadStarter);
-      }
-    }
-  }
-
-  async checkGroup(jobType: JobType): Promise<void> {
-    const methods: Record<JobType, () => void> = {
-      WEBSITES: () => this.#checkGroup(this.websites),
-    };
-    if (methods[jobType]) methods[jobType]();
-    else console.log(new Error(`Invalid JobType: ${jobType}`));
   }
 
   async registerChecks(): Promise<void> {

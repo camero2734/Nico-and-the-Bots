@@ -1,9 +1,10 @@
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
 import { checkInstagram } from "./instagram/check";
-import topfeedBot from "./topfeed";
 import { checkTwitter } from "./twitter/check";
 import { checkYoutube } from "./youtube/check";
+import { fetchWebsites } from "./websites/orchestrator";
+import { Effect } from "effect";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = {
@@ -14,10 +15,8 @@ const redisOpts = {
   }) as any,
 };
 
-export type JobType = "WEBSITES";
-
 // biome-ignore lint/suspicious/noExplicitAny: any is the default type anyway
-export const queue = new Queue<any, any, JobType | "TWITTER" | "INSTAGRAM" | "YOUTUBE">(QUEUE_NAME, {
+export const queue = new Queue<any, any, "WEBSITES" | "TWITTER" | "INSTAGRAM" | "YOUTUBE">(QUEUE_NAME, {
   ...redisOpts,
   defaultJobOptions: {
     removeOnComplete: true,
@@ -42,9 +41,9 @@ export const worker = new Worker(
       } else if (name === "YOUTUBE") {
         console.log(`Checking YouTube group: ${name} at ${Date.now()}`);
         await checkYoutube();
-      } else {
-        console.log(`Checking group: ${name}`);
-        await topfeedBot.checkGroup(name);
+      } else if (name === "WEBSITES") {
+        console.log(`Checking Websites group: ${name} at ${Date.now()}`);
+        await Effect.runPromise(fetchWebsites);
       }
     } catch (error) {
       console.error(`Error processing job ${name}:`, error);

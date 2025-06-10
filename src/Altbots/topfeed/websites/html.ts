@@ -13,7 +13,7 @@ export const checkHtml = (data: BasicDataForWebsite) =>
     if (!channel || !channel.isTextBased())
       return yield* Effect.fail(new Error("Channel not found or is not text-based"));
 
-    const [text, latestItem] = yield* Effect.all(
+    let [text, latestItem] = yield* Effect.all(
       [
         Effect.tryPromise(() => fetch(data.url, { tls: { rejectUnauthorized: false } }).then((res) => res.text())),
         Effect.tryPromise(() =>
@@ -25,6 +25,10 @@ export const checkHtml = (data: BasicDataForWebsite) =>
       ],
       { concurrency: "unbounded" },
     );
+
+    // REMOVE
+    text += "\n<!-- This is a test -->";
+
     const hash = crypto.createHash("sha256").update(text).digest("base64");
 
     Effect.logDebug(`Fetched HTML for ${data.displayName} (${data.url}) with hash ${hash}`);

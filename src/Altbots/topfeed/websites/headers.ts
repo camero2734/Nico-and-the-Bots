@@ -26,16 +26,14 @@ export const checkHeaders = (data: BasicDataForWebsite) =>
       { concurrency: "unbounded" },
     );
 
-    const headers =
-      // biome-ignore lint/style/useTemplate: <explanation>
-      [...Object.entries(res.headers.toJSON())]
-        // Filter out some headers that we don't care about
-        .filter(([k]) => !["date", "keep-alive", "connection"].includes(k.toLowerCase()))
-        // Ensure the headers are always in the same order
-        .sort(([a], [b]) => a.localeCompare(b))
-        // Stringify the headers
-        .map(([k, v]) => `${k}: ${v}`)
-        .join("\n") + "\nThis is a test2";
+    const headers = [...Object.entries(res.headers.toJSON())]
+      // Filter out some headers that we don't care about
+      .filter(([k]) => !["date", "keep-alive", "connection"].includes(k.toLowerCase()))
+      // Ensure the headers are always in the same order
+      .sort(([a], [b]) => a.localeCompare(b))
+      // Stringify the headers
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\n");
 
     const hash = crypto.createHash("sha256").update(headers).digest("base64");
 

@@ -108,7 +108,7 @@ const discordOnlyLogger = Logger.make((log) => {
   if (!LogLevel.greaterThanEqual(logLevel, LogLevel.Warning)) return;
 
   const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
-  const guild = botToLog === "keons" ? topfeedBot.guild : nicoGuild;
+  const guild = (botToLog === "keons" ? topfeedBot.guild : nicoGuild) || topfeedBot.guild || nicoGuild;
   if (!guild) return;
 
   const info: LogInfo = {

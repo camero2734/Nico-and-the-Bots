@@ -21,6 +21,8 @@ export const checkHtml = (data: BasicDataForWebsite) =>
     );
     const hash = crypto.createHash("sha256").update(text).digest("base64");
 
+    Effect.logDebug(`Fetched HTML for ${data.displayName} (${data.url}) with hash ${hash}`);
+
     const oldData = yield* Schema.decodeUnknown(WebsiteDataSchema)(latestItem?.data || {});
     const isNew = hash && oldData.hash !== hash;
     if (!isNew) return;

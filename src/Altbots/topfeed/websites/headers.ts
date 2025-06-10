@@ -31,6 +31,8 @@ export const checkHeaders = (data: BasicDataForWebsite) =>
 
     const hash = crypto.createHash("sha256").update(headers).digest("base64");
 
+    Effect.logDebug(`Fetched headers for ${data.displayName} (${data.url}) with hash ${hash}`, headers);
+
     const oldData = yield* Schema.decodeUnknown(WebsiteDataSchema)(latestItem?.data || {});
     const isNew = hash && oldData.hash !== hash;
 

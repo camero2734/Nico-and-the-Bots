@@ -1,6 +1,5 @@
 import {
   type APIComponentInContainer,
-  MessageFlags,
   ContainerBuilder,
   ComponentType,
   roleMention,
@@ -23,16 +22,13 @@ export const createMessageComponents = async (
   newContent: string,
   diff: string,
 ) => {
-  const channel = await topfeedBot.guild.channels.fetch(data.channelId);
-  if (!channel || !channel.isTextBased()) throw new Error("Channel not found or is not text-based");
-
   const role = await topfeedBot.guild.roles.fetch(data.roleId);
   if (!role) throw new Error(`Role with ID ${data.roleId} not found`);
 
   const fetchedAt = new Date();
 
   const file = new AttachmentBuilder(Buffer.from(newContent), {
-    name: `${data.displayName.replace(/\s+/g, "_").toLowerCase()}_html_${fetchedAt.getTime()}.${contentType === "HTML" ? "html" : "txt"}`,
+    name: `${data.displayName.replace(/\s+/g, "_").toLowerCase()}_${contentType.toLowerCase()}_${fetchedAt.getTime()}.${contentType === "HTML" ? "html" : "txt"}`,
     description: `${contentType} content of the website as of ${fetchedAt.toISOString()}`,
   });
 
@@ -71,14 +67,6 @@ export const createMessageComponents = async (
     components: [...mainSection, ...attachmentsSection, ...footerSection],
     accent_color: role.color,
   });
-  const m = await channel.send({
-    components: [container],
-    files: [file],
-    flags: MessageFlags.IsComponentsV2,
-    allowedMentions: { parse: [] },
-  });
 
-  void m;
-
-  // if (m.crosspostable) await m.crosspost();
+  return { container, file };
 };

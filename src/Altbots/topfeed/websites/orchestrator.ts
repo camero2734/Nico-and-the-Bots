@@ -47,8 +47,8 @@ export const websitesToWatch = [
 export const fetchWebsites = Effect.gen(function* () {
   const websiteChecks = websitesToWatch.map((website) =>
     website.operator(website).pipe(
-      Effect.annotateLogs({ website: website.displayName }),
       Effect.catchAll((error) => Effect.logError(`Error checking website: ${error}`)),
+      Effect.annotateLogs({ website: website.displayName }),
     ),
   );
 

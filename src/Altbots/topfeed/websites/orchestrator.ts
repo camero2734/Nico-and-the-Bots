@@ -47,7 +47,7 @@ export const websitesToWatch = [
     displayName: "Band Website Sitemap",
     roleId: roles.topfeed.selectable.band,
     channelId: channelIDs.topfeed.band,
-    operator: checkHeaders,
+    operator: checkHtml,
   },
 ] as const satisfies DataForWebsite<unknown, unknown, unknown>[];
 

@@ -35,7 +35,7 @@ export const checkHeaders = (data: BasicDataForWebsite) =>
         .sort(([a], [b]) => a.localeCompare(b))
         // Stringify the headers
         .map(([k, v]) => `${k}: ${v}`)
-        .join("\n") + "\nThis is a test";
+        .join("\n") + "\nThis is a test2";
 
     const hash = crypto.createHash("sha256").update(headers).digest("base64");
 

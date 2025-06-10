@@ -78,5 +78,7 @@ export const createMessageComponents = async (
     allowedMentions: { parse: [] },
   });
 
-  if (m.crosspostable) await m.crosspost();
+  void m;
+
+  // if (m.crosspostable) await m.crosspost();
 };

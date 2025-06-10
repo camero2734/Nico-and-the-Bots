@@ -75,6 +75,7 @@ export const createMessageComponents = async (
     components: [container],
     files: [file],
     flags: MessageFlags.IsComponentsV2,
+    allowedMentions: { parse: [] },
   });
 
   if (m.crosspostable) await m.crosspost();

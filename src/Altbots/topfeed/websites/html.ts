@@ -32,9 +32,10 @@ export const checkHtml = (data: BasicDataForWebsite) =>
     );
 
     if (data.expectedStatus && status !== data.expectedStatus) {
-      return yield* Effect.fail(
-        new Error(`Expected status ${data.expectedStatus}, got ${status} for ${data.displayName} (${data.url})`),
+      Effect.logDebug(
+        `Expected status ${data.expectedStatus} for ${data.displayName} (${data.url}), but got ${status}. Skipping...`,
       );
+      return;
     }
 
     const hash = crypto.createHash("sha256").update(text).digest("base64");

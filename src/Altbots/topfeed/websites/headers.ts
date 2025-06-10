@@ -67,14 +67,14 @@ export const checkHeaders = (data: BasicDataForWebsite) =>
       });
     });
 
-    yield* Effect.tryPromise(() =>
-      channel
-        .send({
+    yield* Effect.tryPromise(
+      () =>
+        channel.send({
           components: [container],
           files: [file],
           flags: MessageFlags.IsComponentsV2,
           allowedMentions: { parse: [] },
-        })
-        .then((m) => (m.crosspostable ? m.crosspost() : m)),
+        }),
+      // .then((m) => (m.crosspostable ? m.crosspost() : m)),
     );
   });

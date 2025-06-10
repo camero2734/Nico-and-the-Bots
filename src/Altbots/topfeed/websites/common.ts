@@ -45,7 +45,7 @@ export const createMessageComponents = async (
       accessory: {
         type: ComponentType.Button,
         style: ButtonStyle.Link,
-        label: "View Live Site",
+        emoji: { name: "🌐" },
         url: data.url,
       },
     },

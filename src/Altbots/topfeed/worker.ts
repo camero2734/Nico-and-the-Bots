@@ -4,6 +4,7 @@ import { checkInstagram } from "./instagram/check";
 import { checkTwitter } from "./twitter/check";
 import { checkYoutube } from "./youtube/check";
 import { fetchWebsites } from "./websites/orchestrator";
+import { DiscordLogProvider } from "../../../src/Helpers/effect";
 import { Effect } from "effect";
 
 const QUEUE_NAME = "TopfeedCheck";
@@ -43,7 +44,7 @@ export const worker = new Worker(
         await checkYoutube();
       } else if (name === "WEBSITES") {
         console.log(`Checking Websites group: ${name} at ${Date.now()}`);
-        await Effect.runPromise(fetchWebsites);
+        await Effect.runPromise(fetchWebsites.pipe(DiscordLogProvider));
       }
     } catch (error) {
       console.error(`Error processing job ${name}:`, error);

@@ -4,6 +4,7 @@ import {
   ComponentType,
   roleMention,
   AttachmentBuilder,
+  ButtonStyle,
 } from "discord.js";
 import type { BasicDataForWebsite } from "./orchestrator";
 import F from "../../../Helpers/funcs";
@@ -38,12 +39,19 @@ export const createMessageComponents = async (
       content: `# ${data.displayName} updated`,
     },
     {
-      type: ComponentType.TextDisplay,
-      content: `-# [${data.url}](${data.url})`,
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          style: ButtonStyle.Link,
+          label: "View Live Site",
+          url: data.url,
+        },
+      ],
     },
     {
       type: ComponentType.TextDisplay,
-      content: `**Diff:**\n\`\`\`diff\n${diff.substring(0, 1850)}\n\`\`\``,
+      content: `## Diff\n\`\`\`diff\n${diff.substring(0, 1850)}\n\`\`\``,
     },
   ];
 

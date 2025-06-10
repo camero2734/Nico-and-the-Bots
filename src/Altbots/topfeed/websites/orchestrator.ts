@@ -6,6 +6,7 @@ import { checkHeaders } from "./headers";
 export type BasicDataForWebsite = {
   url: string;
   displayName: string;
+  expectedStatus?: number;
   roleId: (typeof roles.topfeed.selectable)[keyof typeof roles.topfeed.selectable];
   channelId: (typeof channelIDs.topfeed)[keyof typeof channelIDs.topfeed];
 };
@@ -45,6 +46,7 @@ export const websitesToWatch = [
   {
     url: "https://twentyonepilots.com/sitemap.xml",
     displayName: "Band Website Sitemap",
+    expectedStatus: 200,
     roleId: roles.topfeed.selectable.band,
     channelId: channelIDs.topfeed.band,
     operator: checkHtml,

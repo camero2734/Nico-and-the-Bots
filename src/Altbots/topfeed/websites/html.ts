@@ -13,9 +13,14 @@ export const checkHtml = (data: BasicDataForWebsite) =>
     if (!channel || !channel.isTextBased())
       return yield* Effect.fail(new Error("Channel not found or is not text-based"));
 
-    let [text, latestItem] = yield* Effect.all(
+    let [{ text, status }, latestItem] = yield* Effect.all(
       [
-        Effect.tryPromise(() => fetch(data.url, { tls: { rejectUnauthorized: false } }).then((res) => res.text())),
+        Effect.tryPromise(() =>
+          fetch(data.url, { tls: { rejectUnauthorized: false } }).then(async (res) => ({
+            status: res.status,
+            text: await res.text(),
+          })),
+        ),
         Effect.tryPromise(() =>
           prisma.topfeedPost.findFirst({
             where: { type: "Website", handle: data.url, subtype: "HTML" },
@@ -28,6 +33,12 @@ export const checkHtml = (data: BasicDataForWebsite) =>
 
     // REMOVE
     text += "\n<!-- This is a test -->";
+
+    if (data.expectedStatus && status !== data.expectedStatus) {
+      return yield* Effect.fail(
+        new Error(`Expected status ${data.expectedStatus}, got ${status} for ${data.displayName} (${data.url})`),
+      );
+    }
 
     const hash = crypto.createHash("sha256").update(text).digest("base64");
 

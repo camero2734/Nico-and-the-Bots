@@ -42,6 +42,13 @@ export const websitesToWatch = [
     channelId: channelIDs.topfeed.dmaorg,
     operator: checkHeaders,
   },
+  {
+    url: "https://twentyonepilots.com/sitemap.xml",
+    displayName: "Band Website Sitemap",
+    roleId: roles.topfeed.selectable.band,
+    channelId: channelIDs.topfeed.band,
+    operator: checkHeaders,
+  },
 ] as const satisfies DataForWebsite<unknown, unknown, unknown>[];
 
 export const fetchWebsites = Effect.gen(function* () {

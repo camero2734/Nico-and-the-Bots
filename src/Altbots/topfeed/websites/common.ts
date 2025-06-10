@@ -35,19 +35,19 @@ export const createMessageComponents = async (
 
   const mainSection: APIComponentInContainer[] = [
     {
-      type: ComponentType.TextDisplay,
-      content: `# ${data.displayName} updated`,
-    },
-    {
-      type: ComponentType.ActionRow,
+      type: ComponentType.Section,
       components: [
         {
-          type: ComponentType.Button,
-          style: ButtonStyle.Link,
-          label: "View Live Site",
-          url: data.url,
+          type: ComponentType.TextDisplay,
+          content: `# ${data.displayName} updated`,
         },
       ],
+      accessory: {
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        label: "View Live Site",
+        url: data.url,
+      },
     },
     {
       type: ComponentType.TextDisplay,

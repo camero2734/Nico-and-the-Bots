@@ -47,8 +47,10 @@ export const websitesToWatch = [
     url: "https://www.twentyonepilots.com/sitemap.xml",
     displayName: "Band Website Sitemap",
     expectedStatus: 200,
-    roleId: roles.topfeed.selectable.band,
-    channelId: channelIDs.topfeed.band,
+    // biome-ignore lint/suspicious/noExplicitAny: purposeful
+    roleId: "572568489320120353" as any,
+    // biome-ignore lint/suspicious/noExplicitAny: purposeful
+    channelId: channelIDs.bottest as any,
     operator: checkHtml,
   },
 ] as const satisfies DataForWebsite<unknown, unknown, unknown>[];

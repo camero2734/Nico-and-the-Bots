@@ -15,8 +15,11 @@ command.setHandler(async (ctx) => {
 
   const concertChannelManager = getConcertChannelManager(ctx.guild);
   await concertChannelManager.initialize();
-  await concertChannelManager.checkChannels();
-  await ctx.editReply("Done checking concert channels");
+
+  const totalChannels = concertChannelManager.concertChannels;
+  const addedChannels = await concertChannelManager.checkChannels();
+
+  await ctx.editReply(`Added ${addedChannels} channels. ${totalChannels} now exist.`);
 });
 
 export default command;

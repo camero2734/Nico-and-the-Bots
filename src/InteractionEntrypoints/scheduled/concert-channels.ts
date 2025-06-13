@@ -63,7 +63,7 @@ class ConcertChannelManager {
     }
   }
 
-  async checkChannels(): Promise<boolean> {
+  async checkChannels() {
     try {
       // Channels in JSON list that don't have a channel
       const existingChannelIds = await prisma.concert.findMany({
@@ -80,10 +80,10 @@ class ConcertChannelManager {
 
       console.log(`[Concert Channels] Add ${toAdd.length} channels`);
 
-      return true;
+      return toAdd;
     } catch (e) {
       console.warn("Failed to check channels", e);
-      return false;
+      return [];
     }
   }
 

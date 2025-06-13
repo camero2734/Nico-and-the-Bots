@@ -55,7 +55,7 @@ export interface SongContender {
 const currentlyEnabledAlbum = AlbumName.SelfTitled;
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = `SongBattle2025AlbumBattleTEST-${currentlyEnabledAlbum}`;
+export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;
 
 const albumsRaw = [
   {

@@ -2,7 +2,7 @@ import { subMinutes } from "date-fns";
 import { MessageFlags } from "discord.js";
 import { Data, Duration, Effect, Schedule, pipe } from "effect";
 import { prisma } from "../../../Helpers/prisma-init";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 import { TwitterApiClient, fetchTwitterOfficialApi } from "./api/official";
 import { fetchTwitterUnofficialApi } from "./api/unofficial";
 import { tweetToComponents } from "./components";
@@ -51,7 +51,7 @@ export const handleTwitterResponse = (response: Response) =>
       const { roleId, channelId } = usernameData[tweetName];
       const components = yield* Effect.tryPromise(() => tweetToComponents(tweet, roleId));
 
-      const channel = yield* Effect.tryPromise(() => topfeedBot.guild.channels.fetch(channelId));
+      const channel = yield* Effect.tryPromise(() => keonsGuild.channels.fetch(channelId));
       if (!channel || !channel.isTextBased()) {
         throw new Error("Channel not found or is not text-based");
       }

@@ -5,7 +5,7 @@ import { type TwitterApiUtilsResponse, TwitterOpenApi, type TwitterOpenApiClient
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import { DiscordLogProvider } from "../../../Helpers/effect";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 import { usernamesToWatch } from "./constants";
 import { fetchTwitter } from "./orchestrator";
 
@@ -28,7 +28,7 @@ export async function withRateLimit<T extends TwitterApiUtilsResponse<unknown>>(
   if (rateLimit.reset !== undefined && rateLimit.remaining <= 0) {
     if (waitTime && waitTime > 0) {
       logger(`Rate limit reached. Must wait for ${waitTime} seconds. Aborting...`);
-      topfeedBot.guild.channels.fetch(channelIDs.bottest).then((channel) => {
+      keonsGuild.channels.fetch(channelIDs.bottest).then((channel) => {
         if (channel?.isTextBased()) {
           channel.send(
             `${userMention(userIDs.me)} Twitter check rate limit reached. Must wait for ${waitTime} seconds.`,
@@ -72,7 +72,7 @@ export async function checkTwitter() {
     }));
   twitterClient = client;
 
-  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan?.isTextBased()) throw new Error("Test channel is not text-based");
 
   const result = await withRateLimit(async () => {

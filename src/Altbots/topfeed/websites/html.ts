@@ -4,12 +4,12 @@ import * as Diff from "diff";
 import { prisma } from "../../../Helpers/prisma-init";
 import type { BasicDataForWebsite } from "./orchestrator";
 import { WebsiteDataSchema, createMessageComponents } from "./common";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 import { MessageFlags } from "discord.js";
 
 export const checkHtml = (data: BasicDataForWebsite) =>
   Effect.gen(function* () {
-    const channel = yield* Effect.tryPromise(() => topfeedBot.guild.channels.fetch(data.channelId));
+    const channel = yield* Effect.tryPromise(() => keonsGuild.channels.fetch(data.channelId));
     if (!channel || !channel.isTextBased())
       return yield* Effect.fail(new Error("Channel not found or is not text-based"));
 

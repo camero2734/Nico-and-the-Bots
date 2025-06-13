@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { addHours } from "date-fns";
+import { addHours, addSeconds } from "date-fns";
 import {
   AttachmentBuilder,
   ButtonStyle,
@@ -36,6 +36,11 @@ import {
 const entrypoint = new ManualEntrypoint();
 
 export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+
+export const getNextCronRun = (d = new Date()) => {
+  const date = addSeconds(d, 1); // Add 1 second to avoid returning the current time
+  return cron.nextRun(date);
+};
 
 const SLOWMODE_SECONDS = 30;
 const CRON_ENABLED = true;
@@ -106,7 +111,7 @@ export async function songBattleCron() {
   await updatePreviousSongBattleMessage();
 
   const startsAt = new Date();
-  const endsAt = cron.nextRun();
+  const endsAt = getNextCronRun(startsAt);
   if (!endsAt) throw new CommandError("Failed to determine end time");
 
   // Ping message
@@ -476,7 +481,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
       },
       {
         type: ComponentType.TextDisplay,
-        content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(addHours(startsAt, 1)) || new Date())}`,
+        content: `-# ${embedFooter(totalVotes || 0, getNextCronRun(addHours(startsAt, 1)) || new Date())}`,
         id: 8004,
       },
     ],

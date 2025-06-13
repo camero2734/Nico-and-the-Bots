@@ -1,5 +1,12 @@
-import Cron from "croner";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, type ForumChannel, type Guild } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelType,
+  type ForumChannel,
+  type Guild,
+  MessageFlags,
+} from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";
@@ -56,7 +63,7 @@ class ConcertChannelManager {
     }
   }
 
-  async checkChannels(): Promise<boolean> {
+  async checkChannels() {
     try {
       // Channels in JSON list that don't have a channel
       const existingChannelIds = await prisma.concert.findMany({
@@ -73,10 +80,10 @@ class ConcertChannelManager {
 
       console.log(`[Concert Channels] Add ${toAdd.length} channels`);
 
-      return true;
+      return toAdd;
     } catch (e) {
       console.warn("Failed to check channels", e);
-      return false;
+      return [];
     }
   }
 
@@ -118,15 +125,20 @@ class ConcertChannelManager {
         .setCustomId(genBtnId({ roleId: role.id })),
     );
 
+    console.log(`[Concert Channels] Creating thread for ${toAdd.threadName}`);
     const forumPost = await this.#forumChannel.threads.create({
       name: toAdd.threadName,
       message: { content: initialMessage, components: [actionRow] },
       reason: "Concert thread",
     });
 
+    console.log(`[Concert Channels] Created thread for ${toAdd.threadName} with ID ${forumPost.id}`);
     const threadTags = await toAdd.threadTags(this.#forumChannel);
+
+    console.log(`[Concert Channels] Setting tags for ${toAdd.threadName}`, threadTags);
     if (threadTags) await forumPost.setAppliedTags(threadTags.map((t) => t.id));
 
+    console.log(`[Concert Channels] Saving concert info to database for ${toAdd.venueId}`);
     await prisma.concert.create({
       data: {
         id: toAdd.id,
@@ -139,7 +151,9 @@ class ConcertChannelManager {
 }
 
 const genBtnId = entrypoint.addInteractionListener("getConcertRole", ["roleId"], async (ctx, args) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
 
   const role = await guild.roles.fetch(args.roleId);
   if (!role) {
@@ -165,8 +179,8 @@ export const getConcertChannelManager = (guild: Guild) => {
 
 export default entrypoint;
 
-new Cron("44 1 * * *", async () => {
-  if (!guild) return;
-  await concertChannelManager.initialize();
-  await concertChannelManager.checkChannels();
-});
+// new Cron("44 1 * * *", async () => {
+//   if (!guild) return;
+//   await concertChannelManager.initialize();
+//   await concertChannelManager.checkChannels();
+// });

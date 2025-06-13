@@ -1,6 +1,6 @@
 import { userMention } from "discord.js";
 import { channelIDs, userIDs } from "../../../Configuration/config";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 import { fetchYoutube, usernameData, type usernamesToWatch, youtube } from "./fetch-and-send";
 
 const logger = (...args: unknown[]) => console.log("[YT:Check]", ...args);
@@ -11,7 +11,7 @@ const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
 };
 
 export async function checkYoutube() {
-  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   const response = await youtube.channels.list({

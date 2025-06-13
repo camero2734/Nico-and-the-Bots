@@ -3,7 +3,6 @@ import Cron from "croner";
 import * as Discord from "discord.js";
 import { Effect } from "effect";
 import { KeonsBot } from "./src/Altbots/shop";
-import topfeedBot from "./src/Altbots/topfeed/topfeed";
 import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
@@ -283,7 +282,6 @@ async function setup() {
   GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
 
   Scheduler(client);
-  topfeedBot.registerChecks();
   logEntrypointEvents();
 }
 

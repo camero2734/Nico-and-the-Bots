@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { Effect, HashMap, LogLevel, Logger, Option } from "effect";
 import { guild as nicoGuild } from "../../app";
-import topfeedBot from "../../src/Altbots/topfeed/topfeed";
+import { keonsGuild } from "../../src/Altbots/topfeed/topfeed";
 import { channelIDs, userIDs } from "../../src/Configuration/config";
 import F from "../../src/Helpers/funcs";
 
@@ -108,7 +108,7 @@ const discordOnlyLogger = Logger.make((log) => {
   if (!LogLevel.greaterThanEqual(logLevel, LogLevel.Warning)) return;
 
   const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
-  const guild = (botToLog === "keons" ? topfeedBot.guild : nicoGuild) || topfeedBot.guild || nicoGuild;
+  const guild = (botToLog === "keons" ? keonsGuild : nicoGuild) || keonsGuild || nicoGuild;
   if (!guild) return;
 
   const info: LogInfo = {

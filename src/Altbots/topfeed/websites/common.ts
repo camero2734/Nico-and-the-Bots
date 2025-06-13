@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import type { BasicDataForWebsite } from "./orchestrator";
 import F from "../../../Helpers/funcs";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 import { Schema } from "effect";
 
 export const WebsiteDataSchema = Schema.Struct({
@@ -23,7 +23,7 @@ export const createMessageComponents = async (
   newContent: string,
   diff: string,
 ) => {
-  const role = await topfeedBot.guild.roles.fetch(data.roleId);
+  const role = await keonsGuild.roles.fetch(data.roleId);
   if (!role) throw new Error(`Role with ID ${data.roleId} not found`);
 
   const fetchedAt = new Date();

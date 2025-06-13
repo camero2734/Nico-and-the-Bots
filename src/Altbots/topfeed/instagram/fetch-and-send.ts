@@ -12,7 +12,7 @@ import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 
 type InstagramMedia = { url: string; type: "image" | "video" };
 interface FormattedInstagramPost {
@@ -93,7 +93,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   // Compose author line
   const authorLine = `<:instagram:${instagramEmojiId}> **[${post.author}](https://instagram.com/${post.author})**`;
 
-  const role = await topfeedBot.guild.roles.fetch(roleId);
+  const role = await keonsGuild.roles.fetch(roleId);
   if (!role) throw new Error(`Role with ID ${roleId} not found`);
 
   // Compose main post section
@@ -160,7 +160,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
 }
 
 export async function fetchInstagram(source: "scheduled" | "random") {
-  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   await testChan.send(`[${source}] Fetching recent IG posts`).catch(console.error);
@@ -207,7 +207,7 @@ export async function fetchInstagram(source: "scheduled" | "random") {
 }
 
 async function sendInstagramPost(post: FormattedInstagramPost) {
-  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   if (!usernamesToWatch.includes(post.author as (typeof usernamesToWatch)[number])) {
@@ -243,7 +243,7 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
   void channelId;
   const components = await instaPostToComponents(post, roleId);
 
-  const channel = await topfeedBot.guild.channels.fetch(channelId);
+  const channel = await keonsGuild.channels.fetch(channelId);
   if (!channel || !channel.isTextBased()) {
     throw new Error("Channel not found or is not text-based");
   }

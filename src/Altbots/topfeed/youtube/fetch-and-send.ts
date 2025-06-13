@@ -12,7 +12,7 @@ import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 
 type DataForUsername = {
   youtubeChannelId: string;
@@ -54,7 +54,7 @@ export async function youtubeVideoToComponents(post: FormattedYoutubePost, roleI
   // Compose author line
   const authorLine = `**<:youtube:${youtubeEmojiId}> [${post.author}](https://www.youtube.com/@${post.author})**`;
 
-  const role = await topfeedBot.guild.roles.fetch(roleId);
+  const role = await keonsGuild.roles.fetch(roleId);
   if (!role) throw new Error(`Role with ID ${roleId} not found`);
 
   // Compose main post section
@@ -124,7 +124,7 @@ export async function fetchYoutube({
   authorThumbnail,
   source,
 }: { username: keyof typeof usernameData; authorThumbnail: string; source: "scheduled" }) {
-  const testChan = await topfeedBot.guild.channels.fetch(channelIDs.bottest);
+  const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   const roleId = usernameData[username as keyof typeof usernameData]?.roleId;
@@ -133,7 +133,7 @@ export async function fetchYoutube({
     return;
   }
 
-  const targetChannel = await topfeedBot.guild.channels.fetch(usernameData[username]?.channelId);
+  const targetChannel = await keonsGuild.channels.fetch(usernameData[username]?.channelId);
   if (!targetChannel || !targetChannel.isTextBased()) {
     await testChan.send(`${userMention(userIDs.me)} No text channel found for username: ${username}`);
     return;

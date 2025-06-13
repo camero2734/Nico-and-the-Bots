@@ -7,14 +7,14 @@ import {
   roleMention,
 } from "discord.js";
 import F from "../../../Helpers/funcs";
-import topfeedBot from "../topfeed";
+import { keonsGuild } from "../topfeed";
 
 import { type Tweet, twitterEmojiId } from "./constants";
 
 export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];
 
-  const role = await topfeedBot.guild.roles.fetch(roleId);
+  const role = await keonsGuild.roles.fetch(roleId);
   if (!role) throw new Error(`Role with ID ${roleId} not found`);
 
   const mediaItems: APIMediaGalleryItem[] = media

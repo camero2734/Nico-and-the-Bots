@@ -125,15 +125,20 @@ class ConcertChannelManager {
         .setCustomId(genBtnId({ roleId: role.id })),
     );
 
+    console.log(`[Concert Channels] Creating thread for ${toAdd.threadName}`);
     const forumPost = await this.#forumChannel.threads.create({
       name: toAdd.threadName,
       message: { content: initialMessage, components: [actionRow] },
       reason: "Concert thread",
     });
 
+    console.log(`[Concert Channels] Created thread for ${toAdd.threadName} with ID ${forumPost.id}`);
     const threadTags = await toAdd.threadTags(this.#forumChannel);
+
+    console.log(`[Concert Channels] Setting tags for ${toAdd.threadName}`, threadTags);
     if (threadTags) await forumPost.setAppliedTags(threadTags.map((t) => t.id));
 
+    console.log(`[Concert Channels] Saving concert info to database for ${toAdd.venueId}`);
     await prisma.concert.create({
       data: {
         id: toAdd.id,

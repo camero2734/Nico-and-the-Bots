@@ -17,10 +17,6 @@ command.setHandler(async (ctx) => {
   await concertChannelManager.initialize();
   await concertChannelManager.checkChannels();
   await ctx.editReply("Done checking concert channels");
-
-  await ctx.editReply({
-    content: "Purged all concert channel info from the database.",
-  });
 });
 
 export default command;

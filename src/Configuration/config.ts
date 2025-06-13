@@ -86,7 +86,7 @@ export const channelIDs = <const>{
   tourhelp: "857258422293757972",
   cliqueartfriday: "689548218828455967",
   artevents: "940391413194047558",
-  concertsForum: "1222170861344133160",
+  concertsForum: "1382589535157751958",
   eramemes: "1208318225432051763",
   loreupdates: "820002209194180619",
   confirmedfakestuff: "828741866526343199",

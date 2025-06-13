@@ -4,7 +4,6 @@ import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { getConcertChannelManager } from "../../scheduled/concert-channels";
 import {
   cron,
   songBattleCron,
@@ -83,11 +82,6 @@ command.setHandler(async (ctx) => {
     }
 
     await ctx.editReply("Done");
-  } else if (ctx.opts.num === 69) {
-    const concertChannelManager = getConcertChannelManager(ctx.guild);
-    await concertChannelManager.initialize();
-    await concertChannelManager.checkChannels();
-    await ctx.editReply("Done checking concert channels");
   } else if (ctx.opts.num === 420) {
     // songBattleCron();
     const nextRun = cron.nextRun();

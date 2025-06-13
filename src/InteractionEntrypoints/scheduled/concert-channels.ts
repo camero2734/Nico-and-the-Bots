@@ -1,5 +1,12 @@
-import Cron from "croner";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, type ForumChannel, type Guild } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelType,
+  type ForumChannel,
+  type Guild,
+  MessageFlags,
+} from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";
@@ -139,7 +146,9 @@ class ConcertChannelManager {
 }
 
 const genBtnId = entrypoint.addInteractionListener("getConcertRole", ["roleId"], async (ctx, args) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
 
   const role = await guild.roles.fetch(args.roleId);
   if (!role) {
@@ -165,8 +174,8 @@ export const getConcertChannelManager = (guild: Guild) => {
 
 export default entrypoint;
 
-new Cron("44 1 * * *", async () => {
-  if (!guild) return;
-  await concertChannelManager.initialize();
-  await concertChannelManager.checkChannels();
-});
+// new Cron("44 1 * * *", async () => {
+//   if (!guild) return;
+//   await concertChannelManager.initialize();
+//   await concertChannelManager.checkChannels();
+// });

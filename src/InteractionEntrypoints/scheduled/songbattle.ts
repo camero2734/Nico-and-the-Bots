@@ -25,6 +25,7 @@ import {
   type SongContender,
   calculateHistory,
   createResultsChart,
+  currentlyEnabledAlbum,
   determineNextMatchup,
   determineResult,
   embedFooter,
@@ -380,7 +381,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     components: [
       {
         type: ComponentType.TextDisplay,
-        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# Blurryface 10th Anniversary Song Battles`,
+        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles (${currentlyEnabledAlbum})`,
       },
       { type: ComponentType.Separator, divider: false, spacing: 1 },
       {
@@ -474,7 +475,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: "Info / Rules",
-            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1363596621241253888",
+            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1383183855732920401",
             disabled: hasWinner,
           },
         ],

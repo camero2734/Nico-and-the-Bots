@@ -174,7 +174,7 @@ export async function songBattleCron() {
 
   // Create a discussion thread
   const thread = await m.startThread({
-    name: `Blurryface X Song Battle #${nextBattleNumber}`,
+    name: `2025 Album Song Battle #${nextBattleNumber}`,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
   });
 

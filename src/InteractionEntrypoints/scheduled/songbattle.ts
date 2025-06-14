@@ -381,7 +381,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     components: [
       {
         type: ComponentType.TextDisplay,
-        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles (${currentlyEnabledAlbum})`,
+        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum}`,
       },
       { type: ComponentType.Separator, divider: false, spacing: 1 },
       {

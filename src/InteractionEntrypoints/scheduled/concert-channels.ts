@@ -75,7 +75,12 @@ class ConcertChannelManager {
       console.log(`[Concert Channels] Adding ${toAdd.length} channels`);
 
       for (const t of toAdd) {
-        await this.#registerConcert(t);
+        try {
+          await this.#registerConcert(t);
+        } catch (e) {
+          console.warn(`[Concert Channels] Failed to register concert ${t.id}`, e);
+          throw e;
+        }
       }
 
       console.log(`[Concert Channels] Add ${toAdd.length} channels`);

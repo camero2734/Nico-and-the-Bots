@@ -101,7 +101,7 @@ export class ConcertChannel {
     }
 
     // biome-ignore format:
-    return `${concertName} - ${this.flagEmoji} ${this.location}, ${this.country} - ${this.datesFormatted}`.substring(0, 100);
+    return `${concertName} - ${this.flagEmoji} ${location}, ${country} - ${this.datesFormatted}`.substring(0, 100);
   }
 
   get roleName() {

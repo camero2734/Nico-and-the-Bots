@@ -85,7 +85,23 @@ export class ConcertChannel {
   }
 
   get threadName() {
-    return `${this.concert.venue.name} - ${this.flagEmoji} ${this.location}, ${this.country} - ${this.datesFormatted}`;
+    let concertName = this.concert.venue.name;
+    if (concertName.length > 40) {
+      concertName = `${concertName.slice(0, 39)}…`;
+    }
+
+    let location = this.location;
+    if (location.length > 20) {
+      location = `${location.slice(0, 19)}…`;
+    }
+
+    let country = this.country;
+    if (country.length > 20) {
+      country = `${country.slice(0, 19)}…`;
+    }
+
+    // biome-ignore format:
+    return `${concertName} - ${this.flagEmoji} ${this.location}, ${this.country} - ${this.datesFormatted}`.substring(0, 100);
   }
 
   get roleName() {

@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import { addHours } from "date-fns";
+import { addHours, addSeconds } from "date-fns";
 import {
   AttachmentBuilder,
   ButtonStyle,
@@ -23,8 +23,10 @@ import {
   PREFIX,
   Result,
   type SongContender,
+  AlbumName,
   calculateHistory,
   createResultsChart,
+  currentlyEnabledAlbum,
   determineNextMatchup,
   determineResult,
   embedFooter,
@@ -36,6 +38,11 @@ import {
 const entrypoint = new ManualEntrypoint();
 
 export const cron = Cron("0 17 * * *", { timezone: "Europe/Amsterdam" }, songBattleCron);
+
+export const getNextCronRun = (d = new Date()) => {
+  const date = addSeconds(d, 1); // Add 1 second to avoid returning the current time
+  return cron.nextRun(date);
+};
 
 const SLOWMODE_SECONDS = 30;
 const CRON_ENABLED = true;
@@ -106,7 +113,7 @@ export async function songBattleCron() {
   await updatePreviousSongBattleMessage();
 
   const startsAt = new Date();
-  const endsAt = cron.nextRun();
+  const endsAt = getNextCronRun(startsAt);
   if (!endsAt) throw new CommandError("Failed to determine end time");
 
   // Ping message
@@ -166,9 +173,11 @@ export async function songBattleCron() {
   // Send the main message
   await m.edit(msgOptions);
 
+  const albumName = currentlyEnabledAlbum === AlbumName.SelfTitled ? "Self-Titled" : currentlyEnabledAlbum;
+
   // Create a discussion thread
   const thread = await m.startThread({
-    name: `Blurryface X Song Battle #${nextBattleNumber}`,
+    name: `2025 ${albumName} Song Battle #${nextBattleNumber}`,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
   });
 
@@ -375,7 +384,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     components: [
       {
         type: ComponentType.TextDisplay,
-        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# Blurryface 10th Anniversary Song Battles`,
+        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum}`,
       },
       { type: ComponentType.Separator, divider: false, spacing: 1 },
       {
@@ -469,14 +478,14 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: "Info / Rules",
-            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1363596621241253888",
+            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1383183855732920401",
             disabled: hasWinner,
           },
         ],
       },
       {
         type: ComponentType.TextDisplay,
-        content: `-# ${embedFooter(totalVotes || 0, cron.nextRun(addHours(startsAt, 1)) || new Date())}`,
+        content: `-# ${embedFooter(totalVotes || 0, getNextCronRun(addHours(startsAt, 1)) || new Date())}`,
         id: 8004,
       },
     ],

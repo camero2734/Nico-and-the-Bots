@@ -98,12 +98,16 @@ class ConcertChannelManager {
       return;
     }
 
-    console.log(`[Concert Channels] Registering ${toAdd.venueId}`);
+    console.log(
+      `[Concert Channels] Registering ${toAdd.venueId} with role ${toAdd.roleName} and thread ${toAdd.threadName}`,
+    );
     const role = await this.guild.roles.create({
       name: toAdd.roleName,
       color: ROLE_HEX,
       position: referenceRole.position + 1,
     });
+
+    console.log(`[Concert Channels] Created role ${role.name} with ID ${role.id}`);
 
     const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the concert, tickets, share pictures, etc.`;
 

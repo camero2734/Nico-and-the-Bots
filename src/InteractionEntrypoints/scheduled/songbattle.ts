@@ -23,6 +23,7 @@ import {
   PREFIX,
   Result,
   type SongContender,
+  AlbumName,
   calculateHistory,
   createResultsChart,
   currentlyEnabledAlbum,
@@ -172,9 +173,11 @@ export async function songBattleCron() {
   // Send the main message
   await m.edit(msgOptions);
 
+  const albumName = currentlyEnabledAlbum === AlbumName.SelfTitled ? "Self-Titled" : currentlyEnabledAlbum;
+
   // Create a discussion thread
   const thread = await m.startThread({
-    name: `2025 Album Song Battle #${nextBattleNumber}`,
+    name: `2025 ${albumName} Song Battle #${nextBattleNumber}`,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
   });
 

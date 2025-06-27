@@ -95,10 +95,12 @@ export async function songBattleCron() {
   const channel = await guild.channels.fetch(channelIDs.songbattles);
   if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
-  console.log("[SB] 1");
-
   // Determine the next matchup
   const history = await calculateHistory();
+
+  // Update the previous battle's message
+  await updatePreviousSongBattleMessage();
+
   const {
     song1,
     song2,
@@ -111,11 +113,6 @@ export async function songBattleCron() {
     nextBattleNumber,
     totalMatches,
   } = determineNextMatchup(history);
-
-  console.log("[SB] 2");
-
-  // Update the previous battle's message
-  await updatePreviousSongBattleMessage();
 
   const startsAt = new Date();
   const endsAt = getNextCronRun(startsAt);

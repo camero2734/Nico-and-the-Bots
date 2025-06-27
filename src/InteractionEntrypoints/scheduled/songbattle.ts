@@ -88,11 +88,14 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
 });
 
 export async function songBattleCron() {
+  console.log("[SB] Cron started");
   if (!CRON_ENABLED) return;
 
   // Get song battle channel
   const channel = await guild.channels.fetch(channelIDs.songbattles);
   if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+
+  console.log("[SB] 1");
 
   // Determine the next matchup
   const history = await calculateHistory();
@@ -108,6 +111,8 @@ export async function songBattleCron() {
     nextBattleNumber,
     totalMatches,
   } = determineNextMatchup(history);
+
+  console.log("[SB] 2");
 
   // Update the previous battle's message
   await updatePreviousSongBattleMessage();

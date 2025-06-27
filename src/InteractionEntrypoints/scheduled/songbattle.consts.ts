@@ -52,7 +52,7 @@ export interface SongContender {
   yt: string;
 }
 
-export const currentlyEnabledAlbum = AlbumName.SelfTitled;
+export const currentlyEnabledAlbum = AlbumName.RegionalAtBest;
 
 export const IMAGE_SIZE = 1000;
 export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;

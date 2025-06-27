@@ -175,7 +175,7 @@ export async function songBattleCron() {
   // Send the main message
   await m.edit(msgOptions);
 
-  const albumName = currentlyEnabledAlbum === AlbumName.SelfTitled ? "Self-Titled" : currentlyEnabledAlbum;
+  const albumName = (currentlyEnabledAlbum as string) === AlbumName.SelfTitled ? "Self-Titled" : currentlyEnabledAlbum;
 
   // Create a discussion thread
   const thread = await m.startThread({

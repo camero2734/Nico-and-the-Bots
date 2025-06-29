@@ -101,6 +101,7 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
   );
 
   for (const mem of membersNoBanditos.values()) {
+    console.log(`Adding banditos/new to ${mem.user.tag}`);
     await mem.roles.add(roles.banditos);
     await mem.roles.add(roles.new);
   }

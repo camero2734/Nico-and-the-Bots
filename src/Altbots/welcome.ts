@@ -234,6 +234,7 @@ export class SacarverBot {
 
   async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {
     console.log(`Handling membership screening for ${newMember.user.tag}`);
+    console.log(`Old member: ${oldMember.pending}, New member: ${newMember.pending}`);
     if (oldMember.pending && !newMember.pending) {
       await newMember.roles.add(roles.banditos);
       await newMember.roles.add(roles.new);

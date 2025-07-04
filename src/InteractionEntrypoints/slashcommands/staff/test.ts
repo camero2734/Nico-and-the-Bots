@@ -4,6 +4,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { roles as roleIDs } from "../../../Configuration/config";
 import {
   cron,
   songBattleCron,
@@ -31,47 +32,21 @@ command.setHandler(async (ctx) => {
   const roles = await ctx.guild.roles.fetch();
   const withColor = roles.filter((r) => r.hexColor.toLowerCase() === "#ffc6d5");
   if (ctx.opts.num === 1) {
-    // Update those who are in the server but are not marked as such
-    const membersInServerIds = new Set((await ctx.guild.members.fetch()).keys());
-    const inactiveUsers = new Set(
-      (
-        await prisma.user.findMany({
-          select: { id: true },
-          where: { currentlyInServer: false },
-        })
-      ).map((u) => u.id),
-    );
-
-    const membersMarkedInactive = membersInServerIds.intersection(inactiveUsers);
-
-    console.log("Members marked inactive", membersMarkedInactive.size);
-
-    await prisma.user.updateMany({
-      where: { id: { in: Array.from(membersMarkedInactive) } },
-      data: { currentlyInServer: true },
-    });
-
-    // Update those who are not in the server but are marked as such
-    const activeUsers = new Set(
-      (
-        await prisma.user.findMany({
-          select: { id: true },
-          where: { currentlyInServer: true },
-        })
-      ).map((u) => u.id),
-    );
-    const leftMembers = Array.from(activeUsers.difference(membersInServerIds));
-    const batchSize = 10000;
-
-    for (let i = 0; i < leftMembers.length; i += batchSize) {
-      const batch = leftMembers.slice(i, i + batchSize);
-      await prisma.user.updateMany({
-        where: { id: { in: batch } },
-        data: { currentlyInServer: false },
-      });
+    const role = await ctx.guild.roles.fetch(roleIDs.new);
+    if (!role) {
+      throw new CommandError("New role not found");
     }
 
-    await ctx.editReply("Done");
+    const m = await ctx.editReply(`Removing role ${role.name} from members...`);
+
+    let i = 0;
+    for (const member of role.members.values()) {
+      if (i % 10 === 0) await ctx.editReply(`${m.content} (${i}/${role.members.size})`);
+      await member.roles.remove(role);
+      i++;
+    }
+
+    await ctx.editReply(`${m.content} (${i}/${role.members.size})\nDone removing role ${role.name} from members.`);
   } else if (ctx.opts.num === 2) {
     await updateCurrentSongBattleMessage();
   } else if (ctx.opts.num === 3) {

@@ -92,7 +92,7 @@ async function checkReminders(guild: Guild): Promise<void> {
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
-  const allMembers = guild.members.cache;
+  const allMembers = await guild.members.fetch();
   const membersNoBanditos = allMembers.filter(
     (mem) =>
       !mem.roles.cache.has(roles.banditos) &&

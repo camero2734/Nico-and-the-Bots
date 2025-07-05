@@ -237,13 +237,15 @@ export class SacarverBot {
     console.log(`Handling membership screening for ${newMember.user.tag}`);
     console.log(`Old member: ${oldMember.pending}, New member: ${newMember.pending}`);
     if (oldMember.pending && !newMember.pending) {
+      const testGuild = await this.client.guilds.fetch(newMember.guild.id);
+      const testChannel = await testGuild.channels.fetch(channelIDs.bottest);
+      if (!testChannel?.isTextBased()) return;
+
+      await testChannel.send(`${userMention(userIDs.me)} ${newMember.user.tag} has passed the membership screening!`);
       if (oldMember.pending !== true || newMember.pending !== false) {
         console.warn(
           `Unexpected pending state change for ${newMember.user.tag}: old=${oldMember.pending}, new=${newMember.pending}`,
         );
-        const testGuild = await this.client.guilds.fetch(newMember.guild.id);
-        const testChannel = await testGuild.channels.fetch(channelIDs.bottest);
-        if (!testChannel?.isTextBased()) return;
         await testChannel.send(
           `${userMention(userIDs.me)} Unexpected pending state change for ${newMember.user.tag}: old=${oldMember.pending}, new=${newMember.pending}`,
         );

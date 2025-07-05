@@ -8,6 +8,7 @@ import {
   type Client,
   Collection,
   EmbedBuilder,
+  userMention,
   type Guild,
   type GuildMember,
   type Snowflake,
@@ -15,7 +16,7 @@ import {
   type VoiceChannel,
 } from "discord.js";
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { guildID, roles } from "../Configuration/config";
+import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
@@ -100,8 +101,11 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
       !mem.pending,
   );
 
+  const testChannel = await guild.channels.fetch(channelIDs.bottest);
+  if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
   for (const mem of membersNoBanditos.values()) {
     console.log(`Adding banditos/new to ${mem.user.tag}`);
+    await testChannel.send(`${userMention(userIDs.me)} ${mem.user.tag} did not have banditos role, adding it now.`);
     await mem.roles.add(roles.banditos);
     await mem.roles.add(roles.new);
   }

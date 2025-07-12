@@ -241,7 +241,6 @@ export class SacarverBot {
       const testChannel = await testGuild.channels.fetch(channelIDs.bottest);
       if (!testChannel?.isTextBased()) return;
 
-      await testChannel.send(`${userMention(userIDs.me)} ${newMember.user.tag} has passed the membership screening!`);
       if (oldMember.pending !== true || newMember.pending !== false) {
         console.warn(
           `Unexpected pending state change for ${newMember.user.tag}: old=${oldMember.pending}, new=${newMember.pending}`,

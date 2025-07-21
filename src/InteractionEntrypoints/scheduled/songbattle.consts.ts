@@ -169,7 +169,7 @@ const albumsRaw = [
   // },
   {
     name: AlbumName.Trench,
-    image: "https://i.scdn.co/image/ab67616d00001e027a1bbe4ec7066c9db1d0f398",
+    image: "https://i.scdn.co/image/ab67616d00001e02d1d301e737da4324479c6660",
     color: "#fce300",
     emoji: emojiIDs.albums.trench,
     songs: [

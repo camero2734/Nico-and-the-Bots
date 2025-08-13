@@ -52,7 +52,7 @@ export interface SongContender {
   yt: string;
 }
 
-export const currentlyEnabledAlbum = AlbumName.ScaledAndIcy;
+export const currentlyEnabledAlbum = AlbumName.Clancy;
 
 export const IMAGE_SIZE = 1000;
 export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;

@@ -66,6 +66,8 @@ command.setHandler(async (ctx) => {
   for (const warn of warns) {
     const emoji = severityEmoji(warn.severity);
     const timestamp = F.discordTimestamp(warn.createdAt, "relative");
+
+    console.log(`Warning of length: ${warn.reason.length}`)
     embed.addFields([{ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` }]);
   }
 

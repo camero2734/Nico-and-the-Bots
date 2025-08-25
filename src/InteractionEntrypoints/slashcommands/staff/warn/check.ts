@@ -69,7 +69,7 @@ command.setHandler(async (ctx) => {
 
     console.log(`Warning of length: ${warn.reason.length}`);
     try {
-      embed.addFields([{ name: warn.reason?.substring(0, 256), value: `${emoji} ${warn.type}\n${timestamp}` }]);
+      embed.addFields([{ name: `${emoji} ${warn.type}`, value: `${warn.reason?.substring(0, 4000)}\n${timestamp}` }]);
     } catch (e) {
       console.log(`Caught error: ${e}`);
       embed.addFields({ name: "UNABLE TO FETCH", value: "ERROR" });

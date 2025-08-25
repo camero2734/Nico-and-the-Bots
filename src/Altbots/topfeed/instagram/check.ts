@@ -67,7 +67,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
     if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram opengraph data";
-    console.error(`Error fetching Instagram opengraph data for ${user}:`, error);
+    console.error(`Error fetching Instagram opengraph data for ${user}:`, text);
 
     await testChan.send(
       `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,

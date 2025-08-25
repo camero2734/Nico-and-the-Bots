@@ -52,7 +52,7 @@ const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
 extendPrototypes();
-
+//
 client.login(secrets.bots.nico);
 
 console.log("Logging in...");

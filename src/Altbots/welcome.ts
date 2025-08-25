@@ -6,13 +6,14 @@ import {
   ButtonStyle,
   Client,
   EmbedBuilder,
+  userMention,
   type GuildMember,
   type MessageComponentInteraction,
   type PartialGuildMember,
   type Snowflake,
   type TextChannel,
 } from "discord.js";
-import { channelIDs, roles } from "../Configuration/config";
+import { channelIDs, roles, userIDs } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
 import { queries } from "../Helpers/prisma-init";
@@ -233,7 +234,23 @@ export class SacarverBot {
   }
 
   async handleMembershipScreening(oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) {
+    console.log(`Handling membership screening for ${newMember.user.tag}`);
+    console.log(`Old member: ${oldMember.pending}, New member: ${newMember.pending}`);
     if (oldMember.pending && !newMember.pending) {
+      const testGuild = await this.client.guilds.fetch(newMember.guild.id);
+      const testChannel = await testGuild.channels.fetch(channelIDs.bottest);
+      if (!testChannel?.isTextBased()) return;
+
+      if (oldMember.pending !== true || newMember.pending !== false) {
+        console.warn(
+          `Unexpected pending state change for ${newMember.user.tag}: old=${oldMember.pending}, new=${newMember.pending}`,
+        );
+        await testChannel.send(
+          `${userMention(userIDs.me)} Unexpected pending state change for ${newMember.user.tag}: old=${oldMember.pending}, new=${newMember.pending}`,
+        );
+        return;
+      }
+
       await newMember.roles.add(roles.banditos);
       await newMember.roles.add(roles.new);
     }

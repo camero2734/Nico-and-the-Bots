@@ -26,8 +26,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   await ctx.deferReply();
 
-  const member = await ctx.guild.members.fetch(ctx.opts.user);
-  if (!member) throw new CommandError("Unable to find that user");
+  const member = await ctx.guild.members.fetch(ctx.opts.user).catch(() => undefined);
 
   const page = ctx.opts.page ?? 1;
   const take = 10;
@@ -59,8 +58,8 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${member.displayName}'s warnings`,
-      iconURL: member.user.displayAvatarURL(),
+      name: `${member?.displayName || "User"}'s warnings`,
+      iconURL: member?.user.displayAvatarURL(),
     })
     .setColor(((255 * averageSeverity) / 10) << 16)
     .setFooter({ text: `Page ${page}/${numPages}` });

@@ -67,8 +67,13 @@ command.setHandler(async (ctx) => {
     const emoji = severityEmoji(warn.severity);
     const timestamp = F.discordTimestamp(warn.createdAt, "relative");
 
-    console.log(`Warning of length: ${warn.reason.length}`)
-    embed.addFields([{ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` }]);
+    console.log(`Warning of length: ${warn.reason.length}`);
+    try {
+      embed.addFields([{ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` }]);
+    } catch (e) {
+      console.log(`Caught error: ${e}`);
+      embed.addFields({ name: "UNABLE TO FETCH", value: "INVALID ERROR" });
+    }
   }
 
   await ctx.editReply({ embeds: [embed] });

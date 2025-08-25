@@ -31,6 +31,7 @@ async function fetchOpengraphDataBackup(user: string) {
 }
 
 async function fetchOpengraphData(user: string): Promise<number> {
+  let text: string | undefined;
   try {
     const data = await fetch(`https://www.instagram.com/${user}/embed`, {
       credentials: "omit",
@@ -51,7 +52,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
       mode: "cors",
     });
 
-    const text = await data.text();
+    text = await data.text();
 
     const match = text.split('posts_count\\":')[1].split(",")[0];
     if (!match) {
@@ -67,7 +68,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
     if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram opengraph data";
-    console.error(`Error fetching Instagram opengraph data for ${user}:`, text);
+    console.error(`Error fetching Instagram opengraph data for ${user}:`, text || message);
 
     await testChan.send(
       `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,

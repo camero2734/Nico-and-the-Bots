@@ -26,8 +26,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   await ctx.deferReply();
 
-  const member = await ctx.guild.members.fetch(ctx.opts.user);
-  if (!member) throw new CommandError("Unable to find that user");
+  const member = await ctx.guild.members.fetch(ctx.opts.user).catch(() => undefined);
 
   const page = ctx.opts.page ?? 1;
   const take = 10;
@@ -59,15 +58,22 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${member.displayName}'s warnings`,
-      iconURL: member.user.displayAvatarURL(),
+      name: `${member?.displayName || "User"}'s warnings`,
+      iconURL: member?.user.displayAvatarURL(),
     })
     .setColor(((255 * averageSeverity) / 10) << 16)
     .setFooter({ text: `Page ${page}/${numPages}` });
   for (const warn of warns) {
     const emoji = severityEmoji(warn.severity);
     const timestamp = F.discordTimestamp(warn.createdAt, "relative");
-    embed.addFields([{ name: `${warn.reason}`, value: `${emoji} ${warn.type}\n${timestamp}` }]);
+
+    console.log(`Warning of length: ${warn.reason.length}`);
+    try {
+      embed.addFields([{ name: `${emoji} ${warn.type}`, value: `${warn.reason?.substring(0, 4000)}\n${timestamp}` }]);
+    } catch (e) {
+      console.log(`Caught error: ${e}`);
+      embed.addFields({ name: "UNABLE TO FETCH", value: "ERROR" });
+    }
   }
 
   await ctx.editReply({ embeds: [embed] });

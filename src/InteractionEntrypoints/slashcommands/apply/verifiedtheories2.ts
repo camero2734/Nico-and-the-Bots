@@ -277,6 +277,7 @@ const genOpenQuizPart = command.addInteractionListener("verifquizpart", ["num", 
           label: q.question,
           description: "Please select the correct answer",
           component: select.toJSON(),
+          components: [select.toJSON()]
         } as any;
       })
     )

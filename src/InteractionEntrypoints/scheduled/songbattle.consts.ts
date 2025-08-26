@@ -52,7 +52,7 @@ export interface SongContender {
   yt: string;
 }
 
-export const currentlyEnabledAlbum = AlbumName.Clancy;
+export const currentlyEnabledAlbum = AlbumName.Singles;
 
 export const IMAGE_SIZE = 1000;
 export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;
@@ -232,7 +232,7 @@ const albumsRaw = [
   {
     name: AlbumName.Singles,
     color: "#FFFFFF",
-    emoji: emojiIDs.albums.clancy,
+    emoji: "1211716502621917215",
     songs: [
       {
         name: "Level of Concern",

@@ -26,6 +26,7 @@ import {
   morseEncode
 } from "./_consts";
 export { VerifiedQuizConsts } from "./_consts";
+// 
 
 const command = new SlashCommand({
   description: "Opens an application for the verified-theories channel",

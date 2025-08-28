@@ -22,7 +22,7 @@ type DataForUsername = {
 
 const logger = (...args: unknown[]) => console.log("[YT:Fetch]", ...args);
 
-export const usernamesToWatch = ["twentyonepilots", "slushieguys"] as const;
+export const usernamesToWatch = ["twentyonepilots", "slushieguys", "JoshuaDun"] as const;
 export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
   twentyonepilots: {
     roleId: roles.topfeed.selectable.band,
@@ -34,6 +34,11 @@ export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUser
     channelId: channelIDs.topfeed.tyler,
     youtubeChannelId: "UCITp_ri9o-MBpLLaYZalTTQ",
   },
+  JoshuaDun: {
+    roleId: roles.topfeed.selectable.josh,
+    channelId: channelIDs.topfeed.josh,
+    youtubeChannelId: "UCzP4Y0ePukTJFW7-obgrMxg"
+  }
 };
 
 export const youtube = new youtube_v3.Youtube({ auth: secrets.apis.google.youtube });
@@ -87,20 +92,20 @@ export async function youtubeVideoToComponents(post: FormattedYoutubePost, roleI
   // Compose media gallery section
   const mediaSection: APIComponentInContainer[] = post.thumbnail
     ? [
-        {
-          type: ComponentType.Separator,
-          divider: false,
-          spacing: 1,
-        },
-        {
-          type: ComponentType.MediaGallery,
-          items: [
-            {
-              media: { url: post.thumbnail },
-            },
-          ],
-        },
-      ]
+      {
+        type: ComponentType.Separator,
+        divider: false,
+        spacing: 1,
+      },
+      {
+        type: ComponentType.MediaGallery,
+        items: [
+          {
+            media: { url: post.thumbnail },
+          },
+        ],
+      },
+    ]
     : [];
 
   const footerSection: APIComponentInContainer[] = [

@@ -8,6 +8,7 @@ const logger = (...args: unknown[]) => console.log("[YT:Check]", ...args);
 const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
   twentyonepilots: 0,
   slushieguys: 0,
+  JoshuaDun: 0,
 };
 
 export async function checkYoutube() {

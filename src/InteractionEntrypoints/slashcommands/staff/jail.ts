@@ -348,9 +348,8 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const displayName = message.member?.displayName || `${message.author.id} (left server)`;
     const content = message.content || message.embeds?.[0]?.description;
 
-    mhtml += `<img class="avatar" src="${message.author.displayAvatarURL()}" align="left" height=40/><span class="username"><b>${displayName}</b></span>  <span class="timestamp">(${
-      message.author.id
-    })</span>\n`;
+    mhtml += `<img class="avatar" src="${message.author.displayAvatarURL()}" align="left" height=40/><span class="username"><b>${displayName}</b></span>  <span class="timestamp">(${message.author.id
+      })</span>\n`;
     mhtml += `<p display="inline" class="timestamp"> ${message.createdAt
       .toString()
       .replace("Central Standard Time", message.createdTimestamp.toString())} </p>\n`;
@@ -413,7 +412,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     await dm.send({ embeds: [embed], files: [attachment] });
   }
 
-  // await chan.delete();
+  await chan.delete();
 }
 
 function fixEmojis(text: string) {

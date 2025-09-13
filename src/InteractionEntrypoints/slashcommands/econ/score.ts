@@ -156,11 +156,25 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
 
   //LEVEL UP BAR / POINTS TO NEXT LEVEL
   cctx.translate(0, 130);
-  const colorsArray = ["#F18BB0", "#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];
+  // const colorsArray = ["#F18BB0", "#FCE300", "#80271F", "#6BC1DA", "#FC3F03", "#ACCD40", "#C6ADAE"];\
+
+  const colors: Record<typeof albumRoles[keyof typeof albumRoles], string> = {
+    [albumRoles.NPI]: "#C6ADAE",
+    [albumRoles.ST]: "#ACCD40",
+    [albumRoles.RAB]: "#80271F",
+    [albumRoles.VSL]: "#6BC1DA",
+    [albumRoles.BF]: "#FC3F03",
+    [albumRoles.TRENCH]: "#FCE300",
+    [albumRoles.SAI]: "#F18BB0",
+    [albumRoles.CLANCY]: "#FCE300",
+    [albumRoles.BREACH]: "##E24D42",
+  };
+  const albumColor = colors[src];
+
   cctx.save();
   cctx.fillStyle = "#555555"; //BACKGROUND BAR
   cctx.fillRect(0, -54, 372, 60);
-  cctx.fillStyle = colorsArray[Object.values(albumRoles).indexOf(src)];
+  cctx.fillStyle = albumColor;
   cctx.fillRect(0, -54, 372 * Number(percent), 60);
   cctx.textAlign = "center";
   cctx.fillStyle = "white";

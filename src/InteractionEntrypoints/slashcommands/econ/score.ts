@@ -167,11 +167,9 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     [albumRoles.TRENCH]: "#FCE300",
     [albumRoles.SAI]: "#F18BB0",
     [albumRoles.CLANCY]: "#FCE300",
-    [albumRoles.BREACH]: "##E24D42",
+    [albumRoles.BREACH]: "#E24D42",
   };
   const albumColor = colors[src];
-
-  console.log(member.user.id, src, albumColor);
 
   cctx.save();
   cctx.fillStyle = "#555555"; //BACKGROUND BAR

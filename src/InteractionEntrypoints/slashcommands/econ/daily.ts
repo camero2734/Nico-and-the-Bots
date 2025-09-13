@@ -83,22 +83,24 @@ command.setHandler(async (ctx) => {
   const backgroundName = (() => {
     switch (src) {
       case albumRoles.ST:
-        return "self_titled";
+        return "self_titled.png";
       case albumRoles.RAB:
-        return "rab";
+        return "rab.png";
       case albumRoles.VSL:
-        return "vessel";
+        return "vessel.png";
       case albumRoles.BF:
-        return "blurryface";
+        return "blurryface.png";
       case albumRoles.TRENCH:
-        return "trench";
+        return "trench.png";
       case albumRoles.CLANCY:
-        return "clancy";
+        return "clancy.png";
+      case albumRoles.SAI:
+        return "sai.png";
       default:
-        return "sai";
+        return "breach.webp";
     }
   })();
-  const background = await loadImage(`./src/Assets/images/daily_cards/${backgroundName}.png`);
+  const background = await loadImage(`./src/Assets/images/daily_cards/${backgroundName}`);
   const cf = await loadImage("./src/Assets/badges/commonfren.png");
   const dd = await loadImage("./src/Assets/badges/firebreather.png");
 

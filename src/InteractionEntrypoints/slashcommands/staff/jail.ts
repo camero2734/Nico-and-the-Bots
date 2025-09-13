@@ -66,6 +66,8 @@ command.setHandler(async (ctx) => {
   const { explanation, ...usersDict } = ctx.opts;
   const ids = Object.values(usersDict) as Snowflake[];
 
+  await ctx.deferReply();
+
   const members = await Promise.all(ids.map((id) => ctx.member.guild.members.fetch(id)));
 
   if (members.some((m) => m.roles.highest.comparePositionTo(ctx.member.roles.highest) >= 0 || m.user.bot)) {
@@ -171,7 +173,7 @@ command.setHandler(async (ctx) => {
   const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View channel").setURL(m.url),
   ]);
-  await ctx.send({ embeds: [commandEmbed], components: [actionRow] });
+  await ctx.editReply({ embeds: [commandEmbed], components: [actionRow] });
 });
 
 type ActionExecutorArgs = {

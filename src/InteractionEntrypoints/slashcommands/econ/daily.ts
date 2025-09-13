@@ -82,6 +82,8 @@ command.setHandler(async (ctx) => {
   const src = Object.values(albumRoles).find((r) => ctx.member.roles.cache.has(r));
   const backgroundName = (() => {
     switch (src) {
+      case albumRoles.NPI:
+        return "npi.webp";
       case albumRoles.ST:
         return "self_titled.png";
       case albumRoles.RAB:

@@ -87,6 +87,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
   const goldcircle = await loadImage("./src/Assets/badges/goldcircle.png");
 
   const backgroundName = {
+    [albumRoles.NPI]: "npi.webp",
     [albumRoles.ST]: "self_titled.png",
     [albumRoles.RAB]: "rab.png",
     [albumRoles.VSL]: "vessel.png",

@@ -63,8 +63,8 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
 
   console.log({ totalBetweenLevels, remainingBetweenLevels, percent });
 
-  //FIND USER ALBUM ROLE (SAI => DEFAULT)
-  const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.SAI;
+  //FIND USER ALBUM ROLE (BREACH => DEFAULT)
+  const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.BREACH;
 
   // Changes font color based on background color
   const invertedRoles: string[] = [albumRoles.RAB, albumRoles.ST];
@@ -97,6 +97,8 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     [albumRoles.CLANCY]: "clancy.png",
     [albumRoles.BREACH]: "breach.webp",
   }[src];
+
+  console.log(member.user.id, src, backgroundName);
 
   const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}`);
 

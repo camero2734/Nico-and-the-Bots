@@ -81,7 +81,7 @@ export async function getDistrictWebhookClient(
     if (!botImg) throw new Error("Bot avatar not found");
 
     imageUrl = botImg;
-    buffer = (await loadImage(imageUrl)).src;
+    buffer = Buffer.from((await loadImage(imageUrl)).src);
   } else {
     [imageUrl, buffer] = await createBishopImage(bishop, color);
   }

@@ -404,8 +404,11 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
   const backupChannel = ctx.guild.channels.cache.get(channelIDs.jaillog) as TextChannel;
   await backupChannel.send({ embeds: [embed], files: [attachment] });
 
-  // DM members the backup too
   for (const member of args.jailedMembers) {
+    // Allow them to see channels again
+    await member.roles.remove(roles.hideallchannels);
+
+    // DM members the backup too
     const dm = await member.createDM();
     if (!dm) continue;
 

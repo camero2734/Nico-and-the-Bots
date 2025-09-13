@@ -37,7 +37,7 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     return member.roles.cache.has("585527743324880897");
   });
 
-  yield await createBadge("staff.png", async () => {
+  yield await createBadge("staff.webp", async () => {
     return member.roles.cache.has("330877657132564480");
   });
 

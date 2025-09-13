@@ -123,7 +123,7 @@ async function generateImage(
 
   cctx.scale(ACTUAl_WIDTH / UNIT_WIDTH, ACTUAL_HEIGHT / UNIT_HEIGHT);
 
-  const img = await loadImage("./src/Assets/images/leaderboard_background2.png");
+  const img = await loadImage("./src/Assets/images/breach_econ_top.webp");
   cctx.drawImage(img, 0, 0, UNIT_WIDTH, UNIT_HEIGHT);
 
   const drawText = (text: string, x: number, y: number, maxWidth?: number) => {
@@ -172,7 +172,7 @@ async function generateImage(
     cctx.translate(10, 0);
     const avatar = await loadImage(
       member?.user.displayAvatarURL({ extension: "png", size: 128 }) ||
-        "https://cdn.landesa.org/wp-content/uploads/default-user-image.png",
+      "https://cdn.landesa.org/wp-content/uploads/default-user-image.png",
     );
 
     cctx.shadowBlur = 1;

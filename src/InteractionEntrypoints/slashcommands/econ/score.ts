@@ -87,16 +87,18 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
   const goldcircle = await loadImage("./src/Assets/badges/goldcircle.png");
 
   const backgroundName = {
-    [albumRoles.ST]: "self_titled",
-    [albumRoles.RAB]: "rab",
-    [albumRoles.VSL]: "vessel",
-    [albumRoles.BF]: "blurryface",
-    [albumRoles.TRENCH]: "trench",
-    [albumRoles.SAI]: "sai",
-    [albumRoles.CLANCY]: "clancy",
+    [albumRoles.NPI]: "npi.webp",
+    [albumRoles.ST]: "self_titled.png",
+    [albumRoles.RAB]: "rab.png",
+    [albumRoles.VSL]: "vessel.png",
+    [albumRoles.BF]: "blurryface.png",
+    [albumRoles.TRENCH]: "trench.png",
+    [albumRoles.SAI]: "sai.png",
+    [albumRoles.CLANCY]: "clancy.png",
+    [albumRoles.BREACH]: "breach.webp",
   }[src];
 
-  const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}.png`);
+  const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}`);
 
   //FIND SHORTEST NAME FOR USER
   let username = member.displayName;

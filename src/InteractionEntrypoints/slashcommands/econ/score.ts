@@ -98,8 +98,6 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     [albumRoles.BREACH]: "breach.webp",
   }[src];
 
-  console.log(member.user.id, src, backgroundName);
-
   const background = await loadImage(`./src/Assets/images/score_cards/${backgroundName}`);
 
   //FIND SHORTEST NAME FOR USER
@@ -172,6 +170,8 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
     [albumRoles.BREACH]: "##E24D42",
   };
   const albumColor = colors[src];
+
+  console.log(member.user.id, src, albumColor);
 
   cctx.save();
   cctx.fillStyle = "#555555"; //BACKGROUND BAR

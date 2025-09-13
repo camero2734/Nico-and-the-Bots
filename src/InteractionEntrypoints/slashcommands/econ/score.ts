@@ -163,7 +163,7 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
   const colors: Record<typeof albumRoles[keyof typeof albumRoles], string> = {
     [albumRoles.NPI]: "#C6ADAE",
     [albumRoles.ST]: "#ACCD40",
-    [albumRoles.RAB]: "#80271F",
+    [albumRoles.RAB]: "###E43C2E",
     [albumRoles.VSL]: "#6BC1DA",
     [albumRoles.BF]: "#FC3F03",
     [albumRoles.TRENCH]: "#FCE300",

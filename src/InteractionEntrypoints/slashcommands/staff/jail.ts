@@ -66,6 +66,8 @@ command.setHandler(async (ctx) => {
   const { explanation, ...usersDict } = ctx.opts;
   const ids = Object.values(usersDict) as Snowflake[];
 
+  await ctx.deferReply();
+
   const members = await Promise.all(ids.map((id) => ctx.member.guild.members.fetch(id)));
 
   if (members.some((m) => m.roles.highest.comparePositionTo(ctx.member.roles.highest) >= 0 || m.user.bot)) {
@@ -171,7 +173,7 @@ command.setHandler(async (ctx) => {
   const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
     new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View channel").setURL(m.url),
   ]);
-  await ctx.send({ embeds: [commandEmbed], components: [actionRow] });
+  await ctx.editReply({ embeds: [commandEmbed], components: [actionRow] });
 });
 
 type ActionExecutorArgs = {
@@ -348,9 +350,8 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     const displayName = message.member?.displayName || `${message.author.id} (left server)`;
     const content = message.content || message.embeds?.[0]?.description;
 
-    mhtml += `<img class="avatar" src="${message.author.displayAvatarURL()}" align="left" height=40/><span class="username"><b>${displayName}</b></span>  <span class="timestamp">(${
-      message.author.id
-    })</span>\n`;
+    mhtml += `<img class="avatar" src="${message.author.displayAvatarURL()}" align="left" height=40/><span class="username"><b>${displayName}</b></span>  <span class="timestamp">(${message.author.id
+      })</span>\n`;
     mhtml += `<p display="inline" class="timestamp"> ${message.createdAt
       .toString()
       .replace("Central Standard Time", message.createdTimestamp.toString())} </p>\n`;
@@ -405,15 +406,18 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
   const backupChannel = ctx.guild.channels.cache.get(channelIDs.jaillog) as TextChannel;
   await backupChannel.send({ embeds: [embed], files: [attachment] });
 
-  // DM members the backup too
   for (const member of args.jailedMembers) {
+    // Allow them to see channels again
+    await member.roles.remove(roles.hideallchannels);
+
+    // DM members the backup too
     const dm = await member.createDM();
     if (!dm) continue;
 
     await dm.send({ embeds: [embed], files: [attachment] });
   }
 
-  // await chan.delete();
+  await chan.delete();
 }
 
 function fixEmojis(text: string) {

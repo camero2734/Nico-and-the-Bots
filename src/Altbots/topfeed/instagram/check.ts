@@ -36,20 +36,12 @@ async function fetchOpengraphData(user: string): Promise<number> {
     const data = await fetch(`https://www.instagram.com/${user}/embed`, {
       credentials: "omit",
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Sec-GPC": "1",
-        "Alt-Used": "www.instagram.com",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "iframe",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "cross-site",
-        Priority: "u=6",
+        "User-Agent": "PostmanRuntime/7.32.3",
+        Accept: "*/*",
+        "Cache-Control": "no-cache",
+        "Host": "www.instagram.com"
       },
-      referrer: "https://www.discord.com/",
-      method: "GET",
-      mode: "cors",
+      method: "GET"
     });
 
     text = await data.text();

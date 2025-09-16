@@ -58,7 +58,8 @@ async function fetchOpengraphData(user: string): Promise<number> {
 
     const match = text?.split('posts_count\\":')?.[1]?.split(",")?.[0];
     if (!match) {
-      console.log(text);
+      const file = Bun.file("ig-opengraph-failed.html");
+      await Bun.write(file, text || "No response text");
       throw new Error("Failed to parse the number of posts from the response.");
     }
     const postCount = Number.parseInt(match, 10);

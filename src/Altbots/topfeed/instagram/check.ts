@@ -50,8 +50,6 @@ async function fetchOpengraphData(user: string): Promise<number> {
 
     const match = text?.split('posts_count\\":')?.[1]?.split(",")?.[0];
     if (!match) {
-      const file = Bun.file("ig-opengraph-failed.html");
-      await Bun.write(file, text || "No response text");
       throw new Error("Failed to parse the number of posts from the response.");
     }
     const postCount = Number.parseInt(match, 10);
@@ -66,9 +64,9 @@ async function fetchOpengraphData(user: string): Promise<number> {
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram opengraph data";
     console.error(`Error fetching Instagram opengraph data for ${user}:`, text || message);
 
-    await testChan.send(
-      `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,
-    );
+    // await testChan.send(
+    //   `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,
+    // );
     return fetchOpengraphDataBackup(user);
   }
 }

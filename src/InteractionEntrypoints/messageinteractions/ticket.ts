@@ -92,7 +92,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
 
   const thread = await ctx.channel.threads.create({
     name: title,
-    autoArchiveDuration: 60,
+    autoArchiveDuration: 10080,
     reason: `Ticket opened by ${ctx.user.tag}`,
     type: ChannelType.PrivateThread,
   });

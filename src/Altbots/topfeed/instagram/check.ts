@@ -70,9 +70,9 @@ async function fetchOpengraphData(user: string): Promise<number> {
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram opengraph data";
     console.error(`Error fetching Instagram opengraph data for ${user}:`, text || message);
 
-    // await testChan.send(
-    //   `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,
-    // );
+    await testChan.send(
+      `Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,
+    );
     return fetchOpengraphDataBackup(user);
   }
 }

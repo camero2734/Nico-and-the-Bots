@@ -30,6 +30,7 @@ async function fetchOpengraphDataBackup(user: string) {
   return Number.parseInt(postCountMatch[1], 10);
 }
 
+let lastWrittenAt = 0;
 async function fetchOpengraphData(user: string): Promise<number> {
   let text: string | undefined;
   try {
@@ -50,6 +51,10 @@ async function fetchOpengraphData(user: string): Promise<number> {
 
     const match = text?.split('posts_count\\":')?.[1]?.split(",")?.[0];
     if (!match) {
+      if (Date.now() - lastWrittenAt > 1000 * 60) {
+        lastWrittenAt = Date.now();
+        await Bun.file("instagram_opengraph_debug.html").write(text);
+      }
       throw new Error("Failed to parse the number of posts from the response.");
     }
     const postCount = Number.parseInt(match, 10);

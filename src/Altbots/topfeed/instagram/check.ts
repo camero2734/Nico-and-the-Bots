@@ -42,8 +42,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
         "Cache-Control": "no-cache",
         "Host": "www.instagram.com"
       },
-      method: "GET",
-      proxy: "http://172.17.0.1:3128"
+      method: "GET"
     });
 
     text = await data.text();

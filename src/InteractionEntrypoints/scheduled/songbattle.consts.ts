@@ -249,7 +249,7 @@ const albumsRaw = [
       { name: "Days Lie Dormant", yt: "https://www.youtube.com/watch?v=hfbRtM_CDdc" },
       { name: "Tally", yt: "https://www.youtube.com/watch?v=mbXvhmGwumw" },
       { name: "Intentions", yt: "https://www.youtube.com/watch?v=oY3BRnxn6Yk" },
-      { name: "Drag Path", yt: "https://www.youtube.com/watch?v=2P39HoDjjeA" },
+      { name: "Drag Path", yt: "https://www.youtube.com/watch?v=2P39HoDjjeA", image: "https://static.wikia.nocookie.net/twenty-one-pilots/images/5/5e/Breach_Digital_Remains.jpg" },
     ]
   },
   {

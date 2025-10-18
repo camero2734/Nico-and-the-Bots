@@ -53,6 +53,9 @@ export default async function(client: Client): Promise<void> {
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
 
+    // Update guild member cache
+    await safeCheck(guild.members.fetch());
+
     await F.wait(secondsToMilliseconds(30));
     every30Seconds();
   }
@@ -93,8 +96,7 @@ async function checkReminders(guild: Guild): Promise<void> {
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
   console.time("Fetching all members for role check");
-  const allMembers = await guild.members.fetch();
-  console.timeEnd("Fetching all members for role check");
+  const allMembers = guild.members.cache;
   const membersNoBanditos = allMembers.filter(
     (mem) =>
       !mem.roles.cache.has(roles.banditos) &&
@@ -122,6 +124,8 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
   for (const mem of membersToRemoveNew.values()) {
     await mem.roles.remove(roles.new);
   }
+
+  console.timeEnd("Fetching all members for role check");
 }
 
 async function checkVCRoles(guild: Guild): Promise<void> {

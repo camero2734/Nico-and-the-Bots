@@ -19,5 +19,6 @@ if [ "$NODE_ENV" == "development" ]; then
     echo "Running in development mode"
     sleep 100000
 else
-    bun --inspect run app.ts
+    # bun --inspect run app.ts
+    sleep infinity
 fi

@@ -104,17 +104,21 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
     didInitialFetch = true;
   }
 
-  const membersNoBanditos = allMembers.filter(
-    (mem) =>
-      !mem.roles.cache.has(roles.banditos) &&
-      !mem.roles.cache.has(roles.muted) &&
-      !mem.roles.cache.has(roles.hideallchannels) &&
-      !mem.pending,
-  );
+  const shouldHaveBanditos = (mem: GuildMember) =>
+    !mem.roles.cache.has(roles.banditos) &&
+    !mem.roles.cache.has(roles.muted) &&
+    !mem.roles.cache.has(roles.hideallchannels) &&
+    !mem.pending;
+
+  const membersNoBanditos = allMembers.filter(shouldHaveBanditos);
 
   const testChannel = await guild.channels.fetch(channelIDs.bottest);
   if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
-  for (const mem of membersNoBanditos.values()) {
+  for (const _mem of membersNoBanditos.values()) {
+    // Double check
+    const mem = await guild.members.fetch(_mem.id);
+    if (!shouldHaveBanditos(mem)) continue;
+
     console.log(`Adding banditos/new to ${mem.user.tag}`);
     await testChannel.send(`${userMention(userIDs.me)} ${mem.user.tag} did not have banditos role, adding it now.`);
     await mem.roles.add(roles.banditos);

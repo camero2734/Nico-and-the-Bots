@@ -56,7 +56,7 @@ export interface SongContender {
 export const currentlyEnabledAlbum = AlbumName.Breach;
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = `SongBattle2025AlbumBattleTest-${currentlyEnabledAlbum}-`;
+export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;
 
 const albumsRaw = [
   {

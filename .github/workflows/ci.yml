@@ -61,6 +61,6 @@ jobs:
         if: contains( github.event.pull_request.labels.*.name, 'deploy')
         uses: dokku/github-action@master
         with:
-          git_remote_url: ${{ secrets.DOKKU_SSH_URL }}
+          git_remote_url: ${{ secrets.DOKKU_SSH_URL_OVH }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PK }}
           git_push_flags: '--force'

@@ -30,32 +30,32 @@ async function fetchOpengraphDataBackup(user: string) {
   return Number.parseInt(postCountMatch[1], 10);
 }
 
+let lastWrittenAt = 0;
 async function fetchOpengraphData(user: string): Promise<number> {
   let text: string | undefined;
   try {
     const data = await fetch(`https://www.instagram.com/${user}/embed`, {
       credentials: "omit",
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Sec-GPC": "1",
-        "Alt-Used": "www.instagram.com",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "iframe",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "cross-site",
-        Priority: "u=6",
+        "User-Agent": "PostmanRuntime/7.32.3",
+        Accept: "*/*",
+        "Cache-Control": "no-cache",
+        "Host": "www.instagram.com"
       },
-      referrer: "https://www.discord.com/",
       method: "GET",
-      mode: "cors",
+      proxy: "http://172.17.0.1:8888"
     });
 
     text = await data.text();
 
-    const match = text.split('posts_count\\":')[1].split(",")[0];
+    
+
+    const match = text?.split('posts_count\\":')?.[1]?.split(",")?.[0];
     if (!match) {
+      if (Date.now() - lastWrittenAt > 1000 * 60) {
+        lastWrittenAt = Date.now();
+        await Bun.file("instagram_opengraph_debug.html").write(text);
+      }
       throw new Error("Failed to parse the number of posts from the response.");
     }
     const postCount = Number.parseInt(match, 10);
@@ -71,7 +71,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
     console.error(`Error fetching Instagram opengraph data for ${user}:`, text || message);
 
     await testChan.send(
-      `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,
+      `Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`,
     );
     return fetchOpengraphDataBackup(user);
   }

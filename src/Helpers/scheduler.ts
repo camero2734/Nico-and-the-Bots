@@ -31,7 +31,7 @@ const safeCheck = async (p: Promise<unknown>) => {
   }
 };
 
-export default async function (client: Client): Promise<void> {
+export default async function(client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
   const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0");
@@ -92,7 +92,9 @@ async function checkReminders(guild: Guild): Promise<void> {
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
+  console.time("Fetching all members for role check");
   const allMembers = await guild.members.fetch();
+  console.timeEnd("Fetching all members for role check");
   const membersNoBanditos = allMembers.filter(
     (mem) =>
       !mem.roles.cache.has(roles.banditos) &&

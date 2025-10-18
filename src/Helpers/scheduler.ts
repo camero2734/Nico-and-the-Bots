@@ -93,10 +93,17 @@ async function checkReminders(guild: Guild): Promise<void> {
   await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
 }
 
+let didInitialFetch = false;
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
   console.time("Fetching all members for role check");
-  const allMembers = guild.members.cache;
+  let allMembers = guild.members.cache;
+
+  if (!didInitialFetch) {
+    allMembers = await guild.members.fetch();
+    didInitialFetch = true;
+  }
+
   const membersNoBanditos = allMembers.filter(
     (mem) =>
       !mem.roles.cache.has(roles.banditos) &&

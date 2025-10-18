@@ -42,7 +42,6 @@ export default async function(client: Client): Promise<void> {
 
   async function every5Seconds() {
     await safeCheck(checkReminders(guild));
-    await safeCheck(checkMemberRoles(guild));
     await safeCheck(checkVCRoles(guild));
 
     await F.wait(secondsToMilliseconds(5));
@@ -53,8 +52,7 @@ export default async function(client: Client): Promise<void> {
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
 
-    // Update guild member cache
-    await safeCheck(guild.members.fetch());
+    await safeCheck(checkMemberRoles(guild));
 
     await F.wait(secondsToMilliseconds(30));
     every30Seconds();
@@ -93,16 +91,10 @@ async function checkReminders(guild: Guild): Promise<void> {
   await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
 }
 
-let didInitialFetch = false;
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
   console.time("Fetching all members for role check");
-  let allMembers = guild.members.cache;
-
-  if (!didInitialFetch) {
-    allMembers = await guild.members.fetch();
-    didInitialFetch = true;
-  }
+  const allMembers = await guild.members.fetch();
 
   const shouldHaveBanditos = (mem: GuildMember) =>
     !mem.roles.cache.has(roles.banditos) &&
@@ -114,11 +106,7 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
 
   const testChannel = await guild.channels.fetch(channelIDs.bottest);
   if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
-  for (const _mem of membersNoBanditos.values()) {
-    // Double check
-    const mem = await guild.members.fetch(_mem.id);
-    if (!shouldHaveBanditos(mem)) continue;
-
+  for (const mem of membersNoBanditos.values()) {
     console.log(`Adding banditos/new to ${mem.user.tag}`);
     await testChannel.send(`${userMention(userIDs.me)} ${mem.user.tag} did not have banditos role, adding it now.`);
     await mem.roles.add(roles.banditos);

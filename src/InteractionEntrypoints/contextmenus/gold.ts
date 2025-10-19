@@ -323,27 +323,15 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
 
   const existingEmojis = await emojiManager.fetch();
 
-  const emoji = existingEmojis.find((e) => e.name === `pfp-${msg.author.id}`) 
+  const emojiName = `pfp_${msg.author.id}`;
+
+  const emoji = existingEmojis.find((e) => e.name === emojiName) 
     || await emojiManager.create({
-      name: `pfp_${msg.author.id}`,
+      name: emojiName,
       attachment: msg.author.displayAvatarURL({ extension: "png", size: 128 }),
     });
 
   goldRes.setAccentColor(0xFCE300);
-
-  goldRes.addSectionComponents(
-    new SectionBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`## ${userMention(msg.author.id)}`),
-      )
-      .setButtonAccessory(
-        new ButtonBuilder()
-          .setLabel("View message")
-          .setEmoji({ id: emoji.id })
-          .setStyle(ButtonStyle.Link)
-          .setURL(msg.url),
-      )
-  )
 
   if (msg.content) {
     goldRes.addTextDisplayComponents(new TextDisplayBuilder().setContent(msg.content));
@@ -358,6 +346,20 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
       ),
     )
   }
+
+  goldRes.addSectionComponents(
+    new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`${userMention(msg.author.id)}`),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setLabel("View message")
+          .setEmoji({ id: emoji.id })
+          .setStyle(ButtonStyle.Link)
+          .setURL(msg.url),
+      )
+  )
 
   goldRes.addSectionComponents(
     new SectionBuilder()
@@ -377,4 +379,5 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
   if (!chan || !chan.isTextBased()) throw new Error("Couldn't find the bot test channel");
 
   await chan.send({ components: [goldRes], flags: [MessageFlags.IsComponentsV2], allowedMentions: { parse: [] } });
+  await emojiManager.delete(emoji.id);
 } 

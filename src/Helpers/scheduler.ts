@@ -41,24 +41,30 @@ export default async function(client: Client): Promise<void> {
   });
 
   async function every5Seconds() {
+    console.time("Every 5 seconds tasks");
     await safeCheck(checkReminders(guild));
+    console.timeEnd("Every 5 seconds tasks");
 
     await F.wait(secondsToMilliseconds(5));
     every5Seconds();
   }
 
   async function every30Seconds() {
+    console.time("Every 30 seconds tasks");
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
-
     await safeCheck(checkMemberRoles(guild));
+    console.timeEnd("Every 30 seconds tasks");
 
     await F.wait(secondsToMilliseconds(30));
     every30Seconds();
   }
 
   async function every60Seconds() {
+    console.time("Every 60 seconds tasks");
     await safeCheck(checkVCRoles(guild));
+    console.timeEnd("Every 60 seconds tasks");
+
     await F.wait(secondsToMilliseconds(60));
     every60Seconds();
   }

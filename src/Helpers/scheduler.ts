@@ -42,7 +42,6 @@ export default async function(client: Client): Promise<void> {
 
   async function every5Seconds() {
     await safeCheck(checkReminders(guild));
-    await safeCheck(checkVCRoles(guild));
 
     await F.wait(secondsToMilliseconds(5));
     every5Seconds();
@@ -51,6 +50,7 @@ export default async function(client: Client): Promise<void> {
   async function every30Seconds() {
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
+    await safeCheck(checkVCRoles(guild));
 
     await safeCheck(checkMemberRoles(guild));
 
@@ -69,7 +69,6 @@ export default async function(client: Client): Promise<void> {
 }
 
 async function checkReminders(guild: Guild): Promise<void> {
-  console.time("Checking reminders");
   const finishedReminders = await prisma.reminder.findMany({
     where: { sendAt: { lte: new Date() } },
   });
@@ -90,8 +89,6 @@ async function checkReminders(guild: Guild): Promise<void> {
   // Remove them all, regardless of whether they were sent
   const fetchedIds = finishedReminders.map((r) => r.id);
   await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
-
-  console.timeEnd("Checking reminders");
 }
 
 async function checkMemberRoles(guild: Guild): Promise<void> {

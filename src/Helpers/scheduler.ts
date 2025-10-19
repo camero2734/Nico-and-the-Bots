@@ -41,35 +41,21 @@ export default async function(client: Client): Promise<void> {
   });
 
   async function every5Seconds() {
-    const start = process.cpuUsage();
     await safeCheck(checkReminders(guild));
-    const end = process.cpuUsage(start);
-    console.log("[Every 5s] CPU Usage:", end);
-
     await F.wait(secondsToMilliseconds(5));
     every5Seconds();
   }
 
   async function every30Seconds() {
-    const start = process.cpuUsage();
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
-
-    const end = process.cpuUsage(start);
-    console.log("[Every 30s] CPU Usage:", end);
-
     await F.wait(secondsToMilliseconds(30));
     every30Seconds();
   }
 
   async function every60Seconds() {
-    const start = process.cpuUsage();
     await safeCheck(checkMemberRoles(guild));
     await safeCheck(checkVCRoles(guild));
-
-    const end = process.cpuUsage(start);
-    console.log("[Every 60s] CPU Usage:", end);
-
     await F.wait(secondsToMilliseconds(60));
     every60Seconds();
   }

@@ -41,29 +41,34 @@ export default async function(client: Client): Promise<void> {
   });
 
   async function every5Seconds() {
-    console.time("Every 5 seconds tasks");
+    const start = process.cpuUsage();
     await safeCheck(checkReminders(guild));
-    console.timeEnd("Every 5 seconds tasks");
+    const end = process.cpuUsage(start);
+    console.log("[Every 5s] CPU Usage:", end);
 
     await F.wait(secondsToMilliseconds(5));
     every5Seconds();
   }
 
   async function every30Seconds() {
-    console.time("Every 30 seconds tasks");
+    const start = process.cpuUsage();
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
-    console.timeEnd("Every 30 seconds tasks");
+
+    const end = process.cpuUsage(start);
+    console.log("[Every 30s] CPU Usage:", end);
 
     await F.wait(secondsToMilliseconds(30));
     every30Seconds();
   }
 
   async function every60Seconds() {
-    console.time("Every 60 seconds tasks");
+    const start = process.cpuUsage();
     await safeCheck(checkMemberRoles(guild));
     await safeCheck(checkVCRoles(guild));
-    console.timeEnd("Every 60 seconds tasks");
+
+    const end = process.cpuUsage(start);
+    console.log("[Every 60s] CPU Usage:", end);
 
     await F.wait(secondsToMilliseconds(60));
     every60Seconds();
@@ -99,7 +104,6 @@ async function checkReminders(guild: Guild): Promise<void> {
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
-  console.time("Fetching all members for role check");
   const allMembers = await guild.members.fetch();
 
   const shouldHaveBanditos = (mem: GuildMember) =>
@@ -129,12 +133,9 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
   for (const mem of membersToRemoveNew.values()) {
     await mem.roles.remove(roles.new);
   }
-
-  console.timeEnd("Fetching all members for role check");
 }
 
 async function checkVCRoles(guild: Guild): Promise<void> {
-  console.time("Checking VC roles");
   const allChannels = await guild.channels.fetch();
   const allMembers = guild.members.cache;
 
@@ -161,8 +162,6 @@ async function checkVCRoles(guild: Guild): Promise<void> {
   for (const mem of toRemove.values()) {
     await mem.roles.remove(roles.vc);
   }
-
-  console.timeEnd("Checking VC roles");
 }
 
 async function checkHouseOfGold(guild: Guild): Promise<void> {

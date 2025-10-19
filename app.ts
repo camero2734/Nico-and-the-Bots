@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import { KeonsBot } from "./src/Altbots/shop";
 import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
 import { SacarverBot } from "./src/Altbots/welcome";
-import { channelIDs, guildID, roles, userIDs } from "./src/Configuration/config";
+import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
@@ -210,7 +210,7 @@ client.on("guildMemberUpdate", async (oldMem, mem) => {
   const testChannel = await guild.channels.fetch(channelIDs.bottest);
   if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
 
-  await testChannel.send(`${Discord.userMention(userIDs.me)} ${mem.user.tag} did not have banditos role, adding it now.`);
+  await testChannel.send(`✅ ${mem.user.tag} passed membership screening`);
 });
 
 client.on("guildMemberUpdate", async (oldMem, newMem) => {

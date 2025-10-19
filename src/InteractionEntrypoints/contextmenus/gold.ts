@@ -9,6 +9,7 @@ import {
   TextDisplayBuilder,
   MessageFlags,
   ThumbnailBuilder,
+  userMention,
   type Message,
   type Snowflake,
   type TextChannel, 
@@ -314,7 +315,9 @@ new Cron("12 * * * *", async () => {
   }
 });
 
-async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<true>) {
+async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message<true>) {
+  const msg = await _msg.fetch(true);
+
   const goldRes = new ContainerBuilder();
 
   goldRes.setAccentColor(0xFCE300);
@@ -322,7 +325,7 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<
   goldRes.addSectionComponents(
     new SectionBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`## ${msg.author.tag}`),
+        new TextDisplayBuilder().setContent(`## ${userMention(msg.author.id)}`),
       )
       .setThumbnailAccessory(
         new ThumbnailBuilder().setURL(msg.author.displayAvatarURL({ size: 32 })),
@@ -342,6 +345,10 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<
       ),
     )
   }
+
+  goldRes.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`-# Given by ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, and 7 others.`),
+  )
 
   const chan = await ctx.guild?.channels.fetch(channelIDs.bottest);
   if (!chan || !chan.isTextBased()) throw new Error("Couldn't find the bot test channel");

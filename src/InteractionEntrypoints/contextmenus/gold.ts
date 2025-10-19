@@ -4,13 +4,18 @@ import { ButtonStyle } from "discord-api-types/v10";
 import {
   ActionRowBuilder,
   ButtonBuilder,
+  ContainerBuilder,
   EmbedBuilder,
+  TextDisplayBuilder,
+  MessageFlags,
   type Message,
   type Snowflake,
-  type TextChannel,
+  type TextChannel, 
+  MediaGalleryBuilder, 
+  MediaGalleryItemBuilder,
 } from "discord.js";
 import { guild } from "../../../app";
-import { channelIDs, emojiIDs, roles } from "../../Configuration/config";
+import { channelIDs, emojiIDs, roles, userIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -29,6 +34,10 @@ const ctxMenu = new MessageContextMenu("🪙 Gold Message");
 
 ctxMenu.setHandler(async (ctx, msg) => {
   if (!msg.member || !msg.inGuild()) throw new Error("Could not find member");
+
+  if (ctx.user.id === userIDs.me) {
+    return newGold(ctx, msg);
+  }
 
   await ctx.deferReply({ ephemeral: true });
 
@@ -100,24 +109,24 @@ async function handleGold(
   const goldBaseEmbed = isAdditionalGold
     ? EmbedBuilder.from(msg.embeds[0])
     : new EmbedBuilder()
-        .setAuthor({
-          name: originalMember.displayName,
-          iconURL: originalMember.user.displayAvatarURL(),
-        })
-        .setColor(0xfce300)
-        .addFields([{ name: "Channel", value: `${msg.channel}`, inline: true }])
-        .addFields([
-          {
-            name: "Posted",
-            value: F.discordTimestamp(new Date(), "shortDateTime"),
-            inline: true,
-          },
-        ])
-        .addFields([{ name: "Message", value: msg.content || "*No content*" }])
-        .setFooter({
-          text: `Given by ${ctxMember.displayName}.`,
-          iconURL: ctx.user.displayAvatarURL(),
-        });
+      .setAuthor({
+        name: originalMember.displayName,
+        iconURL: originalMember.user.displayAvatarURL(),
+      })
+      .setColor(0xfce300)
+      .addFields([{ name: "Channel", value: `${msg.channel}`, inline: true }])
+      .addFields([
+        {
+          name: "Posted",
+          value: F.discordTimestamp(new Date(), "shortDateTime"),
+          inline: true,
+        },
+      ])
+      .addFields([{ name: "Message", value: msg.content || "*No content*" }])
+      .setFooter({
+        text: `Given by ${ctxMember.displayName}.`,
+        iconURL: ctx.user.displayAvatarURL(),
+      });
 
   if (!isAdditionalGold && msg.attachments.size > 0) {
     const url = msg.attachments.first()?.url;
@@ -302,3 +311,26 @@ new Cron("12 * * * *", async () => {
     await member.roles.remove(goldRole);
   }
 });
+
+async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<true>) {
+  const goldRes = new ContainerBuilder();
+
+  if (msg.content) {
+    goldRes.addTextDisplayComponents(new TextDisplayBuilder().setContent(msg.content));
+  }
+
+  if (msg.attachments.size > 0) {
+    goldRes.addMediaGalleryComponents(
+      new MediaGalleryBuilder().addItems(
+        msg.attachments.map((att) =>
+          new MediaGalleryItemBuilder().setURL(att.url).setDescription(att.description || "No description"),
+        ),
+      ),
+    )
+  }
+
+  const chan = await ctx.guild?.channels.fetch(channelIDs.bottest);
+  if (!chan || !chan.isTextBased()) throw new Error("Couldn't find the bot test channel");
+
+  await chan.send({ components: [goldRes], flags: [MessageFlags.IsComponentsV2], allowedMentions: { parse: [] } });
+} 

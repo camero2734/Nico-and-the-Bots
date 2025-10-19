@@ -69,6 +69,7 @@ export default async function(client: Client): Promise<void> {
 }
 
 async function checkReminders(guild: Guild): Promise<void> {
+  console.time("Checking reminders");
   const finishedReminders = await prisma.reminder.findMany({
     where: { sendAt: { lte: new Date() } },
   });
@@ -89,6 +90,8 @@ async function checkReminders(guild: Guild): Promise<void> {
   // Remove them all, regardless of whether they were sent
   const fetchedIds = finishedReminders.map((r) => r.id);
   await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
+
+  console.timeEnd("Checking reminders");
 }
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
@@ -128,6 +131,7 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
 }
 
 async function checkVCRoles(guild: Guild): Promise<void> {
+  console.time("Checking VC roles");
   const allChannels = await guild.channels.fetch();
   const allMembers = guild.members.cache;
 
@@ -154,6 +158,8 @@ async function checkVCRoles(guild: Guild): Promise<void> {
   for (const mem of toRemove.values()) {
     await mem.roles.remove(roles.vc);
   }
+
+  console.timeEnd("Checking VC roles");
 }
 
 async function checkHouseOfGold(guild: Guild): Promise<void> {

@@ -325,7 +325,7 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
 
   const emoji = existingEmojis.find((e) => e.name === `pfp-${msg.author.id}`) 
     || await emojiManager.create({
-      name: `pfp-${msg.author.id}`,
+      name: `pfp_${msg.author.id}`,
       attachment: msg.author.displayAvatarURL({ extension: "png", size: 128 }),
     });
 

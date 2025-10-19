@@ -340,8 +340,8 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
         new ButtonBuilder()
           .setLabel("View message")
           .setEmoji({ id: emoji.id })
-          .setStyle(ButtonStyle.Primary)
-          .setCustomId("?goldPlaceholder"),
+          .setStyle(ButtonStyle.Link)
+          .setURL(msg.url),
       )
   )
 

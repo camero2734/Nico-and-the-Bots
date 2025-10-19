@@ -480,7 +480,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: "Info / Rules",
-            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1383183855732920401",
+            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1429096114392400035",
             disabled: hasWinner,
           },
         ],

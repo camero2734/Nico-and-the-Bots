@@ -328,7 +328,7 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
         new TextDisplayBuilder().setContent(`## ${userMention(msg.author.id)}`),
       )
       .setThumbnailAccessory(
-        new ThumbnailBuilder().setURL(msg.author.displayAvatarURL({ size: 32 })),
+        new ThumbnailBuilder().setURL(msg.author.displayAvatarURL()),
       )
   )
 
@@ -348,6 +348,12 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
 
   goldRes.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(`-# Given by ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, and 7 others.`),
+  )
+
+  goldRes.addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(
+      new MediaGalleryItemBuilder().setURL(msg.author.displayAvatarURL({ size: 32 }))
+    )
   )
 
   const chan = await ctx.guild?.channels.fetch(channelIDs.bottest);

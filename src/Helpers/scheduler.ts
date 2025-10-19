@@ -50,7 +50,6 @@ export default async function(client: Client): Promise<void> {
   async function every30Seconds() {
     await safeCheck(checkHouseOfGold(guild));
     await safeCheck(checkFBApplication(guild, doc));
-    await safeCheck(checkVCRoles(guild));
 
     await safeCheck(checkMemberRoles(guild));
 
@@ -59,6 +58,7 @@ export default async function(client: Client): Promise<void> {
   }
 
   async function every60Seconds() {
+    await safeCheck(checkVCRoles(guild));
     await F.wait(secondsToMilliseconds(60));
     every60Seconds();
   }

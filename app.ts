@@ -185,18 +185,12 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   const joinedVoiceChannel = !oldState.channelId && newState.channelId;
   const leftVoiceChannel = oldState.channelId && !newState.channelId;
 
-  console.log("[Voice State Update] ", { joinedVoiceChannel, leftVoiceChannel });
-
   const member = newState.member;
   if (!member) return;
 
-  console.log(`[Voice Role] Updating VC role for ${member.id}`);
-
   if (joinedVoiceChannel) {
-    console.log(`[Voice Role] Adding VC role to ${member.id}`);
     await member.roles.add(roles.vc);
   } else if (leftVoiceChannel) {
-    console.log(`[Voice Role] Removing VC role from ${member.id}`);
     await member.roles.remove(roles.vc);
   }
 });

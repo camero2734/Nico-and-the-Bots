@@ -325,7 +325,7 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<
         new TextDisplayBuilder().setContent(`## ${msg.author.tag}`),
       )
       .setThumbnailAccessory(
-        new ThumbnailBuilder().setURL(msg.author.displayAvatarURL()),
+        new ThumbnailBuilder().setURL(msg.author.displayAvatarURL({ size: 32 })),
       )
   )
 
@@ -336,8 +336,8 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<
   if (msg.attachments.size > 0) {
     goldRes.addMediaGalleryComponents(
       new MediaGalleryBuilder().addItems(
-        msg.attachments.map((att) =>
-          new MediaGalleryItemBuilder().setURL(att.url).setDescription(att.description || "No description"),
+        msg.attachments.map((att, idx) =>
+          new MediaGalleryItemBuilder().setURL(att.url).setDescription(att.description || `Image ${idx + 1} in the golded message, posted by ${msg.author.tag}`),
         ),
       ),
     )

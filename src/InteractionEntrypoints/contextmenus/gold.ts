@@ -8,11 +8,13 @@ import {
   EmbedBuilder,
   TextDisplayBuilder,
   MessageFlags,
+  ThumbnailBuilder,
   type Message,
   type Snowflake,
   type TextChannel, 
   MediaGalleryBuilder, 
-  MediaGalleryItemBuilder,
+  MediaGalleryItemBuilder, 
+  SectionBuilder,
 } from "discord.js";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../Configuration/config";
@@ -314,6 +316,18 @@ new Cron("12 * * * *", async () => {
 
 async function newGold(ctx: typeof ContextMenu.GenericContextType, msg: Message<true>) {
   const goldRes = new ContainerBuilder();
+
+  goldRes.setAccentColor(0xFCE300);
+  
+  goldRes.addSectionComponents(
+    new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`## ${msg.author.tag}`),
+      )
+      .setThumbnailAccessory(
+        new ThumbnailBuilder().setURL(msg.author.displayAvatarURL()),
+      )
+  )
 
   if (msg.content) {
     goldRes.addTextDisplayComponents(new TextDisplayBuilder().setContent(msg.content));

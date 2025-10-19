@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import { KeonsBot } from "./src/Altbots/shop";
 import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
 import { SacarverBot } from "./src/Altbots/welcome";
-import { channelIDs, guildID, roles } from "./src/Configuration/config";
+import { channelIDs, guildID, roles, userIDs } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
@@ -181,6 +181,7 @@ client.on("messageCreate", async (msg: Discord.Message) => {
   updateUserScore(msg); // Add to score
 });
 
+// Voice state updates for VC role
 client.on("voiceStateUpdate", async (oldState, newState) => {
   const joinedVoiceChannel = !oldState.channelId && newState.channelId;
   const leftVoiceChannel = oldState.channelId && !newState.channelId;
@@ -193,6 +194,23 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   } else if (leftVoiceChannel) {
     await member.roles.remove(roles.vc);
   }
+});
+
+// Pending member updates => give roles
+client.on("guildMemberUpdate", async (oldMem, mem) => {
+  const noLongerPending = oldMem.pending && !mem.pending;
+
+  if (!noLongerPending || mem.roles.cache.has(roles.banditos) ||
+    mem.roles.cache.has(roles.muted) ||
+    mem.roles.cache.has(roles.hideallchannels)) return;
+
+  await mem.roles.add(roles.banditos);
+  await mem.roles.add(roles.new);
+
+  const testChannel = await guild.channels.fetch(channelIDs.bottest);
+  if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
+
+  await testChannel.send(`${Discord.userMention(userIDs.me)} ${mem.user.tag} did not have banditos role, adding it now.`);
 });
 
 client.on("guildMemberUpdate", async (oldMem, newMem) => {

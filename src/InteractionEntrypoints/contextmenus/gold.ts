@@ -8,7 +8,6 @@ import {
   EmbedBuilder,
   TextDisplayBuilder,
   MessageFlags,
-  ThumbnailBuilder,
   userMention,
   type Message,
   type Snowflake,
@@ -320,15 +319,29 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
 
   const goldRes = new ContainerBuilder();
 
+  const emojiManager = guild.client.application.emojis;
+
+  const existingEmojis = await emojiManager.fetch();
+
+  const emoji = existingEmojis.find((e) => e.name === `pfp-${msg.author.id}`) 
+    || await emojiManager.create({
+      name: `pfp-${msg.author.id}`,
+      attachment: msg.author.displayAvatarURL({ extension: "png", size: 128 }),
+    });
+
   goldRes.setAccentColor(0xFCE300);
-  
+
   goldRes.addSectionComponents(
     new SectionBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(`## ${userMention(msg.author.id)}`),
       )
-      .setThumbnailAccessory(
-        new ThumbnailBuilder().setURL(msg.author.displayAvatarURL()),
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setLabel("View message")
+          .setEmoji({ id: emoji.id })
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId("?goldPlaceholder"),
       )
   )
 
@@ -346,14 +359,18 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
     )
   }
 
-  goldRes.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(`-# Given by ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, and 7 others.`),
-  )
-
-  goldRes.addMediaGalleryComponents(
-    new MediaGalleryBuilder().addItems(
-      new MediaGalleryItemBuilder().setURL(msg.author.displayAvatarURL({ size: 32 }))
-    )
+  goldRes.addSectionComponents(
+    new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`Given by ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, and 7 others.`),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setLabel("Give gold")
+          .setEmoji({ id: emojiIDs.gold })
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId("?goldPlaceholder"),
+      )
   )
 
   const chan = await ctx.guild?.channels.fetch(channelIDs.bottest);

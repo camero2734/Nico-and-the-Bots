@@ -12,6 +12,9 @@ export const VerifiedQuizConsts = {
   NUM_QUESTIONS: 15,
   DELAY_BETWEEN_TAKING: hoursToMilliseconds(VERIFIED_DELAY_HOURS),
   DELAY_BETWEEN_TAKING_HOURS: VERIFIED_DELAY_HOURS,
+  MAX_NUMBER_OF_QUESTIONS_PER_PAGE: 5,
+
+  LABEL_COMPONENT_ID: 18,
 };
 /**
  * We need to jam the state of the quiz into the 100 character customID field
@@ -53,7 +56,7 @@ export class QuestionIDEncoder {
  */
 export class PreviousAnswersEncoder {
   public answerIndices: Map<Question, number> = new Map();
-  constructor(private questions: Question[]) {}
+  constructor(private questions: Question[]) { }
 
   markAnswer(question: Question, answer: number | string): boolean {
     if (!this.questions.includes(question)) return false;

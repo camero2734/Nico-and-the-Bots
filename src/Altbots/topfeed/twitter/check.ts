@@ -64,6 +64,7 @@ const postCountMap: Record<(typeof usernamesToWatch)[number], number | undefined
 };
 let lastCheckTime: number = addMinutes(new Date(), -5).getTime();
 export async function checkTwitter() {
+  console.log("[TEST] Running Twitter check at", new Date().toISOString());
   const client =
     twitterClient ||
     (await twitter.getClientFromCookies({

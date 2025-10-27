@@ -29,6 +29,8 @@ export const keonsGuild = await client.guilds.fetch(guildID);
 // Reset the queue
 await queue.obliterate({ force: true });
 
+console.log("[TEST] Scheduling Topfeed jobs.");
+
 await queue.add("WEBSITES", "", {
   repeat: { every: secondsToMilliseconds(6) },
   deduplication: {

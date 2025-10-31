@@ -179,7 +179,7 @@ export async function songBattleCron() {
 
   // Create a discussion thread
   const thread = await m.startThread({
-    name: `2025 ${albumName} Song Battle #${nextBattleNumber}`,
+    name: `2025 ${albumName} Song Battle 2P #${nextBattleNumber}`,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
   });
 
@@ -386,7 +386,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     components: [
       {
         type: ComponentType.TextDisplay,
-        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum}`,
+        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum} 2P`,
       },
       { type: ComponentType.Separator, divider: false, spacing: 1 },
       {

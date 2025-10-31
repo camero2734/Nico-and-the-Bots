@@ -56,7 +56,7 @@ export interface SongContender {
 export const currentlyEnabledAlbum = AlbumName.Breach;
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;
+export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}2-`;
 
 const albumsRaw = [
   {
@@ -243,7 +243,7 @@ const albumsRaw = [
       { name: "The Contract", yt: "https://www.youtube.com/watch?v=QZfH7cFp3Ys" },
       { name: "Downstairs", yt: "https://www.youtube.com/watch?v=U4gmnQS1als" },
       { name: "Robot Voices", yt: "https://www.youtube.com/watch?v=o-LPIqIGuH0" },
-      { name: "Center Mass", yt: "https://www.youtube.com/watch?v=PAbv0MXFYgE" },
+      // { name: "Center Mass", yt: "https://www.youtube.com/watch?v=PAbv0MXFYgE" },
       { name: "Cottonwood", yt: "https://www.youtube.com/watch?v=T0wdtnkPQyo" },
       { name: "One Way", yt: "https://www.youtube.com/watch?v=lbcpWOiwk5E" },
       { name: "Days Lie Dormant", yt: "https://www.youtube.com/watch?v=hfbRtM_CDdc" },

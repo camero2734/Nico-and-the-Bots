@@ -11,6 +11,7 @@ import {
   updateCurrentSongBattleMessage,
   updatePreviousSongBattleMessage,
 } from "../../scheduled/songbattle";
+import { checkHouseOfGold } from "Helpers/scheduler";
 
 const command = new SlashCommand({
   description: "Test command",
@@ -51,6 +52,14 @@ command.setHandler(async (ctx) => {
     await updateCurrentSongBattleMessage();
   } else if (ctx.opts.num === 3) {
     await updatePreviousSongBattleMessage(1);
+  } else if (ctx.opts.num === 10) {
+    try {
+      await checkHouseOfGold(ctx.guild);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      await ctx.editReply(`Error: ${msg}`);
+      return;
+    }
   } else if (ctx.opts.num === 42) {
     for (const role of withColor.values()) {
       await role.delete();

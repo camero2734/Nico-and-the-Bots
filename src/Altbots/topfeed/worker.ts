@@ -26,8 +26,6 @@ export const queue = new Queue<any, any, "WEBSITES" | "TWITTER" | "INSTAGRAM" | 
 
 type QueueJobType = NonNullable<Awaited<ReturnType<typeof queue.getJob>>>["name"];
 
-console.log("[TEST] Topfeed worker initialized.");
-
 export const worker = new Worker(
   QUEUE_NAME,
   async (job) => {

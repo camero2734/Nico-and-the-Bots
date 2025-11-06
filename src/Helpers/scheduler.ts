@@ -150,7 +150,7 @@ async function checkVCRoles(guild: Guild): Promise<void> {
   }
 }
 
-async function checkHouseOfGold(guild: Guild): Promise<void> {
+export async function checkHouseOfGold(guild: Guild): Promise<void> {
   const msgsToDelete = await prisma.gold.groupBy({
     by: ["houseOfGoldMessageUrl"],
     _count: true,

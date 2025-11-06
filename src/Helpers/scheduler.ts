@@ -23,15 +23,15 @@ import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/fireb
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
-const safeCheck = async (p: Promise<unknown>) => {
+const safeCheck = async (p: () => Promise<unknown>) => {
   try {
-    await p;
+    await p();
   } catch (e) {
-    console.log(e);
+    console.log(e, /SCHEDULER_ERROR/);
   }
 };
 
-export default async function(client: Client): Promise<void> {
+export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
   const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0");
@@ -41,21 +41,21 @@ export default async function(client: Client): Promise<void> {
   });
 
   async function every5Seconds() {
-    await safeCheck(checkReminders(guild));
+    await safeCheck(() => checkReminders(guild));
     await F.wait(secondsToMilliseconds(5));
     every5Seconds();
   }
 
   async function every30Seconds() {
-    await safeCheck(checkHouseOfGold(guild));
-    await safeCheck(checkFBApplication(guild, doc));
+    await safeCheck(() => checkHouseOfGold(guild));
+    await safeCheck(() => checkFBApplication(guild, doc));
     await F.wait(secondsToMilliseconds(30));
     every30Seconds();
   }
 
   async function every60Seconds() {
-    await safeCheck(checkMemberRoles(guild));
-    await safeCheck(checkVCRoles(guild));
+    await safeCheck(() => checkMemberRoles(guild));
+    await safeCheck(() => checkVCRoles(guild));
     await F.wait(secondsToMilliseconds(60));
     every60Seconds();
   }
@@ -150,7 +150,7 @@ async function checkVCRoles(guild: Guild): Promise<void> {
   }
 }
 
-export async function checkHouseOfGold(guild: Guild): Promise<void> {
+async function checkHouseOfGold(guild: Guild): Promise<void> {
   const msgsToDelete = await prisma.gold.groupBy({
     by: ["houseOfGoldMessageUrl"],
     _count: true,

@@ -2,7 +2,7 @@
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */
 
-import { differenceInHours, secondsToMilliseconds, subDays } from "date-fns";
+import { differenceInHours, subDays } from "date-fns";
 import {
   ChannelType,
   type Client,
@@ -15,6 +15,7 @@ import {
   type TextChannel,
   type VoiceChannel,
 } from "discord.js";
+import { Effect, Schedule } from "effect";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
@@ -23,11 +24,16 @@ import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/fireb
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
-const safeCheck = async (p: () => Promise<unknown>) => {
+// Helper function to log errors to both console and Discord
+const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) => {
+  console.error(message, error);
   try {
-    await p();
-  } catch (e) {
-    console.log(e, /SCHEDULER_ERROR/);
+    const testChannel = await guild.channels.fetch(channelIDs.bottest);
+    if (testChannel?.isTextBased()) {
+      await testChannel.send(`🚨 **Scheduler Error**: ${message}\n\`\`\`${String(error)}\`\`\``);
+    }
+  } catch (discordError) {
+    console.error("Failed to send error to Discord:", discordError);
   }
 };
 
@@ -40,30 +46,56 @@ export default async function (client: Client): Promise<void> {
     private_key: secrets.apis.google.sheets.private_key,
   });
 
-  async function every5Seconds() {
-    await safeCheck(() => checkReminders(guild));
-    await F.wait(secondsToMilliseconds(5));
-    every5Seconds();
-  }
+  // Helper function to log errors to both console and Discord
+  const logError = async (message: string, error: unknown) => {
+    await logErrorToDiscord(guild, message, error);
+  };
 
-  async function every30Seconds() {
-    console.log("Running 30 second checks");
-    await safeCheck(() => checkHouseOfGold(guild));
-    await safeCheck(() => checkFBApplication(guild, doc));
-    await F.wait(secondsToMilliseconds(30));
-    every30Seconds();
-  }
+  // Create effects for each scheduled task with built-in error handling
+  const checkRemindersEffect = Effect.promise(() => checkReminders(guild)).pipe(
+    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkReminders", error))),
+  );
 
-  async function every60Seconds() {
-    await safeCheck(() => checkMemberRoles(guild));
-    await safeCheck(() => checkVCRoles(guild));
-    await F.wait(secondsToMilliseconds(60));
-    every60Seconds();
-  }
+  const checkHouseOfGoldEffect = Effect.promise(() => checkHouseOfGold(guild)).pipe(
+    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkHouseOfGold", error))),
+  );
 
-  every5Seconds();
-  every30Seconds();
-  every60Seconds();
+  const checkFBApplicationEffect = Effect.promise(() => checkFBApplication(guild, doc)).pipe(
+    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkFBApplication", error))),
+  );
+
+  const checkMemberRolesEffect = Effect.promise(() => checkMemberRoles(guild)).pipe(
+    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkMemberRoles", error))),
+  );
+
+  const checkVCRolesEffect = Effect.promise(() => checkVCRoles(guild)).pipe(
+    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkVCRoles", error))),
+  );
+
+  // Create scheduled effects
+  const every5SecondsSchedule = Schedule.fixed("5 seconds");
+  const every30SecondsSchedule = Schedule.fixed("30 seconds");
+  const every60SecondsSchedule = Schedule.fixed("60 seconds");
+
+  const scheduled5Second = Effect.schedule(checkRemindersEffect, every5SecondsSchedule);
+
+  const scheduled30Second = Effect.schedule(
+    Effect.all([checkHouseOfGoldEffect, checkFBApplicationEffect], { concurrency: "unbounded" }),
+    every30SecondsSchedule,
+  );
+
+  const scheduled60Second = Effect.schedule(
+    Effect.all([checkMemberRolesEffect, checkVCRolesEffect], { concurrency: "unbounded" }),
+    every60SecondsSchedule,
+  );
+
+  // Run all scheduled effects concurrently
+  const allScheduledTasks = Effect.all([scheduled5Second, scheduled30Second, scheduled60Second], {
+    concurrency: "unbounded",
+  });
+
+  // Run the scheduler
+  Effect.runPromise(allScheduledTasks).catch(console.error);
 }
 
 async function checkReminders(guild: Guild): Promise<void> {
@@ -80,7 +112,7 @@ async function checkReminders(guild: Guild): Promise<void> {
 
       await dm.send({ embeds: [embed] });
     } catch (e) {
-      console.log(e, /UNABLE_TO_SEND_REMINDER/);
+      await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
     }
   }
 
@@ -192,7 +224,7 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
         data: { houseOfGoldMessageUrl: null },
       });
     } catch (e) {
-      console.log(e, /UNABLE_TO_DELETE_HOG/);
+      await logErrorToDiscord(guild, `Unable to delete House of Gold message: ${toDelete.houseOfGoldMessageUrl}`, e);
     }
   }
 }

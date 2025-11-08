@@ -24,8 +24,6 @@ command.setHandler(async (ctx) => {
 
   const embeds: EmbedBuilder[] = [];
 
-  await ctx.guild.members.fetch();
-
   for (const roleID of roles) {
     const role = await ctx.channel.guild.roles.fetch(roleID, { force: true });
     if (!role) continue;

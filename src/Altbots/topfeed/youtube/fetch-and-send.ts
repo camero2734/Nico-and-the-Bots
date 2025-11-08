@@ -1,5 +1,5 @@
 import { youtube_v3 } from "@googleapis/youtube";
-import { addDays } from "date-fns";
+import { addHours } from "date-fns";
 import {
   type APIComponentInContainer,
   ComponentType,
@@ -200,7 +200,7 @@ export async function fetchYoutube({
       postedAt: new Date(upload.snippet?.publishedAt || Date.now()),
     };
 
-    if (addDays(new Date(formattedPost.postedAt), 1) < new Date()) {
+    if (addHours(new Date(formattedPost.postedAt), 3) < new Date()) {
       logger(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`);
       await testChan
         .send(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`)

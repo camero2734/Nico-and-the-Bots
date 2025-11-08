@@ -47,6 +47,7 @@ export default async function (client: Client): Promise<void> {
   }
 
   async function every30Seconds() {
+    console.log("Running 30 second checks");
     await safeCheck(() => checkHouseOfGold(guild));
     await safeCheck(() => checkFBApplication(guild, doc));
     await F.wait(secondsToMilliseconds(30));

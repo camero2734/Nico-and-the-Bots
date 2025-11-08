@@ -77,15 +77,26 @@ export default async function (client: Client): Promise<void> {
   const every30SecondsSchedule = Schedule.fixed("30 seconds");
   const every60SecondsSchedule = Schedule.fixed("60 seconds");
 
-  const scheduled5Second = Effect.schedule(checkRemindersEffect, every5SecondsSchedule);
+  const scheduled5Second = Effect.schedule(
+    Effect.all([Effect.sync(() => console.log("[Scheduler] 5sec running")), checkRemindersEffect], {
+      concurrency: "unbounded",
+    }),
+    every5SecondsSchedule,
+  );
 
   const scheduled30Second = Effect.schedule(
-    Effect.all([checkHouseOfGoldEffect, checkFBApplicationEffect], { concurrency: "unbounded" }),
+    Effect.all(
+      [Effect.sync(() => console.log("[Scheduler] 30sec running")), checkHouseOfGoldEffect, checkFBApplicationEffect],
+      { concurrency: "unbounded" },
+    ),
     every30SecondsSchedule,
   );
 
   const scheduled60Second = Effect.schedule(
-    Effect.all([checkMemberRolesEffect, checkVCRolesEffect], { concurrency: "unbounded" }),
+    Effect.all(
+      [Effect.sync(() => console.log("[Scheduler] 60sec running")), checkMemberRolesEffect, checkVCRolesEffect],
+      { concurrency: "unbounded" },
+    ),
     every60SecondsSchedule,
   );
 

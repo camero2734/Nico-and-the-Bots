@@ -16,7 +16,8 @@ import {
   type VoiceChannel,
 } from "discord.js";
 import { Effect, Schedule } from "effect";
-import { GoogleSpreadsheet } from "google-spreadsheet";
+import { JWT } from "google-auth-library";
+import { type GoogleSpreadsheetWorksheet, GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
@@ -40,11 +41,15 @@ const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) 
 export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
-  const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0");
-  await doc.useServiceAccountAuth({
-    client_email: secrets.apis.google.sheets.client_email,
-    private_key: secrets.apis.google.sheets.private_key,
+  const serviceAccountAuth = new JWT({
+    email: secrets.apis.google.sheets.client_email,
+    key: secrets.apis.google.sheets.private_key,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
+
+  const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0", serviceAccountAuth);
+  await doc.loadInfo();
+  const sheet = doc.sheetsByIndex[0];
 
   // Helper function to log errors to both console and Discord
   const logError = async (message: string, error: unknown) => {
@@ -60,7 +65,7 @@ export default async function (client: Client): Promise<void> {
     Effect.catchAll((error) => Effect.promise(() => logError("Error in checkHouseOfGold", error))),
   );
 
-  const checkFBApplicationEffect = Effect.promise(() => checkFBApplication(guild, doc)).pipe(
+  const checkFBApplicationEffect = Effect.promise(() => checkFBApplication(guild, sheet)).pipe(
     Effect.catchAll((error) => Effect.promise(() => logError("Error in checkFBApplication", error))),
   );
 
@@ -244,12 +249,8 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
   console.log("[Scheduler] checkHouseOfGold end");
 }
 
-async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise<void> {
+async function checkFBApplication(guild: Guild, sheet: GoogleSpreadsheetWorksheet): Promise<void> {
   console.log("[Scheduler] checkFBApplication start");
-  await doc.loadInfo();
-
-  console.log(`[Scheduler] checkFBApplication loaded ${doc.sheetCount} sheets`);
-  const sheet = doc.sheetsByIndex[0];
 
   const rows = await sheet.getRows();
   const ApplicationIdKey = "Application ID";
@@ -265,14 +266,14 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
   console.log(`[Scheduler] checkFBApplication looking for ${lookingForIds.size} applications`);
 
   for (const row of rows) {
-    const applicationId = row[ApplicationIdKey];
+    const applicationId = row.get(ApplicationIdKey);
 
     if (!lookingForIds.has(applicationId)) continue;
     lookingForIds.delete(applicationId); // Ignore any resubmissions
 
     const keys = Object.keys(row).filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
 
-    const jsonData = Object.fromEntries(keys.map((k) => [k, row[k]]));
+    const jsonData = Object.fromEntries(keys.map((k) => [k, row.get(k)]));
 
     // Send to Discord
     const messageUrl = await sendToStaff(guild, applicationId, jsonData);

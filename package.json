@@ -43,7 +43,7 @@
     "file-type": "^16.5.0",
     "fuse.js": "6.5.3",
     "glob": "^8.0.1",
-    "google-spreadsheet": "3.2.0",
+    "google-spreadsheet": "5.0.2",
     "husky": "^7.0.4",
     "instagram-private-api": "^1.46.1",
     "ioredis": "^5.6.1",

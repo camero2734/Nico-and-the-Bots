@@ -195,6 +195,7 @@ async function checkVCRoles(guild: Guild): Promise<void> {
 }
 
 async function checkHouseOfGold(guild: Guild): Promise<void> {
+  console.log("[Scheduler] checkHouseOfGold start");
   const msgsToDelete = await prisma.gold.groupBy({
     by: ["houseOfGoldMessageUrl"],
     _count: true,
@@ -213,6 +214,8 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
       houseOfGoldMessageUrl: { not: null },
     },
   });
+
+  console.log(`[Scheduler] checkHouseOfGold fetched ${msgsToDelete.length} messages to delete`);
 
   for (const toDelete of msgsToDelete) {
     try {
@@ -238,10 +241,11 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
       await logErrorToDiscord(guild, `Unable to delete House of Gold message: ${toDelete.houseOfGoldMessageUrl}`, e);
     }
   }
+  console.log("[Scheduler] checkHouseOfGold end");
 }
 
 async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise<void> {
-  console.log("Running FB check");
+  console.log("[Scheduler] checkFBApplication start");
   await doc.loadInfo();
   const sheet = doc.sheetsByIndex[0];
 
@@ -253,6 +257,8 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
     select: { applicationId: true },
   });
   const lookingForIds = new Set(_lookingForIds.map((l) => l.applicationId));
+
+  console.log(`[Scheduler] checkFBApplication looking for ${lookingForIds.size} applications`);
 
   for (const row of rows) {
     const applicationId = row[ApplicationIdKey];
@@ -274,4 +280,6 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
       data: { submittedAt: new Date(), messageUrl, responseData: jsonData },
     });
   }
+
+  console.log("[Scheduler] checkFBApplication end");
 }

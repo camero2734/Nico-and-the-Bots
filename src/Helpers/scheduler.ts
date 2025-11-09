@@ -247,10 +247,14 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
 async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise<void> {
   console.log("[Scheduler] checkFBApplication start");
   await doc.loadInfo();
+
+  console.log(`[Scheduler] checkFBApplication loaded ${doc.sheetCount} sheets`);
   const sheet = doc.sheetsByIndex[0];
 
   const rows = await sheet.getRows();
   const ApplicationIdKey = "Application ID";
+
+  console.log(`[Scheduler] checkFBApplication loaded ${rows.length} rows from sheet`);
 
   const _lookingForIds = await prisma.firebreatherApplication.findMany({
     where: { submittedAt: null },

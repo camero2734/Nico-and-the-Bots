@@ -85,7 +85,12 @@ export default async function (client: Client): Promise<void> {
   const scheduled5Second = Effect.schedule(
     Effect.all([Effect.sync(() => console.log("[Scheduler] 5sec running")), checkRemindersEffect], {
       concurrency: "unbounded",
-    }),
+    }).pipe(
+      Effect.timeout("10 seconds"),
+      Effect.catchAll((error) =>
+        Effect.promise(() => logError("5-second scheduled tasks timed out or failed (max 10 seconds)", error)),
+      ),
+    ),
     every5SecondsSchedule,
   );
 
@@ -93,6 +98,11 @@ export default async function (client: Client): Promise<void> {
     Effect.all(
       [Effect.sync(() => console.log("[Scheduler] 30sec running")), checkHouseOfGoldEffect, checkFBApplicationEffect],
       { concurrency: "unbounded" },
+    ).pipe(
+      Effect.timeout("45 seconds"),
+      Effect.catchAll((error) =>
+        Effect.promise(() => logError("30-second scheduled tasks timed out or failed (max 45 seconds)", error)),
+      ),
     ),
     every30SecondsSchedule,
   );
@@ -101,6 +111,11 @@ export default async function (client: Client): Promise<void> {
     Effect.all(
       [Effect.sync(() => console.log("[Scheduler] 60sec running")), checkMemberRolesEffect, checkVCRolesEffect],
       { concurrency: "unbounded" },
+    ).pipe(
+      Effect.timeout("75 seconds"),
+      Effect.catchAll((error) =>
+        Effect.promise(() => logError("60-second scheduled tasks timed out or failed (max 75 seconds)", error)),
+      ),
     ),
     every60SecondsSchedule,
   );

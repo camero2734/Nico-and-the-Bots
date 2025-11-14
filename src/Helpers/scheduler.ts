@@ -53,6 +53,7 @@ export default async function (client: Client): Promise<void> {
 
   // Helper function to log errors to both console and Discord
   const logError = async (message: string, error: unknown) => {
+    console.error(message, error);
     await logErrorToDiscord(guild, message, error);
   };
 
@@ -120,13 +121,10 @@ export default async function (client: Client): Promise<void> {
     every60SecondsSchedule,
   );
 
-  // Run all scheduled effects concurrently
-  const allScheduledTasks = Effect.all([scheduled5Second, scheduled30Second, scheduled60Second], {
-    concurrency: "unbounded",
-  });
-
   // Run the scheduler
-  Effect.runPromise(allScheduledTasks).catch(console.error);
+  Effect.runPromise(scheduled5Second).catch((error) => logError("5-second scheduler failed", error));
+  Effect.runPromise(scheduled30Second).catch((error) => logError("30-second scheduler failed", error));
+  Effect.runPromise(scheduled60Second).catch((error) => logError("60-second scheduler failed", error));
 }
 
 async function checkReminders(guild: Guild): Promise<void> {

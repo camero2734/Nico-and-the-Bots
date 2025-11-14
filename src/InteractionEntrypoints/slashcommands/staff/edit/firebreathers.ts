@@ -37,8 +37,6 @@ command.setHandler(async (ctx) => {
       orderBy: { startedAt: "desc" },
     });
 
-    console.log(latestApplication);
-
     if (latestApplication) {
       await prisma.firebreatherApplication.update({
         where: { applicationId: latestApplication[0].applicationId },
@@ -46,6 +44,7 @@ command.setHandler(async (ctx) => {
           decidedAt: addYears(new Date(), 100),
           approved: false,
           startedAt: addYears(new Date(), 100),
+          submittedAt: addYears(new Date(), 100),
         },
       });
     } else {
@@ -56,6 +55,7 @@ command.setHandler(async (ctx) => {
           decidedAt: addYears(new Date(), 100),
           approved: false,
           startedAt: addYears(new Date(), 100),
+          submittedAt: addYears(new Date(), 100),
         },
       });
     }
@@ -76,6 +76,7 @@ command.setHandler(async (ctx) => {
         data: {
           decidedAt: new Date(0), // Set to epoch to effectively reset the timer
           submittedAt: new Date(0),
+          startedAt: new Date(0),
         },
       });
       await ctx.editReply({

@@ -15,7 +15,7 @@ import {
   type TextChannel,
   type VoiceChannel,
 } from "discord.js";
-import { Effect, Schedule } from "effect";
+import { Cron } from "croner";
 import { JWT } from "google-auth-library";
 import { type GoogleSpreadsheetWorksheet, GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
@@ -57,74 +57,47 @@ export default async function (client: Client): Promise<void> {
     await logErrorToDiscord(guild, message, error);
   };
 
-  // Create effects for each scheduled task with built-in error handling
-  const checkRemindersEffect = Effect.promise(() => checkReminders(guild)).pipe(
-    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkReminders", error))),
-  );
+  // Helper function to wrap tasks with error handling and timeout
+  const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs = 10000) => {
+    return async () => {
+      try {
+        console.log(`[Scheduler] ${taskName} running`);
 
-  const checkHouseOfGoldEffect = Effect.promise(() => checkHouseOfGold(guild)).pipe(
-    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkHouseOfGold", error))),
-  );
+        // Create a timeout promise
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Task timed out after ${timeoutMs}ms`)), timeoutMs),
+        );
 
-  const checkFBApplicationEffect = Effect.promise(() => checkFBApplication(guild, sheet)).pipe(
-    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkFBApplication", error))),
-  );
+        // Race the task against the timeout
+        await Promise.race([taskFn(), timeoutPromise]);
+      } catch (error) {
+        await logError(`Error in ${taskName}`, error);
+      }
+    };
+  };
 
-  const checkMemberRolesEffect = Effect.promise(() => checkMemberRoles(guild)).pipe(
-    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkMemberRoles", error))),
-  );
+  // Create safe versions of each task
+  const safeCheckReminders = createSafeTask("checkReminders", () => checkReminders(guild), 10000);
+  const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45000);
+  const safeCheckFBApplication = createSafeTask("checkFBApplication", () => checkFBApplication(guild, sheet), 45000);
+  const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 75000);
+  const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75000);
 
-  const checkVCRolesEffect = Effect.promise(() => checkVCRoles(guild)).pipe(
-    Effect.catchAll((error) => Effect.promise(() => logError("Error in checkVCRoles", error))),
-  );
+  // Schedule tasks using croner
+  // Every 5 seconds - check reminders
+  Cron("*/5 * * * * *", { protect: true }, safeCheckReminders);
 
-  // Create scheduled effects
-  const every5SecondsSchedule = Schedule.fixed("5 seconds");
-  const every30SecondsSchedule = Schedule.fixed("30 seconds");
-  const every60SecondsSchedule = Schedule.fixed("60 seconds");
+  // Every 30 seconds - check house of gold and firebreather applications
+  Cron("*/30 * * * * *", { protect: true }, async () => {
+    await Promise.all([safeCheckHouseOfGold(), safeCheckFBApplication()]);
+  });
 
-  const scheduled5Second = Effect.schedule(
-    Effect.all([Effect.sync(() => console.log("[Scheduler] 5sec running")), checkRemindersEffect], {
-      concurrency: "unbounded",
-    }).pipe(
-      Effect.timeout("10 seconds"),
-      Effect.catchAll((error) =>
-        Effect.promise(() => logError("5-second scheduled tasks timed out or failed (max 10 seconds)", error)),
-      ),
-    ),
-    every5SecondsSchedule,
-  );
+  // Every 60 seconds - check member roles and VC roles
+  Cron("*/60 * * * * *", { protect: true }, async () => {
+    await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
+  });
 
-  const scheduled30Second = Effect.schedule(
-    Effect.all(
-      [Effect.sync(() => console.log("[Scheduler] 30sec running")), checkHouseOfGoldEffect, checkFBApplicationEffect],
-      { concurrency: "unbounded" },
-    ).pipe(
-      Effect.timeout("45 seconds"),
-      Effect.catchAll((error) =>
-        Effect.promise(() => logError("30-second scheduled tasks timed out or failed (max 45 seconds)", error)),
-      ),
-    ),
-    every30SecondsSchedule,
-  );
-
-  const scheduled60Second = Effect.schedule(
-    Effect.all(
-      [Effect.sync(() => console.log("[Scheduler] 60sec running")), checkMemberRolesEffect, checkVCRolesEffect],
-      { concurrency: "unbounded" },
-    ).pipe(
-      Effect.timeout("75 seconds"),
-      Effect.catchAll((error) =>
-        Effect.promise(() => logError("60-second scheduled tasks timed out or failed (max 75 seconds)", error)),
-      ),
-    ),
-    every60SecondsSchedule,
-  );
-
-  // Run the scheduler
-  Effect.runPromise(scheduled5Second).catch((error) => logError("5-second scheduler failed", error));
-  Effect.runPromise(scheduled30Second).catch((error) => logError("30-second scheduler failed", error));
-  Effect.runPromise(scheduled60Second).catch((error) => logError("60-second scheduler failed", error));
+  console.log("[Scheduler] All cron jobs initialized successfully");
 }
 
 async function checkReminders(guild: Guild): Promise<void> {

@@ -255,7 +255,7 @@ async function checkFBApplication(guild: Guild, sheet: GoogleSpreadsheetWorkshee
     if (!lookingForIds.has(applicationId)) continue;
     lookingForIds.delete(applicationId); // Ignore any resubmissions
 
-    const keys = Object.keys(row).filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
+    const keys = row._worksheet.headerValues.filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
 
     const jsonData = Object.fromEntries(keys.map((k) => [k, row.get(k)]));
 

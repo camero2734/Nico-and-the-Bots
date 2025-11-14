@@ -32,14 +32,16 @@ command.setHandler(async (ctx) => {
 
   if (action === "BAN") {
     // Find the most recent firebreathers application and ban the user by setting decidedAt far in the future
-    const latestApplication = await prisma.firebreatherApplication.findFirst({
+    const latestApplication = await prisma.firebreatherApplication.findMany({
       where: { userId: user },
       orderBy: { startedAt: "desc" },
     });
 
+    console.log(latestApplication);
+
     if (latestApplication) {
       await prisma.firebreatherApplication.update({
-        where: { applicationId: latestApplication.applicationId },
+        where: { applicationId: latestApplication[0].applicationId },
         data: {
           decidedAt: addYears(new Date(), 100),
           approved: false,

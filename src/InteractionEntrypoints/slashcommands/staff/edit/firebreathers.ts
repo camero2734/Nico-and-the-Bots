@@ -43,6 +43,7 @@ command.setHandler(async (ctx) => {
         data: {
           decidedAt: addYears(new Date(), 100),
           approved: false,
+          startedAt: addYears(new Date(), 100),
         },
       });
     } else {
@@ -52,7 +53,7 @@ command.setHandler(async (ctx) => {
           userId: user,
           decidedAt: addYears(new Date(), 100),
           approved: false,
-          startedAt: new Date(),
+          startedAt: addYears(new Date(), 100),
         },
       });
     }

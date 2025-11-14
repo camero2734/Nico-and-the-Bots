@@ -97,12 +97,6 @@ export async function getActiveFirebreathersApplication(userId: Snowflake): Prom
           submittedAt: { gt: subDays(new Date(), FB_DELAY_DAYS) },
           approved: false,
         },
-        {
-          // Permanently banned
-          decidedAt: { not: null },
-          submittedAt: { equals: new Date(0) },
-          approved: false,
-        },
       ],
     },
   });

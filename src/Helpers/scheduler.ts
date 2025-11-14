@@ -75,12 +75,11 @@ export default async function (client: Client): Promise<void> {
   };
 
   // Create safe versions of each task
-  const safeCheckReminders = createSafeTask("checkReminders", () => checkReminders(guild), 10000);
-  const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45000);
-  const safeCheckFBApplication = createSafeTask("checkFBApplication", () => checkFBApplication(guild, sheet), 45000);
-  const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 75000);
-  const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75000);
-
+  const safeCheckReminders = createSafeTask("checkReminders", () => checkReminders(guild), 10_000);
+  const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45_000);
+  const safeCheckFBApplication = createSafeTask("checkFBApplication", () => checkFBApplication(guild, sheet), 45_000);
+  const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 100_000);
+  const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
   const protect: ProtectCallbackFn = async (job) => {
     console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
   };

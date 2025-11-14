@@ -61,7 +61,7 @@ command.setHandler(async (ctx) => {
     }
 
     await ctx.editReply({
-      content: `User can no longer apply for firebreathers.\n\`\`\`json\n${JSON.stringify(latestApplication)}\n\`\`\``,
+      content: "User can no longer apply for firebreathers",
     });
   } else if (action === "RESET_TIMER") {
     // Find the most recent firebreathers application and reset the timer

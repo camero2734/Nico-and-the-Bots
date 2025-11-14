@@ -15,7 +15,7 @@ import {
   type TextChannel,
   type VoiceChannel,
 } from "discord.js";
-import { Cron } from "croner";
+import { Cron, type ProtectCallbackFn } from "croner";
 import { JWT } from "google-auth-library";
 import { type GoogleSpreadsheetWorksheet, GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
@@ -58,17 +58,15 @@ export default async function (client: Client): Promise<void> {
   };
 
   // Helper function to wrap tasks with error handling and timeout
-  const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs = 10000) => {
+  const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs: number) => {
     return async () => {
       try {
         console.log(`[Scheduler] ${taskName} running`);
 
-        // Create a timeout promise
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error(`Task timed out after ${timeoutMs}ms`)), timeoutMs),
         );
 
-        // Race the task against the timeout
         await Promise.race([taskFn(), timeoutPromise]);
       } catch (error) {
         await logError(`Error in ${taskName}`, error);
@@ -83,17 +81,17 @@ export default async function (client: Client): Promise<void> {
   const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 75000);
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75000);
 
-  // Schedule tasks using croner
-  // Every 5 seconds - check reminders
-  Cron("*/5 * * * * *", { protect: true }, safeCheckReminders);
+  const protect: ProtectCallbackFn = async (job) => {
+    console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
+  };
 
-  // Every 30 seconds - check house of gold and firebreather applications
-  Cron("*/30 * * * * *", { protect: true }, async () => {
+  Cron("*/5 * * * * *", { protect }, safeCheckReminders);
+
+  Cron("*/30 * * * * *", { protect }, async () => {
     await Promise.all([safeCheckHouseOfGold(), safeCheckFBApplication()]);
   });
 
-  // Every 60 seconds - check member roles and VC roles
-  Cron("*/60 * * * * *", { protect: true }, async () => {
+  Cron("*/60 * * * * *", { protect }, async () => {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
   });
 

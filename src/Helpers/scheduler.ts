@@ -102,6 +102,7 @@ async function checkReminders(guild: Guild): Promise<void> {
     where: { sendAt: { lte: new Date() } },
   });
 
+  const sentReminderIds = [];
   for (const rem of finishedReminders) {
     try {
       const member = await guild.members.fetch(rem.userId as Snowflake);
@@ -110,14 +111,13 @@ async function checkReminders(guild: Guild): Promise<void> {
       const embed = new EmbedBuilder().setTitle("Your Reminder").setDescription(rem.text).setTimestamp(rem.createdAt);
 
       await dm.send({ embeds: [embed] });
+      sentReminderIds.push(rem.id);
     } catch (e) {
       await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
     }
   }
 
-  // Remove them all, regardless of whether they were sent
-  const fetchedIds = finishedReminders.map((r) => r.id);
-  await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
+  await prisma.reminder.deleteMany({ where: { id: { in: sentReminderIds } } });
 }
 
 async function checkMemberRoles(guild: Guild): Promise<void> {

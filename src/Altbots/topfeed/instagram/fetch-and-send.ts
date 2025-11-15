@@ -187,6 +187,7 @@ export async function fetchInstagram(source: "scheduled" | "random") {
           logger(
             `Skipping IG post ${post.code} from ${post.author} as it does not match watched username ${username}.`,
           );
+          continue;
         }
         // Only send if the post is new (sent within the last 3 hours)
         if (addHours(new Date(post.postedAt), 3) < new Date()) {

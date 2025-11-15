@@ -179,7 +179,7 @@ export async function songBattleCron() {
 
   // Create a discussion thread
   const thread = await m.startThread({
-    name: `2025 ${albumName} Song Battle #${nextBattleNumber}`,
+    name: `2025 ${albumName} Song Battle 2P #${nextBattleNumber}`,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
   });
 
@@ -386,7 +386,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     components: [
       {
         type: ComponentType.TextDisplay,
-        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum}`,
+        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum} 2P`,
       },
       { type: ComponentType.Separator, divider: false, spacing: 1 },
       {
@@ -480,7 +480,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: "Info / Rules",
-            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1383183855732920401",
+            url: "https://discord.com/channels/269657133673349120/1211412086442426429/1429096114392400035",
             disabled: hasWinner,
           },
         ],

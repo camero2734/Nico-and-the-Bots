@@ -31,6 +31,7 @@ export enum AlbumName {
   Trench = "Trench",
   ScaledAndIcy = "Scaled And Icy",
   Clancy = "Clancy",
+  Breach = "Breach",
   TOPxMM = "TOPxMM",
   Singles = "Singles",
 }
@@ -52,10 +53,10 @@ export interface SongContender {
   yt: string;
 }
 
-export const currentlyEnabledAlbum = AlbumName.Singles;
+export const currentlyEnabledAlbum = AlbumName.Breach;
 
 export const IMAGE_SIZE = 1000;
-export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}-`;
+export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}2-`;
 
 const albumsRaw = [
   {
@@ -228,6 +229,28 @@ const albumsRaw = [
       { name: "At the Risk of Feeling Dumb", yt: "https://youtu.be/TnoWOgAD054" },
       { name: "Paladin Strait", yt: "https://youtu.be/mix9YfaaNa0" },
     ],
+  },
+  {
+    name: AlbumName.Breach,
+    image: "https://i.scdn.co/image/ab67616d00001e0278cba6a1edfe4235def632ed",
+    color: "#8C2B2B",
+    emoji: emojiIDs.albums.breach,
+    songs: [
+      { name: "City Walls", yt: "https://www.youtube.com/watch?v=5Ozjel72yjQ" },
+      { name: "Rawfear", yt: "https://www.youtube.com/watch?v=xHimP0uwink" },
+      { name: "Drum Show", yt: "https://www.youtube.com/watch?v=5dA094oAy-g" },
+      { name: "Garbage", yt: "https://www.youtube.com/watch?v=tdFNA7YBM4c" },
+      { name: "The Contract", yt: "https://www.youtube.com/watch?v=QZfH7cFp3Ys" },
+      { name: "Downstairs", yt: "https://www.youtube.com/watch?v=U4gmnQS1als" },
+      { name: "Robot Voices", yt: "https://www.youtube.com/watch?v=o-LPIqIGuH0" },
+      // { name: "Center Mass", yt: "https://www.youtube.com/watch?v=PAbv0MXFYgE" },
+      { name: "Cottonwood", yt: "https://www.youtube.com/watch?v=T0wdtnkPQyo" },
+      { name: "One Way", yt: "https://www.youtube.com/watch?v=lbcpWOiwk5E" },
+      { name: "Days Lie Dormant", yt: "https://www.youtube.com/watch?v=hfbRtM_CDdc" },
+      { name: "Tally", yt: "https://www.youtube.com/watch?v=mbXvhmGwumw" },
+      { name: "Intentions", yt: "https://www.youtube.com/watch?v=oY3BRnxn6Yk" },
+      { name: "Drag Path", yt: "https://www.youtube.com/watch?v=2P39HoDjjeA", image: "https://static.wikia.nocookie.net/twenty-one-pilots/images/5/5e/Breach_Digital_Remains.jpg" },
+    ]
   },
   {
     name: AlbumName.Singles,

@@ -2,7 +2,7 @@
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */
 
-import { differenceInHours, secondsToMilliseconds, subDays } from "date-fns";
+import { differenceInHours, subDays } from "date-fns";
 import {
   ChannelType,
   type Client,
@@ -15,7 +15,9 @@ import {
   type TextChannel,
   type VoiceChannel,
 } from "discord.js";
-import { GoogleSpreadsheet } from "google-spreadsheet";
+import { Cron, type ProtectCallbackFn } from "croner";
+import { JWT } from "google-auth-library";
+import { type GoogleSpreadsheetWorksheet, GoogleSpreadsheet } from "google-spreadsheet";
 import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
@@ -23,48 +25,76 @@ import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/fireb
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
-const safeCheck = async (p: Promise<unknown>) => {
+// Helper function to log errors to both console and Discord
+const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) => {
+  console.error(message, error);
   try {
-    await p;
-  } catch (e) {
-    console.log(e);
+    const testChannel = await guild.channels.fetch(channelIDs.bottest);
+    if (testChannel?.isTextBased()) {
+      await testChannel.send(`🚨 **Scheduler Error**: ${message}\n\`\`\`${String(error)}\`\`\``);
+    }
+  } catch (discordError) {
+    console.error("Failed to send error to Discord:", discordError);
   }
 };
 
 export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
-  const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0");
-  await doc.useServiceAccountAuth({
-    client_email: secrets.apis.google.sheets.client_email,
-    private_key: secrets.apis.google.sheets.private_key,
+  const serviceAccountAuth = new JWT({
+    email: secrets.apis.google.sheets.client_email,
+    key: secrets.apis.google.sheets.private_key,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
-  async function every5Seconds() {
-    await safeCheck(checkReminders(guild));
-    await safeCheck(checkMemberRoles(guild));
-    await safeCheck(checkVCRoles(guild));
+  const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0", serviceAccountAuth);
+  await doc.loadInfo();
+  const sheet = doc.sheetsByIndex[0];
 
-    await F.wait(secondsToMilliseconds(5));
-    every5Seconds();
-  }
+  // Helper function to log errors to both console and Discord
+  const logError = async (message: string, error: unknown) => {
+    console.error(message, error);
+    await logErrorToDiscord(guild, message, error);
+  };
 
-  async function every30Seconds() {
-    await safeCheck(checkHouseOfGold(guild));
-    await safeCheck(checkFBApplication(guild, doc));
+  // Helper function to wrap tasks with error handling and timeout
+  const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs: number) => {
+    return async () => {
+      try {
+        console.log(`[Scheduler] ${taskName} running`);
 
-    await F.wait(secondsToMilliseconds(30));
-    every30Seconds();
-  }
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Task timed out after ${timeoutMs}ms`)), timeoutMs),
+        );
 
-  async function every60Seconds() {
-    await F.wait(secondsToMilliseconds(60));
-    every60Seconds();
-  }
+        await Promise.race([taskFn(), timeoutPromise]);
+      } catch (error) {
+        await logError(`Error in ${taskName}`, error);
+      }
+    };
+  };
 
-  every5Seconds();
-  every30Seconds();
-  every60Seconds();
+  // Create safe versions of each task
+  const safeCheckReminders = createSafeTask("checkReminders", () => checkReminders(guild), 10_000);
+  const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45_000);
+  const safeCheckFBApplication = createSafeTask("checkFBApplication", () => checkFBApplication(guild, sheet), 45_000);
+  const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 100_000);
+  const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
+  const protect: ProtectCallbackFn = async (job) => {
+    console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
+  };
+
+  Cron("*/5 * * * * *", { protect }, safeCheckReminders);
+
+  Cron("*/30 * * * * *", { protect }, async () => {
+    await Promise.all([safeCheckHouseOfGold(), safeCheckFBApplication()]);
+  });
+
+  Cron("*/60 * * * * *", { protect }, async () => {
+    await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
+  });
+
+  console.log("[Scheduler] All cron jobs initialized successfully");
 }
 
 async function checkReminders(guild: Guild): Promise<void> {
@@ -72,6 +102,7 @@ async function checkReminders(guild: Guild): Promise<void> {
     where: { sendAt: { lte: new Date() } },
   });
 
+  const sentReminderIds = [];
   for (const rem of finishedReminders) {
     try {
       const member = await guild.members.fetch(rem.userId as Snowflake);
@@ -80,26 +111,26 @@ async function checkReminders(guild: Guild): Promise<void> {
       const embed = new EmbedBuilder().setTitle("Your Reminder").setDescription(rem.text).setTimestamp(rem.createdAt);
 
       await dm.send({ embeds: [embed] });
+      sentReminderIds.push(rem.id);
     } catch (e) {
-      console.log(e, /UNABLE_TO_SEND_REMINDER/);
+      await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
     }
   }
 
-  // Remove them all, regardless of whether they were sent
-  const fetchedIds = finishedReminders.map((r) => r.id);
-  await prisma.reminder.deleteMany({ where: { id: { in: fetchedIds } } });
+  await prisma.reminder.deleteMany({ where: { id: { in: sentReminderIds } } });
 }
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
   const allMembers = await guild.members.fetch();
-  const membersNoBanditos = allMembers.filter(
-    (mem) =>
-      !mem.roles.cache.has(roles.banditos) &&
-      !mem.roles.cache.has(roles.muted) &&
-      !mem.roles.cache.has(roles.hideallchannels) &&
-      !mem.pending,
-  );
+
+  const shouldHaveBanditos = (mem: GuildMember) =>
+    !mem.roles.cache.has(roles.banditos) &&
+    !mem.roles.cache.has(roles.muted) &&
+    !mem.roles.cache.has(roles.hideallchannels) &&
+    !mem.pending;
+
+  const membersNoBanditos = allMembers.filter(shouldHaveBanditos);
 
   const testChannel = await guild.channels.fetch(channelIDs.bottest);
   if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
@@ -152,6 +183,7 @@ async function checkVCRoles(guild: Guild): Promise<void> {
 }
 
 async function checkHouseOfGold(guild: Guild): Promise<void> {
+  console.log("[Scheduler] checkHouseOfGold start");
   const msgsToDelete = await prisma.gold.groupBy({
     by: ["houseOfGoldMessageUrl"],
     _count: true,
@@ -170,6 +202,8 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
       houseOfGoldMessageUrl: { not: null },
     },
   });
+
+  console.log(`[Scheduler] checkHouseOfGold fetched ${msgsToDelete.length} messages to delete`);
 
   for (const toDelete of msgsToDelete) {
     try {
@@ -192,18 +226,19 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
         data: { houseOfGoldMessageUrl: null },
       });
     } catch (e) {
-      console.log(e, /UNABLE_TO_DELETE_HOG/);
+      await logErrorToDiscord(guild, `Unable to delete House of Gold message: ${toDelete.houseOfGoldMessageUrl}`, e);
     }
   }
+  console.log("[Scheduler] checkHouseOfGold end");
 }
 
-async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise<void> {
-  console.log("Running FB check");
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
+async function checkFBApplication(guild: Guild, sheet: GoogleSpreadsheetWorksheet): Promise<void> {
+  console.log("[Scheduler] checkFBApplication start");
 
   const rows = await sheet.getRows();
   const ApplicationIdKey = "Application ID";
+
+  console.log(`[Scheduler] checkFBApplication loaded ${rows.length} rows from sheet`);
 
   const _lookingForIds = await prisma.firebreatherApplication.findMany({
     where: { submittedAt: null },
@@ -211,15 +246,17 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
   });
   const lookingForIds = new Set(_lookingForIds.map((l) => l.applicationId));
 
+  console.log(`[Scheduler] checkFBApplication looking for ${lookingForIds.size} applications`);
+
   for (const row of rows) {
-    const applicationId = row[ApplicationIdKey];
+    const applicationId = row.get(ApplicationIdKey);
 
     if (!lookingForIds.has(applicationId)) continue;
     lookingForIds.delete(applicationId); // Ignore any resubmissions
 
-    const keys = Object.keys(row).filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
+    const keys = row._worksheet.headerValues.filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
 
-    const jsonData = Object.fromEntries(keys.map((k) => [k, row[k]]));
+    const jsonData = Object.fromEntries(keys.map((k) => [k, row.get(k)]));
 
     // Send to Discord
     const messageUrl = await sendToStaff(guild, applicationId, jsonData);
@@ -231,4 +268,6 @@ async function checkFBApplication(guild: Guild, doc: GoogleSpreadsheet): Promise
       data: { submittedAt: new Date(), messageUrl, responseData: jsonData },
     });
   }
+
+  console.log("[Scheduler] checkFBApplication end");
 }

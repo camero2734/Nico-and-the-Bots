@@ -106,6 +106,10 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     return bfx1 || bfx2 || !!badge;
   });
 
+  yield await createBadge("all_the_same.webp", async () => {
+    return member.roles.cache.has(roles.projectAllTheSame);
+  });
+
   yield await createBadge("ScavJumpsuit.png", async () => {
     const badge = await prisma.badge.findUnique({
       where: { userId_type: { userId: member.id, type: "ScavJumpsuit" } },

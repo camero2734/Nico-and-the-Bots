@@ -181,6 +181,38 @@ client.on("messageCreate", async (msg: Discord.Message) => {
   updateUserScore(msg); // Add to score
 });
 
+// Voice state updates for VC role
+client.on("voiceStateUpdate", async (oldState, newState) => {
+  const joinedVoiceChannel = !oldState.channelId && newState.channelId;
+  const leftVoiceChannel = oldState.channelId && !newState.channelId;
+
+  const member = newState.member;
+  if (!member) return;
+
+  if (joinedVoiceChannel) {
+    await member.roles.add(roles.vc);
+  } else if (leftVoiceChannel) {
+    await member.roles.remove(roles.vc);
+  }
+});
+
+// Pending member updates => give roles
+client.on("guildMemberUpdate", async (oldMem, mem) => {
+  const noLongerPending = oldMem.pending && !mem.pending;
+
+  if (!noLongerPending || mem.roles.cache.has(roles.banditos) ||
+    mem.roles.cache.has(roles.muted) ||
+    mem.roles.cache.has(roles.hideallchannels)) return;
+
+  await mem.roles.add(roles.banditos);
+  await mem.roles.add(roles.new);
+
+  const testChannel = await guild.channels.fetch(channelIDs.bottest);
+  if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
+
+  await testChannel.send(`✅ ${mem.user.tag} passed membership screening`);
+});
+
 client.on("guildMemberUpdate", async (oldMem, newMem) => {
   if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
     const fbAnnouncementChannel = (await newMem.guild.channels.fetch(

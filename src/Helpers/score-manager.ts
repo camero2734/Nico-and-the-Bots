@@ -67,7 +67,10 @@ new Worker(
       console.log(e);
     }
   },
-  redisOpts,
+  {
+    ...redisOpts,
+    concurrency: 5,
+  },
 );
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for

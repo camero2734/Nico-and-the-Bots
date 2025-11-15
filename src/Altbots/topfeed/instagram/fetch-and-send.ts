@@ -1,4 +1,4 @@
-import { addDays } from "date-fns";
+import { addHours } from "date-fns";
 import {
   type APIComponentInContainer,
   ComponentType,
@@ -127,20 +127,20 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   const mediaSection: APIComponentInContainer[] =
     post.media.length > 0
       ? [
-          {
-            type: ComponentType.Separator,
-            divider: false,
-            spacing: 1,
-          },
-          {
-            type: ComponentType.MediaGallery,
-            items: post.media
-              .map((mediaItem) => ({
-                media: { url: mediaItem.url },
-              }))
-              .slice(0, 10), // Limit to 10 items
-          },
-        ]
+        {
+          type: ComponentType.Separator,
+          divider: false,
+          spacing: 1,
+        },
+        {
+          type: ComponentType.MediaGallery,
+          items: post.media
+            .map((mediaItem) => ({
+              media: { url: mediaItem.url },
+            }))
+            .slice(0, 10), // Limit to 10 items
+        },
+      ]
       : [];
 
   const footerSection: APIComponentInContainer[] = [
@@ -228,7 +228,7 @@ async function sendInstagramPost(post: FormattedInstagramPost) {
     return; // Skip if post already exists
   }
 
-  if (addDays(new Date(post.postedAt), 1) < new Date()) {
+  if (addHours(new Date(post.postedAt), 3) < new Date()) {
     logger(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
     await testChan.send(`Skipping IG post ${post.url} from ${post.author} as it is old.`).catch(console.error);
     return;

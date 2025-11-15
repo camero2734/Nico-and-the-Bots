@@ -99,6 +99,9 @@ export async function getActiveFirebreathersApplication(userId: Snowflake): Prom
         },
       ],
     },
+    orderBy: {
+      startedAt: "desc",
+    },
   });
 }
 

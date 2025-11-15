@@ -182,16 +182,16 @@ export async function fetchInstagram(source: "scheduled" | "random") {
     for (const username of usernamesToWatch) {
       const formattedPosts = await fetchIgForUsername(username);
       for (const post of formattedPosts) {
-        // Only send if the post is new (sent within the last 3 hours)
-        if (addHours(new Date(post.postedAt), 3) < new Date()) {
-          logger(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
-          continue;
-        }
         // Sometimes other people's posts show up in the embed, skip those
         if (post.author !== username) {
           logger(
             `Skipping IG post ${post.code} from ${post.author} as it does not match watched username ${username}.`,
           );
+        }
+        // Only send if the post is new (sent within the last 3 hours)
+        if (addHours(new Date(post.postedAt), 3) < new Date()) {
+          logger(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+          continue;
         }
         await sendInstagramPost(post);
       }

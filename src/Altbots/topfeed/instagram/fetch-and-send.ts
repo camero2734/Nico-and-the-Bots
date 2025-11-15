@@ -118,18 +118,16 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
 
 async function fetchIgForUsername(username: string): Promise<FormattedInstagramPost[]> {
   try {
-    const text = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
+    const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
     const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\)/g;
-    const match = getSHandleRegex.exec(text);
+    const match = getSHandleRegex.exec(responseText);
     if (!match) throw new Error("Failed to parse the Instagram embed data.");
-    const json = JSON.parse(match[1]);
-    // @ts-ignore
-    const hello = json.require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
-    const mediaData = JSON.parse(hello).context.graphql_media;
+    // @ts-ignore i ain't gonna type this whole thing
+    // biome-ignore format: to preserve @ts-ignore placement
+    const contextJSON = JSON.parse(match[1]).require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
+    const mediaData = JSON.parse(contextJSON).context.graphql_media;
 
     const posts: FormattedInstagramPost[] = [];
-
-    await Bun.file("instagram_media_data.json").write(JSON.stringify(JSON.parse(hello), null, 2));
 
     for (const media of mediaData) {
       const shortcodeMedia = media.shortcode_media;

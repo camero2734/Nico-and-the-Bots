@@ -7,9 +7,7 @@ import {
   roleMention,
   userMention,
 } from "discord.js";
-import { IgApiClient, type TimelineFeedResponseMedia_or_ad } from "instagram-private-api";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
-import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
@@ -46,47 +44,6 @@ const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> =
     channelId: channelIDs.topfeed.josh,
   },
 };
-
-const ig = new IgApiClient();
-ig.state.generateDevice(secrets.apis.instagram.username);
-
-let initialized = false;
-async function initializeInstagram() {
-  if (initialized) return;
-
-  await ig.simulate.preLoginFlow().catch((error) => logger("Pre-login flow error:", error?.message));
-  const loggedInUser = await ig.account.login(secrets.apis.instagram.username, secrets.apis.instagram.password);
-  void loggedInUser;
-
-  await ig.simulate.postLoginFlow().catch((error) => logger("Post-login flow error:", error?.message));
-  initialized = true;
-}
-
-// Extract the best media URL from a post or carousel item
-function extractMedia(item: TimelineFeedResponseMedia_or_ad): InstagramMedia[] {
-  const media: InstagramMedia[] = [];
-
-  const carouselMedia = item.carousel_media || [
-    {
-      video_versions: item.video_versions,
-      image_versions2: item.image_versions2,
-    },
-  ];
-
-  for (const mediaItem of carouselMedia) {
-    if (Array.isArray(mediaItem.video_versions) && mediaItem.video_versions.length > 0) {
-      const bestVideo = mediaItem.video_versions.sort((a, b) => b.width - a.width)[0];
-      media.push({ url: bestVideo.url, type: "video" });
-      continue;
-    }
-
-    const bestImage = mediaItem.image_versions2?.candidates.sort((a, b) => b.width - a.width)[0];
-    if (!bestImage) continue; // Skip if no image found
-    media.push({ url: bestImage.url, type: "image" });
-  }
-
-  return media;
-}
 
 const instagramEmojiId = "1380283905416106064";
 export async function instaPostToComponents(post: FormattedInstagramPost, roleId: string) {
@@ -127,20 +84,20 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   const mediaSection: APIComponentInContainer[] =
     post.media.length > 0
       ? [
-        {
-          type: ComponentType.Separator,
-          divider: false,
-          spacing: 1,
-        },
-        {
-          type: ComponentType.MediaGallery,
-          items: post.media
-            .map((mediaItem) => ({
-              media: { url: mediaItem.url },
-            }))
-            .slice(0, 10), // Limit to 10 items
-        },
-      ]
+          {
+            type: ComponentType.Separator,
+            divider: false,
+            spacing: 1,
+          },
+          {
+            type: ComponentType.MediaGallery,
+            items: post.media
+              .map((mediaItem) => ({
+                media: { url: mediaItem.url },
+              }))
+              .slice(0, 10), // Limit to 10 items
+          },
+        ]
       : [];
 
   const footerSection: APIComponentInContainer[] = [
@@ -159,6 +116,62 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   return container;
 }
 
+async function fetchIgForUsername(username: string): Promise<FormattedInstagramPost[]> {
+  try {
+    const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
+    const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\)/g;
+    const match = getSHandleRegex.exec(responseText);
+    if (!match) throw new Error("Failed to parse the Instagram embed data.");
+    // @ts-ignore i ain't gonna type this whole thing
+    // biome-ignore format: to preserve @ts-ignore placement
+    const contextJSON = JSON.parse(match[1]).require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
+    const mediaData = JSON.parse(contextJSON).context.graphql_media;
+
+    const posts: FormattedInstagramPost[] = [];
+
+    for (const media of mediaData) {
+      const shortcodeMedia = media.shortcode_media;
+      const formattedMedia: InstagramMedia[] = [];
+
+      if (shortcodeMedia.__typename === "GraphImage") {
+        formattedMedia.push({ url: shortcodeMedia.display_url, type: "image" });
+      } else if (shortcodeMedia.__typename === "GraphVideo") {
+        formattedMedia.push({ url: shortcodeMedia.video_url, type: "video" });
+      } else if (shortcodeMedia.__typename === "GraphSidecar") {
+        for (const edge of shortcodeMedia.edge_sidecar_to_children.edges) {
+          const child = edge.node;
+          if (child.__typename === "GraphImage") {
+            formattedMedia.push({ url: child.display_url, type: "image" });
+          } else if (child.__typename === "GraphVideo") {
+            formattedMedia.push({ url: child.video_url, type: "video" });
+          } else {
+            throw new Error(`Unknown child media type: ${child.__typename}`);
+          }
+        }
+      }
+
+      posts.push({
+        code: shortcodeMedia.shortcode,
+        url: `https://www.instagram.com/p/${shortcodeMedia.shortcode}/`,
+        caption: shortcodeMedia.edge_media_to_caption.edges[0]?.node.text || "",
+        author: shortcodeMedia.owner.username,
+        authorImage: shortcodeMedia.owner.profile_pic_url,
+        media: formattedMedia.slice(0, 10), // Discord only supports up to 10 media items
+        postedAt: new Date(shortcodeMedia.taken_at_timestamp * 1000),
+      });
+    }
+    return posts;
+  } catch (error) {
+    const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
+    if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
+
+    const message = error instanceof Error ? error.message : "Unknown error fetching Instagram embed data";
+    console.error(error);
+    await testChan.send(`${userMention(userIDs.me)} Error fetching Instagram embed data for ${username}: ${message}`);
+    return [];
+  }
+}
+
 export async function fetchInstagram(source: "scheduled" | "random") {
   const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
@@ -166,38 +179,23 @@ export async function fetchInstagram(source: "scheduled" | "random") {
   await testChan.send(`[${source}] Fetching recent IG posts`).catch(console.error);
 
   try {
-    await initializeInstagram();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error during Instagram initialization";
-    console.error(error);
-    await testChan.send(`${userMention(userIDs.me)} Error initializing Instagram: ${message}`);
-    return;
-  }
-
-  try {
-    const feed = ig.feed.timeline("warm_start_fetch");
-    const items = await feed.items({ pagination_source: "following" });
-
-    const formattedPosts: FormattedInstagramPost[] = items
-      .filter((item) => !item.ad_id)
-      .map((item) => {
-        const captionText = item?.caption?.text || "*No caption*";
-        const authorName = item?.user?.username || "Unknown Author";
-
-        // Create the formatted post object
-        return {
-          code: item.code,
-          url: `https://instagram.com/p/${item.code}`,
-          caption: captionText,
-          author: authorName,
-          media: extractMedia(item),
-          postedAt: new Date(item.taken_at * 1000),
-          authorImage: item.user.profile_pic_url,
-        };
-      });
-
-    for (const post of formattedPosts) {
-      await sendInstagramPost(post);
+    for (const username of usernamesToWatch) {
+      const formattedPosts = await fetchIgForUsername(username);
+      for (const post of formattedPosts) {
+        // Sometimes other people's posts show up in the embed, skip those
+        if (post.author !== username) {
+          logger(
+            `Skipping IG post ${post.code} from ${post.author} as it does not match watched username ${username}.`,
+          );
+          continue;
+        }
+        // Only send if the post is new (sent within the last 3 hours)
+        if (addHours(new Date(post.postedAt), 3) < new Date()) {
+          logger(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
+          continue;
+        }
+        await sendInstagramPost(post);
+      }
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error during Instagram feed fetch";

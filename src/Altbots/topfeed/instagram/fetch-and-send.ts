@@ -187,6 +187,12 @@ export async function fetchInstagram(source: "scheduled" | "random") {
           logger(`Skipping IG post ${post.code} from ${post.author} as it is old.`);
           continue;
         }
+        // Sometimes other people's posts show up in the embed, skip those
+        if (post.author !== username) {
+          logger(
+            `Skipping IG post ${post.code} from ${post.author} as it does not match watched username ${username}.`,
+          );
+        }
         await sendInstagramPost(post);
       }
     }

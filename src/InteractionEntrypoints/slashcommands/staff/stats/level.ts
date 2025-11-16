@@ -12,13 +12,19 @@ const command = new SlashCommand({
       required: true,
       type: ApplicationCommandOptionType.Integer,
     },
+    {
+      name: "credits",
+      description: "An optional credits limit as well",
+      required: false,
+      type: ApplicationCommandOptionType.Integer,
+    },
   ],
 });
 
 command.setHandler(async (ctx) => {
   await ctx.deferReply();
 
-  const { level } = ctx.opts;
+  const { level, credits } = ctx.opts;
 
   const equivalentScore = LevelCalculator.calculateScore(level);
   const count = await prisma.user.count({
@@ -26,12 +32,17 @@ command.setHandler(async (ctx) => {
       score: {
         gte: equivalentScore,
       },
+      ...(credits ? { credits: { gte: credits } } : {}),
     },
   });
 
-  const embed = new EmbedBuilder()
-    .setTitle(`Users at level ${level} or higher`)
-    .setDescription(`There are **${count}** users at level ${level} or higher.`);
+  const embed = new EmbedBuilder().setTitle(`Users at level ${level} or higher`);
+
+  if (!credits) {
+    embed.setDescription(`There are **${count}** users at level ${level} or higher.`);
+  } else {
+    embed.setDescription(`There are **${count}** users at level ${level} or higher with at least ${credits} credits.`);
+  }
 
   await ctx.editReply({ embeds: [embed] });
 });

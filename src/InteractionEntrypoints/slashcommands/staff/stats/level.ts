@@ -14,7 +14,7 @@ const command = new SlashCommand({
     },
     {
       name: "credits",
-      description: "An optional credits limit as well",
+      description: "An optional credits amount as well",
       required: false,
       type: ApplicationCommandOptionType.Integer,
     },

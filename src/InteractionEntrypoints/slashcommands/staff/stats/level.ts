@@ -4,7 +4,7 @@ import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { LevelCalculator } from "Helpers";
 
 const command = new SlashCommand({
-  description: "Check how many users attained a certain level",
+  description: "Check how many active (still in server) users attained a certain level",
   options: [
     {
       name: "level",
@@ -32,11 +32,12 @@ command.setHandler(async (ctx) => {
       score: {
         gte: equivalentScore,
       },
+      currentlyInServer: true,
       ...(credits ? { credits: { gte: credits } } : {}),
     },
   });
 
-  const embed = new EmbedBuilder().setTitle(`Users at level ${level} or higher`);
+  const embed = new EmbedBuilder().setTitle(`Active users at level ${level} or higher`);
 
   if (!credits) {
     embed.setDescription(`There are **${count}** users at level ${level} or higher.`);

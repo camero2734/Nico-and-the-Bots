@@ -112,7 +112,7 @@ export const changes: Array<Change> = [
   RenameRole("Silver Screen", "Heavydirtystone", "#bec2cb"),
 
   NoChange("Clancy Black", "#000001"),
-  NoChange("DMAORG White", "#ffffff"),
+  NoChange("DMAORG White", "#fffffe"),
 
   AddRole("The Contrast", "#e0115f"),
   AddRole("Sky Away", "#00bfff"),

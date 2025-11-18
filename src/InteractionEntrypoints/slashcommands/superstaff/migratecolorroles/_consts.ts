@@ -68,7 +68,7 @@ export const changes: Array<Change> = [
   NoChange("No Pink Intended", "#b18f95"),
   NoChange("Goldies Station", "#a38a00"),
   RenameAndRecolorRole("Bandito Green", "RAWFERN", "#8a9a5b"),
-  RenameAndRecolorRole("Cheetah Tan", "Garbeige", "#ab9d85"),
+  RenameRole("Cheetah Tan", "Garbeige", "#ab9d85"),
   RenameAndRecolorRole("Vulture Brown", "Brownstairs", "#915919"),
   NoChange("Regional at Blue", "#6485a9"),
 

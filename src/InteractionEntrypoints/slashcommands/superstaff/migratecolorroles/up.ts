@@ -4,6 +4,10 @@ import { roles, userIDs } from "Configuration/config";
 import { ApplicationCommandOptionType } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 
+const COLOR_ROLE_IDENTIFIER = "⁣"; // Invisible character used to identify color roles
+
+const toColorRoleName = (name: string) => `${name}${COLOR_ROLE_IDENTIFIER}`;
+
 const command = new SlashCommand({
   description: "Makes changes",
   options: [
@@ -23,8 +27,8 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   for (const roleId of colorRoles) {
     const role = ctx.guild.roles.cache.get(roleId);
     if (!role) throw new Error(`Role with ID ${roleId} not found in guild`);
-    existingRoles.add(role.name.toLowerCase());
-    rolesAfterChange.add(role.name.toLowerCase());
+    existingRoles.add(role.name);
+    rolesAfterChange.add(role.name);
   }
 
   for (const change of changes) {
@@ -35,31 +39,31 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
         //   color: change.color,
         //   reason: "Migrating color roles",
         // });
-        rolesAfterChange.add(change.name.toLowerCase());
+        rolesAfterChange.add(toColorRoleName(change.name));
         break;
       }
       case "delete": {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === change.name.toLowerCase());
+        const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.name));
         if (!role) throw new Error(`Role to delete not found: ${change.name}`);
 
-        existingRoles.delete(change.name.toLowerCase());
-        rolesAfterChange.delete(change.name.toLowerCase());
+        existingRoles.delete(toColorRoleName(change.name));
+        rolesAfterChange.delete(toColorRoleName(change.name));
         // if (role) {
         //   await role.delete("Migrating color roles");
         // }
         break;
       }
       case "changeColor": {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === change.name.toLowerCase());
+        const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.name));
         if (!role) throw new Error(`Role to change color not found: ${change.name}`);
-        existingRoles.delete(change.name.toLowerCase());
+        existingRoles.delete(toColorRoleName(change.name));
         // if (role) {
         //   await role.setColor(change.to, "Migrating color roles");
         // }
         break;
       }
       case "rename": {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === change.from.toLowerCase());
+        const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.from));
         if (!role) throw new Error(`Role to rename not found: ${change.from}`);
 
         if (role.hexColor.toLowerCase() !== (change.expectedColor.primaryColor as string).toLowerCase()) {
@@ -68,20 +72,20 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
           );
         }
 
-        rolesAfterChange.delete(change.from.toLowerCase());
-        rolesAfterChange.add(change.to.toLowerCase());
-        existingRoles.delete(change.from.toLowerCase());
+        rolesAfterChange.delete(toColorRoleName(change.from));
+        rolesAfterChange.add(toColorRoleName(change.to));
+        existingRoles.delete(toColorRoleName(change.from));
         // if (role) {
         //   await role.setName(change.to, "Migrating color roles");
         // }
         break;
       }
       case "changeAndRename": {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === change.from.toLowerCase());
+        const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.from));
         if (!role) throw new Error(`Role to change and rename not found: ${change.from}`);
-        rolesAfterChange.delete(change.from.toLowerCase());
-        rolesAfterChange.add(change.to.toLowerCase());
-        existingRoles.delete(change.from.toLowerCase());
+        rolesAfterChange.delete(toColorRoleName(change.from));
+        rolesAfterChange.add(toColorRoleName(change.to));
+        existingRoles.delete(toColorRoleName(change.from));
         // if (role) {
         //   await role.setName(change.to, "Migrating color roles");
         //   await role.setColors(change.colorTo, "Migrating color roles");
@@ -89,13 +93,7 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
         break;
       }
       case "noChange": {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === change.name.toLowerCase());
-
-        const data = {
-          availableRoles: ctx.guild.roles.cache.map((r) => r.name),
-          targetRole: change.name,
-        };
-        await Bun.file("role-migration-debug.txt").write(JSON.stringify(data, null, 2));
+        const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.name));
 
         if (!role) {
           throw new Error(`Role for noChange not found: ${change.name}`);
@@ -106,7 +104,7 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
           );
         }
 
-        existingRoles.delete(change.name.toLowerCase());
+        existingRoles.delete(toColorRoleName(change.name));
 
         break;
       }

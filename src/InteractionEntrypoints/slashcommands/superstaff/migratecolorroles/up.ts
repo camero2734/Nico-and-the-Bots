@@ -34,6 +34,10 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   for (const change of changes) {
     switch (change.type) {
       case "add": {
+        const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.name));
+        if (role) {
+          throw new Error(`Role to add already exists: ${change.name}`);
+        }
         // const role = await ctx.guild.roles.create({
         //   name: change.name,
         //   color: change.color,

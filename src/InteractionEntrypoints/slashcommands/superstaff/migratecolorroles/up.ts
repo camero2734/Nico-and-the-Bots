@@ -80,9 +80,16 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
         // }
         break;
       }
-      case "changeAndRename": {
+      case "renameAndRecolor": {
         const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.from));
         if (!role) throw new Error(`Role to change and rename not found: ${change.from}`);
+
+        if (role.hexColor.toLowerCase() === (change.colorTo.primaryColor as string).toLowerCase()) {
+          throw new Error(
+            `Role is already the expected color for ${change.from}: expected ${change.colorTo.primaryColor}, got ${role.hexColor}`,
+          );
+        }
+
         rolesAfterChange.delete(toColorRoleName(change.from));
         rolesAfterChange.add(toColorRoleName(change.to));
         existingRoles.delete(toColorRoleName(change.from));
@@ -129,16 +136,6 @@ command.setHandler(async (ctx) => {
   await ctx.deferReply();
 
   // const { actual } = ctx.opts;
-
-  // Ensure all existing color roles have the special identifier
-  const existingColorRoleIds = Object.values(roles.colors).flatMap((x) => Object.values(x));
-  for (const roleId of existingColorRoleIds) {
-    const role = ctx.guild.roles.cache.get(roleId);
-    if (!role) throw new Error(`Role with ID ${roleId} not found in guild`);
-    if (!role.name.endsWith(COLOR_ROLE_IDENTIFIER)) {
-      await role.setName(`${role.name}${COLOR_ROLE_IDENTIFIER}`, "Adding color role identifier");
-    }
-  }
 
   if (ctx.user.id !== userIDs.me) {
     return await ctx.editReply("You do not have permission to use this command.");

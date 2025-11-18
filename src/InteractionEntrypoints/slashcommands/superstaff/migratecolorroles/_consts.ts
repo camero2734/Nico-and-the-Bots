@@ -77,7 +77,7 @@ export const changes: Array<Change> = [
   AddRole("Pear in My Heart", "#d1e231"),
   RenameAndRecolorRole("Jumpsuit Green", "Center Moss", "#63b76c"),
   NoChange("Holding on to Blue", "#4a83e6"),
-  NoChange("At the Risk of Feeling Plum", "#673147"),
+  NoChange("At The Risk Of Feeling Plum", "#673147"),
   RenameRole("Dema Gray", "City Walls Gray", "#9b9bad"),
   RenameRole("Pink You Out", "Rosebot Voices", "#eeb8dd"),
   NoChange("Kitchen Pink", "#c54b8c"),

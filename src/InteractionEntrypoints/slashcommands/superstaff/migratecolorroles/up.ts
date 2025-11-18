@@ -136,7 +136,6 @@ command.setHandler(async (ctx) => {
     const role = ctx.guild.roles.cache.get(roleId);
     if (!role) throw new Error(`Role with ID ${roleId} not found in guild`);
     if (!role.name.endsWith(COLOR_ROLE_IDENTIFIER)) {
-      console.log(`Would rename role: ${role.name} to ${role.name}${COLOR_ROLE_IDENTIFIER}`);
       await role.setName(`${role.name}${COLOR_ROLE_IDENTIFIER}`, "Adding color role identifier");
     }
   }

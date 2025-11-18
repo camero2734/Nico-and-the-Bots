@@ -90,7 +90,13 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
       }
       case "noChange": {
         const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === change.name.toLowerCase());
-        if (!role) throw new Error(`Role for noChange not found: ${change.name}`);
+        if (!role) {
+          console.log(
+            "Available roles",
+            ctx.guild.roles.cache.map((r) => r.name),
+          );
+          throw new Error(`Role for noChange not found: ${change.name}`);
+        }
         if (role.hexColor.toLowerCase() !== (change.expectedColor.primaryColor as string).toLowerCase()) {
           throw new Error(
             `Role color mismatch for ${change.name}: expected ${change.expectedColor.primaryColor}, got ${role.hexColor}`,

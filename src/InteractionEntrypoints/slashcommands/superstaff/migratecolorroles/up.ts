@@ -130,6 +130,17 @@ command.setHandler(async (ctx) => {
 
   // const { actual } = ctx.opts;
 
+  // Ensure all existing color roles have the special identifier
+  const existingColorRoleIds = Object.values(roles.colors).flatMap((x) => Object.values(x));
+  for (const roleId of existingColorRoleIds) {
+    const role = ctx.guild.roles.cache.get(roleId);
+    if (!role) throw new Error(`Role with ID ${roleId} not found in guild`);
+    if (!role.name.endsWith(COLOR_ROLE_IDENTIFIER)) {
+      console.log(`Would rename role: ${role.name} to ${role.name}${COLOR_ROLE_IDENTIFIER}`);
+      // await role.setName(`${role.name}${COLOR_ROLE_IDENTIFIER}`, "Adding color role identifier");
+    }
+  }
+
   if (ctx.user.id !== userIDs.me) {
     return await ctx.editReply("You do not have permission to use this command.");
   }

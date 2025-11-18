@@ -16,15 +16,7 @@ const command = new SlashCommand({
   ],
 });
 
-command.setHandler(async (ctx) => {
-  await ctx.deferReply();
-
-  // const { actual } = ctx.opts;
-
-  if (ctx.user.id !== userIDs.me) {
-    return await ctx.editReply("You do not have permission to use this command.");
-  }
-
+async function calculateRoleChanges(ctx: typeof command.ContextType) {
   const colorRoles = Object.values(roles.colors).flatMap((x) => Object.values(x));
   const existingRoles = new Set<string>();
   const rolesAfterChange = new Set<string>();
@@ -124,6 +116,24 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder().setTitle("Roles after migration").setDescription([...rolesAfterChange].join("\n"));
   return await ctx.editReply({ embeds: [embed] });
+}
+
+command.setHandler(async (ctx) => {
+  await ctx.deferReply();
+
+  // const { actual } = ctx.opts;
+
+  if (ctx.user.id !== userIDs.me) {
+    return await ctx.editReply("You do not have permission to use this command.");
+  }
+
+  try {
+    await calculateRoleChanges(ctx);
+  } catch (error) {
+    return await ctx.editReply(
+      `Error during role migration: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 });
 
 export default command;

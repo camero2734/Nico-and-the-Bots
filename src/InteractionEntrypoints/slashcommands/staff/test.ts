@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, MessageReferenceType, roleMention } from "discord.js";
+import { ApplicationCommandOptionType, InteractionWebhook, MessageReferenceType, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -55,15 +55,9 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 3) {
     await updatePreviousSongBattleMessage(1);
   } else if (ctx.opts.num === 12) {
-    const interactionToken = ctx.token;
-    const interactionId = ctx.applicationId;
+    const iw = new InteractionWebhook(ctx.client, ctx.applicationId, ctx.token);
 
-    const wc = new WebhookClient({
-      token: interactionToken,
-      id: ctx.applicationId,
-    });
-
-    wc.editMessage(interactionId, "Hello there!");
+    iw.editMessage(ctx.id, "Hello there!");
   } else if (ctx.opts.num === 42) {
     for (const role of withColor.values()) {
       await role.delete();

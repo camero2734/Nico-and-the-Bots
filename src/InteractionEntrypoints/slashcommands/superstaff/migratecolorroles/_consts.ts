@@ -123,6 +123,6 @@ export const changes: Array<Change> = [
   NoChange("Clancy Black", "#000001"),
   NoChange("DMAORG White", "#fffffe"),
 
-  AddRole("The Contrast", "#e0115f"),
-  AddRole("Sky Away", "#00bfff"),
+  AddRole("The Contrast", { primaryColor: "#e0115f", secondaryColor: "#ffadcb" }),
+  AddRole("Sky Away", { primaryColor: "#00bfff", secondaryColor: "#a1e3f9" }),
 ];

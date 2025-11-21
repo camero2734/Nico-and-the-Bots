@@ -11,6 +11,7 @@ import {
   updateCurrentSongBattleMessage,
   updatePreviousSongBattleMessage,
 } from "../../scheduled/songbattle";
+import { scheduleTestTask } from "Tasks/test";
 
 const command = new SlashCommand({
   description: "Test command",
@@ -51,6 +52,12 @@ command.setHandler(async (ctx) => {
     await updateCurrentSongBattleMessage();
   } else if (ctx.opts.num === 3) {
     await updatePreviousSongBattleMessage(1);
+  } else if (ctx.opts.num === 12) {
+    const msg = await ctx.channel.send("Test!");
+    if (!msg.reference) {
+      throw new CommandError("Message reference is null");
+    }
+    scheduleTestTask({ text: "Hello from test task!", message: msg.reference });
   } else if (ctx.opts.num === 42) {
     for (const role of withColor.values()) {
       await role.delete();

@@ -13,6 +13,7 @@ import {
 } from "../../scheduled/songbattle";
 import { scheduleTestTask } from "Tasks/test";
 import type { MessageReference } from "discord.js";
+import { WebhookClient } from "discord.js";
 
 const command = new SlashCommand({
   description: "Test command",
@@ -54,14 +55,15 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 3) {
     await updatePreviousSongBattleMessage(1);
   } else if (ctx.opts.num === 12) {
-    const msg = await ctx.channel.send("Test!");
-    const reference: MessageReference = {
-      type: MessageReferenceType.Default,
-      channelId: msg.channelId,
-      messageId: msg.id,
-      guildId: msg.guildId,
-    };
-    scheduleTestTask({ text: "Hello from test task!", message: reference });
+    const interactionToken = ctx.token;
+    const interactionId = ctx.applicationId;
+
+    const wc = new WebhookClient({
+      token: interactionToken,
+      id: ctx.applicationId,
+    });
+
+    wc.editMessage(interactionId, "Hello there!");
   } else if (ctx.opts.num === 42) {
     for (const role of withColor.values()) {
       await role.delete();

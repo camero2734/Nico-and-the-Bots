@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, roleMention } from "discord.js";
+import { ApplicationCommandOptionType, MessageReferenceType, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -12,6 +12,7 @@ import {
   updatePreviousSongBattleMessage,
 } from "../../scheduled/songbattle";
 import { scheduleTestTask } from "Tasks/test";
+import type { MessageReference } from "discord.js";
 
 const command = new SlashCommand({
   description: "Test command",
@@ -54,10 +55,13 @@ command.setHandler(async (ctx) => {
     await updatePreviousSongBattleMessage(1);
   } else if (ctx.opts.num === 12) {
     const msg = await ctx.channel.send("Test!");
-    if (!msg.reference) {
-      throw new CommandError("Message reference is null");
-    }
-    scheduleTestTask({ text: "Hello from test task!", message: msg.reference });
+    const reference: MessageReference = {
+      type: MessageReferenceType.Default,
+      channelId: msg.channelId,
+      messageId: msg.id,
+      guildId: msg.guildId,
+    };
+    scheduleTestTask({ text: "Hello from test task!", message: reference });
   } else if (ctx.opts.num === 42) {
     for (const role of withColor.values()) {
       await role.delete();

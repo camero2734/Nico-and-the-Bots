@@ -10,3 +10,5 @@ export const registerTask = <TParams, TName extends string>(
   app.registerTask({ name, ...options }, fn);
   return (params: TParams) => app.spawn(name, params);
 };
+
+await app.startWorker();

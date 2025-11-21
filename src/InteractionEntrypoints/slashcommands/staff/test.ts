@@ -55,9 +55,9 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 3) {
     await updatePreviousSongBattleMessage(1);
   } else if (ctx.opts.num === 12) {
-    const iw = new InteractionWebhook(ctx.client, ctx.applicationId, ctx.token);
+    const iw = new InteractionWebhook(ctx.client, ctx.webhook.id, ctx.webhook.token);
 
-    iw.editMessage(ctx.id, "Hello there!");
+    await iw.editMessage(ctx.id, "Hello there!");
   } else if (ctx.opts.num === 42) {
     for (const role of withColor.values()) {
       await role.delete();

@@ -1,5 +1,10 @@
 import type { ColorResolvable, RoleColorsResolvable } from "discord.js";
 
+type InputColorResolvable = Extract<ColorResolvable, string> | RoleColorsResolvable;
+
+const toResolvable = (color: InputColorResolvable): RoleColorsResolvable =>
+  typeof color === "string" ? { primaryColor: color } : color;
+
 type DeleteRole = {
   type: "delete";
   name: string;
@@ -11,10 +16,10 @@ type RecolorRole = {
   name: string;
   to: RoleColorsResolvable;
 };
-const RecolorRole = (name: string, to: ColorResolvable): RecolorRole => ({
+const RecolorRole = (name: string, to: InputColorResolvable): RecolorRole => ({
   type: "changeColor",
   name,
-  to: { primaryColor: to },
+  to: toResolvable(to),
 });
 
 type RenameRole = {
@@ -23,11 +28,11 @@ type RenameRole = {
   to: string;
   expectedColor: RoleColorsResolvable;
 };
-const RenameRole = (from: string, to: string, expectedColor: ColorResolvable): RenameRole => ({
+const RenameRole = (from: string, to: string, expectedColor: InputColorResolvable): RenameRole => ({
   type: "rename",
   from,
   to,
-  expectedColor: { primaryColor: expectedColor },
+  expectedColor: toResolvable(expectedColor),
 });
 
 type RenameAndRecolorRole = {
@@ -36,29 +41,33 @@ type RenameAndRecolorRole = {
   to: string;
   colorTo: RoleColorsResolvable;
 };
-const RenameAndRecolorRole = (from: string, to: string, colorTo: ColorResolvable): RenameAndRecolorRole => ({
+const RenameAndRecolorRole = (from: string, to: string, colorTo: InputColorResolvable): RenameAndRecolorRole => ({
   type: "renameAndRecolor",
   from,
   to,
-  colorTo: { primaryColor: colorTo },
+  colorTo: toResolvable(colorTo),
 });
 
 type AddRole = {
   type: "add";
   name: string;
-  color: ColorResolvable;
+  color: RoleColorsResolvable;
 };
-const AddRole = (name: string, color: ColorResolvable): AddRole => ({ type: "add", name, color });
+const AddRole = (name: string, color: InputColorResolvable): AddRole => ({
+  type: "add",
+  name,
+  color: toResolvable(color),
+});
 
 type NoChange = {
   type: "noChange";
   name: string;
   expectedColor: RoleColorsResolvable;
 };
-const NoChange = (name: string, expectedColor: ColorResolvable): NoChange => ({
+const NoChange = (name: string, expectedColor: InputColorResolvable): NoChange => ({
   type: "noChange",
   name,
-  expectedColor: { primaryColor: expectedColor },
+  expectedColor: toResolvable(expectedColor),
 });
 
 export type Change = DeleteRole | RecolorRole | RenameRole | RenameAndRecolorRole | AddRole | NoChange;

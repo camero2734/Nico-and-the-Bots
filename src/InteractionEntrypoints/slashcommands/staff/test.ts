@@ -6,6 +6,8 @@ import {
   ContainerBuilder,
   MessageFlags,
   SectionBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
   TextDisplayBuilder,
 } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
@@ -57,8 +59,7 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 433) {
     songBattleCron();
   } else {
-    // const container = new ContainerBuilder().setAccentColor(0xd07a21);
-    const containers = [];
+    const container = new ContainerBuilder().setAccentColor(0xd07a21);
 
     for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
       const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join(" ");
@@ -74,13 +75,12 @@ command.setHandler(async (ctx) => {
 
       section.setButtonAccessory(button);
 
-      const container = new ContainerBuilder().setAccentColor(0xd07a21);
       container.addSectionComponents(section);
-      containers.push(container);
+      container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
     }
 
     await ctx.editReply({
-      components: containers,
+      components: [container],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] },
     });

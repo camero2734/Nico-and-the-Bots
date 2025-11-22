@@ -75,7 +75,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
 
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`<@&${role.id}> ${cantAfford ? `(${missingCredits} more credits)` : ""}\n`),
+      new TextDisplayBuilder().setContent(`<@&${role.id}>\n`),
     );
     const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
@@ -83,7 +83,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
       .setDisabled(cantAfford)
       .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
       .setDisabled(cantAfford || ownsRole)
-      .setEmoji({ name: "🛒" })
+      .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
       .setCustomId(!ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID());
     if (contraband) button.setEmoji({ name: "🩸" });
 

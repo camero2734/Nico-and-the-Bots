@@ -62,7 +62,7 @@ command.setHandler(async (ctx) => {
     const container = new ContainerBuilder().setAccentColor(0xd07a21);
 
     for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
-      const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join(" ");
+      const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join("\n");
 
       const section = new SectionBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(`### ${categoryName}\n${categoryData.description}\n\n${roleMentions}`),

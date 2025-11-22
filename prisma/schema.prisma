@@ -154,6 +154,8 @@ model ColorRole {
 
   amountPaid Int
 
+  purchasedAt DateTime @default(now())
+
   @@id([roleId, userId])
 }
 

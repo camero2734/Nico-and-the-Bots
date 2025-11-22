@@ -71,7 +71,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
 
   category.data.roles.forEach((role) => {
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### <@&${role.id}>`),
+      new TextDisplayBuilder().setContent(`## <@&${role.id}>`),
     );
 
     const cantAfford = dbUser.credits < category.data.credits;
@@ -91,7 +91,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     section.setButtonAccessory(button);
 
     container.addSectionComponents(section);
-    container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large));
+    container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
   });
 
   container.addTextDisplayComponents(
@@ -265,7 +265,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     const roleMentions = item.data.roles.map((r) => `<@&${r.id}>`).join("\n");
 
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${label}\n${item.description}\n\n${roleMentions}`),
+      new TextDisplayBuilder().setContent(`## ${label}\n${item.description}\n\n${roleMentions}`),
     );
 
     const unlocked = item.data.unlockedFor(member, dbUser);

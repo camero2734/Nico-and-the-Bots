@@ -423,7 +423,7 @@ export async function calculateHistory() {
   };
 }
 
-export function determineResult(poll: Poll & { votes: Vote[] }): Result {
+export function determineResult(poll: Omit<Poll, "votes"> & { votes: Vote[] }): Result {
   const totalVotes = poll.votes.length;
   const song1Votes = poll.votes.filter((v) => v.choices[0] === 0).length;
   const song2Votes = totalVotes - song1Votes;

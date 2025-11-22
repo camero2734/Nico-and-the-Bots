@@ -70,7 +70,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
 
   category.data.roles.forEach((role) => {
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### <@&${role.id}>\n`),
+      new TextDisplayBuilder().setContent(`<@&${role.id}>\n`),
     );
 
     const cantAfford = dbUser.credits < category.data.credits;
@@ -92,11 +92,14 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     container.addSectionComponents(section);
   });
 
-  // container.addTextDisplayComponents(
-  //   new TextDisplayBuilder().setContent(
-  //     "-# Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
-  //   ),
-  // );
+  // We hit the max component limit if there are too many roles
+  if (category.data.roles.length < 12) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        "-# Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
+      ),
+    );
+  }
 
   const actionRow = MessageTools.allocateButtonsIntoRows([
     new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({})),

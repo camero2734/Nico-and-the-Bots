@@ -25,8 +25,26 @@ const command = new SlashCommand({
     {
       name: "num",
       description: "Number of times to test",
-      required: true,
+      required: false,
       type: ApplicationCommandOptionType.Integer,
+    },
+    {
+      name: "separator",
+      description: "A separator",
+      required: false,
+      type: ApplicationCommandOptionType.String,
+    },
+    {
+      name: "gap",
+      description: "A gap",
+      required: false,
+      type: ApplicationCommandOptionType.Boolean,
+    },
+    {
+      name: "divider",
+      description: "A divider",
+      required: false,
+      type: ApplicationCommandOptionType.Boolean,
     },
   ],
 });
@@ -61,8 +79,13 @@ command.setHandler(async (ctx) => {
   } else {
     const container = new ContainerBuilder().setAccentColor(0xd07a21);
 
+    // const { separator, gap, divider } = ctx.opts;
+    const separator = ctx.opts.separator ?? "\n";
+    const gap = ctx.opts.gap ?? true;
+    const divider = ctx.opts.divider ?? true;
+
     for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
-      const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join("\n");
+      const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join(separator);
 
       const section = new SectionBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(`### ${categoryName}\n${categoryData.description}\n\n${roleMentions}`),
@@ -76,7 +99,11 @@ command.setHandler(async (ctx) => {
       section.setButtonAccessory(button);
 
       container.addSectionComponents(section);
-      container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
+      container.addSeparatorComponents(
+        new SeparatorBuilder()
+          .setDivider(divider)
+          .setSpacing(gap ? SeparatorSpacingSize.Large : SeparatorSpacingSize.Small),
+      );
     }
 
     await ctx.editReply({

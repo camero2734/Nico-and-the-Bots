@@ -169,7 +169,7 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
 
     description += `**${type.toUpperCase()}**\n`;
     for (const { role, withRole, inInventory } of groupedChanges[type]) {
-      description += `• ${role.name} (ID: ${role.id}) - Members with role: ${withRole}, In inventory: ${inInventory}\n`;
+      description += `<@&${role.id}> ${inInventory} (${withRole})\n`;
     }
     description += "\n";
   }

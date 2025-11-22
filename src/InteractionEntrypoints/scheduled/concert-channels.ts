@@ -1,17 +1,8 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ChannelType,
-  type ForumChannel,
-  type Guild,
-  MessageFlags,
-} from "discord.js";
-import { guild } from "../../../app";
-import { channelIDs, roles } from "../../Configuration/config";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, type ForumChannel, type Guild } from "discord.js";
+import { channelIDs } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
-import { CONCERT_URL, ConcertChannel, type ConcertEntry, ROLE_HEX } from "./concert-channels.consts";
+import { CONCERT_URL, ConcertChannel, type ConcertEntry } from "./concert-channels.consts";
 
 const entrypoint = new ManualEntrypoint();
 
@@ -93,11 +84,6 @@ class ConcertChannelManager {
   }
 
   async #registerConcert(toAdd: ConcertChannel): Promise<void> {
-    const referenceRole = await this.guild.roles.fetch(roles.topfeed.divider);
-    if (!referenceRole) {
-      console.log("[Concert Channels] Reference role not found");
-      return;
-    }
     if (!this.#forumChannel) {
       console.log("[Concert Channels] Forum channel not found");
       return;
@@ -106,13 +92,6 @@ class ConcertChannelManager {
     console.log(
       `[Concert Channels] Registering ${toAdd.venueId} with role ${toAdd.roleName} and thread ${toAdd.threadName}`,
     );
-    const role = await this.guild.roles.create({
-      name: toAdd.roleName,
-      color: ROLE_HEX,
-      position: referenceRole.position + 1,
-    });
-
-    console.log(`[Concert Channels] Created role ${role.name} with ID ${role.id}`);
 
     const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the concert, tickets, share pictures, etc.`;
 
@@ -125,14 +104,6 @@ class ConcertChannelManager {
         new ButtonBuilder().setLabel("Presale").setEmoji("⚡").setStyle(ButtonStyle.Link).setURL(toAdd.presaleUrl),
       );
     }
-
-    actionRow.addComponents(
-      new ButtonBuilder()
-        .setLabel("Get Role")
-        .setEmoji("🎫")
-        .setStyle(ButtonStyle.Primary)
-        .setCustomId(genBtnId({ roleId: role.id })),
-    );
 
     console.log(`[Concert Channels] Creating thread for ${toAdd.threadName}`);
     const forumPost = await this.#forumChannel.threads.create({
@@ -152,32 +123,12 @@ class ConcertChannelManager {
       data: {
         id: toAdd.id,
         channelId: forumPost.id,
-        roleId: role.id,
+        roleId: Bun.randomUUIDv7(),
         venue: toAdd.concert.venue.name,
       },
     });
   }
 }
-
-const genBtnId = entrypoint.addInteractionListener("getConcertRole", ["roleId"], async (ctx, args) => {
-  await ctx.deferReply({
-    flags: MessageFlags.Ephemeral,
-  });
-
-  const role = await guild.roles.fetch(args.roleId);
-  if (!role) {
-    ctx.editReply("Role not found");
-    return;
-  }
-
-  if (ctx.member.roles.cache.has(role.id)) {
-    await ctx.member.roles.remove(role);
-    await ctx.editReply("🎫 Concert Role removed!");
-  } else {
-    await ctx.member.roles.add(role);
-    await ctx.editReply("🎫 Concert Role added!");
-  }
-});
 
 let concertChannelManager: ConcertChannelManager;
 export const getConcertChannelManager = (guild: Guild) => {
@@ -187,9 +138,3 @@ export const getConcertChannelManager = (guild: Guild) => {
 };
 
 export default entrypoint;
-
-// new Cron("44 1 * * *", async () => {
-//   if (!guild) return;
-//   await concertChannelManager.initialize();
-//   await concertChannelManager.checkChannels();
-// });

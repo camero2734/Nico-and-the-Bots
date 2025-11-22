@@ -5,11 +5,11 @@ import { ApplicationCommandOptionType, type Role } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import { prisma } from "Helpers/prisma-init";
 import F from "Helpers/funcs";
-import { addColorRole } from "Tasks/colorroles/add";
-import { recolorColorRole } from "Tasks/colorroles/recolor";
-import { renameColorRole } from "Tasks/colorroles/rename";
-import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
-import { deleteColorRole } from "Tasks/colorroles/delete";
+// import { addColorRole } from "Tasks/colorroles/add";
+// import { recolorColorRole } from "Tasks/colorroles/recolor";
+// import { renameColorRole } from "Tasks/colorroles/rename";
+// import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
+// import { deleteColorRole } from "Tasks/colorroles/delete";
 
 const COLOR_ROLE_IDENTIFIER = "⁣"; // Invisible character used to identify color roles
 

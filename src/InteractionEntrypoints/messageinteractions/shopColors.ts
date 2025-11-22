@@ -352,7 +352,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     } finally {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`,
+          `-# This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`,
         ),
       );
 

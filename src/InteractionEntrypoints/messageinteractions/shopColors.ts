@@ -2,7 +2,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ContainerBuilder,
-  EmbedBuilder,
   type GuildMember,
   type InteractionEditReplyOptions,
   MessageFlags,
@@ -10,6 +9,7 @@ import {
   SeparatorBuilder,
   SeparatorSpacingSize,
   TextDisplayBuilder,
+  ThumbnailBuilder,
 } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
@@ -268,17 +268,13 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
   let title = "Good Day Dema® Discord Shop";
   if (contraband) title = F.randomizeLetters(title);
   const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
-  const footer = contraband
-    ? F.randomizeLetters(
-        "thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
-        0.1,
-      )
-    : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
   const container = new ContainerBuilder().setAccentColor(role.color);
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent([`### ${title}`, `## ${role.name}`, ""].join("\n")),
-  );
+
+  const section = new SectionBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${title}\n## ${role.name}\n`))
+    .setThumbnailAccessory(new ThumbnailBuilder().setURL(shopImage));
+  container.addSectionComponents(section);
 
   if (actionType === ActionTypes.View) {
     container.addTextDisplayComponents(
@@ -294,7 +290,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     if (contraband) {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          "⚠️ **WARNING**: This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave.",
+          "-# ⚠️ **WARNING**: This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave.",
         ),
       );
     }
@@ -346,7 +342,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     );
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `-# **How do I "equip" this role?**\nTo actually apply this role, simply use the \`/roles colors\` command. You may only have one color role applied at a time (but you can own as many as you want).`,
+        `-# **How do I "equip" this role?**\n-# To actually apply this role, simply use the \`/roles colors\` command. You may only have one color role applied at a time (but you can own as many as you want).`,
       ),
     );
 

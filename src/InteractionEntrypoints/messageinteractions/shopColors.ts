@@ -244,6 +244,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
       [
+        "### <:gooddaydema:1226628716076204033> Good Day Dema® Discord Shop",
         "Welcome to the official Discord color role shop! Feel free to peruse the shop to add a little more... saturation.",
         "",
         "Choose one of the categories below. A submenu will open that allows you to purchase roles within that category.",

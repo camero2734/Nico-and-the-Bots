@@ -5,6 +5,11 @@ import { ApplicationCommandOptionType, type Role } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import { prisma } from "Helpers/prisma-init";
 import F from "Helpers/funcs";
+import { addColorRole } from "Tasks/colorroles/add";
+import { recolorColorRole } from "Tasks/colorroles/recolor";
+import { renameColorRole } from "Tasks/colorroles/rename";
+import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
+import { deleteColorRole } from "Tasks/colorroles/delete";
 
 const COLOR_ROLE_IDENTIFIER = "⁣"; // Invisible character used to identify color roles
 
@@ -24,7 +29,7 @@ const command = new SlashCommand({
 
 type ExtendedChange = Change & { inInventory?: number; withRole?: number; role?: Role };
 
-async function calculateRoleChanges(ctx: typeof command.ContextType) {
+async function calculateRoleChanges(ctx: typeof command.ContextType): Promise<ExtendedChange[]> {
   const colorRoles = Object.values(roles.colors).flatMap((x) => Object.values(x));
   const existingRoles = new Set<string>();
   const rolesAfterChange = new Set<string>();
@@ -154,7 +159,7 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
     await ctx.editReply(
       `ERROR! Roles that were expected to be changed but were not modified: ${[...existingRoles].join(", ")}`,
     );
-    return;
+    throw new Error("Some roles were not modified as expected.");
   }
 
   const deleteChanges = extendedChanges.filter((c) => c.type === "delete");
@@ -226,7 +231,8 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
     )
     .setColor("Green");
 
-  return await ctx.editReply({ embeds: [embed] });
+  await ctx.editReply({ embeds: [embed] });
+  return extendedChanges;
 }
 
 command.setHandler(async (ctx) => {
@@ -239,7 +245,46 @@ command.setHandler(async (ctx) => {
   }
 
   try {
-    await calculateRoleChanges(ctx);
+    const extendedChanges = await calculateRoleChanges(ctx);
+    if (!ctx.opts.actual) return;
+
+    if (Math.random() < 5) return await ctx.followUp("Actual migration not yet implemented.");
+
+    void extendedChanges;
+    // for (const change of extendedChanges) {
+    //   switch (change.type) {
+    //     case "add": {
+    //       addColorRole({ name: change.name, change });
+    //       break;
+    //     }
+    //     case "changeColor": {
+    //       if (!change.role) throw new Error("Role not found for changeColor");
+    //       recolorColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "rename": {
+    //       if (!change.role) throw new Error("Role not found for rename");
+    //       renameColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "renameAndRecolor": {
+    //       if (!change.role) throw new Error("Role not found for renameAndRecolor");
+    //       renameAndRecolorColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "delete": {
+    //       if (!change.role) throw new Error("Role not found for delete");
+    //       deleteColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "noChange": {
+    //       break;
+    //     }
+    //     default: {
+    //       throw new Error(`Unhandled change type during migration: ${JSON.stringify(change satisfies never)}`);
+    //     }
+    //   }
+    // }
   } catch (error) {
     return await ctx.editReply(
       `Error during role migration: ${error instanceof Error ? error.message : String(error)}`,

@@ -1,4 +1,4 @@
-import type { VerifiedQuizAnswer } from "@prisma/client";
+import type { VerifiedQuizAnswer } from "../../../../generated/prisma/client";
 import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import R from "ramda";
 import progressBar from "string-progressbar";

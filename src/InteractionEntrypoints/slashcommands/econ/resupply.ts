@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import type { BishopType, DailyBox, User } from "@prisma/client";
+import type { BishopType, DailyBox, User } from "../../../../generated/prisma/client";
 import { format } from "date-fns";
 import {
   ActionRowBuilder,

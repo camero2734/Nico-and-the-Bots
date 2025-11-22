@@ -10,6 +10,7 @@
         "@googleapis/youtube": "^25.1.0",
         "@napi-rs/canvas": "^0.1.80",
         "@prisma/adapter-pg": "^7.0.0",
+        "@prisma/client": "^7.0.0",
         "@solely/simple-fm": "^1.6.4",
         "absurd-sdk": "^0.0.5",
         "bigint-conversion": "^2.4.3",
@@ -47,7 +48,7 @@
         "ordinal": "^1.0.3",
         "parse-duration": "^1.1.0",
         "pg": "^8.16.3",
-        "prisma": "7.0.0",
+        "prisma": "^7.0.0",
         "radix-64": "^1.0.4",
         "ramda": "^0.27.1",
         "remove": "^0.1.5",
@@ -260,6 +261,10 @@
     "@napi-rs/canvas-win32-x64-msvc": ["@napi-rs/canvas-win32-x64-msvc@0.1.80", "", { "os": "win32", "cpu": "x64" }, "sha512-Z8jPsM6df5V8B1HrCHB05+bDiCxjE9QA//3YrkKIdVDEwn5RKaqOxCJDRJkl48cJbylcrJbW4HxZbTte8juuPg=="],
 
     "@prisma/adapter-pg": ["@prisma/adapter-pg@7.0.0", "", { "dependencies": { "@prisma/driver-adapter-utils": "7.0.0", "pg": "^8.16.3", "postgres-array": "3.0.4" } }, "sha512-cis1Ib+TVbtSi2VU5Zm1fSmAcA8jg7KwUTbJ6LcWIm1eww380utXM8G23F3UCEPOJO4HiKt6adP/Q1hukjAkgw=="],
+
+    "@prisma/client": ["@prisma/client@7.0.0", "", { "dependencies": { "@prisma/client-runtime-utils": "7.0.0" }, "peerDependencies": { "prisma": "*", "typescript": ">=5.4.0" }, "optionalPeers": ["prisma", "typescript"] }, "sha512-FM1NtJezl0zH3CybLxcbJwShJt7xFGSRg+1tGhy3sCB8goUDnxnBR+RC/P35EAW8gjkzx7kgz7bvb0MerY2VSw=="],
+
+    "@prisma/client-runtime-utils": ["@prisma/client-runtime-utils@7.0.0", "", {}, "sha512-PAiFgMBPrLSaakBwUpML5NevipuKSL3rtNr8pZ8CZ3OBXo0BFcdeGcBIKw/CxJP6H4GNa4+l5bzJPrk8Iq6tDw=="],
 
     "@prisma/config": ["@prisma/config@7.0.0", "", { "dependencies": { "c12": "3.1.0", "deepmerge-ts": "7.1.5", "effect": "3.18.4", "empathic": "2.0.0" } }, "sha512-TDASB57hyGUwHB0IPCSkoJcXFrJOKA1+R/1o4np4PbS+E0F5MiY5aAyUttO0mSuNQaX7t8VH/GkDemffF1mQzg=="],
 

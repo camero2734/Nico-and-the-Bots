@@ -1,5 +1,5 @@
 import { Canvas } from "@napi-rs/canvas";
-import type { Poll, Vote } from "@prisma/client";
+import type { Poll, Vote } from "../../../generated/prisma/client";
 import {
   CategoryScale,
   Chart,

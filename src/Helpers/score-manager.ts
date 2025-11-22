@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import type { User } from "../../generated/prisma/client";
 import { startOfDay } from "date-fns";
 import {
   DiscordAPIError,

@@ -1,5 +1,5 @@
 import { getColorRoleCategories } from "InteractionEntrypoints/messageinteractions/shop.consts";
-import { ApplicationCommandOptionType, ButtonBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ButtonBuilder, ContainerBuilder } from "discord.js";
 import { MessageFlags } from "discord.js";
 import { ButtonStyle } from "discord.js";
 import { SectionBuilder } from "discord.js";
@@ -57,9 +57,7 @@ command.setHandler(async (ctx) => {
     const components = [];
 
     for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
-      const roleMentions = Object.values(categoryData.data)
-        .map((roleId) => `<@&${roleId}>`)
-        .join(" ");
+      const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join(" ");
 
       const section = new SectionBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(`### ${categoryName}\n${categoryData.description}\n\n${roleMentions}`),
@@ -75,9 +73,12 @@ command.setHandler(async (ctx) => {
       components.push(section);
     }
 
+    const container = new ContainerBuilder().addSectionComponents(components).setAccentColor(0xd07a21);
+
     await ctx.editReply({
-      components: components,
+      components: [container],
       flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { parse: [] },
     });
   }
 });

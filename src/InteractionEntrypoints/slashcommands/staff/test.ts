@@ -2,16 +2,13 @@ import { getColorRoleCategories } from "InteractionEntrypoints/messageinteractio
 import {
   ApplicationCommandOptionType,
   ButtonBuilder,
+  ButtonStyle,
   ContainerBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
+  MessageFlags,
+  SectionBuilder,
+  TextDisplayBuilder,
 } from "discord.js";
-import { MessageFlags } from "discord.js";
-import { ButtonStyle } from "discord.js";
-import { SectionBuilder } from "discord.js";
-import { TextDisplayBuilder } from "discord.js";
-import { userIDs } from "../../../Configuration/config";
-import { roles as roleIDs } from "../../../Configuration/config";
+import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
@@ -60,7 +57,8 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 433) {
     songBattleCron();
   } else {
-    const container = new ContainerBuilder().setAccentColor(0xd07a21);
+    // const container = new ContainerBuilder().setAccentColor(0xd07a21);
+    const containers = [];
 
     for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
       const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join(" ");
@@ -75,12 +73,14 @@ command.setHandler(async (ctx) => {
         .setCustomId(Bun.randomUUIDv7());
 
       section.setButtonAccessory(button);
+
+      const container = new ContainerBuilder().setAccentColor(0xd07a21);
       container.addSectionComponents(section);
-      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small));
+      containers.push(container);
     }
 
     await ctx.editReply({
-      components: [container],
+      components: containers,
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [] },
     });

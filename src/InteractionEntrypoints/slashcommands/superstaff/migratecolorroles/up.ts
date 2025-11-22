@@ -181,20 +181,35 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   for (const type of F.keys(groupedChanges)) {
     if (groupedChanges[type].length === 0) continue;
 
-    description += `**${type.toUpperCase()}**\n`;
+    const symbol =
+      type === "add"
+        ? "➕"
+        : type === "delete"
+          ? "🗑️"
+          : type === "rename"
+            ? "✏️"
+            : type === "renameAndRecolor"
+              ? "✏️🎨"
+              : type === "changeColor"
+                ? "🎨"
+                : type === "noChange"
+                  ? "✅"
+                  : "";
+
+    description += `**${symbol} ${type.toUpperCase()}**\n`;
     for (const change of groupedChanges[type]) {
       if (change.type === "add") {
-        description += `➕ ${change.name}\n`;
+        description += `${change.name}\n`;
       } else if (change.type === "delete") {
-        description += `🗑️ <@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
+        description += `<@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "rename") {
-        description += `✏️ <@&${change.role?.id}> -> ${change.to} | ${change.inInventory} (${change.withRole})\n`;
+        description += `<@&${change.role?.id}> -> ${change.to} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "renameAndRecolor") {
-        description += `✏️🎨 <@&${change.role?.id}> -> ${change.to} & ${change.colorTo.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
+        description += `<@&${change.role?.id}> -> ${change.to} & ${change.colorTo.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "changeColor") {
-        description += `🎨 <@&${change.role?.id}> -> ${change.to.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
+        description += `<@&${change.role?.id}> -> ${change.to.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "noChange") {
-        description += `✅ <@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
+        description += `<@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
       } else {
         throw new Error(`Unhandled change type: ${change satisfies never}`);
       }

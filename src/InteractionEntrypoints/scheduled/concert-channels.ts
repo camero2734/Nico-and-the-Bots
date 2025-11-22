@@ -83,6 +83,11 @@ class ConcertChannelManager {
     }
   }
 
+  get forumChannel() {
+    if (!this.#forumChannel) throw new Error("Forum channel not initialized");
+    return this.#forumChannel;
+  }
+
   async #registerConcert(toAdd: ConcertChannel): Promise<void> {
     if (!this.#forumChannel) {
       console.log("[Concert Channels] Forum channel not found");

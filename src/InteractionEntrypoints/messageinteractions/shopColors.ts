@@ -67,11 +67,10 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
       ].join("\n"),
     ),
   );
-  // container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
 
   category.data.roles.forEach((role) => {
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### <@&${role.id}>`),
+      new TextDisplayBuilder().setContent(`### <@&${role.id}>\n`),
     );
 
     const cantAfford = dbUser.credits < category.data.credits;
@@ -91,14 +90,13 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     section.setButtonAccessory(button);
 
     container.addSectionComponents(section);
-    // container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large));
   });
 
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-      "-# Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
-    ),
-  );
+  // container.addTextDisplayComponents(
+  //   new TextDisplayBuilder().setContent(
+  //     "-# Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
+  //   ),
+  // );
 
   const actionRow = MessageTools.allocateButtonsIntoRows([
     new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({})),

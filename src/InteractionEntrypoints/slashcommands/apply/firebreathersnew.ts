@@ -1,4 +1,3 @@
-import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -9,7 +8,7 @@ import {
   ModalBuilder,
   TextInputBuilder,
 } from "discord.js";
-import { nanoid } from "nanoid";
+import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -153,7 +152,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"
   const currentData = (current?.responseData as Record<string, string>) || {};
 
   await prisma.firebreatherApplication.upsert({
-    where: { applicationId: current?.applicationId || nanoid() },
+    where: { applicationId: current?.applicationId || Bun.randomUUIDv7() },
     create: {
       responseData: { ...currentData, ...newData },
       userId: ctx.user.id,
@@ -191,7 +190,7 @@ const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], a
 
   const transformedData: Record<string, string> = {};
   for (const [id, value] of Object.entries(responseData)) {
-    let question: Question | undefined = undefined;
+    let question: Question | undefined;
     for (const part of Object.values(FORM)) {
       if (part[id]) question = part[id];
     }

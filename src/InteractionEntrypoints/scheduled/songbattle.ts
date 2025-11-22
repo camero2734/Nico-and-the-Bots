@@ -7,10 +7,9 @@ import {
   ContainerBuilder,
   type MessageEditOptions,
   MessageFlags,
-  ThreadAutoArchiveDuration,
   roleMention,
+  ThreadAutoArchiveDuration,
 } from "discord.js";
-import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
@@ -20,9 +19,6 @@ import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
   type Album,
-  PREFIX,
-  Result,
-  type SongContender,
   calculateHistory,
   createResultsChart,
   determineNextMatchup,
@@ -30,6 +26,9 @@ import {
   embedFooter,
   fromSongId,
   getTotalMatches,
+  PREFIX,
+  Result,
+  type SongContender,
   toSongId,
 } from "./songbattle.consts";
 
@@ -141,7 +140,7 @@ export async function songBattleCron() {
   });
 
   // Create database poll
-  const pollName = `${PREFIX}${nextBattleNumber}-${nanoid(10)}`;
+  const pollName = `${PREFIX}${nextBattleNumber}-${Bun.randomUUIDv7()}`;
   const poll = await prisma.poll.create({
     data: {
       name: pollName,

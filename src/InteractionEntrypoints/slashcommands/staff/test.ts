@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, InteractionWebhook, MessageReferenceType, roleMention } from "discord.js";
+import { ApplicationCommandOptionType, InteractionWebhook, roleMention } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -11,9 +11,6 @@ import {
   updateCurrentSongBattleMessage,
   updatePreviousSongBattleMessage,
 } from "../../scheduled/songbattle";
-import { scheduleTestTask } from "Tasks/test";
-import type { MessageReference } from "discord.js";
-import { WebhookClient } from "discord.js";
 
 const command = new SlashCommand({
   description: "Test command",

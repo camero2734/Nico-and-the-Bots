@@ -1,12 +1,14 @@
-import { ApplicationCommandOptionType, InteractionWebhook, roleMention } from "discord.js";
+import { getColorRoleCategories } from "InteractionEntrypoints/messageinteractions/shop.consts";
+import { ApplicationCommandOptionType, ButtonBuilder } from "discord.js";
+import { MessageFlags } from "discord.js";
+import { ButtonStyle } from "discord.js";
+import { SectionBuilder } from "discord.js";
+import { TextDisplayBuilder } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
-import { CommandError } from "../../../Configuration/definitions";
-import F from "../../../Helpers/funcs";
-import { prisma } from "../../../Helpers/prisma-init";
-import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { roles as roleIDs } from "../../../Configuration/config";
+import { CommandError } from "../../../Configuration/definitions";
+import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
-  cron,
   songBattleCron,
   updateCurrentSongBattleMessage,
   updatePreviousSongBattleMessage,
@@ -27,10 +29,8 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   if (ctx.user.id !== userIDs.me) return;
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply();
 
-  const roles = await ctx.guild.roles.fetch();
-  const withColor = roles.filter((r) => r.hexColor.toLowerCase() === "#ffc6d5");
   if (ctx.opts.num === 1) {
     const role = await ctx.guild.roles.fetch(roleIDs.new);
     if (!role) {
@@ -51,72 +51,34 @@ command.setHandler(async (ctx) => {
     await updateCurrentSongBattleMessage();
   } else if (ctx.opts.num === 3) {
     await updatePreviousSongBattleMessage(1);
-  } else if (ctx.opts.num === 12) {
-    const iw = new InteractionWebhook(ctx.client, ctx.applicationId, ctx.token);
-
-    await iw.editMessage("@original", "Hello there!");
-  } else if (ctx.opts.num === 42) {
-    for (const role of withColor.values()) {
-      await role.delete();
-    }
-
-    await ctx.editReply("Done");
-  } else if (ctx.opts.num === 420) {
-    // songBattleCron();
-    const nextRun = cron.nextRun();
-    if (!nextRun) throw new CommandError("Next run is null");
-
-    const timeStamp = F.discordTimestamp(nextRun, "relative");
-    await ctx.editReply(`Next run: ${timeStamp} (\`${timeStamp}\`)`);
   } else if (ctx.opts.num === 433) {
     songBattleCron();
-  } else if (ctx.opts.num === 444) {
-    const bfx1 = await ctx.guild.roles.fetch("1373674037204484167");
-    const bfx2 = await ctx.guild.roles.fetch("1373724238695108761");
-
-    if (!bfx1 || !bfx2) {
-      throw new CommandError("One of the roles is not found");
-    }
-    const bfxHolders = new Set<string>();
-    for (const member of bfx1.members.values()) {
-      bfxHolders.add(member.id);
-    }
-    for (const member of bfx2.members.values()) {
-      bfxHolders.add(member.id);
-    }
-
-    const membersInDatabaseWithoutBfxBadge = await prisma.user.findMany({
-      select: { id: true },
-      where: {
-        badges: {
-          none: {
-            type: "BFX",
-          },
-        },
-      },
-    });
-
-    const membersInDatabaseSet = new Set(membersInDatabaseWithoutBfxBadge.map((u) => u.id));
-
-    const members = Array.from(bfxHolders.intersection(membersInDatabaseSet));
-    const batchSize = 1000;
-
-    for (let i = 0; i < members.length; i += batchSize) {
-      console.log(`Processing batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(members.length / batchSize)}`);
-      const batch = members.slice(i, i + batchSize);
-      await prisma.badge.createMany({
-        data: batch.map((id) => ({
-          userId: id,
-          type: "BFX",
-        })),
-        skipDuplicates: true,
-      });
-    }
-    await ctx.editReply("Done processing BFX members");
   } else {
-    const msg = withColor.map((x) => roleMention(x.id)).join("\n");
+    const components = [];
 
-    await ctx.editReply(msg);
+    for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
+      const roleMentions = Object.values(categoryData.data)
+        .map((roleId) => `<@&${roleId}>`)
+        .join(" ");
+
+      const section = new SectionBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`### ${categoryName}\n${categoryData.description}\n\n${roleMentions}`),
+      );
+
+      const button = new ButtonBuilder()
+        .setCustomId(`category_${categoryData.id}`)
+        .setLabel(categoryName)
+        .setStyle(ButtonStyle.Primary)
+        .setCustomId(Bun.randomUUIDv7());
+
+      section.setButtonAccessory(button);
+      components.push(section);
+    }
+
+    await ctx.editReply({
+      components: components,
+      flags: MessageFlags.IsComponentsV2,
+    });
   }
 });
 

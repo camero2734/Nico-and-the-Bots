@@ -54,49 +54,57 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     colorRoles: true,
   });
 
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: "Good Day Dema® Discord Shop",
-      iconURL: "https://i.redd.it/wd53naq96lr61.png",
-    })
-    .setTitle(name)
-    .setColor(0xd07a21)
-    .setDescription(`*${category.description}*\n`)
-    .addFields([{ name: "Credits", value: `${category.data.credits}` }])
-    .addFields([
-      {
-        name: "\u200b",
-        value: `${category.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
-      },
-    ])
-    .setFooter({
-      text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
-    });
+  const container = new ContainerBuilder().setAccentColor(0xd07a21);
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      [
+        "### <:gooddaydema:1226628716076204033> Good Day Dema® Discord Shop",
+        `**${name}**`,
+        `${category.description}`,
+        "",
+        `**Cost:** ${category.data.credits} credits`,
+        "",
+      ].join("\n"),
+    ),
+  );
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
 
-  const cantAfford = dbUser.credits < category.data.credits;
-  const missingCredits = category.data.credits - dbUser.credits;
+  category.data.roles.forEach((role) => {
+    const section = new SectionBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`### <@&${role.id}>`),
+    );
 
-  const rawComponents = category.data.roles.map((role) => {
+    const cantAfford = dbUser.credits < category.data.credits;
+    const missingCredits = category.data.credits - dbUser.credits;
     const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
     const ownsRole = dbUser.colorRoles.some((r) => r.roleId === role.id);
     const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-    const builder = new ButtonBuilder()
+    const button = new ButtonBuilder()
       .setDisabled(cantAfford)
       .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
       .setDisabled(cantAfford || ownsRole)
       .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
       .setCustomId(!ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID());
-    if (contraband) builder.setEmoji({ name: "🩸" });
-    return builder;
+    if (contraband) button.setEmoji({ name: "🩸" });
+
+    section.setButtonAccessory(button);
+
+    container.addSectionComponents(section);
+    container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large));
   });
 
-  const components = MessageTools.allocateButtonsIntoRows([
-    ...rawComponents,
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      "-# Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
+    ),
+  );
+
+  const actionRow = MessageTools.allocateButtonsIntoRows([
     new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({})),
   ]);
 
-  await ctx.editReply({ embeds: [embed], components });
+  await ctx.editReply({ components: [container, ...actionRow] });
 });
 
 // Viewing a specific item

@@ -63,15 +63,15 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
         `${category.description}`,
         "",
         `**Cost:** ${category.data.credits} credits`,
-        "",
+        "\n\n",
       ].join("\n"),
     ),
   );
-  container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
+  // container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
 
   category.data.roles.forEach((role) => {
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`## <@&${role.id}>`),
+      new TextDisplayBuilder().setContent(`### <@&${role.id}>`),
     );
 
     const cantAfford = dbUser.credits < category.data.credits;
@@ -91,7 +91,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     section.setButtonAccessory(button);
 
     container.addSectionComponents(section);
-    container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
+    // container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large));
   });
 
   container.addTextDisplayComponents(

@@ -1,8 +1,9 @@
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
-import { changes } from "./_consts";
+import { type Change, changes } from "./_consts";
 import { roles, userIDs } from "Configuration/config";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, type Role } from "discord.js";
 import { EmbedBuilder } from "discord.js";
+import { prisma } from "Helpers/prisma-init";
 
 const COLOR_ROLE_IDENTIFIER = "⁣"; // Invisible character used to identify color roles
 
@@ -24,12 +25,17 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   const colorRoles = Object.values(roles.colors).flatMap((x) => Object.values(x));
   const existingRoles = new Set<string>();
   const rolesAfterChange = new Set<string>();
+
+  const appliedChanges = new Map<string, { role: Role; withRole: number; inInventory: number; type: Change["type"] }>();
+
   for (const roleId of colorRoles) {
     const role = ctx.guild.roles.cache.get(roleId);
     if (!role) throw new Error(`Role with ID ${roleId} not found in guild`);
     existingRoles.add(role.name);
     rolesAfterChange.add(role.name);
   }
+
+  const beforeRoleCount = existingRoles.size;
 
   for (const change of changes) {
     switch (change.type) {
@@ -52,18 +58,22 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
 
         existingRoles.delete(toColorRoleName(change.name));
         rolesAfterChange.delete(toColorRoleName(change.name));
-        // if (role) {
-        //   await role.delete("Migrating color roles");
-        // }
+
+        const withRole = await role.guild.roles.fetch(role.id).then((r) => r?.members.size ?? 0);
+        const inInventory = await prisma.colorRole.count({ where: { roleId: role.id } });
+
+        appliedChanges.set(role.id, { role, withRole, inInventory, type: change.type });
         break;
       }
       case "changeColor": {
         const role = ctx.guild.roles.cache.find((r) => r.name === toColorRoleName(change.name));
         if (!role) throw new Error(`Role to change color not found: ${change.name}`);
         existingRoles.delete(toColorRoleName(change.name));
-        // if (role) {
-        //   await role.setColor(change.to, "Migrating color roles");
-        // }
+
+        const withRole = await role.guild.roles.fetch(role.id).then((r) => r?.members.size ?? 0);
+        const inInventory = await prisma.colorRole.count({ where: { roleId: role.id } });
+
+        appliedChanges.set(role.id, { role, withRole, inInventory, type: change.type });
         break;
       }
       case "rename": {
@@ -79,9 +89,12 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
         rolesAfterChange.delete(toColorRoleName(change.from));
         rolesAfterChange.add(toColorRoleName(change.to));
         existingRoles.delete(toColorRoleName(change.from));
-        // if (role) {
-        //   await role.setName(change.to, "Migrating color roles");
-        // }
+
+        const withRole = await role.guild.roles.fetch(role.id).then((r) => r?.members.size ?? 0);
+        const inInventory = await prisma.colorRole.count({ where: { roleId: role.id } });
+
+        appliedChanges.set(role.id, { role, withRole, inInventory, type: change.type });
+
         break;
       }
       case "renameAndRecolor": {
@@ -97,10 +110,12 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
         rolesAfterChange.delete(toColorRoleName(change.from));
         rolesAfterChange.add(toColorRoleName(change.to));
         existingRoles.delete(toColorRoleName(change.from));
-        // if (role) {
-        //   await role.setName(change.to, "Migrating color roles");
-        //   await role.setColors(change.colorTo, "Migrating color roles");
-        // }
+
+        const withRole = await role.guild.roles.fetch(role.id).then((r) => r?.members.size ?? 0);
+        const inInventory = await prisma.colorRole.count({ where: { roleId: role.id } });
+
+        appliedChanges.set(role.id, { role, withRole, inInventory, type: change.type });
+
         break;
       }
       case "noChange": {
@@ -132,7 +147,18 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
     return;
   }
 
-  const embed = new EmbedBuilder().setTitle("Roles after migration").setDescription([...rolesAfterChange].join("\n"));
+  const changesSummary = [...appliedChanges.values()].map(({ role, withRole, inInventory, type }) => {
+    return `${type} role: ${role.name} (ID: ${role.id}) - Members with role: ${withRole}, In inventory: ${inInventory}`;
+  });
+
+  const embed = new EmbedBuilder()
+    .setTitle("Roles migration checks passed ✅")
+    .setDescription([...changesSummary].join("\n") || "No changes applied.")
+    .addFields(
+      { name: "Total roles before", value: `${beforeRoleCount}`, inline: true },
+      { name: "Total roles after", value: `${rolesAfterChange.size}`, inline: true },
+    )
+    .setColor("Green");
   return await ctx.editReply({ embeds: [embed] });
 }
 

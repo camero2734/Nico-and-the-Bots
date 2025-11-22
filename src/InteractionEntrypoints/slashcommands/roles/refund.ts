@@ -35,6 +35,8 @@ command.setHandler(async (ctx) => {
 });
 
 command.addAutocompleteListener("role", async (ctx) => {
+  const startTime = ctx.createdAt.getTime();
+
   if (ctx.user.id !== userIDs.me) {
     return await ctx.respond([]);
   }
@@ -42,7 +44,7 @@ command.addAutocompleteListener("role", async (ctx) => {
     where: {
       userId: ctx.user.id,
       roleId: { in: rolesAvailableForRefundList },
-      purchasedAt: { lt: new Date("2025-11-23") },
+      purchasedAt: { lt: new Date("2025-11-24") },
     },
     select: { roleId: true, amountPaid: true },
     orderBy: { roleId: "asc" },
@@ -56,8 +58,10 @@ command.addAutocompleteListener("role", async (ctx) => {
     })
     .filter(({ role }) => role.name.toLowerCase().includes(ctx.opts.role.toLowerCase()));
 
+  const endTime = Date.now();
+  const elapsedSeconds = ((endTime - startTime) / 1000).toFixed(2);
   const options = mappedRoles.map(({ role, amountPaid }) => ({
-    name: `${role.name} - ${amountPaid} credits`,
+    name: `${role.name} - ${amountPaid} credits (${elapsedSeconds}s)`,
     value: role.id,
   }));
 

@@ -70,7 +70,7 @@ command.setHandler(async (ctx) => {
       );
 
       const button = new ButtonBuilder()
-        .setLabel(categoryName)
+        .setLabel(`View ${categoryName}`)
         .setStyle(ButtonStyle.Primary)
         .setCustomId(Bun.randomUUIDv7());
 

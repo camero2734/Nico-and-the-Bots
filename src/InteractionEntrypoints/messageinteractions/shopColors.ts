@@ -1,10 +1,14 @@
 import {
   ButtonBuilder,
   ButtonStyle,
+  ContainerBuilder,
   EmbedBuilder,
   type GuildMember,
   type InteractionEditReplyOptions,
-  italic,
+  SectionBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
 } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
@@ -235,53 +239,50 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
 
   const dbUser = await queries.findOrCreateUser(member.id);
 
-  const MenuEmbed = new EmbedBuilder()
-    .setAuthor({
-      name: "Good Day Dema® Discord Shop",
-      iconURL: "https://i.redd.it/wd53naq96lr61.png",
-    })
-    .setColor(0xd07a21)
-    .setDescription(
+  const container = new ContainerBuilder().setAccentColor(0xd07a21);
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
       [
         "Welcome to the official Discord color role shop! Feel free to peruse the shop to add a little more... saturation.",
         "",
         "Choose one of the categories below. A submenu will open that allows you to purchase roles within that category.",
       ].join("\n"),
-    )
-    .setFooter({
-      text: "Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
-    });
+    ),
+  );
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(false).setSpacing(SeparatorSpacingSize.Large));
 
-  const actionRows = MessageTools.allocateButtonsIntoRows(
-    Object.entries(categories).map(([label, item], idx) => {
-      const unlocked = item.data.unlockedFor(member, dbUser);
-      const builder = new ButtonBuilder()
-        .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
-        .setLabel(
-          unlocked
-            ? `${idx + 1}. ${label}`
-            : `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`,
-        )
-        .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID());
-      if (!unlocked) {
-        builder.setDisabled(true);
-        builder.setEmoji({ name: "🔒" });
-      }
+  Object.entries(categories).forEach(([label, item], idx) => {
+    const roleMentions = item.data.roles.map((r) => `<@&${r.id}>`).join("\n");
 
-      return builder;
-    }),
+    const section = new SectionBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`### ${label}\n${item.description}\n\n${roleMentions}`),
+    );
+
+    const unlocked = item.data.unlockedFor(member, dbUser);
+    const button = new ButtonBuilder()
+      .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setLabel(
+        unlocked ? `${idx + 1}. ${label}` : `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`,
+      )
+      .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID());
+    if (!unlocked) {
+      button.setDisabled(true);
+      button.setEmoji({ name: "🔒" });
+    }
+
+    section.setButtonAccessory(button);
+
+    container.addSectionComponents(section);
+    container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large));
+  });
+
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      "-# Any product purchased must have been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.",
+    ),
   );
 
-  for (const [name, item] of Object.entries(categories)) {
-    MenuEmbed.addFields([
-      {
-        name: name,
-        value: `${italic(item.description)}\n${item.data.roles.map((r) => `<@&${r.id}>`).join("\n")}\n\u2063`,
-      },
-    ]);
-  }
-
-  return { embeds: [MenuEmbed], components: actionRows };
+  return { components: [container] };
 }
 
 export default msgInt;

@@ -85,7 +85,7 @@ export class ConcertChannel {
   }
 
   get threadName() {
-    let concertName = this.concert.venue.name;
+    let concertName = this.concert.title || this.concert.venue.name;
     if (concertName.length > 40) {
       concertName = `${concertName.slice(0, 39)}…`;
     }

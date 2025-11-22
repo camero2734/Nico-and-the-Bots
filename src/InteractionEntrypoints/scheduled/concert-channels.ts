@@ -98,7 +98,7 @@ class ConcertChannelManager {
       `[Concert Channels] Registering ${toAdd.venueId} with role ${toAdd.roleName} and thread ${toAdd.threadName}`,
     );
 
-    const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} concert discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the concert, tickets, share pictures, etc.`;
+    const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} festival discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the festival, tickets, share pictures, etc.`;
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setLabel("Tickets").setEmoji("🎟️").setStyle(ButtonStyle.Link).setURL(toAdd.concert.url),

@@ -9,7 +9,6 @@ import {
   SeparatorBuilder,
   SeparatorSpacingSize,
   TextDisplayBuilder,
-  ThumbnailBuilder,
 } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
@@ -244,7 +243,6 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
 //   }
 // });
 
-// version with components v2
 const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "action"], async (ctx, args) => {
   const actionType = +args.action;
 
@@ -267,14 +265,12 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
   const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
   let title = "Good Day Dema® Discord Shop";
   if (contraband) title = F.randomizeLetters(title);
-  const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
 
   const container = new ContainerBuilder().setAccentColor(role.color);
 
-  const section = new SectionBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${title}\n## ${role.name}\n`))
-    .setThumbnailAccessory(new ThumbnailBuilder().setURL(shopImage));
-  container.addSectionComponents(section);
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`### <:gooddaydema:1226628716076204033> ${title}\n## ${role.name}\n`),
+  );
 
   if (actionType === ActionTypes.View) {
     container.addTextDisplayComponents(
@@ -349,7 +345,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     let sent = false;
     try {
       const dm = await ctx.member.createDM();
-      dm.send({ components: [container] });
+      dm.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
       sent = true;
     } catch (e) {
       //

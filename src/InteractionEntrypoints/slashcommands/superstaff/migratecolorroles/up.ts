@@ -199,13 +199,13 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
     description += `**${symbol} ${type.toUpperCase()}**\n`;
     for (const change of groupedChanges[type]) {
       if (change.type === "add") {
-        description += `${change.name}\n`;
+        description += `${change.name} -> ${change.color.primaryColor}\n`;
       } else if (change.type === "delete") {
         description += `<@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "rename") {
         description += `<@&${change.role?.id}> -> ${change.to} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "renameAndRecolor") {
-        description += `<@&${change.role?.id}> -> ${change.to} & ${change.colorTo.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
+        description += `<@&${change.role?.id}> -> ${change.to} ${change.colorTo.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "changeColor") {
         description += `<@&${change.role?.id}> -> ${change.to.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "noChange") {

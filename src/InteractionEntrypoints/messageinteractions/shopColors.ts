@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   type GuildMember,
   type InteractionEditReplyOptions,
+  MessageFlags,
   SectionBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
@@ -282,7 +283,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     ),
   );
 
-  return { components: [container] };
+  return { components: [container], flags: MessageFlags.IsComponentsV2 };
 }
 
 export default msgInt;

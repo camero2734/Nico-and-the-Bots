@@ -183,20 +183,20 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
 
     description += `**${type.toUpperCase()}**\n`;
     for (const change of groupedChanges[type]) {
-      // if (!change.role) description += `${change.name}\n`;
-      // else description += `<@&${change.role.id}> ${change.inInventory} (${change.withRole})\n`;
       if (change.type === "add") {
         description += `➕ ${change.name}\n`;
       } else if (change.type === "delete") {
-        description += `🗑️ ${change.role ? `<@&${change.role.id}>` : change.name} - ${change.inInventory} (${change.withRole})\n`;
+        description += `🗑️ <@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "rename") {
-        description += `✏️ <@&${change.role?.id}> - Rename to ${change.to} - ${change.inInventory} (${change.withRole})\n`;
+        description += `✏️ <@&${change.role?.id}> -> ${change.to} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "renameAndRecolor") {
-        description += `✏️🎨 <@&${change.role?.id}> - Rename to ${change.to} and recolor to ${change.colorTo} - ${change.inInventory} (${change.withRole})\n`;
+        description += `✏️🎨 <@&${change.role?.id}> -> ${change.to} & ${change.colorTo.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "changeColor") {
-        description += `🎨 <@&${change.role?.id}> - Recolor to ${change.to.primaryColor} - ${change.inInventory} (${change.withRole})\n`;
+        description += `🎨 <@&${change.role?.id}> -> ${change.to.primaryColor} | ${change.inInventory} (${change.withRole})\n`;
       } else if (change.type === "noChange") {
-        description += `✅ <@&${change.role?.id}> - No changes - ${change.inInventory} (${change.withRole})\n`;
+        description += `✅ <@&${change.role?.id}> | ${change.inInventory} (${change.withRole})\n`;
+      } else {
+        throw new Error(`Unhandled change type: ${change satisfies never}`);
       }
     }
     description += "\n";

@@ -26,7 +26,10 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   const existingRoles = new Set<string>();
   const rolesAfterChange = new Set<string>();
 
-  const appliedChanges = new Map<string, { role: Role; withRole: number; inInventory: number; type: Change["type"] }>();
+  const appliedChanges = new Map<
+    string,
+    { role?: Role; withRole?: number; inInventory?: number; type: Change["type"] }
+  >();
 
   for (const roleId of colorRoles) {
     const role = ctx.guild.roles.cache.get(roleId);
@@ -44,12 +47,9 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
         if (role) {
           throw new Error(`Role to add already exists: ${change.name}`);
         }
-        // const role = await ctx.guild.roles.create({
-        //   name: change.name,
-        //   color: change.color,
-        //   reason: "Migrating color roles",
-        // });
+
         rolesAfterChange.add(toColorRoleName(change.name));
+        appliedChanges.set(`${change.name} (${change.color.primaryColor})`, { type: change.type });
         break;
       }
       case "delete": {
@@ -148,9 +148,12 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   }
 
   const groupedChanges = {
-    rename: [] as { role: Role; withRole: number; inInventory: number }[],
-    renameAndRecolor: [] as { role: Role; withRole: number; inInventory: number }[],
-    delete: [] as { role: Role; withRole: number; inInventory: number }[],
+    delete: [] as { name?: string; role?: Role; withRole?: number; inInventory?: number }[],
+    rename: [] as { name?: string; role?: Role; withRole?: number; inInventory?: number }[],
+    renameAndRecolor: [] as { name?: string; role?: Role; withRole?: number; inInventory?: number }[],
+    changeColor: [] as { name?: string; role?: Role; withRole?: number; inInventory?: number }[],
+    add: [] as { name?: string; role?: Role; withRole?: number; inInventory?: number }[],
+    noChange: [] as { name?: string; role?: Role; withRole?: number; inInventory?: number }[],
   };
 
   for (const change of appliedChanges.values()) {
@@ -160,7 +163,7 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
   }
 
   for (const type in groupedChanges) {
-    groupedChanges[type as keyof typeof groupedChanges].sort((a, b) => b.inInventory - a.inInventory);
+    groupedChanges[type as keyof typeof groupedChanges].sort((a, b) => (b.inInventory ?? 0) - (a.inInventory ?? 0));
   }
 
   let description = "";
@@ -168,8 +171,9 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
     if (groupedChanges[type].length === 0) continue;
 
     description += `**${type.toUpperCase()}**\n`;
-    for (const { role, withRole, inInventory } of groupedChanges[type]) {
-      description += `<@&${role.id}> ${inInventory} (${withRole})\n`;
+    for (const { name, role, withRole, inInventory } of groupedChanges[type]) {
+      if (!role) description += `${name}\n`;
+      else description += `<@&${role.id}> ${inInventory} (${withRole})\n`;
     }
     description += "\n";
   }

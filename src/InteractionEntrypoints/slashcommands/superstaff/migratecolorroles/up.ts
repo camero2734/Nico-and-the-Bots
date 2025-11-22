@@ -147,18 +147,42 @@ async function calculateRoleChanges(ctx: typeof command.ContextType) {
     return;
   }
 
-  const changesSummary = [...appliedChanges.values()].map(({ role, withRole, inInventory, type }) => {
-    return `${type} role: ${role.name} (ID: ${role.id}) - Members with role: ${withRole}, In inventory: ${inInventory}`;
-  });
+  const groupedChanges = {
+    rename: [] as { role: Role; withRole: number; inInventory: number }[],
+    renameAndRecolor: [] as { role: Role; withRole: number; inInventory: number }[],
+    delete: [] as { role: Role; withRole: number; inInventory: number }[],
+  };
+
+  for (const change of appliedChanges.values()) {
+    const { role, withRole, inInventory, type } = change;
+    if (!(type in groupedChanges)) continue; // Skip types we don't want to display
+    groupedChanges[type as keyof typeof groupedChanges].push({ role, withRole, inInventory });
+  }
+
+  for (const type in groupedChanges) {
+    groupedChanges[type as keyof typeof groupedChanges].sort((a, b) => b.inInventory - a.inInventory);
+  }
+
+  let description = "";
+  for (const type of Object.keys(groupedChanges) as (keyof typeof groupedChanges)[]) {
+    if (groupedChanges[type].length === 0) continue;
+
+    description += `**${type.toUpperCase()}**\n`;
+    for (const { role, withRole, inInventory } of groupedChanges[type]) {
+      description += `• ${role.name} (ID: ${role.id}) - Members with role: ${withRole}, In inventory: ${inInventory}\n`;
+    }
+    description += "\n";
+  }
 
   const embed = new EmbedBuilder()
     .setTitle("Roles migration checks passed ✅")
-    .setDescription([...changesSummary].join("\n") || "No changes applied.")
+    .setDescription(description || "No changes applied.")
     .addFields(
       { name: "Total roles before", value: `${beforeRoleCount}`, inline: true },
       { name: "Total roles after", value: `${rolesAfterChange.size}`, inline: true },
     )
     .setColor("Green");
+
   return await ctx.editReply({ embeds: [embed] });
 }
 

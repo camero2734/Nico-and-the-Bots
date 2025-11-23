@@ -14,7 +14,8 @@ export const recolorColorRole = registerTask(
         throw new Error(`Role with ID ${params.roleId} not found`);
       }
 
-      await role.setColors(params.change.to, "Recoloring color role");
+      // await role.setColors(params.change.to, "Recoloring color role");
+      console.log(`Would recolor role ${role.name} (${params.roleId}) to ${JSON.stringify(params.change.to)}`);
     });
 
     const userCount = await ctx.step("Notify users role recolored", async () => {

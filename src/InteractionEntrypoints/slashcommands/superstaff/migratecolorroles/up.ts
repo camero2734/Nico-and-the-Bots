@@ -1,15 +1,15 @@
+import { roles, userIDs } from "Configuration/config";
+import F from "Helpers/funcs";
+import { prisma } from "Helpers/prisma-init";
+import { addColorRole } from "Tasks/colorroles/add";
+import { deleteColorRole } from "Tasks/colorroles/delete";
+import { notifyChange } from "Tasks/colorroles/notify";
+import { recolorColorRole } from "Tasks/colorroles/recolor";
+import { renameColorRole } from "Tasks/colorroles/rename";
+import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
+import { ApplicationCommandOptionType, EmbedBuilder, type Role } from "discord.js";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { type Change, changes } from "./_consts";
-import { roles, userIDs } from "Configuration/config";
-import { ApplicationCommandOptionType, type Role } from "discord.js";
-import { EmbedBuilder } from "discord.js";
-import { prisma } from "Helpers/prisma-init";
-import F from "Helpers/funcs";
-// import { addColorRole } from "Tasks/colorroles/add";
-// import { recolorColorRole } from "Tasks/colorroles/recolor";
-// import { renameColorRole } from "Tasks/colorroles/rename";
-// import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
-// import { deleteColorRole } from "Tasks/colorroles/delete";
 
 const COLOR_ROLE_IDENTIFIER = "⁣"; // Invisible character used to identify color roles
 
@@ -246,45 +246,49 @@ command.setHandler(async (ctx) => {
 
   try {
     const extendedChanges = await calculateRoleChanges(ctx);
+
+    await notifyChange({
+      change: { type: "delete", name: "Test Role Deletion" },
+      userId: userIDs.me,
+      amountRefunded: 1000,
+    });
+
     if (!ctx.opts.actual) return;
 
-    if (Math.random() < 5) return await ctx.followUp("Actual migration not yet implemented.");
-
-    void extendedChanges;
-    // for (const change of extendedChanges) {
-    //   switch (change.type) {
-    //     case "add": {
-    //       addColorRole({ name: change.name, change });
-    //       break;
-    //     }
-    //     case "changeColor": {
-    //       if (!change.role) throw new Error("Role not found for changeColor");
-    //       recolorColorRole({ roleId: change.role.id, change });
-    //       break;
-    //     }
-    //     case "rename": {
-    //       if (!change.role) throw new Error("Role not found for rename");
-    //       renameColorRole({ roleId: change.role.id, change });
-    //       break;
-    //     }
-    //     case "renameAndRecolor": {
-    //       if (!change.role) throw new Error("Role not found for renameAndRecolor");
-    //       renameAndRecolorColorRole({ roleId: change.role.id, change });
-    //       break;
-    //     }
-    //     case "delete": {
-    //       if (!change.role) throw new Error("Role not found for delete");
-    //       deleteColorRole({ roleId: change.role.id, change });
-    //       break;
-    //     }
-    //     case "noChange": {
-    //       break;
-    //     }
-    //     default: {
-    //       throw new Error(`Unhandled change type during migration: ${JSON.stringify(change satisfies never)}`);
-    //     }
-    //   }
-    // }
+    for (const change of extendedChanges) {
+      switch (change.type) {
+        case "add": {
+          addColorRole({ name: change.name, change });
+          break;
+        }
+        case "changeColor": {
+          if (!change.role) throw new Error("Role not found for changeColor");
+          recolorColorRole({ roleId: change.role.id, change });
+          break;
+        }
+        case "rename": {
+          if (!change.role) throw new Error("Role not found for rename");
+          renameColorRole({ roleId: change.role.id, change });
+          break;
+        }
+        case "renameAndRecolor": {
+          if (!change.role) throw new Error("Role not found for renameAndRecolor");
+          renameAndRecolorColorRole({ roleId: change.role.id, change });
+          break;
+        }
+        case "delete": {
+          if (!change.role) throw new Error("Role not found for delete");
+          deleteColorRole({ roleId: change.role.id, change });
+          break;
+        }
+        case "noChange": {
+          break;
+        }
+        default: {
+          throw new Error(`Unhandled change type during migration: ${JSON.stringify(change satisfies never)}`);
+        }
+      }
+    }
   } catch (error) {
     return await ctx.editReply(
       `Error during role migration: ${error instanceof Error ? error.message : String(error)}`,

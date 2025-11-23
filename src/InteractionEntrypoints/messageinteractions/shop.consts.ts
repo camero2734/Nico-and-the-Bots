@@ -33,7 +33,7 @@ export class ShopCategory {
   }
 }
 
-export const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clancy", "dmaorg", "paladin"];
+export const CONTRABAND_WORDS = ["jumpsuit", "bandito", "rebel", "torch", "clancy", "dmaorg", "paladin", "breach"];
 
 export function getColorRoleCategories(roleManager: RoleManager) {
   const colorRoles = roles.colors;

@@ -246,77 +246,44 @@ command.setHandler(async (ctx) => {
 
   try {
     const extendedChanges = await calculateRoleChanges(ctx);
+    void extendedChanges;
 
-    const testRole = await ctx.guild.roles.fetch(roles.colors.tier1["Bandito Green"]);
-    if (!testRole) throw new Error("Test role not found");
+    return;
 
-    await notifyChange({
-      change: { type: "delete", name: testRole.name },
-      userId: userIDs.me,
-      amountRefunded: 1000,
-    });
-    await notifyChange({
-      change: { type: "changeColor", name: testRole.name, to: { primaryColor: "#00FF00" } },
-      roleId: testRole.id,
-      userId: userIDs.me,
-    });
-    await notifyChange({
-      change: {
-        type: "rename",
-        from: testRole.name,
-        to: "Blandito",
-        expectedColor: { primaryColor: testRole.hexColor },
-      },
-      roleId: testRole.id,
-      userId: userIDs.me,
-    });
-    await notifyChange({
-      change: {
-        type: "renameAndRecolor",
-        from: testRole.name,
-        to: "Renamed and Recolored Role",
-        colorTo: { primaryColor: "#00FF00" },
-      },
-      roleId: testRole.id,
-      userId: userIDs.me,
-    });
-
-    if (!ctx.opts.actual) return;
-
-    for (const change of extendedChanges) {
-      switch (change.type) {
-        case "add": {
-          addColorRole({ name: change.name, change });
-          break;
-        }
-        case "changeColor": {
-          if (!change.role) throw new Error("Role not found for changeColor");
-          recolorColorRole({ roleId: change.role.id, change });
-          break;
-        }
-        case "rename": {
-          if (!change.role) throw new Error("Role not found for rename");
-          renameColorRole({ roleId: change.role.id, change });
-          break;
-        }
-        case "renameAndRecolor": {
-          if (!change.role) throw new Error("Role not found for renameAndRecolor");
-          renameAndRecolorColorRole({ roleId: change.role.id, change });
-          break;
-        }
-        case "delete": {
-          if (!change.role) throw new Error("Role not found for delete");
-          deleteColorRole({ roleId: change.role.id, change });
-          break;
-        }
-        case "noChange": {
-          break;
-        }
-        default: {
-          throw new Error(`Unhandled change type during migration: ${JSON.stringify(change satisfies never)}`);
-        }
-      }
-    }
+    // for (const change of extendedChanges) {
+    //   switch (change.type) {
+    //     case "add": {
+    //       addColorRole({ name: change.name, change });
+    //       break;
+    //     }
+    //     case "changeColor": {
+    //       if (!change.role) throw new Error("Role not found for changeColor");
+    //       recolorColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "rename": {
+    //       if (!change.role) throw new Error("Role not found for rename");
+    //       renameColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "renameAndRecolor": {
+    //       if (!change.role) throw new Error("Role not found for renameAndRecolor");
+    //       renameAndRecolorColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "delete": {
+    //       if (!change.role) throw new Error("Role not found for delete");
+    //       deleteColorRole({ roleId: change.role.id, change });
+    //       break;
+    //     }
+    //     case "noChange": {
+    //       break;
+    //     }
+    //     default: {
+    //       throw new Error(`Unhandled change type during migration: ${JSON.stringify(change satisfies never)}`);
+    //     }
+    //   }
+    // }
   } catch (error) {
     return await ctx.editReply(
       `Error during role migration: ${error instanceof Error ? error.message : String(error)}`,

@@ -82,7 +82,7 @@ command.setHandler(async (ctx) => {
 
     for (const [categoryName, categoryRoles] of F.entries(colors)) {
       const roles = Object.keys(categoryRoles).map((key) => {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === key.toLowerCase());
+        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase().startsWith(key.toLowerCase()));
         return {
           name: key,
           role: role ? role.id : "Not found",

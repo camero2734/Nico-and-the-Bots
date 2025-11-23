@@ -1,16 +1,5 @@
 import F from "Helpers/funcs";
-import { getColorRoleCategories } from "InteractionEntrypoints/messageinteractions/shop.consts";
-import {
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  ContainerBuilder,
-  MessageFlags,
-  SectionBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  TextDisplayBuilder,
-} from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import { roles as roleIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";

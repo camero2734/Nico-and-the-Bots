@@ -1,12 +1,12 @@
 import { roles, userIDs } from "Configuration/config";
 import F from "Helpers/funcs";
 import { prisma } from "Helpers/prisma-init";
-import { addColorRole } from "Tasks/colorroles/add";
-import { deleteColorRole } from "Tasks/colorroles/delete";
-import { notifyChange } from "Tasks/colorroles/notify";
-import { recolorColorRole } from "Tasks/colorroles/recolor";
-import { renameColorRole } from "Tasks/colorroles/rename";
-import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
+// import { addColorRole } from "Tasks/colorroles/add";
+// import { deleteColorRole } from "Tasks/colorroles/delete";
+// import { notifyChange } from "Tasks/colorroles/notify";
+// import { recolorColorRole } from "Tasks/colorroles/recolor";
+// import { renameColorRole } from "Tasks/colorroles/rename";
+// import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
 import { ApplicationCommandOptionType, EmbedBuilder, type Role } from "discord.js";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { type Change, changes } from "./_consts";

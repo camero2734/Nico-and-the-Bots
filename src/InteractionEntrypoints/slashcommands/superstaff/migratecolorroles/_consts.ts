@@ -16,6 +16,7 @@ type RecolorRole = {
   name: string;
   to: RoleColorsResolvable;
 };
+// biome-ignore lint/correctness/noUnusedVariables: because
 const RecolorRole = (name: string, to: InputColorResolvable): RecolorRole => ({
   type: "changeColor",
   name,

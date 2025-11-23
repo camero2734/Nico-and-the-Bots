@@ -1,5 +1,5 @@
-import type { User } from "../../../generated/prisma/client";
 import type { GuildMember, Role, RoleManager, Snowflake } from "discord.js";
+import type { User } from "../../../generated/prisma/client";
 import { roles } from "../../Configuration/config";
 
 export class ShopCategory {
@@ -37,28 +37,33 @@ export function getColorRoleCategories(roleManager: RoleManager) {
   const tierToRoles = (roleIds: { [k: string]: Snowflake }): Role[] =>
     Object.values(roleIds).map((r) => roleManager.cache.get(r) as Role);
 
-  const tier1 = new ShopCategory(tierToRoles(colorRoles.tier1), {
+  const scaledback = new ShopCategory(tierToRoles(colorRoles.scaledback), {
     credits: 7500,
     level: 10,
   });
-  const tier2 = new ShopCategory(tierToRoles(colorRoles.tier2), {
+  const mypride = new ShopCategory(tierToRoles(colorRoles.mypride), {
     credits: 15000,
     level: 20,
   });
-  const tier3 = new ShopCategory(tierToRoles(colorRoles.tier3), {
-    credits: 15000,
-    level: 35,
+  const morningsun = new ShopCategory(tierToRoles(colorRoles.morningsun), {
+    credits: 20_000,
+    level: 30,
   });
-  const tier4 = new ShopCategory(tierToRoles(colorRoles.tier4), {
-    credits: 25000,
+  const peace = new ShopCategory(tierToRoles(colorRoles.peace), {
+    credits: 25_000,
     level: 50,
   });
-  const tier5 = new ShopCategory(tierToRoles(colorRoles.tier5), {
-    credits: 50000,
-    level: 100,
+  const sofew = new ShopCategory(tierToRoles(colorRoles.sofew), {
+    credits: 40_000,
+    level: 75,
   });
-  const DExclusive = new ShopCategory(tierToRoles(colorRoles.DExclusive), {
-    credits: 50000,
+  const digitalremains = new ShopCategory(tierToRoles(colorRoles.digitalremains), {
+    credits: 50_000,
+    level: 100,
+    DE: true,
+  });
+  const holographics = new ShopCategory(tierToRoles(colorRoles.holographics), {
+    credits: 150_000,
     level: 100,
     DE: true,
   });
@@ -66,36 +71,40 @@ export function getColorRoleCategories(roleManager: RoleManager) {
   return {
     "The Scaled Back Collection": {
       id: "ScaledBack",
-      data: tier1,
+      data: scaledback,
       description: "Looking for basic colors? The Scaled Back Collection has you covered.",
     },
-    "Violets of Vetomo": {
+    "Lean on My Pride": {
       id: "Violet",
-      data: tier2,
-      description: "Ready to branch out into more vibrant colors? Violets of Vetomo is here to help.",
+      data: mypride,
+      description: "Ready to branch out into more vibrant colors? The Lean on My Pride collection is for you!",
     },
-    "Saturation Creations": {
+    "Towards the Morning Sun": {
       id: "Saturation",
-      data: tier3,
-      description:
-        "Do you want to stand out in the crowd? Saturation Creations provides a variety of bright, colors to increase your saturation. Because saturation is happiness™.",
+      data: morningsun,
+      description: "Don't be afraid! Brighten your day with these warm, relaxing colors.",
     },
-    "Keons' Neons": {
+    "Pieces of Peace": {
       id: "Keons",
-      data: tier4,
-      description: "These colors are to die for! Handpicked by Keons himself, before... well, you know.",
+      data: peace,
+      description:
+        "Get your peace of mind back with these colors handpicked by Keons himself, before... well, you know.",
     },
-    "DEMA's Dreamers": {
+    "So Few, So Proud, So Emotional": {
       id: "DEMA",
-      data: tier5,
+      data: sofew,
+      description: "So Few, So Proud, So Emotional. Hello, colors!",
+    },
+    "Digital Remains": {
+      id: "Dragons",
+      data: digitalremains,
       description:
         "**VIOLATION WARNING**: This page contains highly controlled contraband items. The Sacred Municipality of Dema will take any action necessary to keep its citizens safe from this dangerous material.",
     },
-    "Tower Treasures": {
-      id: "Dragons",
-      data: DExclusive,
-      description:
-        "Climb the top of the tower and see what you'll find! Browse this exclusive merchandise as a Firebreather.",
+    "The Holographics": {
+      id: "Holographics",
+      data: holographics,
+      description: "Please do not use the holographics. But if you do...",
     },
   };
 }

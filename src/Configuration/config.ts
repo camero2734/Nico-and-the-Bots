@@ -230,7 +230,7 @@ export const roles = <const>{
     },
   },
   colors: {
-    tier1: {
+    scaledback: {
       "Breach Peach": "1442148330980380694",
       "No Pink Intended": "557303175292649482",
       "Goldies Station": "1244242684470755328",
@@ -239,7 +239,7 @@ export const roles = <const>{
       Brownstairs: "557303097248972801",
       "Regional at Blue": "557303160197349376",
     },
-    tier2: {
+    mypride: {
       Lavaish: "894429283441848371",
       "Pear in my Heart": "1442148472898978002",
       "Center Moss": "557303189976907788",
@@ -247,7 +247,7 @@ export const roles = <const>{
       "At the Risk of Feeling Plum": "1244311105715568802",
       "City Walls Grey": "557303139238150154",
     },
-    tier3: {
+    morningsun: {
       "Rosebot Voices": "558091763856965642",
       "Kitchen Pink": "557303336244609037",
       "Mulberry Jam": "894428312468860978",
@@ -260,7 +260,7 @@ export const roles = <const>{
       "Never Teal It": "557303253143126016",
       "Forest Green": "557303348315815950",
     },
-    tier4: {
+    peace: {
       "Bubblegum for Hands": "895466048353103892",
       "Rebel Red": "557303280321953810",
       "Glowing Eyes": "1442148376954146969",
@@ -269,7 +269,7 @@ export const roles = <const>{
       Formidablue: "1244242819028090920",
       "Midwest Indigo": "1244242616720031764",
     },
-    tier5: {
+    sofew: {
       "Cottonwood Candy": "1442148385464254548",
       "Coral Radio": "558091802813399077",
       "Rust Around the Rim": "1442148415315382444",
@@ -279,11 +279,11 @@ export const roles = <const>{
       "Oh Mint Believer": "693150656764313693",
       Heavydirtystone: "692990517801254933",
     },
-    tier6: {
+    digitalremains: {
       "CLANCY BLACK": "557303371778752523",
       "DMAORG WHITE": "557303384860917781",
     },
-    tier7: {
+    holographics: {
       "The Contrast": "1442148489772662786",
       "Sky Away": "1442148522756669451",
     },

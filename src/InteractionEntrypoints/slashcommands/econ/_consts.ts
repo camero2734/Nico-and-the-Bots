@@ -146,28 +146,28 @@ export const districts: Array<District> = [
     .setCredits(2500)
     .addItem("BOUNTY", "10%")
     .addItem("JUMPSUIT", "5%")
-    .addRole(roles.colors.tier1["RAWFERN"], "3%"),
+    .addRole(roles.colors.scaledback["RAWFERN"], "3%"),
 
   new District(5)
     .setDifficulty("Very Hard")
     .setCredits(3000)
     .addItem("BOUNTY", "10%")
     .addItem("JUMPSUIT", "5%")
-    .addRole(roles.colors.tier2["Center Moss"], "1%"),
+    .addRole(roles.colors.mypride["Center Moss"], "1%"),
 
   new District(6)
     .setDifficulty("Extremely Hard")
     .setCredits(4000)
     .addItem("BOUNTY", "10%")
     .addItem("JUMPSUIT", "5%")
-    .addRole(roles.colors.tier4["Rebel Red"], "0.75%"),
+    .addRole(roles.colors.peace["Rebel Red"], "0.75%"),
 
   new District(7)
     .setDifficulty("Almost Impossible")
     .setCredits(5000)
     .addItem("BOUNTY", "10%")
     .addItem("JUMPSUIT", "5%")
-    .addRole(roles.colors.tier5["Bandito Yellow"], "0.5%"),
+    .addRole(roles.colors.sofew["Bandito Yellow"], "0.5%"),
 
   new District(8)
     .setDifficulty("No Chances")
@@ -175,5 +175,5 @@ export const districts: Array<District> = [
     .addItem("BOUNTY", "20%")
     .addItem("JUMPSUIT", "10%")
     .addRole(roles.dema, "5%")
-    .addRole(roles.colors.tier6["CLANCY BLACK"], "0.25%"),
+    .addRole(roles.colors.digitalremains["CLANCY BLACK"], "0.25%"),
 ];

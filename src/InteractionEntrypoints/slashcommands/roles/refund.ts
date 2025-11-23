@@ -38,6 +38,8 @@ command.setHandler(async (ctx) => {
     return await ctx.editReply("The specified role does not exist in this server.");
   }
 
+  await ctx.member.roles.remove(role.id);
+
   const result = await prisma.$transaction(async (tx) => {
     const userRole = await tx.colorRole.findFirst({
       where: {

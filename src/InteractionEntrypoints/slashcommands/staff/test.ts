@@ -1,3 +1,4 @@
+import F from "Helpers/funcs";
 import { getColorRoleCategories } from "InteractionEntrypoints/messageinteractions/shop.consts";
 import {
   ApplicationCommandOptionType,
@@ -10,7 +11,7 @@ import {
   SeparatorSpacingSize,
   TextDisplayBuilder,
 } from "discord.js";
-import { roles as roleIDs, userIDs } from "../../../Configuration/config";
+import { roles as roleIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
@@ -77,40 +78,21 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 433) {
     songBattleCron();
   } else {
-    const container = new ContainerBuilder().setAccentColor(0xd07a21);
+    const colors = roles.colors;
 
-    // const { separator, gap, divider } = ctx.opts;
-    const separator = ctx.opts.separator ?? "\n";
-    const gap = ctx.opts.gap ?? true;
-    const divider = ctx.opts.divider ?? true;
+    for (const [categoryName, categoryRoles] of F.entries(colors)) {
+      const roles = Object.keys(categoryRoles).map((key) => {
+        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase() === key.toLowerCase());
+        return {
+          name: key,
+          role: role ? role.id : "Not found",
+        };
+      });
 
-    for (const [categoryName, categoryData] of Object.entries(getColorRoleCategories(ctx.guild.roles))) {
-      const roleMentions = categoryData.data.roles.map((r) => `<@&${r.id}>`).join(separator);
-
-      const section = new SectionBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`### ${categoryName}\n${categoryData.description}\n\n${roleMentions}`),
-      );
-
-      const button = new ButtonBuilder()
-        .setLabel(`View ${categoryName}`)
-        .setStyle(ButtonStyle.Primary)
-        .setCustomId(Bun.randomUUIDv7());
-
-      section.setButtonAccessory(button);
-
-      container.addSectionComponents(section);
-      container.addSeparatorComponents(
-        new SeparatorBuilder()
-          .setDivider(divider)
-          .setSpacing(gap ? SeparatorSpacingSize.Large : SeparatorSpacingSize.Small),
-      );
+      await ctx.followUp({
+        content: `${categoryName}\`\`\`json\n${JSON.stringify(roles, null, 2)}\n\`\`\``,
+      });
     }
-
-    await ctx.editReply({
-      components: [container],
-      flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [] },
-    });
   }
 });
 

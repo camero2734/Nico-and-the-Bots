@@ -27,7 +27,7 @@ enum ActionTypes {
 const msgInt = new ManualEntrypoint();
 
 export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ ephemeral: false });
 
   const initialMsg = await generateMainMenuEmbed(ctx.member);
   await ctx.editReply(initialMsg);

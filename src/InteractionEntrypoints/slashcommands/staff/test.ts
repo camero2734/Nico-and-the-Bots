@@ -1,6 +1,5 @@
-import F from "Helpers/funcs";
-import { ApplicationCommandOptionType } from "discord.js";
-import { roles as roleIDs, roles, userIDs } from "../../../Configuration/config";
+import { ActionRowBuilder, ApplicationCommandOptionType, MessageFlags, StringSelectMenuBuilder } from "discord.js";
+import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
@@ -67,21 +66,20 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 433) {
     songBattleCron();
   } else {
-    const colors = roles.colors;
+    const stringSelect = new StringSelectMenuBuilder({
+      customId: "a cool select menu",
+      placeholder: "select an option",
+      maxValues: 2,
+      options: [
+        { label: "option 1 <@&557303189976907788>", value: "1" },
+        { label: "option 2", value: "2" },
+        { label: "option 3", value: "3" },
+      ],
+    });
 
-    for (const [categoryName, categoryRoles] of F.entries(colors)) {
-      const roles = Object.keys(categoryRoles).map((key) => {
-        const role = ctx.guild.roles.cache.find((r) => r.name.toLowerCase().startsWith(key.toLowerCase()));
-        return {
-          name: key,
-          role: role ? role.id : "Not found",
-        };
-      });
+    const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(stringSelect);
 
-      await ctx.followUp({
-        content: `${categoryName}\`\`\`json\n${JSON.stringify(roles, null, 2)}\n\`\`\``,
-      });
-    }
+    await ctx.editReply({ content: "Test select menu:", components: [actionRow], flags: MessageFlags.IsComponentsV2 });
   }
 });
 

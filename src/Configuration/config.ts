@@ -251,7 +251,7 @@ export const roles = <const>{
       "Rosebot Voices": "558091763856965642",
       "Kitchen Pink": "557303336244609037",
       "Mulberry Jam": "894428312468860978",
-      Ruby: "562636484520312846",
+      Ruby: "1442148426132488192",
       "My Blood": "1244240121960595516",
       "Fairly Lilac": "558091865593872389",
       Redecorgrape: "557303295513985024",

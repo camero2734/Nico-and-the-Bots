@@ -402,6 +402,10 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     if (!unlocked) {
       button.setDisabled(true);
       button.setEmoji({ name: "🔒" });
+
+      if (item.data.locked) {
+        button.setLabel("Temporarily Unavailable");
+      }
     }
 
     section.setButtonAccessory(button);

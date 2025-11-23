@@ -1,4 +1,4 @@
-import { channelIDs, userIDs } from "Configuration/config";
+import { channelIDs } from "Configuration/config";
 import { prisma } from "Helpers/prisma-init";
 import { ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -80,9 +80,6 @@ command.setHandler(async (ctx) => {
 });
 
 command.addAutocompleteListener("role", async (ctx) => {
-  if (ctx.user.id !== userIDs.me) {
-    return await ctx.respond([]);
-  }
   const userRoles = await prisma.colorRole.findMany({
     where: {
       userId: ctx.user.id,

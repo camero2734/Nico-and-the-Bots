@@ -7,14 +7,17 @@ export class ShopCategory {
   public credits: number;
   public level: number;
   public roles: Role[];
-  constructor(roles: Role[], opts: Partial<{ level: number; credits: number; DE: boolean }>) {
+  public locked = false;
+  constructor(roles: Role[], opts: Partial<{ level: number; credits: number; DE: boolean; locked: boolean }>) {
     this.level = opts.level || 0;
     this.credits = opts.credits || 0;
     this.requiresDE = opts.DE || false;
+    this.locked = opts.locked || false;
     this.roles = roles;
   }
 
   unlockedFor(member: GuildMember, dbUser: User) {
+    if (this.locked) return false;
     const meetsDE = this.requiresDE ? member.roles.cache.has(roles.deatheaters) : true;
     return this.level <= dbUser.level && meetsDE;
   }
@@ -66,6 +69,7 @@ export function getColorRoleCategories(roleManager: RoleManager) {
     credits: 150_000,
     level: 100,
     DE: true,
+    locked: true,
   });
 
   return {

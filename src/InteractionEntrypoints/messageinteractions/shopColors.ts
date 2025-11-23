@@ -21,13 +21,12 @@ import { CONTRABAND_WORDS, getColorRoleCategories } from "./shop.consts";
 enum ActionTypes {
   View = 0,
   Purchase = 1,
-  // Delete
 }
 
 const msgInt = new ManualEntrypoint();
 
 export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
-  await ctx.deferReply({ ephemeral: false });
+  await ctx.deferReply({ ephemeral: true });
 
   const initialMsg = await generateMainMenuEmbed(ctx.member);
   await ctx.editReply(initialMsg);

@@ -82,7 +82,7 @@ export const changes: Array<Change> = [
   NoChange("Regional at Blue", "#6485a9"),
 
   DeleteRole("Trapdoorange"),
-  RenameRole("Lavaish", "Trapdoororange", "#ff6c0e"),
+  NoChange("Lavaish", "#ff6c0e"),
   AddRole("Pear in my Heart", "#d1e231"),
   RenameAndRecolorRole("Jumpsuit Green", "Center Moss", "#63b76c"),
   NoChange("Holding on to Blue", "#4a83e6"),

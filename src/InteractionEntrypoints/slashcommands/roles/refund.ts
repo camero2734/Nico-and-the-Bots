@@ -1,7 +1,7 @@
+import { channelIDs, userIDs } from "Configuration/config";
 import { prisma } from "Helpers/prisma-init";
 import { ApplicationCommandOptionType } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { userIDs } from "Configuration/config";
 
 const rolesAvailableForRefundList = [
   "557303116941361183", // Bandito Green
@@ -28,10 +28,55 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   await ctx.deferReply({ ephemeral: true });
 
-  await ctx.editReply({
-    content: `You selected <@&${ctx.opts.role}>`,
-    allowedMentions: { parse: [] },
+  const botChan = await ctx.guild.channels.fetch(channelIDs.bottest);
+  if (!botChan || !botChan.isTextBased()) {
+    return await ctx.editReply("Error occurred, please try again later.");
+  }
+
+  const role = ctx.guild.roles.cache.get(ctx.opts.role);
+  if (!role) {
+    return await ctx.editReply("The specified role does not exist in this server.");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const userRole = await tx.colorRole.findFirst({
+      where: {
+        userId: ctx.user.id,
+        roleId: ctx.opts.role,
+        purchasedAt: { lt: new Date("2025-11-24") },
+      },
+    });
+
+    if (!userRole) {
+      return { success: false, message: "You are not eligible for a refund for that role." } as const;
+    }
+
+    await tx.colorRole.delete({
+      where: {
+        roleId_userId: {
+          roleId: userRole.roleId,
+          userId: userRole.userId,
+        },
+      },
+    });
+
+    await tx.user.update({
+      where: { id: ctx.user.id },
+      data: { credits: { increment: userRole.amountPaid } },
+    });
+
+    return { success: true, amountRefunded: userRole.amountPaid } as const;
   });
+
+  if (!result.success) {
+    return await ctx.editReply(result.message);
+  } else {
+    await ctx.editReply(`Successfully refunded ${result.amountRefunded} credits for ${role.name}`);
+    await botChan.send({
+      content: `${ctx.user.tag} (${ctx.user.id}) refunded ${result.amountRefunded} credits for the role ${role.name} (${role.id})`,
+      allowedMentions: { parse: [] },
+    });
+  }
 });
 
 command.addAutocompleteListener("role", async (ctx) => {

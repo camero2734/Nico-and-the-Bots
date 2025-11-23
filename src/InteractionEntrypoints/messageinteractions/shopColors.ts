@@ -348,7 +348,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
       dm.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
       sent = true;
     } catch (e) {
-      //
+      console.error(e);
     } finally {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(

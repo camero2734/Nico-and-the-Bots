@@ -247,10 +247,38 @@ command.setHandler(async (ctx) => {
   try {
     const extendedChanges = await calculateRoleChanges(ctx);
 
+    const testRole = await ctx.guild.roles.fetch(roles.colors.tier1["Bandito Green"]);
+    if (!testRole) throw new Error("Test role not found");
+
     await notifyChange({
-      change: { type: "delete", name: "Test Role Deletion" },
+      change: { type: "delete", name: testRole.name },
       userId: userIDs.me,
       amountRefunded: 1000,
+    });
+    await notifyChange({
+      change: { type: "changeColor", name: testRole.name, to: { primaryColor: "#00FF00" } },
+      roleId: testRole.id,
+      userId: userIDs.me,
+    });
+    await notifyChange({
+      change: {
+        type: "rename",
+        from: testRole.name,
+        to: "Blandito",
+        expectedColor: { primaryColor: testRole.hexColor },
+      },
+      roleId: testRole.id,
+      userId: userIDs.me,
+    });
+    await notifyChange({
+      change: {
+        type: "renameAndRecolor",
+        from: testRole.name,
+        to: "Renamed and Recolored Role",
+        colorTo: { primaryColor: "#00FF00" },
+      },
+      roleId: testRole.id,
+      userId: userIDs.me,
     });
 
     if (!ctx.opts.actual) return;

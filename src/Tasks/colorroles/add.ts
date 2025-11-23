@@ -7,12 +7,18 @@ export const addColorRole = registerTask(
   "add-color-role",
   async (params: { name: string; change: Extract<Change, { type: "add" }> }, ctx) => {
     await ctx.step("Creating role", async () => {
-      // await guild.roles.create({
-      //   name: params.name,
-      //   colors: params.change.color,
-      //   reason: "Color role migration",
-      // });
-      console.log(`Would create role ${params.name} with color ${JSON.stringify(params.change.color)}`);
+      // The new role will be placed just below the reference role
+      const referenceRole = await guild.roles.fetch("850786456967970837");
+      if (!referenceRole) {
+        throw new Error("Reference role not found");
+      }
+
+      await guild.roles.create({
+        name: params.name,
+        colors: params.change.color,
+        reason: "Color role migration",
+        position: referenceRole.position - 1,
+      });
     });
 
     await ctx.step("Finished", async () => {

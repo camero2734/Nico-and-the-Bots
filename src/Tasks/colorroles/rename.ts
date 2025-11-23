@@ -14,8 +14,7 @@ export const renameColorRole = registerTask(
         throw new Error(`Role with ID ${params.roleId} not found`);
       }
 
-      // await role.setName(params.change.to, "Renaming color role");
-      console.log(`Would rename role ${role.name} (${params.roleId}) to ${params.change.to}`);
+      await role.setName(params.change.to, "Renaming color role");
     });
 
     const userCount = await ctx.step("Notify users role renamed", async () => {

@@ -1,4 +1,4 @@
-import { channelIDs, userIDs } from "Configuration/config";
+import { channelIDs } from "Configuration/config";
 import { prisma } from "Helpers/prisma-init";
 import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/migratecolorroles/_consts";
 import { EmbedBuilder } from "discord.js";
@@ -11,9 +11,6 @@ export const notifyChange = registerTask(
   "notify-color-role-change",
   async (params: { change: NotifiableChange; userId: string; roleId?: string; amountRefunded?: number }, ctx) => {
     await ctx.step("Notifying user", async () => {
-      // TODO: Remove this check when testing is done
-      if (params.userId !== userIDs.me) return;
-
       const dm = await guild.members.fetch(params.userId).then((m) => m.createDM());
 
       const role = await guild.roles.fetch(params.roleId || "").catch(() => null);

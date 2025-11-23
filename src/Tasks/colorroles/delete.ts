@@ -28,43 +28,42 @@ export const deleteColorRole = registerTask(
     });
 
     await ctx.step("Refund users", async () => {
-      // await prisma.$transaction(async (tx) => {
-      //   const rolesToRefund = await tx.colorRole.findMany({
-      //     where: { roleId: params.roleId },
-      //     select: { userId: true, amountPaid: true },
-      //   });
+      await prisma.$transaction(async (tx) => {
+        const rolesToRefund = await tx.colorRole.findMany({
+          where: { roleId: params.roleId },
+          select: { userId: true, amountPaid: true },
+        });
 
-      //   for (const roleEntry of rolesToRefund) {
-      //     await tx.user.update({
-      //       where: { id: roleEntry.userId },
-      //       data: { credits: { increment: roleEntry.amountPaid } },
-      //     });
+        for (const roleEntry of rolesToRefund) {
+          await tx.user.update({
+            where: { id: roleEntry.userId },
+            data: { credits: { increment: roleEntry.amountPaid } },
+          });
 
-      //     await tx.colorRole.delete({
-      //       where: { roleId_userId: { roleId: params.roleId, userId: roleEntry.userId } },
-      //     });
-      //   }
-      // });
-      console.log(`Would refund users for role ID ${params.roleId}`);
+          await tx.colorRole.delete({
+            where: { roleId_userId: { roleId: params.roleId, userId: roleEntry.userId } },
+          });
+        }
+      });
     });
 
     const roleColors = await ctx.step("Deleting role", async () => {
       // Validate that nobody owns the role anymore
-      // const count = await prisma.colorRole.count({
-      //   where: { roleId: params.roleId },
-      // });
-      // if (count > 0) {
-      //   throw new Error(
-      //     `Cannot delete role ${params.change.name} (${params.roleId}) because it is still owned by ${count} user(s)`,
-      //   );
-      // }
+      const count = await prisma.colorRole.count({
+        where: { roleId: params.roleId },
+      });
+      if (count > 0) {
+        throw new Error(
+          `Cannot delete role ${params.change.name} (${params.roleId}) because it is still owned by ${count} user(s)`,
+        );
+      }
 
       const role = await guild.roles.fetch(params.roleId);
       if (!role) {
         throw new Error(`Role with ID ${params.roleId} not found`);
       }
 
-      // await role.delete("Color role deleted during migration");
+      await role.delete("Color role deleted during migration");
 
       return {
         primaryColor: Bun.color(role.colors.primaryColor, "hex"),

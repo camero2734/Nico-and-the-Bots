@@ -34,7 +34,7 @@ export const notifyChange = registerTask(
             .setTitle(`Color role ${role.name} recolored`)
             .setColor(role.colors.primaryColor)
             .setDescription(
-              `The color role **${role.name}** has been recolored to ${role.colors.primaryColor}. The role is still available in your inventory, and you can continue to use it as before.\n\nView <#${channelIDs.shop}> to browse our new available color roles!`,
+              `The color role **${role.name}** has been slightly modified. The role is still available in your inventory, and you can continue to use it as before.\n\nView <#${channelIDs.shop}> to browse our new available color roles!`,
             )
             .addFields({
               name: "Refund Possible",
@@ -78,7 +78,7 @@ export const notifyChange = registerTask(
             .setTitle(`Color role ${params.change.from} renamed and recolored`)
             .setColor(role.colors.primaryColor)
             .setDescription(
-              `The color role **${params.change.from}** has been renamed to **${params.change.to}** and **the color was modified**. The role is still available in your inventory, and you can continue to use it as before.\n\nView <#${channelIDs.shop}> to browse our new available color roles!`,
+              `The color role **${params.change.from}** has been renamed to **${params.change.to}** and **the color was slightly modified**. The role is still available in your inventory, and you can continue to use it as before.\n\nView <#${channelIDs.shop}> to browse our new available color roles!`,
             )
             .addFields({
               name: "Refund Possible",

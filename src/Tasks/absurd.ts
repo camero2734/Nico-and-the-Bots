@@ -10,5 +10,3 @@ export const registerTask = <TParams, TName extends string>(
   absurd.registerTask({ name, ...options }, fn);
   return (params: TParams) => absurd.spawn(name, params);
 };
-
-await absurd.startWorker();

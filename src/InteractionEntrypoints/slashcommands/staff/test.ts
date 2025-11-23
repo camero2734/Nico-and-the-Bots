@@ -79,7 +79,7 @@ command.setHandler(async (ctx) => {
 
     const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(stringSelect);
 
-    await ctx.editReply({ content: "Test select menu:", components: [actionRow], flags: MessageFlags.IsComponentsV2 });
+    await ctx.editReply({ components: [actionRow], flags: MessageFlags.IsComponentsV2 });
   }
 });
 

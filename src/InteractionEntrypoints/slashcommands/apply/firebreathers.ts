@@ -39,6 +39,10 @@ command.setHandler(async (ctx) => {
     throw new CommandError("You are already a firebreather!");
   }
 
+  if (ctx.member.id !== userIDs.me) {
+    throw new CommandError("The Firebreathers application is currently closed.");
+  }
+
   // Ensure they haven't already started an application
   const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 

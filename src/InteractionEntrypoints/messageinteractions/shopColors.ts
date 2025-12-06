@@ -106,142 +106,6 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
   await ctx.editReply({ components: [container, ...actionRow] });
 });
 
-// Viewing a specific item
-// const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "action"], async (ctx, args) => {
-//   const actionType = +args.action;
-
-//   const categories = getColorRoleCategories(ctx.guild.roles);
-//   const [categoryName, category] =
-//     Object.entries(categories).find(([_, category]) => category.data.roles.some((r) => r.id === args.itemId)) || [];
-//   const role = category?.data.roles.find((r) => r.id === args.itemId);
-
-//   if (!categoryName || !category || !role) return;
-
-//   await ctx.deferUpdate();
-
-//   // Ensure user doesn't have role already
-//   const dbUser = await queries.findOrCreateUser(ctx.member.id, {
-//     colorRoles: true,
-//   });
-//   if (dbUser.colorRoles.some((r) => r.roleId === role.id)) throw new CommandError("You already have this role!");
-
-//   // Change some stuff if the item is contraband
-//   const contraband = CONTRABAND_WORDS.some((w) => role.name.toLowerCase().includes(w));
-//   let title = "Good Day Dema® Discord Shop";
-//   if (contraband) title = F.randomizeLetters(title);
-//   const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
-//   const footer = contraband
-//     ? F.randomizeLetters(
-//         "thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
-//         0.1,
-//       )
-//     : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
-
-//   const embed = new EmbedBuilder()
-//     .setAuthor({ name: title, iconURL: shopImage })
-//     .setTitle(role.name)
-//     .setColor(role.color)
-//     .setFooter({ text: footer });
-
-//   if (actionType === ActionTypes.View) {
-//     embed
-//       .setDescription("Would you like to purchase this item?")
-//       .addFields([{ name: "Cost", value: `${category.data.credits}`, inline: true }])
-//       .addFields([
-//         {
-//           name: "Your credits",
-//           value: `${dbUser.credits} → ${dbUser.credits - category.data.credits}`,
-//           inline: true,
-//         },
-//       ]);
-
-//     if (contraband) {
-//       embed.addFields([
-//         {
-//           name: "WARNING",
-//           value:
-//             "This item has been identified as contraband by The Sacred Municipality of Dema. Good Day Dema® does not endorse this product and it has been flagged for take-down. For your own safety, you must leave.",
-//         },
-//       ]);
-//     }
-
-//     const roleComponents = MessageTools.allocateButtonsIntoRows([
-//       new ButtonBuilder()
-//         .setStyle(ButtonStyle.Success)
-//         .setLabel("Purchase")
-//         .setCustomId(
-//           genItemId({
-//             action: `${ActionTypes.Purchase}`,
-//             itemId: args.itemId,
-//           }),
-//         ),
-
-//       new ButtonBuilder()
-//         .setStyle(ButtonStyle.Danger)
-//         .setLabel("Go back")
-//         .setCustomId(genSubmenuId({ categoryId: category.id })),
-//     ]);
-
-//     await ctx.editReply({ embeds: [embed], components: roleComponents });
-//   } else if (actionType === ActionTypes.Purchase) {
-//     // Purchase
-//     if (!category.data.purchasable(role.id, ctx.member, dbUser))
-//       throw new CommandError("You do not have enough credits to purchase this item");
-
-//     // Add role to user's color roles list
-//     if (ctx.member.roles.cache.some((r) => r.id === role.id)) throw new CommandError("You already have this role!");
-
-//     // Use transaction to ensure user receives role and has their credits deducted
-//     await prisma.$transaction([
-//       prisma.colorRole.create({
-//         data: {
-//           userId: ctx.user.id,
-//           roleId: role.id,
-//           amountPaid: category.data.credits,
-//         },
-//       }),
-//       prisma.user.update({
-//         where: { id: dbUser.id },
-//         data: { credits: { decrement: category.data.credits } },
-//       }),
-//     ]);
-
-//     embed
-//       .setDescription(
-//         `Success! You are now a proud owner of the ${role.name} role. Thank you for shopping with Good Day Dema®.`,
-//       )
-//       .addFields([
-//         {
-//           name: `How do I "equip" this role?`,
-//           value:
-//             "To actually apply this role, simply use the `/roles colors` command. You may only have one color role applied at a time (but you can own as many as you want).",
-//         },
-//       ]);
-//     let sent = false;
-//     try {
-//       const dm = await ctx.member.createDM();
-//       dm.send({ embeds: [embed] });
-//       sent = true;
-//     } catch (e) {
-//       //
-//     } finally {
-//       embed.setFields([]);
-//       embed.setDescription(
-//         `${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`,
-//       );
-
-//       await ctx.editReply({ embeds: [embed], components: [] });
-//     }
-
-//     if (contraband) {
-//       sendViolationNotice(ctx.member, {
-//         violation: "PossessionOfContraband",
-//         data: role.name,
-//       });
-//     }
-//   }
-// });
-
 const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "action"], async (ctx, args) => {
   const actionType = +args.action;
 
@@ -389,7 +253,9 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     const roleMentions = item.data.roles.map((r) => `<@&${r.id}>`).join("\n");
 
     const section = new SectionBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`## ${label}\n${item.description}\n\n${roleMentions}`),
+      new TextDisplayBuilder().setContent(
+        `## ${label}\n-# ${item.data.credits} credits\n${item.description}\n\n${roleMentions}`,
+      ),
     );
 
     const unlocked = item.data.unlockedFor(member, dbUser);

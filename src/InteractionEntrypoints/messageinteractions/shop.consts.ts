@@ -79,7 +79,6 @@ export function getColorRoleCategories(roleManager: RoleManager) {
     credits: 150_000,
     level: 100,
     DE: true,
-    locked: true,
   });
 
   return {

@@ -1,4 +1,3 @@
-
 /**
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */

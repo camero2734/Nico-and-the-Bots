@@ -9,6 +9,7 @@ import {
   Collection,
   EmbedBuilder,
   userMention,
+  DiscordAPIError,
   type Guild,
   type GuildMember,
   type Snowflake,
@@ -113,7 +114,12 @@ async function checkReminders(guild: Guild): Promise<void> {
       await dm.send({ embeds: [embed] });
       sentReminderIds.push(rem.id);
     } catch (e) {
-      await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
+      if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
+        sentReminderIds.push(rem.id);
+        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`, e);
+      } else {
+        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
+      }
     }
   }
 

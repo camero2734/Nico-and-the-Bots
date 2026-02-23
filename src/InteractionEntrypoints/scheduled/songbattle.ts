@@ -7,10 +7,9 @@ import {
   ContainerBuilder,
   type MessageEditOptions,
   MessageFlags,
-  ThreadAutoArchiveDuration,
   roleMention,
+  ThreadAutoArchiveDuration,
 } from "discord.js";
-import { nanoid } from "nanoid";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
@@ -20,18 +19,16 @@ import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
   type Album,
-  PREFIX,
-  Result,
-  type SongContender,
-  AlbumName,
   calculateHistory,
   createResultsChart,
-  currentlyEnabledAlbum,
   determineNextMatchup,
   determineResult,
   embedFooter,
   fromSongId,
   getTotalMatches,
+  PREFIX,
+  Result,
+  type SongContender,
   toSongId,
 } from "./songbattle.consts";
 
@@ -143,7 +140,7 @@ export async function songBattleCron() {
   });
 
   // Create database poll
-  const pollName = `${PREFIX}${nextBattleNumber}-${nanoid(10)}`;
+  const pollName = `${PREFIX}${nextBattleNumber}-${Bun.randomUUIDv7()}`;
   const poll = await prisma.poll.create({
     data: {
       name: pollName,
@@ -174,12 +171,9 @@ export async function songBattleCron() {
 
   // Send the main message
   await m.edit(msgOptions);
-
-  const albumName = (currentlyEnabledAlbum as string) === AlbumName.SelfTitled ? "Self-Titled" : currentlyEnabledAlbum;
-
   // Create a discussion thread
   const thread = await m.startThread({
-    name: `2025 ${albumName} Song Battle 2P #${nextBattleNumber}`,
+    name: `2025 Championship Song Battles ${nextBattleNumber}`,
     autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
   });
 
@@ -386,7 +380,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
     components: [
       {
         type: ComponentType.TextDisplay,
-        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles | ${currentlyEnabledAlbum} 2P`,
+        content: `# Battle #${nextBattleNumber} / ${totalMatches}\n-# 2025 Album Song Battles Championship`,
       },
       { type: ComponentType.Separator, divider: false, spacing: 1 },
       {

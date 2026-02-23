@@ -8,14 +8,13 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { nanoid } from "nanoid";
 import { channelIDs, roles } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
 const ticketInteraction = new ManualEntrypoint();
 
-const MODAL_TITLE_ID = nanoid();
-const MODAL_DESCRIPTION_ID = nanoid();
+const MODAL_TITLE_ID = "TICKET_MODAL_ID";
+const MODAL_DESCRIPTION_ID = "TICKET_DESCRIPTION_ID";
 
 const content = `
 # <:gdd:898775936391053332> Staff Support

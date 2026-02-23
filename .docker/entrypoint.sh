@@ -15,9 +15,13 @@ fi
 # Run migrations
 bunx prisma migrate deploy
 
+# Initialize absurd SDK
+PGDATABASE="$DATABASE_URL" absurdctl init
+PGDATABASE="$DATABASE_URL" absurdctl create-queue default
+
 if [ "$NODE_ENV" == "development" ]; then
     echo "Running in development mode"
-    sleep 100000
+    sleep infinity
 else
     bun run app.ts
 fi

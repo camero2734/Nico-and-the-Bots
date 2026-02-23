@@ -5,7 +5,7 @@ import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import type { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
-import type { FirebreatherApplication } from ".prisma/client";
+import type { FirebreatherApplication } from "../../../../generated/prisma/client";
 
 const VERIFIED_DELAY_HOURS = 12;
 export const VerifiedQuizConsts = {

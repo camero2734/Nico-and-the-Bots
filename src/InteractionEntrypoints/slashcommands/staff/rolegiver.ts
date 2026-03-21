@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
 });
 
 const genActionId = command.addInteractionListener("reactForRole", ["roleId", "action"], async (ctx, args) => {
-  const roleId = args.roleId.toSnowflake();
+  const roleId = args.roleId;
   const action = +args.action;
 
   const role = await ctx.guild.roles.fetch(roleId);

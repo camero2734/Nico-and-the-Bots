@@ -16,7 +16,6 @@ import "./src/Helpers/message-updates/_queue";
 import { absurd } from "Tasks/absurd";
 import { DiscordLogProvider } from "./src/Helpers/effect";
 import { prisma } from "./src/Helpers/prisma-init";
-import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import {
   ContextMenus,
@@ -52,8 +51,6 @@ export const client = new Discord.Client({
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
-extendPrototypes();
-//
 client.login(secrets.bots.nico);
 
 console.log("Logging in...");

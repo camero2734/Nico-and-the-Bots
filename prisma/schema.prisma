@@ -208,6 +208,11 @@ model TemporaryText {
   value String
 }
 
+model Counter {
+  name  String @id
+  value Int    @default(0)
+}
+
 model UserLastFM {
   username String @id
 

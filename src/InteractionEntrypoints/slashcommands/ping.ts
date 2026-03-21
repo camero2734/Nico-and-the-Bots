@@ -1,5 +1,6 @@
 import { Colors, EmbedBuilder } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
+import { minutesToMilliseconds } from "date-fns";
 
 interface Ping {
   ping: number;
@@ -7,6 +8,7 @@ interface Ping {
 }
 
 const previousPings: Ping[] = [];
+const PING_TIME = minutesToMilliseconds(5);
 
 const command = new SlashCommand({
   description: "Checks the bot's ping",
@@ -14,14 +16,8 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
-
-  await ctx.send({ content: "Pinging..." });
-
-  const prior = Date.now();
-  const after = ctx.createdAt.getTime();
-
-  const currentPing = Math.abs(after - prior);
+  const { interaction } = await ctx.deferReply({ withResponse: true });
+  const currentPing = Math.abs(ctx.createdTimestamp - interaction.createdTimestamp);
 
   previousPings.push({ ping: currentPing, time: Date.now() });
 
@@ -37,8 +33,6 @@ command.setHandler(async (ctx) => {
     }
   }
 
-  previousPings[0].time;
-
   const average = Math.floor(pingSum / pingCount);
 
   const embed = new EmbedBuilder()
@@ -46,6 +40,7 @@ command.setHandler(async (ctx) => {
     .setTitle(`${currentPing}ms ping`)
     .addFields([
       { name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` },
+      { name: "Websocket", value: `${ctx.client.ws.ping}ms` },
       {
         name: "Average ping",
         value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}`,

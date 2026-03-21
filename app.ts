@@ -26,6 +26,7 @@ import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
+import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 
 export const client = new Discord.Client({
   intents: [
@@ -214,26 +215,6 @@ client.on("guildMemberUpdate", async (oldMem, mem) => {
   await testChannel.send(`✅ ${mem.user.tag} passed membership screening`);
 });
 
-client.on("guildMemberUpdate", async (oldMem, newMem) => {
-  if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
-    const fbAnnouncementChannel = (await newMem.guild.channels.fetch(
-      channelIDs.fairlyannouncements,
-    )) as Discord.TextChannel;
-    const embed = new Discord.EmbedBuilder()
-      .setAuthor({
-        name: newMem.displayName,
-        iconURL: newMem.displayAvatarURL(),
-      })
-      .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
-      .setFooter({
-        text: "PROPERTY OF DRAGON'S DEN INC.™️",
-        iconURL: newMem.client.user?.displayAvatarURL(),
-      });
-
-    await fbAnnouncementChannel.send({ embeds: [embed] });
-  }
-});
-
 client.on("messageReactionAdd", async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
@@ -307,6 +288,8 @@ client.on("interactionCreate", async (interaction) => {
     contextMenu.run(interaction);
   }
 });
+
+listenForTorchbearers(client);
 
 async function setup() {
   GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");

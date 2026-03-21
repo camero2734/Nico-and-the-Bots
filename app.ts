@@ -375,4 +375,18 @@ process.on("uncaughtException", (err) => {
   forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
 });
 
+process.on("SIGTERM", async () => {
+  console.log("Received SIGTERM, shutting down gracefully...");
+
+  try {
+    await prisma.$disconnect();
+    await client.destroy();
+  } catch (e) {
+    console.error(e);
+  }
+
+  console.log("Shutdown complete, exiting.");
+  process.exit(0);
+});
+
 export const NicoClient = client;

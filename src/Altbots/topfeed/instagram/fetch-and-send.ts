@@ -4,10 +4,9 @@ import {
   ComponentType,
   ContainerBuilder,
   MessageFlags,
-  roleMention,
-  userMention,
+  roleMention
 } from "discord.js";
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";

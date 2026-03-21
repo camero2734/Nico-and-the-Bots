@@ -1,5 +1,4 @@
-import { userMention } from "discord.js";
-import { channelIDs, userIDs } from "../../../Configuration/config";
+import { channelIDs } from "../../../Configuration/config";
 import { keonsGuild } from "../topfeed";
 import { fetchInstagram, usernamesToWatch } from "./fetch-and-send";
 

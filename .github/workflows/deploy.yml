@@ -10,6 +10,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     concurrency:
       group: build-or-deploy
     steps:
@@ -64,22 +66,24 @@ jobs:
         run: |
           docker buildx imagetools create camer0/nico:${{ env.TAG }} --tag camer0/nico:latest
 
-      - name: Push to Dokku
-        uses: dokku/github-action@master
+      - name: Connect to Tailscale (OIDC)
+        uses: tailscale/github-action@v4
         with:
-          git_remote_url: ${{ secrets.DOKKU_SSH_URL_OVH }}
-          ssh_private_key: ${{ secrets.DOKKU_SSH_PK }}
-          git_push_flags: '--force'
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
 
-      - name: Remove PR tag from Docker Hub
+      - name: Deploy to Coolify
+        if: always()
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
-          TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d \
-            '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_PASSWORD }}"}' \
-            https://hub.docker.com/v2/users/login/ | jq -r .token)
+          if [ -z "${COOLIFY_WEBHOOK}" ] || [ -z "${COOLIFY_TOKEN}" ]; then
+            echo "Missing COOLIFY_WEBHOOK or COOLIFY_TOKEN; skipping deploy"
+            exit 1
+          fi
 
-          echo "::add-mask::$TOKEN"
-
-          curl -i -X DELETE \
-            -H "Accept: application/json" \
-            -H "Authorization: JWT $TOKEN" \
-            https://hub.docker.com/v2/repositories/camer0/nico/tags/${{ env.TAG }}/
+          curl --request GET "${COOLIFY_WEBHOOK}" \
+            --header "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            --fail --show-error --silent

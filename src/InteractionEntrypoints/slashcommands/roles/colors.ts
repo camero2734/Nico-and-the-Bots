@@ -14,7 +14,7 @@ command.setHandler(async (ctx) => {
     where: { userId: ctx.user.id },
   });
 
-  const roleIDs = userRoles.map((r) => r.roleId.toSnowflake());
+  const roleIDs = userRoles.map((r) => r.roleId);
 
   const actionRow = new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents([
     new RoleSelectMenuBuilder().setCustomId(roleSelectedId({ originalUserId: ctx.user.id })).setMaxValues(1),

@@ -74,7 +74,7 @@ async function getMemberScores(
 
   return await Promise.all(
     paginatedUsers.map(async (u) => ({
-      member: await ctx.member.guild.members.fetch(u.userId.toSnowflake()).catch(() => undefined),
+      member: await ctx.member.guild.members.fetch(u.userId).catch(() => undefined),
       score: u.score,
     })),
   );
@@ -100,7 +100,7 @@ async function getAlltimeScores(
   return await Promise.all(
     paginatedUsers.map(async (u) => {
       return {
-        member: await ctx.member.guild.members.fetch(u.id.toSnowflake()).catch(() => undefined),
+        member: await ctx.member.guild.members.fetch(u.id).catch(() => undefined),
         score: u.score,
       };
     }),

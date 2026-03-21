@@ -4,10 +4,9 @@ import {
   ComponentType,
   ContainerBuilder,
   MessageFlags,
-  roleMention,
-  userMention,
+  roleMention
 } from "discord.js";
-import { channelIDs, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
@@ -84,20 +83,20 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   const mediaSection: APIComponentInContainer[] =
     post.media.length > 0
       ? [
-          {
-            type: ComponentType.Separator,
-            divider: false,
-            spacing: 1,
-          },
-          {
-            type: ComponentType.MediaGallery,
-            items: post.media
-              .map((mediaItem) => ({
-                media: { url: mediaItem.url },
-              }))
-              .slice(0, 10), // Limit to 10 items
-          },
-        ]
+        {
+          type: ComponentType.Separator,
+          divider: false,
+          spacing: 1,
+        },
+        {
+          type: ComponentType.MediaGallery,
+          items: post.media
+            .map((mediaItem) => ({
+              media: { url: mediaItem.url },
+            }))
+            .slice(0, 10), // Limit to 10 items
+        },
+      ]
       : [];
 
   const footerSection: APIComponentInContainer[] = [
@@ -167,7 +166,7 @@ async function fetchIgForUsername(username: string): Promise<FormattedInstagramP
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram embed data";
     console.error(error);
-    await testChan.send(`${userMention(userIDs.me)} Error fetching Instagram embed data for ${username}: ${message}`);
+    await testChan.send(`Error fetching Instagram embed data for ${username}: ${message}`);
     return [];
   }
 }
@@ -200,7 +199,7 @@ export async function fetchInstagram(source: "scheduled" | "random") {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error during Instagram feed fetch";
     console.error(error);
-    await testChan.send(`${userMention(userIDs.me)} Error fetching Instagram feed: ${message}`);
+    await testChan.send(`Error fetching Instagram feed: ${message}`);
   }
 }
 

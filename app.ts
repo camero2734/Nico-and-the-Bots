@@ -1,9 +1,8 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
-import { Effect } from "effect";
+import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
-import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
@@ -13,10 +12,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
-import { absurd } from "Tasks/absurd";
-import { DiscordLogProvider } from "./src/Helpers/effect";
 import { prisma } from "./src/Helpers/prisma-init";
-import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
 import {
   ContextMenus,
@@ -52,8 +48,6 @@ export const client = new Discord.Client({
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
-extendPrototypes();
-//
 client.login(secrets.bots.nico);
 
 console.log("Logging in...");
@@ -328,21 +322,6 @@ function startPingServer() {
   const started = Date.now();
   Bun.serve({
     port: 2121,
-    routes: {
-      "/api/topfeed": {
-        POST: async (req) => {
-          if (req.headers.get("Authorization") !== secrets.webhookSecret) {
-            return new Response("Unauthorized", { status: 401 });
-          }
-
-          await Effect.runPromise(fetchTwitter("webhook").pipe(DiscordLogProvider));
-
-          fetchTwitter("webhook");
-
-          return new Response("OK");
-        },
-      },
-    },
     fetch() {
       return new Response(`Nico is running. Uptime: ${Math.floor((Date.now() - started) / 1000)}s`);
     },
@@ -373,6 +352,20 @@ process.on("unhandledRejection", (reason, promise) => {
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception thrown", err);
   forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
+});
+
+process.on("SIGTERM", async () => {
+  console.log("Received SIGTERM, shutting down gracefully...");
+
+  try {
+    await prisma.$disconnect();
+    await client.destroy();
+  } catch (e) {
+    console.error(e);
+  }
+
+  console.log("Shutdown complete, exiting.");
+  process.exit(0);
 });
 
 export const NicoClient = client;

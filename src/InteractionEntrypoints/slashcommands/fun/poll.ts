@@ -186,7 +186,7 @@ const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], 
 
     for (const option of selectMenu.options) {
       const emoji = option.emoji as GuildEmoji;
-      const emojiString = emoji?.id ? (await guild.emojis.fetch(emoji.id.toSnowflake())).toString() : emoji?.name;
+      const emojiString = emoji?.id ? (await guild.emojis.fetch(emoji.id)).toString() : emoji?.name;
       parsedOptions.push({
         text: option.label as string,
         emoji: emojiString as string | undefined,

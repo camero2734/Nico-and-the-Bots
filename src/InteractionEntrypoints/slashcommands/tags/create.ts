@@ -31,7 +31,7 @@ command.setHandler(async (ctx) => {
   });
 
   if (existingTag?.userId) {
-    if (existingTag.userId.toSnowflake() !== ctx.user.id) throw new CommandError("This tag already exists");
+    if (existingTag.userId !== ctx.user.id) throw new CommandError("This tag already exists");
     existingTag.text = ctx.opts.text;
 
     await prisma.tag.update({

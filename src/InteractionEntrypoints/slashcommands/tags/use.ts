@@ -38,7 +38,7 @@ command.setHandler(async (ctx) => {
   if (!tag?.userId) return sendSuggestionList(ctx);
 
   const tagAuthor =
-    (await ctx.guild?.members.fetch(tag.userId.toSnowflake()).catch(() => null)) ||
+    (await ctx.guild?.members.fetch(tag.userId).catch(() => null)) ||
     (await ctx.guild.members.fetch(ctx.client.user?.id || ""));
   if (!tagAuthor) throw new CommandError("The user that created this tag no longer exists");
 

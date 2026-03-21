@@ -9,6 +9,7 @@ on:
 
 jobs:
   deploy:
+    environment: production
     runs-on: ubuntu-latest
     permissions:
       id-token: write

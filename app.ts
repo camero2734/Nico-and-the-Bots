@@ -1,9 +1,8 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
-import { Effect } from "effect";
+import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
-import { fetchTwitter } from "./src/Altbots/topfeed/twitter/orchestrator";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
@@ -13,8 +12,6 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
-import { absurd } from "Tasks/absurd";
-import { DiscordLogProvider } from "./src/Helpers/effect";
 import { prisma } from "./src/Helpers/prisma-init";
 import Scheduler from "./src/Helpers/scheduler";
 import {
@@ -325,21 +322,6 @@ function startPingServer() {
   const started = Date.now();
   Bun.serve({
     port: 2121,
-    routes: {
-      "/api/topfeed": {
-        POST: async (req) => {
-          if (req.headers.get("Authorization") !== secrets.webhookSecret) {
-            return new Response("Unauthorized", { status: 401 });
-          }
-
-          await Effect.runPromise(fetchTwitter("webhook").pipe(DiscordLogProvider));
-
-          fetchTwitter("webhook");
-
-          return new Response("OK");
-        },
-      },
-    },
     fetch() {
       return new Response(`Nico is running. Uptime: ${Math.floor((Date.now() - started) / 1000)}s`);
     },

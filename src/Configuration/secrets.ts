@@ -43,7 +43,6 @@ const secrets = {
       API_TOKEN: env.get("CLOUDFLARE_API_TOKEN").required().asString(),
     },
   },
-  randomSeedPrefix: env.get("RANDOM_SEED_PREFIX").required().asString(),
   webhookUrl: env.get("WEBHOOK_URL").required().asString(),
   commitSha: env.get("COMMIT_SHA").asString(),
   webhookSecret: env.get("WEBHOOK_SECRET").asString(),

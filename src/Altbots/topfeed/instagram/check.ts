@@ -48,7 +48,7 @@ async function fetchOpengraphData(user: string): Promise<number> {
 
     text = await data.text();
 
-    
+
 
     const match = text?.split('posts_count\\":')?.[1]?.split(",")?.[0];
     if (!match) {
@@ -97,7 +97,7 @@ export async function checkInstagram() {
         if (postCountMap[username] !== 0) {
           logger(`Post count for ${username} changed from ${postCountMap[username]} to ${postCount}`);
           testChan
-            .send(`${userMention(userIDs.me)} Post count for ${username} changed to ${postCount}`)
+            .send(`Post count for ${username} changed to ${postCount}`)
             .catch(console.error);
         }
       }
@@ -106,7 +106,7 @@ export async function checkInstagram() {
       console.error(`Error fetching opengraph data for ${username}:`, error);
       postCountChanged = true; // Assume it's changed if we can't fetch the data
       await testChan.send(
-        `${userMention(userIDs.me)} Error fetching Instagram opengraph data for ${username}: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Error fetching Instagram opengraph data for ${username}: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }

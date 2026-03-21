@@ -1,5 +1,7 @@
 FROM oven/bun:1.3.0-debian AS build
 
+STOPSIGNAL SIGTERM
+
 USER root
 WORKDIR /code
 

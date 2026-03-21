@@ -14,7 +14,6 @@
     "prisma:update": "prisma migrate dev",
     "docker:dev": "docker compose up --force-recreate --remove-orphans",
     "docker:build": "docker-compose build",
-    "dokku:env": "dokku config:set nico $(sed '/^$/d' .env | tr '\\n' ' ')",
     "tasks:fetch-db": "ts-node tasks/fetch-db.ts"
   },
   "author": "",

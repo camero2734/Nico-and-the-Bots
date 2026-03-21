@@ -114,6 +114,6 @@ jobs:
             exit 1
           fi
 
-          curl --request GET "${COOLIFY_WEBHOOK}" \
-            --header "Authorization: Bearer ${COOLIFY_TOKEN}" \
-            --fail --show-error --silent
+          curl --header "Authorization: Bearer ${COOLIFY_TOKEN}" \
+               --fail --show-error --silent \
+               --request GET "${COOLIFY_WEBHOOK}"

@@ -9,7 +9,6 @@ import {
   type TextBasedChannel,
   type TextChannel,
 } from "discord.js";
-import { nanoid } from "nanoid";
 import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
@@ -57,7 +56,7 @@ export const ErrorHandler = async (
   handler?: string,
   receivedInteractionAt?: Date,
 ) => {
-  const errorId = nanoid();
+  const errorId = Bun.randomUUIDv7();
   const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
 
   console.log("===================================");

@@ -1,4 +1,3 @@
-import { WarningType } from "@prisma/client";
 import { subYears } from "date-fns";
 import {
   ActionRowBuilder,
@@ -14,6 +13,7 @@ import { prisma, queries } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
 import JailCommand from "./../jail";
+import { WarningType } from "../../../../../generated/prisma/client";
 
 const rules = Object.values(WarningType);
 

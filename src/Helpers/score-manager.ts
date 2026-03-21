@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import type { User } from "../../generated/prisma/client";
 import { startOfDay } from "date-fns";
 import {
   DiscordAPIError,
@@ -134,31 +134,26 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
 async function onEarnPoint(msg: Message, dbUser: User): Promise<Parameters<(typeof prisma)["user"]["update"]>[0]> {
   let creditIncrement = 0;
   let setLevel = dbUser.level;
-  if (Math.random() > 0.5) creditIncrement += 2; // Random chance of earning some credits
+  if (Math.random() > 0.5) creditIncrement += 2; // Random chance of earning some credits on message
 
   const userLevel = LevelCalculator.calculateLevel(dbUser.score);
 
+  // User has leveled up
   if (userLevel > setLevel) {
     setLevel = userLevel;
-    // User has "leveled up"
-    const hasPerk = !!(await prisma.perk.findUnique({
-      where: { userId_type: { userId: dbUser.id, type: "LevelCredits" } },
-    }));
 
     const lvlEmbed = new EmbedBuilder({
       description: `LEVEL UP: You are now level ${userLevel}!`,
     });
 
-    if (hasPerk) {
-      const randomReward = Math.floor(Math.random() * 1500) + 201;
-      lvlEmbed.addFields([
-        {
-          name: "Perk Bonus",
-          value: `You gained ${randomReward} credits for leveling up!`,
-        },
-      ]);
-      creditIncrement += randomReward;
-    }
+    const randomReward = Math.floor(Math.random() * 500) + 200;
+    lvlEmbed.addFields([
+      {
+        name: "Level Bonus",
+        value: `You gained ${randomReward} credits for leveling up!`,
+      },
+    ]);
+    creditIncrement += randomReward;
 
     await msg.reply({
       embeds: [lvlEmbed],

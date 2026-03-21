@@ -1,10 +1,11 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client"
+  output     = "../generated/prisma"
+  engineType = "client"
 }
 
 model DailyBox {
@@ -152,6 +153,8 @@ model ColorRole {
   userId String
 
   amountPaid Int
+
+  purchasedAt DateTime @default(now())
 
   @@id([roleId, userId])
 }

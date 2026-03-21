@@ -1,7 +1,7 @@
 import * as crypto from "node:crypto";
 import { Faker, en } from "@faker-js/faker";
 import type { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import type { BishopType } from "@prisma/client";
+import type { BishopType } from "../../generated/prisma/client";
 import * as bigintConversion from "bigint-conversion";
 import { type TCountryCode, continents, getCountryData } from "countries-list";
 import type { BaseMessageOptions, Guild, GuildMember, Message, Role, Snowflake, TextChannel } from "discord.js";

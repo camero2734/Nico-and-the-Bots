@@ -1,9 +1,14 @@
-import { type Prisma, PrismaClient } from "@prisma/client";
 import chalk from "chalk";
 import consola from "consola";
 import { startOfDay, subWeeks } from "date-fns";
 
+import { PrismaPg } from "@prisma/adapter-pg";
+import { type Prisma, PrismaClient } from "../../generated/prisma/client";
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+
 export const prisma = new PrismaClient({
+  adapter,
   log: [
     {
       emit: "event",

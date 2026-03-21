@@ -1,5 +1,5 @@
 import { Canvas } from "@napi-rs/canvas";
-import type { Poll, Vote } from "@prisma/client";
+import type { Poll, Vote } from "../../../generated/prisma/client";
 import {
   CategoryScale,
   Chart,
@@ -17,7 +17,7 @@ import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
 
-export const NUMBER_OF_ELIMINATIONS = 1;
+export const NUMBER_OF_ELIMINATIONS = 2;
 
 Chart.defaults.font.family = "Futura";
 
@@ -53,10 +53,8 @@ export interface SongContender {
   yt: string;
 }
 
-export const currentlyEnabledAlbum = AlbumName.Breach;
-
 export const IMAGE_SIZE = 1000;
-export const PREFIX = `SongBattle2025AlbumBattle-${currentlyEnabledAlbum}2-`;
+export const PREFIX = "SongBattle2025AlbumBattle-Championship-";
 
 const albumsRaw = [
   {
@@ -65,20 +63,20 @@ const albumsRaw = [
     color: "#8cb82c",
     emoji: emojiIDs.albums.selfTitled,
     songs: [
-      { name: "Implicit Demand for Proof", yt: "https://youtu.be/hIlR7d7TzVg" },
-      { name: "Fall Away", yt: "https://youtu.be/gxC5Dvqbcoc" },
-      { name: "The Pantaloon", yt: "https://youtu.be/ycKEsJtlcEE" },
-      { name: "Addict With a Pen", yt: "https://youtu.be/GILJrPA4r6M" },
-      { name: "Friend, Please", yt: "https://youtu.be/QzL5Pp7z6BY" },
-      { name: "March to the Sea", yt: "https://youtu.be/Bu9eqN8mrWw" },
-      { name: "Johnny Boy", yt: "https://youtu.be/Z9ssOeR_c98" },
-      { name: "Oh Ms Believer", yt: "https://youtu.be/NLauNXBr1Ls" },
-      { name: "Air Catcher", yt: "https://youtu.be/IgTCkpPR4XA" },
+      // { name: "Implicit Demand for Proof", yt: "https://youtu.be/hIlR7d7TzVg" },
+      // { name: "Fall Away", yt: "https://youtu.be/gxC5Dvqbcoc" },
+      // { name: "The Pantaloon", yt: "https://youtu.be/ycKEsJtlcEE" },
+      // { name: "Addict With a Pen", yt: "https://youtu.be/GILJrPA4r6M" },
+      // { name: "Friend, Please", yt: "https://youtu.be/QzL5Pp7z6BY" },
+      // { name: "March to the Sea", yt: "https://youtu.be/Bu9eqN8mrWw" },
+      // { name: "Johnny Boy", yt: "https://youtu.be/Z9ssOeR_c98" },
+      // { name: "Oh Ms Believer", yt: "https://youtu.be/NLauNXBr1Ls" },
+      // { name: "Air Catcher", yt: "https://youtu.be/IgTCkpPR4XA" },
       { name: "Trapdoor", yt: "https://youtu.be/Kqw1N5Buzl0" },
-      { name: "A Car, a Torch, a Death", yt: "https://youtu.be/NWqQDINWg6A" },
-      { name: "Taxi Cab", yt: "https://youtu.be/hq0fQLJ-658" },
-      { name: "Before You Start Your Day", yt: "https://youtu.be/w8f7A_AtdVE" },
-      { name: "Isle of Flightless Birds", yt: "https://youtu.be/RYvsTXbmxj4" },
+      // { name: "A Car, a Torch, a Death", yt: "https://youtu.be/NWqQDINWg6A" },
+      // { name: "Taxi Cab", yt: "https://youtu.be/hq0fQLJ-658" },
+      // { name: "Before You Start Your Day", yt: "https://youtu.be/w8f7A_AtdVE" },
+      // { name: "Isle of Flightless Birds", yt: "https://youtu.be/RYvsTXbmxj4" },
     ],
   },
   {
@@ -87,20 +85,20 @@ const albumsRaw = [
     color: "#9bc1db",
     emoji: emojiIDs.albums.regionalAtBest,
     songs: [
-      { name: "Guns for Hands", yt: "https://youtu.be/UVDjsd-wT7M" },
-      { name: "Holding on to You", yt: "https://youtu.be/GMXsqXW5oas" },
-      { name: "Ode to Sleep", yt: "https://youtu.be/bpycid3GVp8" },
-      { name: "Slowtown", yt: "https://youtu.be/-2-gwRvrdnY" },
-      { name: "Car Radio", yt: "https://youtu.be/fjclm1kCj9E" },
+      // { name: "Guns for Hands", yt: "https://youtu.be/UVDjsd-wT7M" },
+      // { name: "Holding on to You", yt: "https://youtu.be/GMXsqXW5oas" },
+      // { name: "Ode to Sleep", yt: "https://youtu.be/bpycid3GVp8" },
+      // { name: "Slowtown", yt: "https://youtu.be/-2-gwRvrdnY" },
+      // { name: "Car Radio", yt: "https://youtu.be/fjclm1kCj9E" },
       { name: "Forest", yt: "https://youtu.be/-eFEu54W0To" },
-      { name: "Glowing Eyes", yt: "https://youtu.be/dnCYRa3MBiY" },
-      { name: "Kitchen Sink", yt: "https://youtu.be/_gcNBMMQIMk" },
-      { name: "Anathema", yt: "https://youtu.be/NDoWoJPW7e0" },
-      { name: "Lovely", yt: "https://youtu.be/2YGCoNfuRn4" },
-      { name: "Ruby", yt: "https://youtu.be/VtjggQ7l-nk" },
-      { name: "Trees", yt: "https://youtu.be/hlBz7U62t6s" },
-      { name: "Be Concerned", yt: "https://youtu.be/wF_XsqEWmzo" },
-      { name: "Clear", yt: "https://youtu.be/4_AOmYI2PqE" },
+      // { name: "Glowing Eyes", yt: "https://youtu.be/dnCYRa3MBiY" },
+      // { name: "Kitchen Sink", yt: "https://youtu.be/_gcNBMMQIMk" },
+      // { name: "Anathema", yt: "https://youtu.be/NDoWoJPW7e0" },
+      // { name: "Lovely", yt: "https://youtu.be/2YGCoNfuRn4" },
+      // { name: "Ruby", yt: "https://youtu.be/VtjggQ7l-nk" },
+      // { name: "Trees", yt: "https://youtu.be/hlBz7U62t6s" },
+      // { name: "Be Concerned", yt: "https://youtu.be/wF_XsqEWmzo" },
+      // { name: "Clear", yt: "https://youtu.be/4_AOmYI2PqE" },
     ],
   },
   {
@@ -109,46 +107,46 @@ const albumsRaw = [
     color: "#aebfd9",
     emoji: emojiIDs.albums.vessel,
     songs: [
-      { name: "Ode to Sleep", yt: "https://youtu.be/2OnO3UXFZdE" },
+      // { name: "Ode to Sleep", yt: "https://youtu.be/2OnO3UXFZdE" },
       { name: "Holding on to You", yt: "https://youtu.be/ktBMxkLUIwY" },
-      { name: "Migraine", yt: "https://youtu.be/Bs92ejAGLdw" },
-      { name: "House of Gold", yt: "https://youtu.be/mDyxykpYeu8" },
-      { name: "Car Radio", yt: "https://youtu.be/92XVwY54h5k" },
-      { name: "Semi-Automatic", yt: "https://youtu.be/pGb6KYJ3qpA" },
-      { name: "Screen", yt: "https://youtu.be/NK7WWbXlkj4" },
-      { name: "The Run and Go", yt: "https://youtu.be/wGbraQdkct8" },
-      { name: "Fake You Out", yt: "https://youtu.be/KnthhE071-I" },
-      { name: "Guns for Hands", yt: "https://youtu.be/Pmv8aQKO6k0" },
-      { name: "Trees", yt: "https://youtu.be/szp9x1ZlZn4" },
-      { name: "Truce", yt: "https://youtu.be/eCeBNwBUkcI" },
+      // { name: "Migraine", yt: "https://youtu.be/Bs92ejAGLdw" },
+      // { name: "House of Gold", yt: "https://youtu.be/mDyxykpYeu8" },
+      // { name: "Car Radio", yt: "https://youtu.be/92XVwY54h5k" },
+      // { name: "Semi-Automatic", yt: "https://youtu.be/pGb6KYJ3qpA" },
+      // { name: "Screen", yt: "https://youtu.be/NK7WWbXlkj4" },
+      // { name: "The Run and Go", yt: "https://youtu.be/wGbraQdkct8" },
+      // { name: "Fake You Out", yt: "https://youtu.be/KnthhE071-I" },
+      // { name: "Guns for Hands", yt: "https://youtu.be/Pmv8aQKO6k0" },
+      // { name: "Trees", yt: "https://youtu.be/szp9x1ZlZn4" },
+      // { name: "Truce", yt: "https://youtu.be/eCeBNwBUkcI" },
       // { name: "Lovely (Bonus Track Version)", yt: "https://youtu.be/GJZq6QXOY_s" },
     ],
   },
-  // {
-  //   name: AlbumName.Blurryface,
-  //   image: "https://i.scdn.co/image/ab67616d00001e022df0d98a423025032d0db1f7",
-  //   color: "#ec5748",
-  //   emoji: emojiIDs.albums.blurryface,
-  //   songs: [
-  //     { name: "Heavydirtysoul", yt: "https://youtu.be/r_9Kf0D5BTs" },
-  //     { name: "Stressed Out", yt: "https://youtu.be/pXRviuL6vMY" },
-  //     { name: "Ride", yt: "https://youtu.be/Pw-0pbY9JeU" },
-  //     { name: "Fairly Local", yt: "https://youtu.be/HDI9inno86U" },
-  //     { name: "Tear in My Heart", yt: "https://youtu.be/nky4me4NP70" },
-  //     { name: "Lane Boy", yt: "https://youtu.be/ywvRgGAd2XI" },
-  //     { name: "The Judge", yt: "https://youtu.be/PbP-aIe51Ek" },
-  //     { name: "Doubt", yt: "https://youtu.be/MEiVnNNpJLA" },
-  //     { name: "Polarize", yt: "https://youtu.be/MiPBQJq49xk" },
-  //     {
-  //       name: "We Don't Believe What's on TV",
-  //       yt: "https://youtu.be/zZEumf7RowI",
-  //     },
-  //     { name: "Message Man", yt: "https://youtu.be/iE_54CU7Fxk" },
-  //     { name: "Hometown", yt: "https://youtu.be/pJtlLzsDICo" },
-  //     { name: "Not Today", yt: "https://youtu.be/yqem6k_3pZ8" },
-  //     { name: "Goner", yt: "https://youtu.be/3J5mE-J1WLk" },
-  //   ],
-  // },
+  {
+    name: AlbumName.Blurryface,
+    image: "https://i.scdn.co/image/ab67616d00001e022df0d98a423025032d0db1f7",
+    color: "#ec5748",
+    emoji: emojiIDs.albums.blurryface,
+    songs: [
+      { name: "Heavydirtysoul", yt: "https://youtu.be/r_9Kf0D5BTs" },
+      // { name: "Stressed Out", yt: "https://youtu.be/pXRviuL6vMY" },
+      // { name: "Ride", yt: "https://youtu.be/Pw-0pbY9JeU" },
+      // { name: "Fairly Local", yt: "https://youtu.be/HDI9inno86U" },
+      // { name: "Tear in My Heart", yt: "https://youtu.be/nky4me4NP70" },
+      // { name: "Lane Boy", yt: "https://youtu.be/ywvRgGAd2XI" },
+      // { name: "The Judge", yt: "https://youtu.be/PbP-aIe51Ek" },
+      // { name: "Doubt", yt: "https://youtu.be/MEiVnNNpJLA" },
+      // { name: "Polarize", yt: "https://youtu.be/MiPBQJq49xk" },
+      // {
+      //   name: "We Don't Believe What's on TV",
+      //   yt: "https://youtu.be/zZEumf7RowI",
+      // },
+      // { name: "Message Man", yt: "https://youtu.be/iE_54CU7Fxk" },
+      // { name: "Hometown", yt: "https://youtu.be/pJtlLzsDICo" },
+      // { name: "Not Today", yt: "https://youtu.be/yqem6k_3pZ8" },
+      // { name: "Goner", yt: "https://youtu.be/3J5mE-J1WLk" },
+    ],
+  },
   // {
   //   name: AlbumName.TOPxMM,
   //   image: "https://i.scdn.co/image/ab67616d00001e02aa53cf116c616b262b59742a",
@@ -175,19 +173,19 @@ const albumsRaw = [
     emoji: emojiIDs.albums.trench,
     songs: [
       { name: "Jumpsuit", yt: "https://youtu.be/UOUBW8bkjQ4" },
-      { name: "Levitate", yt: "https://youtu.be/uv_1AKKKJnk" },
-      { name: "Morph", yt: "https://youtu.be/OmL9TqTFIAc" },
-      { name: "My Blood", yt: "https://youtu.be/8mn-FFjIbo8" },
-      { name: "Chlorine", yt: "https://youtu.be/eJnQBXmZ7Ek" },
-      { name: "Smithereens", yt: "https://youtu.be/v8GwUos_Mtw" },
-      { name: "Neon Gravestones", yt: "https://youtu.be/5MeQ9rA2Ifg" },
-      { name: "The Hype", yt: "https://youtu.be/Io2hbcrAYBw" },
-      { name: "Nico and the Niners", yt: "https://youtu.be/hMAPyGoqQVw" },
-      { name: "Cut My Lip", yt: "https://youtu.be/iRwXUzHpHIc" },
-      { name: "Bandito", yt: "https://youtu.be/VQHTROo0S8E" },
-      { name: "Pet Cheetah", yt: "https://youtu.be/VGMmSOsNAdc" },
-      { name: "Legend", yt: "https://youtu.be/f3bzqzspXPI" },
-      { name: "Leave the City", yt: "https://youtu.be/zDktApy8Sn0" },
+      // { name: "Levitate", yt: "https://youtu.be/uv_1AKKKJnk" },
+      // { name: "Morph", yt: "https://youtu.be/OmL9TqTFIAc" },
+      // { name: "My Blood", yt: "https://youtu.be/8mn-FFjIbo8" },
+      // { name: "Chlorine", yt: "https://youtu.be/eJnQBXmZ7Ek" },
+      // { name: "Smithereens", yt: "https://youtu.be/v8GwUos_Mtw" },
+      // { name: "Neon Gravestones", yt: "https://youtu.be/5MeQ9rA2Ifg" },
+      // { name: "The Hype", yt: "https://youtu.be/Io2hbcrAYBw" },
+      // { name: "Nico and the Niners", yt: "https://youtu.be/hMAPyGoqQVw" },
+      // { name: "Cut My Lip", yt: "https://youtu.be/iRwXUzHpHIc" },
+      // { name: "Bandito", yt: "https://youtu.be/VQHTROo0S8E" },
+      // { name: "Pet Cheetah", yt: "https://youtu.be/VGMmSOsNAdc" },
+      // { name: "Legend", yt: "https://youtu.be/f3bzqzspXPI" },
+      // { name: "Leave the City", yt: "https://youtu.be/zDktApy8Sn0" },
     ],
   },
   {
@@ -196,16 +194,16 @@ const albumsRaw = [
     color: "#01dead",
     emoji: emojiIDs.albums.scaledAndIcy,
     songs: [
-      { name: "Good Day", yt: "https://youtu.be/uSnpObUx71Q" },
-      { name: "Choker", yt: "https://youtu.be/2sBRnnnZyFw" },
-      { name: "Shy Away", yt: "https://youtu.be/niR2qJ3mGEE" },
-      { name: "The Outside", yt: "https://youtu.be/eNcvblM8-_o" },
-      { name: "Saturday", yt: "https://youtu.be/FiXVRdotCEk" },
-      { name: "Never Take It", yt: "https://youtu.be/h3qm1wwkZ48" },
-      { name: "Mulberry Street", yt: "https://youtu.be/uBcWM0sXdgk" },
-      { name: "Formidable", yt: "https://youtu.be/jek7Wy2VA2s" },
-      { name: "Bounce Man", yt: "https://youtu.be/MAZo87a-Wqo" },
-      { name: "No Chances", yt: "https://youtu.be/8_tMRvpzDVc" },
+      // { name: "Good Day", yt: "https://youtu.be/uSnpObUx71Q" },
+      // { name: "Choker", yt: "https://youtu.be/2sBRnnnZyFw" },
+      // { name: "Shy Away", yt: "https://youtu.be/niR2qJ3mGEE" },
+      // { name: "The Outside", yt: "https://youtu.be/eNcvblM8-_o" },
+      // { name: "Saturday", yt: "https://youtu.be/FiXVRdotCEk" },
+      // { name: "Never Take It", yt: "https://youtu.be/h3qm1wwkZ48" },
+      // { name: "Mulberry Street", yt: "https://youtu.be/uBcWM0sXdgk" },
+      // { name: "Formidable", yt: "https://youtu.be/jek7Wy2VA2s" },
+      // { name: "Bounce Man", yt: "https://youtu.be/MAZo87a-Wqo" },
+      // { name: "No Chances", yt: "https://youtu.be/8_tMRvpzDVc" },
       { name: "Redecorate", yt: "https://youtu.be/6_GCsQRS3kM" },
     ],
   },
@@ -215,19 +213,19 @@ const albumsRaw = [
     color: "#E33E36",
     emoji: emojiIDs.albums.clancy,
     songs: [
-      { name: "Overcompensate", yt: "https://youtu.be/53tgVlXBZVg" },
-      { name: "Next Semester", yt: "https://youtu.be/a5i-KdUQ47o" },
-      { name: "Backslide", yt: "https://youtu.be/YAmLMohrus4" },
-      { name: "Midwest Indigo", yt: "https://youtu.be/mREOvIgImmo" },
-      { name: "Routines in the Night", yt: "https://youtu.be/AupwoN8QvbU" },
-      { name: "Vignette", yt: "https://youtu.be/eoEKwwbPfvc" },
-      { name: "The Craving (Jenna's Version)", yt: "https://youtu.be/yN6OQncqqI0" },
-      { name: "Lavish", yt: "https://youtu.be/flYgpeWsC2E" },
-      { name: "Navigating", yt: "https://youtu.be/07YtBj3BEBQ" },
-      { name: "Snap Back", yt: "https://youtu.be/eZptwvjKjk4" },
+      // { name: "Overcompensate", yt: "https://youtu.be/53tgVlXBZVg" },
+      // { name: "Next Semester", yt: "https://youtu.be/a5i-KdUQ47o" },
+      // { name: "Backslide", yt: "https://youtu.be/YAmLMohrus4" },
+      // { name: "Midwest Indigo", yt: "https://youtu.be/mREOvIgImmo" },
+      // { name: "Routines in the Night", yt: "https://youtu.be/AupwoN8QvbU" },
+      // { name: "Vignette", yt: "https://youtu.be/eoEKwwbPfvc" },
+      // { name: "The Craving (Jenna's Version)", yt: "https://youtu.be/yN6OQncqqI0" },
+      // { name: "Lavish", yt: "https://youtu.be/flYgpeWsC2E" },
+      // { name: "Navigating", yt: "https://youtu.be/07YtBj3BEBQ" },
+      // { name: "Snap Back", yt: "https://youtu.be/eZptwvjKjk4" },
       { name: "Oldies Station", yt: "https://youtu.be/fBE_2sHDt4E" },
-      { name: "At the Risk of Feeling Dumb", yt: "https://youtu.be/TnoWOgAD054" },
-      { name: "Paladin Strait", yt: "https://youtu.be/mix9YfaaNa0" },
+      // { name: "At the Risk of Feeling Dumb", yt: "https://youtu.be/TnoWOgAD054" },
+      // { name: "Paladin Strait", yt: "https://youtu.be/mix9YfaaNa0" },
     ],
   },
   {
@@ -236,51 +234,55 @@ const albumsRaw = [
     color: "#8C2B2B",
     emoji: emojiIDs.albums.breach,
     songs: [
-      { name: "City Walls", yt: "https://www.youtube.com/watch?v=5Ozjel72yjQ" },
-      { name: "Rawfear", yt: "https://www.youtube.com/watch?v=xHimP0uwink" },
-      { name: "Drum Show", yt: "https://www.youtube.com/watch?v=5dA094oAy-g" },
-      { name: "Garbage", yt: "https://www.youtube.com/watch?v=tdFNA7YBM4c" },
-      { name: "The Contract", yt: "https://www.youtube.com/watch?v=QZfH7cFp3Ys" },
-      { name: "Downstairs", yt: "https://www.youtube.com/watch?v=U4gmnQS1als" },
-      { name: "Robot Voices", yt: "https://www.youtube.com/watch?v=o-LPIqIGuH0" },
-      // { name: "Center Mass", yt: "https://www.youtube.com/watch?v=PAbv0MXFYgE" },
-      { name: "Cottonwood", yt: "https://www.youtube.com/watch?v=T0wdtnkPQyo" },
-      { name: "One Way", yt: "https://www.youtube.com/watch?v=lbcpWOiwk5E" },
-      { name: "Days Lie Dormant", yt: "https://www.youtube.com/watch?v=hfbRtM_CDdc" },
-      { name: "Tally", yt: "https://www.youtube.com/watch?v=mbXvhmGwumw" },
-      { name: "Intentions", yt: "https://www.youtube.com/watch?v=oY3BRnxn6Yk" },
-      { name: "Drag Path", yt: "https://www.youtube.com/watch?v=2P39HoDjjeA", image: "https://static.wikia.nocookie.net/twenty-one-pilots/images/5/5e/Breach_Digital_Remains.jpg" },
-    ]
+      // { name: "City Walls", yt: "https://www.youtube.com/watch?v=5Ozjel72yjQ" },
+      // { name: "Rawfear", yt: "https://www.youtube.com/watch?v=xHimP0uwink" },
+      // { name: "Drum Show", yt: "https://www.youtube.com/watch?v=5dA094oAy-g" },
+      // { name: "Garbage", yt: "https://www.youtube.com/watch?v=tdFNA7YBM4c" },
+      // { name: "The Contract", yt: "https://www.youtube.com/watch?v=QZfH7cFp3Ys" },
+      // { name: "Downstairs", yt: "https://www.youtube.com/watch?v=U4gmnQS1als" },
+      // { name: "Robot Voices", yt: "https://www.youtube.com/watch?v=o-LPIqIGuH0" },
+      { name: "Center Mass", yt: "https://www.youtube.com/watch?v=PAbv0MXFYgE" },
+      // { name: "Cottonwood", yt: "https://www.youtube.com/watch?v=T0wdtnkPQyo" },
+      // { name: "One Way", yt: "https://www.youtube.com/watch?v=lbcpWOiwk5E" },
+      // { name: "Days Lie Dormant", yt: "https://www.youtube.com/watch?v=hfbRtM_CDdc" },
+      // { name: "Tally", yt: "https://www.youtube.com/watch?v=mbXvhmGwumw" },
+      // { name: "Intentions", yt: "https://www.youtube.com/watch?v=oY3BRnxn6Yk" },
+      {
+        name: "Drag Path",
+        yt: "https://www.youtube.com/watch?v=2P39HoDjjeA",
+        image: "https://static.wikia.nocookie.net/twenty-one-pilots/images/5/5e/Breach_Digital_Remains.jpg",
+      },
+    ],
   },
   {
     name: AlbumName.Singles,
     color: "#FFFFFF",
     emoji: "1211716502621917215",
     songs: [
-      {
-        name: "Level of Concern",
-        image: "https://i.scdn.co/image/ab67616d00001e02ab2f8973949159695f65df7b",
-        yt: "https://youtu.be/loOWKm8GW6A",
-      },
-      {
-        name: "The Craving (single version)",
-        image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26",
-        yt: "https://youtu.be/H3OiQEOcrA8",
-      },
-      {
-        name: "Heathens",
-        image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb",
-        yt: "https://youtu.be/UprcpdwuwCg",
-        emoji: emojiIDs.albums.heathensSingle,
-        color: "#BBF2AC",
-      },
-      {
-        name: "Doubt (demo)",
-        image: "https://i.scdn.co/image/ab67616d00001e029b0aa15c3f5e17fa8281aec7",
-        yt: "https://youtu.be/7s1033v2DTQ",
-        emoji: emojiIDs.albums.doubtSingle,
-        color: "#252525",
-      },
+      // {
+      //   name: "Level of Concern",
+      //   image: "https://i.scdn.co/image/ab67616d00001e02ab2f8973949159695f65df7b",
+      //   yt: "https://youtu.be/loOWKm8GW6A",
+      // },
+      // {
+      //   name: "The Craving (single version)",
+      //   image: "https://i.scdn.co/image/ab67616d00001e02d1e9c8027e794228dc35ad26",
+      //   yt: "https://youtu.be/H3OiQEOcrA8",
+      // },
+      // {
+      //   name: "Heathens",
+      //   image: "https://i.scdn.co/image/ab67616d00001e022ca3ba8f334ca5a5f0312efb",
+      //   yt: "https://youtu.be/UprcpdwuwCg",
+      //   emoji: emojiIDs.albums.heathensSingle,
+      //   color: "#BBF2AC",
+      // },
+      // {
+      //   name: "Doubt (demo)",
+      //   image: "https://i.scdn.co/image/ab67616d00001e029b0aa15c3f5e17fa8281aec7",
+      //   yt: "https://youtu.be/7s1033v2DTQ",
+      //   emoji: emojiIDs.albums.doubtSingle,
+      //   color: "#252525",
+      // },
       {
         name: "The Line",
         image: "https://i.scdn.co/image/ab67616d00001e028a577010b0baa62c836e330b",
@@ -288,16 +290,16 @@ const albumsRaw = [
         emoji: emojiIDs.albums.doubtSingle,
         color: "#252525",
       },
-      {
-        name: "Time to Say Goodbye",
-        image: "https://i1.sndcdn.com/artworks-000005083596-vd83l9-t500x500.jpg",
-        yt: "https://youtu.be/BzUCuln5QX8",
-      },
-      {
-        name: "Christmas Saves the Year",
-        image: "https://i.scdn.co/image/ab67616d00001e02fdd772158c3af54caf44879b",
-        yt: "https://youtu.be/ByK84WFMaJw",
-      },
+      // {
+      //   name: "Time to Say Goodbye",
+      //   image: "https://i1.sndcdn.com/artworks-000005083596-vd83l9-t500x500.jpg",
+      //   yt: "https://youtu.be/BzUCuln5QX8",
+      // },
+      // {
+      //   name: "Christmas Saves the Year",
+      //   image: "https://i.scdn.co/image/ab67616d00001e02fdd772158c3af54caf44879b",
+      //   yt: "https://youtu.be/ByK84WFMaJw",
+      // },
       // { name: "Twenty-Four (Switchfoot Cover)", image: "https://i.scdn.co/image/ab67616d00001e0243882fdb47a06d880f61efdc", yt: "https://youtu.be/Ywc58_UBgZo" },
       // {
       //   name: "Cancer (MCR Cover)",
@@ -310,7 +312,8 @@ const albumsRaw = [
   },
 ] satisfies Album[];
 
-export const albums = albumsRaw.filter((a) => a.name === currentlyEnabledAlbum);
+// Exported for filtering purposes
+export const albums = albumsRaw;
 
 export const embedFooter = (totalVotes: number, endsAt: Date) =>
   `${totalVotes} vote${F.plural(totalVotes)} | Votes are anonymous | Voting ends ${F.discordTimestamp(endsAt, "relative")}`;
@@ -420,7 +423,7 @@ export async function calculateHistory() {
   };
 }
 
-export function determineResult(poll: Poll & { votes: Vote[] }): Result {
+export function determineResult(poll: Omit<Poll, "votes"> & { votes: Vote[] }): Result {
   const totalVotes = poll.votes.length;
   const song1Votes = poll.votes.filter((v) => v.choices[0] === 0).length;
   const song2Votes = totalVotes - song1Votes;

@@ -1,5 +1,3 @@
-import { nanoid } from "nanoid";
-
 export class CommandError extends Error {
   constructor(
     message?: string,
@@ -10,4 +8,4 @@ export class CommandError extends Error {
 }
 
 export const NULL_CUSTOM_ID_PREFIX = "__null__";
-export const NULL_CUSTOM_ID = () => `${NULL_CUSTOM_ID_PREFIX}${nanoid()}`;
+export const NULL_CUSTOM_ID = () => `${NULL_CUSTOM_ID_PREFIX}${Bun.randomUUIDv7()}`;

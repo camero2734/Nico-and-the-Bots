@@ -33,6 +33,7 @@ command.setHandler(async (ctx) => {
     embed.setColor(role.color);
     embed.addFields([{ name: "Hex", value: role.hexColor }]);
     embed.addFields([{ name: "RGB", value: `(${F.intColorToRGB(role.color).join(", ")})` }]);
+    embed.addFields({ name: "Colors", value: JSON.stringify(role.colors) });
     embed.addFields([{ name: "Members", value: `${role.members.size}` }]);
     embed.addFields([{ name: "Created", value: `${role.createdAt}` }]);
     embed.addFields([{ name: "ID", value: role.id }]);

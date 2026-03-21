@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import type { BishopType, DailyBox, User } from "@prisma/client";
 import { format } from "date-fns";
 import {
   ActionRowBuilder,
@@ -13,12 +12,13 @@ import {
   type StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
 } from "discord.js";
+import type { BishopType, DailyBox, User } from "../../../../generated/prisma/client";
 import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { District, ItemDescriptions, PrizeType, districts, getPrizeName } from "./_consts";
+import { District, districts, getPrizeName, ItemDescriptions, PrizeType } from "./_consts";
 
 const command = new SlashCommand({
   description: "Using a daily token, search one of the Bishop's districts for supplies (credits, roles, etc.)",

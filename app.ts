@@ -13,15 +13,11 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import "./src/Helpers/message-updates/_queue";
+import { absurd } from "Tasks/absurd";
 import { DiscordLogProvider } from "./src/Helpers/effect";
 import { prisma } from "./src/Helpers/prisma-init";
 import { extendPrototypes } from "./src/Helpers/prototype-extend";
 import Scheduler from "./src/Helpers/scheduler";
-import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
-import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
-import { ErrorHandler } from "./src/Structures/Errors";
-import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
-import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 import {
   ContextMenus,
   InteractionHandlers,
@@ -29,6 +25,11 @@ import {
   ReplyHandlers,
   SlashCommands,
 } from "./src/Structures/data";
+import { InteractionEntrypoint } from "./src/Structures/EntrypointBase";
+import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
+import { ErrorHandler } from "./src/Structures/Errors";
+import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
+import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 
 export const client = new Discord.Client({
   intents: [
@@ -148,6 +149,8 @@ client.on("ready", async () => {
     await entrypoint.runOnBotReady(guild, client);
   }
 
+  await absurd.startWorker();
+
   startPingServer();
 });
 
@@ -200,9 +203,13 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 client.on("guildMemberUpdate", async (oldMem, mem) => {
   const noLongerPending = oldMem.pending && !mem.pending;
 
-  if (!noLongerPending || mem.roles.cache.has(roles.banditos) ||
+  if (
+    !noLongerPending ||
+    mem.roles.cache.has(roles.banditos) ||
     mem.roles.cache.has(roles.muted) ||
-    mem.roles.cache.has(roles.hideallchannels)) return;
+    mem.roles.cache.has(roles.hideallchannels)
+  )
+    return;
 
   await mem.roles.add(roles.banditos);
   await mem.roles.add(roles.new);

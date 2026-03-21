@@ -1,5 +1,5 @@
 import { type SKRSContext2D, createCanvas, loadImage } from "@napi-rs/canvas";
-import { BishopType, type ViolationType } from "@prisma/client";
+import { BishopType, type ViolationType } from "../../generated/prisma/client";
 import { AttachmentBuilder, EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";

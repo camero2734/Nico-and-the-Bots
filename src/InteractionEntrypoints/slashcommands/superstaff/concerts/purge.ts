@@ -13,7 +13,6 @@ command.setHandler(async (ctx) => {
 
   if (ctx.user.id !== userIDs.me) throw new CommandError("You cannot use this command");
 
-  await ctx.guild.members.fetch();
   await prisma.concert.deleteMany();
 
   await ctx.editReply({

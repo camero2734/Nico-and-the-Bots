@@ -1,4 +1,4 @@
-import type { BishopType } from "@prisma/client";
+import type { BishopType } from "../../../../generated/prisma/client";
 import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

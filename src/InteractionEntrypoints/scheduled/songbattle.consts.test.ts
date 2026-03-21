@@ -1,6 +1,6 @@
 // Import necessary testing utilities
 import { describe, expect, test } from "bun:test";
-import type { Poll } from "@prisma/client";
+import type { Poll } from "../../../generated/prisma/client";
 import { type SongBattleHistory, findFirstUnmatchedSongs } from "./songbattle.consts";
 
 const constructPoll = (...options: string[]): Poll => ({

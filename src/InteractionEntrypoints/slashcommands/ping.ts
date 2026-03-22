@@ -20,6 +20,8 @@ command.setHandler(async (ctx) => {
   const now = Date.now();
   const currentPing = Math.abs(now - ctx.createdTimestamp);
 
+  await ctx.deferReply();
+
   previousPings.push({ ping: currentPing, time: now });
 
   let pingSum = 0;

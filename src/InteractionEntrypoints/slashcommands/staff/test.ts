@@ -79,17 +79,17 @@ command.setHandler(async (ctx) => {
       type: ComponentType.RadioGroup,
       custom_id: "where_did_you_find_out",
       options: [
-        { value: "march-4", label: "Reddit" },
-        { value: "march-5", label: "Twitter" },
-        { value: "march-7", label: "Instagram" },
-        { value: "march-9", label: "A friend" },
-        { value: "march-10", label: "Other", description: "Feel free to specify in the comments" }
+        { value: "reddit", label: "Reddit" },
+        { value: "twitter", label: "Twitter" },
+        { value: "instagram", label: "Instagram" },
+        { value: "friend", label: "A friend" },
+        { value: "other", label: "Other", description: "Feel free to specify in the comments" }
       ]
     });
 
-    addCheckboxComponent(modal, "How have you been involved in Discord Clique events?", {
+    addCheckboxComponent(modal, "How have you been involved in server events?", {
       type: ComponentType.CheckboxGroup,
-      custom_id: "discord_clique_events",
+      custom_id: "server_events",
       options: [
         { value: "have_participated", label: "I have participated in events in the server before" },
         { value: "have_hosted", label: "I have hosted events in the server before" },
@@ -99,8 +99,8 @@ command.setHandler(async (ctx) => {
 
     modal.addLabelComponents(
       new LabelBuilder()
-        .setLabel("Is there any questionable behavior that the staff might find upon reviewing your server history? If so, please describe.")
-        .setDescription("This encompasses things such as messages, warnings, and overall demeanor towards others. Please be as thorough as possible and provide context to anything that needs it.")
+        .setLabel("Any questionable behavior in your server history?")
+        .setDescription("Including messages, warnings, and demeanor towards others. Be thorough and provide context.")
         .setTextInputComponent((builder) =>
           builder.setCustomId("questionable_behavior").setStyle(TextInputStyle.Paragraph).setRequired(false)
         )
@@ -108,8 +108,8 @@ command.setHandler(async (ctx) => {
 
     modal.addLabelComponents(
       new LabelBuilder()
-        .setLabel("What do you like/dislike about the Discord Clique community?")
-        .setDescription("This can be anything from the general vibe of the community to specific events or channels. Please be as honest and thorough as possible.")
+        .setLabel("Likes/dislikes about the server community?")
+        .setDescription("The general vibe of the community, events, channels, etc.")
         .setTextInputComponent((builder) =>
           builder.setCustomId("like_dislike").setStyle(TextInputStyle.Paragraph).setRequired(true)
         )
@@ -117,8 +117,8 @@ command.setHandler(async (ctx) => {
 
     modal.addLabelComponents(
       new LabelBuilder()
-        .setLabel("If you have any other final thoughts or comments regarding your application or your qualification, please leave them here.")
-        .setDescription("You can use this space to expand on previous questions or talk about anything else that you think is relevant to your application.")
+        .setLabel("Final thoughts/comments on your application?")
+        .setDescription("Feel free to expand on previous questions or talk about anything else that you think is relevant.")
         .setTextInputComponent((builder) =>
           builder.setCustomId("additional_comments").setStyle(TextInputStyle.Paragraph).setRequired(true)
         )

@@ -93,7 +93,8 @@
     "@typescript/native-preview": "^7.0.0-dev.20260322.1"
   },
   "overrides": {
-    "re2": "npm:@dashevo/wasm-re2"
+    "re2": "npm:@dashevo/wasm-re2",
+    "@vladfrangu/async_event_emitter": "2.4.6"
   },
   "patchedDependencies": {
     "instagram-private-api@1.46.1": "patches/instagram-private-api@1.46.1.patch"

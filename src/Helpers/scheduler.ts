@@ -91,7 +91,7 @@ export default async function (client: Client): Promise<void> {
     await Promise.all([safeCheckHouseOfGold(), safeCheckFBApplication()]);
   });
 
-  Cron("*/90 * * * * *", { protect }, async () => {
+  Cron("0 */2 * * * *", { protect }, async () => {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
   });
 

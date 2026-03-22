@@ -196,6 +196,10 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 // Pending member updates => give roles
 client.on("guildMemberUpdate", async (oldMem, mem) => {
+  if (oldMem.partial) {
+    console.log("Old member was partial");
+    return;
+  }
   const noLongerPending = oldMem.pending && !mem.pending;
 
   if (
@@ -216,6 +220,11 @@ client.on("guildMemberUpdate", async (oldMem, mem) => {
 });
 
 client.on("guildMemberUpdate", async (oldMem, newMem) => {
+  if (oldMem.partial) {
+    console.log("Old member was partial");
+    return;
+  }
+
   if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
     const fbAnnouncementChannel = (await newMem.guild.channels.fetch(
       channelIDs.fairlyannouncements,

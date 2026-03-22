@@ -46,6 +46,8 @@ export const client = new Discord.Client({
   ],
   partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
 });
+
+// Temporary fix for fetchShardCount being called in discord.js
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === 'function') {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }

@@ -1,5 +1,6 @@
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import parseDuration from "parse-duration";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";

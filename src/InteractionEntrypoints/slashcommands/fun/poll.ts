@@ -1,15 +1,12 @@
 import type { Poll, Vote } from "../../../../generated/prisma/client";
 import type { APIEmbedField, APIMessageComponentEmoji } from "discord-api-types/v10";
 import {
-  ActionRowBuilder,
   ApplicationCommandOptionType,
   ComponentType,
-  EmbedBuilder,
   type GuildEmoji,
   type Message,
-  SelectMenuBuilder,
-  SelectMenuOptionBuilder,
 } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder } from "@discordjs/builders";
 import EmojiReg from "emoji-regex";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../../Configuration/config";
@@ -194,7 +191,7 @@ const genPollResId = command.addInteractionListener("pollresponse", ["pollId"], 
     }
   }
 
-  const embed = EmbedBuilder.from(ctx.message.embeds[0]);
+  const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
   embed.setFields(generateStatsDescription(poll, parsedOptions));
 
   await ctx.update({ embeds: [embed] });

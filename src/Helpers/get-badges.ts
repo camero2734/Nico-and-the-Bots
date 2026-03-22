@@ -237,7 +237,7 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
 
   const bishop = F.userBishop(member);
   if (bishop) {
-    yield await districtBadge(bishop.name, F.intColorToRGB(bishop.role.color));
+    yield await districtBadge(bishop.name, F.intColorToRGB(bishop.role.colors.primaryColor ?? 0));
   }
 
   yield await createBadge("banditos.png", async () => {

@@ -1,12 +1,6 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  EmbedBuilder,
-  type GuildMember,
-  SelectMenuBuilder,
-  SelectMenuOptionBuilder,
-  type Snowflake,
-} from "discord.js";
+import { ApplicationCommandOptionType, type GuildMember, type Snowflake, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, SelectMenuBuilder, SelectMenuOptionBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -36,7 +30,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (ctx.opts.removeall) {
     for (const role of Object.values(tf)) {

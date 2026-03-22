@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import WikiJS from "wikijs";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";

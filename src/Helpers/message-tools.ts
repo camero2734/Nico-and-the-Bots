@@ -1,16 +1,5 @@
-import {
-  ActionRowBuilder,
-  type BaseMessageOptions,
-  ButtonBuilder,
-  type ButtonComponent,
-  Collection,
-  EmbedBuilder,
-  type GuildMember,
-  type Message,
-  type MessageActionRowComponentBuilder,
-  type Snowflake,
-  type TextChannel,
-} from "discord.js";
+import { type BaseMessageOptions, type ButtonComponent, Collection, type GuildMember, type Message, type Snowflake, type TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, type MessageActionRowComponentBuilder } from "@discordjs/builders";
 import { constants } from "../Configuration/config";
 
 export function strEmbed(strings: TemplateStringsArray, color?: number): EmbedBuilder {
@@ -53,7 +42,9 @@ export const MessageTools = {
     if (buttons.length > maxButtonsPerRow * constants.MAX_ACTION_ROWS) throw new Error("Too many buttons");
 
     for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
-      const slicedButtons = buttons.slice(i, i + maxButtonsPerRow).map((b) => ButtonBuilder.from(b));
+      const slicedButtons = buttons
+        .slice(i, i + maxButtonsPerRow)
+        .map((b) => new ButtonBuilder("toJSON" in b ? b.toJSON() : b));
       const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(slicedButtons);
       components.push(actionRow);
     }
@@ -86,7 +77,10 @@ export const MessageTools = {
   async safeDM(member: GuildMember, msg: BaseMessageOptions): Promise<boolean> {
     try {
       const dm = await member.createDM();
-      await dm.send(msg);
+      await dm.send({
+        ...msg,
+        content: msg.content ?? undefined,
+      });
       return true;
     } catch (e) {
       return false;

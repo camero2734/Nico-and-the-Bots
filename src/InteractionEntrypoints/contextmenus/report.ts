@@ -1,15 +1,5 @@
-import {
-  ActionRowBuilder,
-  AttachmentBuilder,
-  type BaseMessageOptions,
-  ButtonBuilder,
-  ButtonStyle,
-  ComponentType,
-  EmbedBuilder,
-  SelectMenuBuilder,
-  SelectMenuOptionBuilder,
-  type TextChannel,
-} from "discord.js";
+import { type MessageCreateOptions, ButtonStyle, ComponentType, type TextChannel, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder } from "@discordjs/builders";
 import type { Writeable } from "zod";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -29,7 +19,7 @@ type ReportReasonsType = typeof ReportReasons;
 const ctxMenu = new MessageContextMenu("🚩 Report message");
 
 ctxMenu.setHandler(async (ctx, msg) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const embed = new EmbedBuilder()
     .setTitle("Report message")
@@ -148,18 +138,15 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
       new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url),
     ]);
 
-    const msgOpts: BaseMessageOptions = {
+    const msgOpts: MessageCreateOptions = {
       embeds: [staffEmbed],
       components: [actionRow],
     };
 
     const image = msg.attachments.filter((a) => !!a.contentType?.startsWith("image")).first();
     if (image) {
-      const attachment = new AttachmentBuilder(image.url, {
-        name: "file.png",
-      });
-      if (selectedReason === "NSFW_SLURS") attachment.setSpoiler(true);
-      msgOpts.files = [attachment];
+      const fileName = selectedReason === "NSFW_SLURS" ? "SPOILER_file.png" : "file.png";
+      msgOpts.files = [{ attachment: image.url, name: fileName }];
       staffEmbed.setImage("attachment://file.png");
     }
 

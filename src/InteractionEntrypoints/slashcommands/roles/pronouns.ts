@@ -1,4 +1,5 @@
-import { ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder, type Snowflake } from "discord.js";
+import { type Snowflake, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder } from "@discordjs/builders";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -9,7 +10,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
   const selectMenu = new SelectMenuBuilder()
     .setCustomId(genSelectId({}))
     .setMaxValues(Object.keys(roles.pronouns).length)

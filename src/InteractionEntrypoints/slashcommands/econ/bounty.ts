@@ -1,5 +1,6 @@
 import type { BishopType } from "../../../../generated/prisma/client";
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
@@ -30,7 +31,8 @@ command.setHandler(async (ctx) => {
     );
   }
 
-  await ctx.deferReply({ ephemeral: isInventoryCmd });
+  if (isInventoryCmd) await ctx.deferReply({ flags: MessageFlags.Ephemeral });
+  else await ctx.deferReply();
 
   const dbUser = await queries.findOrCreateUser(ctx.member.id, {
     dailyBox: true,
@@ -91,7 +93,7 @@ command.setHandler(async (ctx) => {
   const assignedBishop = F.randomValueInArray(districts);
 
   // Some dramatic waiting time
-  const waitEmbed = EmbedBuilder.from(embed)
+  const waitEmbed = new EmbedBuilder(embed.toJSON())
     .setDescription(
       `Thank you for reporting <@${user}> to the Dema Council for infractions against the laws of The Sacred Municipality of Dema.\n\nWe have people on the way to find and rehabilitate them under the tenets of Vialism.`,
     )
@@ -120,7 +122,7 @@ command.setHandler(async (ctx) => {
       }),
     ]);
 
-    const failedEmbed = EmbedBuilder.from(embed).setDescription(
+    const failedEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
       `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed.`,
     );
 
@@ -134,7 +136,7 @@ command.setHandler(async (ctx) => {
       },
     });
 
-    const winEmbed = EmbedBuilder.from(embed).setDescription(
+    const winEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
       `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${BOUNTY_NUM_CREDITS}\` credits.`,
     );
 

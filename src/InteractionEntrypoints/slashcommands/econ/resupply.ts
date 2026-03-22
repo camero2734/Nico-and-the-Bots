@@ -1,17 +1,15 @@
 import fs from "node:fs";
 import { format } from "date-fns";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
   type GuildMember,
   type Message,
   type MessageComponentInteraction,
-  StringSelectMenuBuilder,
   type StringSelectMenuInteraction,
-  StringSelectMenuOptionBuilder,
+  ButtonStyle,
+  MessageFlags,
 } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
+import { EmbedBuilder } from "@discordjs/builders";
 import type { BishopType, DailyBox, User } from "../../../../generated/prisma/client";
 import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
@@ -26,7 +24,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const buffer = await fs.promises.readFile("./src/Assets/images/banditos.gif");
 
@@ -61,9 +59,8 @@ command.setHandler(async (ctx) => {
     .addFields([
       {
         name: "**Tokens**",
-        value: `You have ${tokens} token${
-          tokens === 1 ? "" : "s"
-        } available. A token is used when searching a district.`,
+        value: `You have ${tokens} token${tokens === 1 ? "" : "s"
+          } available. A token is used when searching a district.`,
       },
     ])
     .addFields([{ name: "**CONSOLE**", value: description }])
@@ -249,9 +246,8 @@ async function memberWon(
   dbUserWithBox: User & { dailyBox: DailyBox },
 ) {
   const prize = district.pickPrize();
-  const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${
-    dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
-  } remaining`;
+  const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
+    } remaining`;
   const member = ctx.member as GuildMember;
 
   let prizeDescription = `You now have ${dbUserWithBox.credits} credits.`;
@@ -319,7 +315,7 @@ async function memberWon(
 
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
   const reply = (await interaction.fetchReply()) as Message;
-  const originalEmbed = EmbedBuilder.from(reply.embeds[0]);
+  const originalEmbed = new EmbedBuilder(reply.embeds[0].toJSON());
   originalEmbed.setFields([]);
   originalEmbed
     .setDescription(description)

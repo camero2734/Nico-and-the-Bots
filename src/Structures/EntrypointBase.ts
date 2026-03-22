@@ -1,7 +1,5 @@
 import {
-  ActionRowBuilder,
   type ApplicationCommandData,
-  ButtonBuilder,
   ButtonStyle,
   type Client,
   Collection,
@@ -9,6 +7,7 @@ import {
   type GuildMember,
   type Interaction,
 } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ErrorHandler } from "./Errors";
@@ -66,7 +65,7 @@ export abstract class InteractionEntrypoint<
         .setCustomId(`##!!RL${name}RL!!##`)
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(true)
-        .setEmoji("🚀"),
+        .setEmoji({ name: "🚀" }),
     );
 
     return actionRow;

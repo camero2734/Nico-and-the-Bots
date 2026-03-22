@@ -2,9 +2,9 @@ import {
   type APIComponentInContainer,
   ComponentType,
   MessageFlags,
-  ContainerBuilder,
   type AnyComponent,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 
 const ctxMenu = new MessageContextMenu("🔗 Get media URLs");

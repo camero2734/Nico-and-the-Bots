@@ -1,15 +1,11 @@
 import {
-  ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   type GuildMember,
   type InteractionEditReplyOptions,
   MessageFlags,
-  SectionBuilder,
-  SeparatorBuilder,
   SeparatorSpacingSize,
-  TextDisplayBuilder,
 } from "discord.js";
+import { ButtonBuilder, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "@discordjs/builders";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -26,7 +22,7 @@ enum ActionTypes {
 const msgInt = new ManualEntrypoint();
 
 export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const initialMsg = await generateMainMenuEmbed(ctx.member);
   await ctx.editReply(initialMsg);
@@ -129,7 +125,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
   let title = "Good Day Dema® Discord Shop";
   if (contraband) title = F.randomizeLetters(title);
 
-  const container = new ContainerBuilder().setAccentColor(role.color);
+  const container = new ContainerBuilder().setAccentColor(Number.parseInt(role.hexColor.slice(1), 16) || 0);
 
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(`### <:gooddaydema:1226628716076204033> ${title}\n## ${role.name}\n`),

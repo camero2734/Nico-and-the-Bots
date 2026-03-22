@@ -1,6 +1,7 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
+import { EmbedBuilder } from '@discordjs/builders';
 import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
@@ -123,7 +124,7 @@ client.on("ready", async () => {
   const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
   await botChan.send({
     embeds: [
-      new Discord.EmbedBuilder({
+      new EmbedBuilder({
         description: "Bot is now running",
         footer: { text: secrets.commitSha || "No commit associated" },
       }),
@@ -133,7 +134,7 @@ client.on("ready", async () => {
 
   await botChan.send({
     embeds: [
-      new Discord.EmbedBuilder({
+      new EmbedBuilder({
         description: `Fetched all ${guild.members.cache.size} members`,
       }),
     ],
@@ -219,7 +220,7 @@ client.on("guildMemberUpdate", async (oldMem, newMem) => {
     const fbAnnouncementChannel = (await newMem.guild.channels.fetch(
       channelIDs.fairlyannouncements,
     )) as Discord.TextChannel;
-    const embed = new Discord.EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setAuthor({
         name: newMem.displayName,
         iconURL: newMem.displayAvatarURL(),
@@ -287,7 +288,7 @@ client.on("interactionCreate", async (interaction) => {
     }
   } else if (interaction.isAutocomplete()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
-    const optionIdentifier = interaction.options.getFocused(true)?.name;
+    const optionIdentifier = interaction.options.getFocused()?.name;
 
     const slashcommand = SlashCommands.get(commandIdentifier);
     if (!slashcommand) return console.log(`Failed to find command ${commandIdentifier} for autocomplete`);
@@ -333,7 +334,7 @@ async function forwardMessageToErrorChannel(msg: string) {
     const channel = await guild.channels.fetch(channelIDs.bottest);
     if (!channel?.isSendable()) return;
 
-    const embed = new Discord.EmbedBuilder().setDescription(msg).setColor("Red");
+    const embed = new EmbedBuilder().setDescription(msg).setColor(Discord.Colors.Red);
 
     await channel.send({ embeds: [embed] });
   } catch (e) {

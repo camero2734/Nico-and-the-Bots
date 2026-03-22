@@ -1,11 +1,5 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  userMention,
-} from "discord.js";
+import { ApplicationCommandOptionType, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
@@ -60,7 +54,7 @@ const genMigrateModalId = command.addInteractionListener("fmMigrateModal", ["use
   const user = await ctx.guild.members.fetch(args.userId);
   if (!user) throw new Error("Could not find user");
 
-  const fmUsername = ctx.fields.getTextInputValue(MIGRATE_MODAL_USERNAME);
+  const fmUsername = ctx.components.getTextInputValue(MIGRATE_MODAL_USERNAME);
 
   // Remove fm from any other users
   await prisma.userLastFM.deleteMany({ where: { username: fmUsername } });
@@ -72,7 +66,7 @@ const genMigrateModalId = command.addInteractionListener("fmMigrateModal", ["use
   });
 
   await ctx.editReply({
-    content: `Successfully migrated ${userMention(user.id)}'s FM username to ${fmUsername}`,
+    content: `Successfully migrated <@${user.id}>'s FM username to ${fmUsername}`,
   });
 });
 

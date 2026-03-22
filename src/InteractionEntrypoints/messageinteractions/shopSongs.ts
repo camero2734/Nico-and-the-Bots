@@ -1,11 +1,11 @@
 import {
-  ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
   type GuildMember,
   type InteractionEditReplyOptions,
-  italic,
+  MessageFlags,
 } from "discord.js";
+import { italic } from "@discordjs/formatters";
+import { ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -22,7 +22,7 @@ enum ActionTypes {
 const msgInt = new ManualEntrypoint();
 
 export const GenSongBtnId = msgInt.addInteractionListener("shopSongsBtn", [], async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const initialMsg = await generateMainMenuEmbed(ctx.member);
   await ctx.editReply(initialMsg);
@@ -119,15 +119,15 @@ const genItemId = msgInt.addInteractionListener("songSongsItem", ["itemId", "act
   const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
   const footer = contraband
     ? F.randomizeLetters(
-        "thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
-        0.1,
-      )
+      "thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
+      0.1,
+    )
     : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
   const embed = new EmbedBuilder()
     .setAuthor({ name: title, iconURL: shopImage })
     .setTitle(role.name)
-    .setColor(role.color)
+    .setColor(role.colors.primaryColor ?? 0)
     .setFooter({ text: footer });
 
   if (actionType === ActionTypes.View) {

@@ -1,4 +1,5 @@
-import { EmbedBuilder } from "discord.js";
+import { MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -10,13 +11,13 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (ctx.user.id !== userIDs.me) throw new CommandError("No.");
 
   const { sorted } = await calculateHistory();
 
-  const embed = new EmbedBuilder().setTitle("Song Battle Stats").setColor("Blurple");
+  const embed = new EmbedBuilder().setTitle("Song Battle Stats").setColor(0x5865f2);
 
   for (let i = 0; i < 10; i++) {
     const round = i + 1;

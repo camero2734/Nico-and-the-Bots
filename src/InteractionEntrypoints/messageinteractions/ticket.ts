@@ -1,13 +1,5 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ChannelType,
-  EmbedBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+import { ButtonStyle, ChannelType, TextInputStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
@@ -46,7 +38,7 @@ ticketInteraction.onBotReady(async (guild, client) => {
   const button = new ButtonBuilder()
     .setLabel("Open a ticket")
     .setStyle(ButtonStyle.Primary)
-    .setEmoji("🎫")
+    .setEmoji({ name: "🎫" })
     .setCustomId(genBtnId({}));
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
@@ -84,10 +76,10 @@ const genBtnId = ticketInteraction.addInteractionListener("ticketOpenModal", [],
 
 const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal", [], async (ctx) => {
   if (!ctx.isModalSubmit()) return;
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
-  const title = ctx.fields.getTextInputValue(MODAL_TITLE_ID);
-  const description = ctx.fields.getTextInputValue(MODAL_DESCRIPTION_ID);
+  const title = ctx.components.getTextInputValue(MODAL_TITLE_ID);
+  const description = ctx.components.getTextInputValue(MODAL_DESCRIPTION_ID);
 
   const thread = await ctx.channel.threads.create({
     name: title,
@@ -109,7 +101,7 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
         })
         .setTitle(title)
         .setDescription(description)
-        .setColor("Blue"),
+        .setColor(0x0000ff),
     ],
   });
 

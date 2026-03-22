@@ -2,13 +2,14 @@ import {
   ChannelType,
   type CommandInteraction,
   type DMChannel,
-  EmbedBuilder,
   type GuildTextBasedChannel,
   type Interaction,
   InteractionType,
   type TextBasedChannel,
   type TextChannel,
+  MessageFlags,
 } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
@@ -19,11 +20,11 @@ const getReplyMethod = async (ctx: CommandInteraction) => {
     if (ctx.channel?.isSendable()) {
       return ctx.channel.send;
     }
-    return () => {};
+    return () => { };
   }
 
   if (!ctx.deferred && !ctx.replied) {
-    await ctx.deferReply({ ephemeral: true, fetchReply: true });
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral, withResponse: true });
   }
 
   return ctx.editReply;
@@ -72,7 +73,7 @@ export const ErrorHandler = async (
   if (errorChannel && !(e instanceof CommandError)) {
     const embed = new EmbedBuilder()
       .setTitle("An error occurred!")
-      .setColor("DarkRed")
+      .setColor(0x8b0000)
       .setDescription(`An error occurred in ${ctx.constructor.name}.\nError ID: ${errorId}`)
       .addFields({
         name: "Channel",
@@ -106,7 +107,7 @@ export const ErrorHandler = async (
   const ectx = ctx as unknown as CommandInteraction & {
     send: CommandInteraction["reply"];
   };
-  ectx.send = (await getReplyMethod(ectx)) as (typeof ectx)["send"];
+  ectx.send = (await getReplyMethod(ectx)) as unknown as (typeof ectx)["send"];
 
   if (!ectx.send) return;
 
@@ -114,12 +115,12 @@ export const ErrorHandler = async (
     const embed = new EmbedBuilder()
       .setDescription(e.message)
       .setTitle("An error occurred!")
-      .setColor("DarkRed")
+      .setColor(0x8b0000)
       .setFooter({ text: `DEMA internet machine broke. Error ${errorId}` });
     ectx.send({
       embeds: [embed],
       components: [],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
       allowedMentions: { users: [], roles: [] },
     });
   } else {
@@ -127,6 +128,6 @@ export const ErrorHandler = async (
     const embed = new EmbedBuilder().setTitle("An unknown error occurred!").setFooter({
       text: `DEMA internet machine really broke. Error ${errorId} ${sentInErrorChannel ? "📝" : ""}`,
     });
-    ectx.send({ embeds: [embed], components: [], ephemeral: true });
+    ectx.send({ embeds: [embed], components: [], flags: MessageFlags.Ephemeral });
   }
 };

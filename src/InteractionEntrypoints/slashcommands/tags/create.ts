@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -24,7 +25,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const existingTag = await prisma.tag.findUnique({
     where: { name: ctx.opts.name },
@@ -66,7 +67,7 @@ command.setHandler(async (ctx) => {
 });
 
 const generateYesID = command.addInteractionListener("tcYes", ["name", "textLookup"], async (ctx, args) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const { value: text, id } =
     (await prisma.temporaryText.findUnique({

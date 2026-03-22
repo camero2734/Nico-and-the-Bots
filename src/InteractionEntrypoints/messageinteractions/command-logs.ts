@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type TextChannel } from "discord.js";
+import { ButtonStyle, type TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
@@ -48,8 +49,8 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
   const commandName = entrypoint.identifier;
   const args = opts
     ? Object.entries(opts)
-        .map(([key, val]) => `\`${key}\`: ${val}`)
-        .join(", ")
+      .map(([key, val]) => `\`${key}\`: ${val}`)
+      .join(", ")
     : "*None*";
 
   const embed = new EmbedBuilder()

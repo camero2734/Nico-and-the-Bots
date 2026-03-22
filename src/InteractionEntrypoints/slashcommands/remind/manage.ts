@@ -1,13 +1,5 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type GuildMember,
-  type MessageActionRowComponentBuilder,
-  SelectMenuBuilder,
-  SelectMenuOptionBuilder,
-} from "discord.js";
+import { ButtonStyle, MessageFlags, type GuildMember } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, SelectMenuOptionBuilder, EmbedBuilder } from "@discordjs/builders";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -25,7 +17,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const [embed, actionRow] = await generateReminderList(ctx.member);
 
@@ -36,9 +28,7 @@ command.setHandler(async (ctx) => {
 });
 
 // Main list
-async function generateReminderList(
-  member: GuildMember,
-): Promise<[EmbedBuilder] | [EmbedBuilder, ActionRowBuilder<MessageActionRowComponentBuilder>]> {
+async function generateReminderList(member: GuildMember): Promise<[EmbedBuilder] | [EmbedBuilder, ActionRowBuilder<any>]> {
   const reminders = await prisma.reminder.findMany({
     where: { userId: member.id },
     orderBy: { sendAt: "asc" },
@@ -78,7 +68,7 @@ async function generateReminderList(
     ]);
   }
 
-  const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents([selectMenu]);
+  const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);
   const embed = new EmbedBuilder()
     .setTitle("Your reminders")
     .setDescription(

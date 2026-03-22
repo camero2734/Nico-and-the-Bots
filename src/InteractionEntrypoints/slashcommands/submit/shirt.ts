@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder, type Message } from "discord.js";
+import { ButtonStyle, DiscordAPIError, type Message, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../../../app";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -9,7 +10,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     const dm = await ctx.member.createDM();
@@ -98,8 +99,8 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
     });
   }
 
-  const updateEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
-  updateEmbed.setColor(accepted ? "Green" : "Red");
+  const updateEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  updateEmbed.setColor(accepted ? 0x57f287 : 0xed4245);
   if (m)
     updateEmbed.addFields({
       name: "URL",

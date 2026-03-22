@@ -1,4 +1,4 @@
-import { userMention } from "discord.js";
+import { userMention } from "@discordjs/formatters";
 import { channelIDs, userIDs } from "../../../Configuration/config";
 import { keonsGuild } from "../topfeed";
 import { fetchYoutube, usernameData, type usernamesToWatch, youtube } from "./fetch-and-send";

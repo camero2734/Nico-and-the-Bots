@@ -1,10 +1,8 @@
 import {
-  ActionRowBuilder,
   type ApplicationCommandOptionData,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   type BaseMessageOptions,
-  ButtonBuilder,
   type ButtonComponent,
   ButtonStyle,
   type ChatInputApplicationCommandData,
@@ -20,6 +18,7 @@ import {
   type Snowflake,
   type TextChannel,
 } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
 import F from "../Helpers/funcs";
@@ -190,11 +189,13 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
         const btn = actionRow.components.find(
           (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name),
         ) as ButtonComponent;
-        return ButtonBuilder.from(btn);
+        return btn ? new ButtonBuilder(btn.toJSON()) : undefined;
       };
       const upvoteButton = getMessageButtonWithEmoji("upvote");
       const downvoteButton = getMessageButtonWithEmoji("downvote");
       if (!upvoteButton || !downvoteButton) return;
+
+      const updatedActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([upvoteButton, downvoteButton]);
 
       if (isUpvote) upvoteButton.setStyle(ButtonStyle.Success);
       else downvoteButton.setStyle(ButtonStyle.Danger);
@@ -202,14 +203,14 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
       upvoteButton.setLabel(`${upvotes}`);
       downvoteButton.setLabel(`${downvotes}`);
 
-      await ctx.editReply({ components: [actionRow] });
+      await ctx.editReply({ components: [updatedActionRow] });
 
       await F.wait(1000);
 
       upvoteButton.setStyle(ButtonStyle.Secondary);
       downvoteButton.setStyle(ButtonStyle.Secondary);
 
-      await ctx.editReply({ components: [actionRow] });
+      await ctx.editReply({ components: [updatedActionRow] });
     });
 
     const createActionRow = async (ctx: SlashCommandInteraction<T> | Message, title?: string) => {

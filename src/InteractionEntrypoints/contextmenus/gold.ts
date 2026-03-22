@@ -1,21 +1,18 @@
 import Cron from "croner";
 import { addDays } from "date-fns";
 import { ButtonStyle } from "discord-api-types/v10";
+import { MessageFlags, type Message, type Snowflake, type TextChannel } from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ContainerBuilder,
   EmbedBuilder,
   TextDisplayBuilder,
-  MessageFlags,
-  userMention,
-  type Message,
-  type Snowflake,
-  type TextChannel, 
-  MediaGalleryBuilder, 
-  MediaGalleryItemBuilder, 
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   SectionBuilder,
-} from "discord.js";
+} from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
@@ -41,7 +38,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     return newGold(ctx, msg);
   }
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   // Ensure the message hasn't already been golded
   const givenGold = await prisma.gold.findFirst({
@@ -71,7 +68,7 @@ const genAdditionalGoldId = ctxMenu.addInteractionListener(
   async (ctx, args) => {
     if (!ctx.message.inGuild()) return;
 
-    await ctx.deferReply({ ephemeral: true });
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral });
     await handleGold(
       (<unknown>ctx) as typeof ContextMenu.GenericContextType,
       ctx.message,
@@ -109,7 +106,7 @@ async function handleGold(
   if (previousGold) throw new CommandError("You already gave this message gold!");
 
   const goldBaseEmbed = isAdditionalGold
-    ? EmbedBuilder.from(msg.embeds[0])
+    ? new EmbedBuilder(msg.embeds[0].toJSON())
     : new EmbedBuilder()
       .setAuthor({
         name: originalMember.displayName,
@@ -135,7 +132,7 @@ async function handleGold(
     if (url) goldBaseEmbed.setImage(url);
   }
 
-  let askEmbed = EmbedBuilder.from(goldBaseEmbed).addFields([
+  let askEmbed = new EmbedBuilder(goldBaseEmbed.toJSON()).addFields([
     {
       name: "\u200b",
       value: "**Would you like to give gold to this message?**",
@@ -200,8 +197,8 @@ async function handleGold(
     new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl),
   ]);
 
-  const goldEmbed = EmbedBuilder.from(goldBaseEmbed);
-  const idx = goldEmbed.data.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
+  const goldEmbed = new EmbedBuilder(goldBaseEmbed.toJSON());
+  const idx = goldEmbed.data.fields?.findIndex((f: { name: string }) => f.name === NOT_CERTIFIED_FIELD) || -1;
   if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
   if (goldsUntilCertified > 0) {
@@ -325,7 +322,7 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
 
   const emojiName = `pfp_${msg.author.id}`;
 
-  const emoji = existingEmojis.find((e) => e.name === emojiName) 
+  const emoji = existingEmojis.find((e) => e.name === emojiName)
     || await emojiManager.create({
       name: emojiName,
       attachment: msg.author.displayAvatarURL({ extension: "png", size: 128 }),

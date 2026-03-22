@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { type TextChannel, type Webhook, WebhookClient } from "discord.js";
+import { type TextChannel, type Webhook } from "discord.js";
 import { type channelIDs, roles, userIDs } from "../Configuration/config";
 import { uploadImageToCloudflareStorage } from "./apis/cloudflare";
 import F from "./funcs";
@@ -38,7 +38,7 @@ async function createBishopImage(name: string, colorTo: [number, number, number]
 
 export interface WebhookData {
   webhook: Webhook;
-  client: WebhookClient;
+  client: Webhook;
 }
 export async function getDistrictWebhookClient(
   bishop: keyof (typeof channelIDs)["districts"],
@@ -58,7 +58,7 @@ export async function getDistrictWebhookClient(
     const existingWebhook = webhooks.find((w) => w.name === bishopName);
     if (existingWebhook) {
       return {
-        client: new WebhookClient(existingWebhook),
+        client: existingWebhook,
         webhook: existingWebhook,
       };
     }
@@ -67,7 +67,7 @@ export async function getDistrictWebhookClient(
   const role = await channel.guild.roles.fetch(roles.districts[bishop]);
   if (!role) throw new Error("Role not found");
 
-  const color = F.intColorToRGB(role.color);
+  const color = F.intColorToRGB(role.colors.primaryColor ?? 0);
 
   let imageUrl: string;
   let buffer: Buffer;
@@ -94,7 +94,7 @@ export async function getDistrictWebhookClient(
   });
 
   return {
-    client: new WebhookClient(webhook),
+    client: webhook,
     webhook,
   };
 }

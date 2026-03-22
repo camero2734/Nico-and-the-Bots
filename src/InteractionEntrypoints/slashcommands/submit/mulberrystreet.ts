@@ -1,12 +1,5 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  AttachmentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type TextChannel,
-} from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, type TextChannel, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import FileType from "file-type";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -46,7 +39,7 @@ command.setHandler(async (ctx) => {
       `Only users with the <@&${roles.artistmusician}> role can submit to Mulberry Street Creations™`,
     );
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   // Only allow submissions once/day
   const dbUser = await queries.findOrCreateUser(ctx.user.id);
@@ -127,13 +120,11 @@ command.setHandler(async (ctx) => {
   embed.setDescription("");
   embed.setFields([]);
 
-  const attachment = new AttachmentBuilder(Buffer.from(buffer), { name: fileName });
-
   if (fileType.mime.startsWith("image")) {
     embed.setImage(`attachment://${fileName}`);
   }
 
-  const m = await chan.send({ embeds: [embed], files: [attachment] });
+  const m = await chan.send({ embeds: [embed], files: [{ attachment: Buffer.from(buffer), name: fileName }] });
   m.react("💙");
 
   const newActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([

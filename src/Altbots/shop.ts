@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, type TextChannel } from "discord.js";
+import { ButtonStyle, Client, type TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { NicoClient } from "../../app";
 import { channelIDs, guildID } from "../Configuration/config";
 import secrets from "../Configuration/secrets";

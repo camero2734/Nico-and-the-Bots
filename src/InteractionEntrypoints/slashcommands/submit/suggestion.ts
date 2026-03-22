@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder, type TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, type TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

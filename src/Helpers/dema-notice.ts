@@ -1,6 +1,7 @@
 import { type SKRSContext2D, createCanvas, loadImage } from "@napi-rs/canvas";
 import { BishopType, type ViolationType } from "../../generated/prisma/client";
-import { AttachmentBuilder, EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
+import { type AttachmentPayload, type GuildMember, type TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -131,11 +132,11 @@ export async function sendViolationNotice(
   const fileName = `infraction_${infractionNo}.png`;
   transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:");
   transmissionEmbed.setImage(`attachment://${fileName}`);
-  transmissionEmbed.setColor("Red");
+  transmissionEmbed.setColor(0xff0000);
   await m.edit({
     content: `${member}`,
     embeds: [transmissionEmbed],
-    files: [new AttachmentBuilder(canvas.toBuffer("image/png"), { name: fileName })],
+    files: [{ attachment: canvas.toBuffer("image/png"), name: fileName } satisfies AttachmentPayload],
   });
 }
 

@@ -1,5 +1,6 @@
 import { Faker, en } from "@faker-js/faker";
-import { ActionRowBuilder, Colors, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { Colors, TextInputStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -104,9 +105,9 @@ command.setHandler(async (ctx) => {
 const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [], async (ctx) => {
   if (!ctx.isModalSubmit()) return;
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
-  const agreeToTerms = ctx.fields.getTextInputValue(AGREE_TO_TERMS_ID);
+  const agreeToTerms = ctx.components.getTextInputValue(AGREE_TO_TERMS_ID);
 
   if (!agreeToTerms.includes(termsAndConditions)) {
     throw new CommandError("You must agree to the terms and conditions to proceed.");
@@ -195,11 +196,11 @@ const genModalSubmitId = command.addInteractionListener("districtModalSubmit", [
     .addFields([
       {
         name: "Reason for Relocation",
-        value: ctx.fields.getTextInputValue(REASON_FOR_RELOCATION_ID),
+        value: ctx.components.getTextInputValue(REASON_FOR_RELOCATION_ID),
       },
       {
         name: "Preferred District",
-        value: ctx.fields.getTextInputValue(PREFERRED_DISTRICT_ID) || "None",
+        value: ctx.components.getTextInputValue(PREFERRED_DISTRICT_ID) || "None",
       },
       {
         name: "Received Messages",

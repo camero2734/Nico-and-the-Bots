@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -88,7 +89,7 @@ const genActionId = command.addInteractionListener("reactForRole", ["roleId", "a
         description: `The ${role} role was successfully ${action === ActionTypes.Give ? "added" : "removed"}`,
       }),
     ],
-    ephemeral: true,
+    flags: 64,
   });
 });
 

@@ -1,16 +1,15 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
-  ActionRowBuilder,
-  AttachmentBuilder,
-  ButtonBuilder,
   ButtonStyle,
   Client,
-  EmbedBuilder,
+  MessageFlags,
+  type AttachmentPayload,
   type GuildMember,
   type MessageComponentInteraction,
   type Snowflake,
   type TextChannel,
 } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
@@ -138,7 +137,7 @@ export class SacarverBot {
       new ButtonBuilder({
         style: ButtonStyle.Primary,
         label: "Sign up for #announcements",
-        customId: ANNOUNCEMENTS_ID,
+        custom_id: ANNOUNCEMENTS_ID,
         ...emoji("📢"),
       }),
     ]);
@@ -164,7 +163,7 @@ export class SacarverBot {
         }),
       ],
       allowedMentions: { repliedUser: false },
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -178,7 +177,7 @@ export class SacarverBot {
     displayName: string;
     guildMemberCount: number;
     memberNum: number;
-  }): Promise<AttachmentBuilder> {
+  }): Promise<AttachmentPayload> {
     const canvas = createCanvas(1000, 500);
     const ctx = canvas.getContext("2d");
 
@@ -224,8 +223,9 @@ export class SacarverBot {
     ctx.textAlign = "center";
     ctx.fillText(`#${memberNum}`, 180, 300);
 
-    return new AttachmentBuilder(canvas.toBuffer("image/webp", 100), {
+    return {
+      attachment: canvas.toBuffer("image/webp", 100),
       name: "welcome.webp",
-    });
+    };
   }
 }

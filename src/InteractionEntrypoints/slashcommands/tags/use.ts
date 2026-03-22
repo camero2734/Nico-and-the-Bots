@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -32,7 +33,8 @@ const canSend = (ctx: typeof command.ContextType): boolean => {
 };
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: !canSend(ctx) });
+  if (!canSend(ctx)) await ctx.deferReply({ flags: MessageFlags.Ephemeral });
+  else await ctx.deferReply();
 
   const tag = await prisma.tag.findUnique({ where: { name: ctx.opts.name } });
   if (!tag?.userId) return sendSuggestionList(ctx);

@@ -1,19 +1,6 @@
 import { addDays } from "date-fns";
-import {
-  ActionRowBuilder,
-  AttachmentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  Colors,
-  EmbedBuilder,
-  type Guild,
-  ModalBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-  type TextChannel,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+import { ButtonStyle, Colors, type Guild, type TextChannel, TextInputStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder } from "@discordjs/builders";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -33,7 +20,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
     throw new CommandError("You are already a firebreather!");
@@ -138,7 +125,7 @@ export async function sendToStaff(
     ]);
 
     const scoreCard = await generateScoreCard(member);
-    const attachment = new AttachmentBuilder(scoreCard, { name: "score.png" });
+    const attachment = { attachment: scoreCard, name: "score.png" };
 
     const m = await fbApplicationChannel.send({
       embeds: [embed],
@@ -205,7 +192,7 @@ export async function sendToStaff(
 
 const MODAL_REASON = "fbAppModalReason";
 const genModalId = command.addInteractionListener("staffFBAppModal", ["applicationId"], async (ctx, args) => {
-  if (!ctx.isAnySelectMenu()) return;
+  if (!ctx.isStringSelectMenu()) return;
 
   const action: ActionTypes = +ctx.values[0];
 
@@ -235,7 +222,7 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
   if (!ctx.isModalSubmit()) return;
 
   const action: ActionTypes = +args.type;
-  const reason = ctx.fields.getTextInputValue(MODAL_REASON);
+  const reason = ctx.components.getTextInputValue(MODAL_REASON);
 
   const applicationId = args.applicationId;
   const application = await prisma.firebreatherApplication.findUnique({
@@ -257,7 +244,7 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
 
   if (reason) embed.addFields({ name: "Reason", value: reason });
 
-  const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
+  const msgEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
 
   if (action === ActionTypes.Accept) {
     await prisma.firebreatherApplication.update({

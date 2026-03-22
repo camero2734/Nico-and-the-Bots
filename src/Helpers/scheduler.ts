@@ -7,8 +7,6 @@ import {
   ChannelType,
   type Client,
   Collection,
-  EmbedBuilder,
-  userMention,
   DiscordAPIError,
   type Guild,
   type GuildMember,
@@ -16,6 +14,8 @@ import {
   type TextChannel,
   type VoiceChannel,
 } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { Cron, type ProtectCallbackFn } from "croner";
 import { JWT } from "google-auth-library";
 import { type GoogleSpreadsheetWorksheet, GoogleSpreadsheet } from "google-spreadsheet";

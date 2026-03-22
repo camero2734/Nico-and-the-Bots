@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder, type Snowflake, type TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, type Snowflake, type TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import { guildID } from "../../../Configuration/config";

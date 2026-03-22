@@ -1,11 +1,5 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type TextChannel,
-} from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, type TextChannel, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import metascraper from "metascraper";
 import metascraperDate from "metascraper-date";
 import metascraperDescription from "metascraper-description";
@@ -41,7 +35,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   const rawUrl = ctx.opts.link;
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   let id: string | undefined = "";
   if (rawUrl.indexOf("youtube.com/watch?v=") !== -1) {
@@ -112,8 +106,8 @@ command.setHandler(async (ctx) => {
 const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], async (ctx, args) => {
   await ctx.deferUpdate();
 
-  const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-  embed.setColor("Green");
+  const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  embed.setColor(0x57f287);
 
   await ctx.editReply({ components: [], embeds: [embed] });
   const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
@@ -139,8 +133,8 @@ const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], asy
 const genNoId = command.addInteractionListener("intvwNo", [], async (ctx) => {
   await ctx.deferUpdate();
 
-  const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-  embed.setColor("Red");
+  const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  embed.setColor(0xed4245);
   embed.setFooter({ text: `Rejected by ${ctx.user.tag}` });
 
   await ctx.editReply({ components: [], embeds: [embed] });

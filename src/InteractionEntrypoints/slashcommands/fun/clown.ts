@@ -1,5 +1,6 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import Mime from "mime-types";
 import normalizeUrl from "normalize-url";
 import { CommandError } from "../../../Configuration/definitions";

@@ -1,13 +1,5 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  Colors,
-  EmbedBuilder,
-  type InteractionReplyOptions,
-  type MessageEditOptions,
-  ModalBuilder,
-  TextInputBuilder,
-} from "discord.js";
+import { Colors, MessageFlags, type InteractionReplyOptions } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -51,10 +43,6 @@ const PART_TWO: Record<string, Question> = <const>{
     question: "Likes/dislikes about DiscordClique community?",
     placeholder: "Be honest!",
   },
-  SOCIAL_MEDIA: {
-    question: "Social media account you'd like to share?",
-    placeholder: "Not required, just useful for gauging your involvement in the community as a whole",
-  },
   FINAL_THOUGHTS: {
     question: "Final thoughts / clarifications / feedback?",
     placeholder: "If you don't have, just tell us your favorite song",
@@ -72,7 +60,7 @@ command.setHandler(async (ctx) => {
   await ctx.reply(await MainMenuPayload(ctx.user.id));
 });
 
-async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions & MessageEditOptions> {
+async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions> {
   const embed = new EmbedBuilder()
     .setTitle("Your Firebreathers Application")
     .setDescription(
@@ -104,7 +92,7 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([...buttons, submitButton]);
 
-  return { components: [actionRow], embeds: [embed], ephemeral: true };
+  return { components: [actionRow], embeds: [embed], flags: MessageFlags.Ephemeral };
 }
 
 const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async (ctx) => {
@@ -144,7 +132,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"
   const newData: Record<string, string> = {};
 
   for (const id of Object.keys(formPart)) {
-    const value = ctx.fields.getTextInputValue(id);
+    const value = ctx.components.getTextInputValue(id);
     newData[id] = value;
   }
 
@@ -164,7 +152,8 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"
   });
 
   const msg = await ctx.fetchReply();
-  await msg.edit(await MainMenuPayload(ctx.user.id));
+  const payload = await MainMenuPayload(ctx.user.id);
+  await msg.edit({ components: payload.components, embeds: payload.embeds });
 });
 
 const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {

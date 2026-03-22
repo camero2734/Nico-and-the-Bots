@@ -7,7 +7,8 @@ import { prisma } from "Helpers/prisma-init";
 // import { recolorColorRole } from "Tasks/colorroles/recolor";
 // import { renameColorRole } from "Tasks/colorroles/rename";
 // import { renameAndRecolorColorRole } from "Tasks/colorroles/renameandrecolor";
-import { ApplicationCommandOptionType, EmbedBuilder, type Role } from "discord.js";
+import { ApplicationCommandOptionType, type Role } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { type Change, changes } from "./_consts";
 
@@ -229,7 +230,7 @@ async function calculateRoleChanges(ctx: typeof command.ContextType): Promise<Ex
       { name: "Total roles before", value: `${beforeRoleCount}`, inline: true },
       { name: "Total roles after", value: `${rolesAfterChange.size}`, inline: true },
     )
-    .setColor("Green");
+    .setColor(0x57f287);
 
   await ctx.editReply({ embeds: [embed] });
   return extendedChanges;

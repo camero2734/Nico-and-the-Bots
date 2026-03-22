@@ -1,4 +1,5 @@
-import { ActionRowBuilder, type AnyThreadChannel, ButtonBuilder, ButtonStyle } from "discord.js";
+import { type AnyThreadChannel, ButtonStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -8,7 +9,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const thread = ctx.channel as unknown as AnyThreadChannel;
 

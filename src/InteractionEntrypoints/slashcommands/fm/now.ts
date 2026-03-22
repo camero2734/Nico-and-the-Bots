@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { GeniusClient } from "../../../Helpers/apis/genius";
@@ -148,7 +149,7 @@ command.setHandler(async (ctx) => {
 });
 
 const genStarId = command.addInteractionListener("fmStarInt", ["fmStarId"], async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   await ctx.editReply({
     content: "This feature is coming in a future update",

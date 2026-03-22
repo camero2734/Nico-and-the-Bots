@@ -1,17 +1,10 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  Colors,
-  EmbedBuilder,
-} from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, Colors, MessageFlags } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import { fm } from "./_consts";
-
 const command = new SlashCommand({
   description: "Sets your lastfm username for use with other /fm commands",
   options: [
@@ -25,7 +18,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const fmUsername = ctx.opts.username;
   if (!fmUsername) {

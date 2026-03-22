@@ -1,25 +1,26 @@
 import {
   ActionRowBuilder,
-  ApplicationCommandOptionType,
-  AttachmentBuilder,
   ButtonBuilder,
+  ChannelSelectMenuBuilder,
+  EmbedBuilder,
+  MentionableSelectMenuBuilder,
+  RoleSelectMenuBuilder,
+  StringSelectMenuBuilder,
+  UserSelectMenuBuilder,
+} from "@discordjs/builders";
+import {
+  ApplicationCommandOptionType,
   type ButtonComponent,
   ButtonStyle,
-  ChannelSelectMenuBuilder,
   ChannelType,
   ComponentType,
-  EmbedBuilder,
   type GuildMember,
   type GuildMemberRoleManager,
-  MentionableSelectMenuBuilder,
-  type MessageActionRowComponentBuilder,
   type MessageComponentInteraction,
-  type OverwriteData,
-  RoleSelectMenuBuilder,
+  OverwriteData,
+  OverwriteType,
   type Snowflake,
-  StringSelectMenuBuilder,
-  type TextChannel,
-  UserSelectMenuBuilder,
+  type TextChannel
 } from "discord.js";
 import { categoryIDs, channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -80,25 +81,29 @@ command.setHandler(async (ctx) => {
   // Setup permissions in new channel
   const permissionOverwrites: OverwriteData[] = [
     {
+      type: OverwriteType.Role,
       deny: ["ViewChannel"],
       id: ctx.guildId,
     },
     {
+      type: OverwriteType.Role,
       allow: ["ViewChannel", "SendMessages"],
       id: roles.staff, // Staff
     },
     {
+      type: OverwriteType.Role,
       allow: ["ViewChannel", "SendMessages", "ManageChannels"],
       id: roles.bots, // Bots
     },
     {
+      type: OverwriteType.Role,
       deny: ["SendMessages"],
       id: roles.muted, // Muted
     },
   ];
 
   for (const member of members) {
-    permissionOverwrites.push({ allow: ["ViewChannel"], id: member.user.id });
+    permissionOverwrites.push({ type: OverwriteType.Member, allow: ["ViewChannel"], id: member.user.id });
     if (member.roles.cache.has(roles.deatheaters)) {
       await member.roles.remove(roles.deatheaters);
       await member.roles.add(roles.formerde);
@@ -228,14 +233,14 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
 
   if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
   const newComponents = actionRow.components.map((c) => {
-    if (c.type === ComponentType.StringSelect) return StringSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.UserSelect) return UserSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.RoleSelect) return RoleSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.MentionableSelect) return MentionableSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.ChannelSelect) return ChannelSelectMenuBuilder.from(c);
-    if (c.type !== ComponentType.Button || c.label !== "Unmute Users") return ButtonBuilder.from(c);
+    if (c.type === ComponentType.StringSelect) return new StringSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.UserSelect) return new UserSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.RoleSelect) return new RoleSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.MentionableSelect) return new MentionableSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.ChannelSelect) return new ChannelSelectMenuBuilder(c.toJSON());
+    if (c.type !== ComponentType.Button || c.label !== "Unmute Users") return new ButtonBuilder(c.toJSON());
 
-    return ButtonBuilder.from(c as ButtonComponent)
+    return new ButtonBuilder((c as ButtonComponent).toJSON())
       .setCustomId(
         genActionId({
           base64idarray: args.base64idarray,
@@ -246,7 +251,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
   });
 
   await msg.edit({
-    components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)],
+    components: [new ActionRowBuilder<any>().setComponents(newComponents)],
   });
 }
 
@@ -267,14 +272,14 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
 
   if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
   const newComponents = actionRow.components.map((c) => {
-    if (c.type === ComponentType.StringSelect) return StringSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.UserSelect) return UserSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.RoleSelect) return RoleSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.MentionableSelect) return MentionableSelectMenuBuilder.from(c);
-    if (c.type === ComponentType.ChannelSelect) return ChannelSelectMenuBuilder.from(c);
+    if (c.type === ComponentType.StringSelect) return new StringSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.UserSelect) return new UserSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.RoleSelect) return new RoleSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.MentionableSelect) return new MentionableSelectMenuBuilder(c.toJSON());
+    if (c.type === ComponentType.ChannelSelect) return new ChannelSelectMenuBuilder(c.toJSON());
     if (c.type !== ComponentType.Button) return c;
 
-    return ButtonBuilder.from(c as ButtonComponent)
+    return new ButtonBuilder((c as ButtonComponent).toJSON())
       .setCustomId(
         genActionId({
           base64idarray: args.base64idarray,
@@ -285,7 +290,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
   });
 
   await msg.edit({
-    components: [new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(newComponents)],
+    components: [new ActionRowBuilder<any>().setComponents(newComponents)],
   });
 }
 
@@ -371,9 +376,7 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
     html += `<div>\n${mhtml}\n</div><br>\n`;
   }
 
-  const attachment = new AttachmentBuilder(Buffer.from(html), {
-    name: `${chan.name}.html`,
-  });
+  const attachment = { attachment: Buffer.from(html), name: `${chan.name}.html` };
 
   if (cancelled) return; // Don't send anything
 

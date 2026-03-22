@@ -1,4 +1,5 @@
-import { EmbedBuilder, roleMention } from "discord.js";
+import { roleMention } from "@discordjs/formatters";
+import { EmbedBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -13,7 +14,7 @@ command.setHandler(async (ctx) => {
 
   const districts = F.entries(roles.districts);
 
-  const embed = new EmbedBuilder().setTitle("District Apportionment").setColor("Blurple");
+  const embed = new EmbedBuilder().setTitle("District Apportionment").setColor(0x5865f2);
 
   let sum = 0;
   for (const [name, id] of districts) {

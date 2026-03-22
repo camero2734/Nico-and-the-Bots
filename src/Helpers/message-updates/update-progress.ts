@@ -1,5 +1,6 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { type BaseMessageOptions, Colors, EmbedBuilder, type Message } from "discord.js";
+import { type BaseMessageOptions, Colors, type Message } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -61,13 +62,13 @@ const update = async (msg: Message) => {
   const [progress, isDone] = generateProgressBar();
 
   if (!isDone) {
-    const embed = EmbedBuilder.from(msg.embeds[0]);
+    const embed = new EmbedBuilder(msg.embeds[0].toJSON());
     embed.setDescription(progress);
     standardizeEmbed(embed);
 
     await msg.edit({ embeds: [embed] });
   } else {
-    const embed = EmbedBuilder.from(msg.embeds[0]);
+    const embed = new EmbedBuilder(msg.embeds[0].toJSON());
     embed.setDescription(progress);
     standardizeEmbed(embed);
     embed.setFields([]);

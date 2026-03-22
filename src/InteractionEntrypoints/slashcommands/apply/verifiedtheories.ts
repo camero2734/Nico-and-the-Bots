@@ -1,22 +1,25 @@
 import { Faker, en } from "@faker-js/faker";
 import {
   type APIButtonComponent,
-  ActionRowBuilder,
-  ButtonBuilder,
   ButtonStyle,
   ComponentType,
-  EmbedBuilder,
   type GuildMember,
   type Message,
+  type TextChannel,
+  TextInputStyle,
+  MessageFlags,
+} from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
   type MessageActionRowComponentBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  type TextChannel,
   TextInputBuilder,
-  TextInputStyle,
-  channelMention,
-} from "discord.js";
+} from "@discordjs/builders";
+import { channelMention } from "@discordjs/formatters";
 import { guild } from "../../../../app";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -41,7 +44,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   // If they already have the VQ role then no need to take again
   if (ctx.member.roles.cache.has(roles.verifiedtheories)) {
@@ -192,7 +195,7 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
 
 const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {
   if (!ctx.isModalSubmit()) return;
-  await ctx.deferUpdate({ fetchReply: true });
+  await ctx.deferUpdate();
 
   // Determine if they entered the correct answers to part one
   const seed = Number.parseInt(args.seed36, 36);
@@ -206,7 +209,7 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
 
   let correct = true;
   for (const key in partOne) {
-    const inputted = ctx.fields.getTextInputValue(key);
+    const inputted = ctx.components.getTextInputValue(key);
     const expected = partOne[key].decoded;
     if (normalize(inputted) !== normalize(expected)) {
       correct = false;
@@ -221,11 +224,11 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
       iconURL: ctx.user.displayAvatarURL(),
     })
     .setTitle(`${correct ? "Passed" : "Failed"}: Part 1`)
-    .setColor(correct ? "Blurple" : 0xff8888)
+    .setColor(correct ? 0x5865f2 : 0xff8888)
     .setFooter({ text: ctx.user.id });
 
   for (const key in partOne) {
-    const inputted = ctx.fields.getTextInputValue(key);
+    const inputted = ctx.components.getTextInputValue(key);
     const expected = partOne[key].decoded;
     const encoded = partOne[key].encoded;
     staffEmbed.addFields({
@@ -410,10 +413,9 @@ async function sendFinalEmbed(
     .setTitle(`${correct}/${questionList.length} correct`)
     .setColor(passed ? 0x88ff88 : 0xff8888)
     .setDescription(
-      `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
-        passed
-          ? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
-          : `You may apply again in ${hours} hours.`
+      `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
+        ? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
+        : `You may apply again in ${hours} hours.`
       }`,
     );
 

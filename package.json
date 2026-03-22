@@ -28,6 +28,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@solely/simple-fm": "1.6.4",
+    "@vladfrangu/async_event_emitter": "2.4.6",
     "absurd-sdk": "^0.0.5",
     "bigint-conversion": "^2.4.3",
     "bullmq": "^5.71.0",

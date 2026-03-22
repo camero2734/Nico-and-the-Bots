@@ -315,6 +315,10 @@ async function setup() {
   GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
   GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
 
+  console.log({
+    "Registered fonts": GlobalFonts.families.map((f) => f.family).join(", "),
+  });
+
   Scheduler(client);
   logEntrypointEvents();
 }

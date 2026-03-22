@@ -373,6 +373,18 @@ process.on("SIGTERM", async () => {
   console.log("Received SIGTERM, shutting down gracefully...");
 
   try {
+    const botChan = await guild.channels.fetch(channelIDs.bottest);
+    if (botChan?.isTextBased()) {
+      await botChan.send({
+        embeds: [
+          new EmbedBuilder({
+            description: "Bot is restarting...",
+            color: Discord.Colors.Yellow,
+          }),
+        ],
+      });
+    }
+
     await prisma.$disconnect();
     await client.destroy();
   } catch (e) {

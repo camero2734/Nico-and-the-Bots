@@ -8,6 +8,7 @@ import {
   type Client,
   Collection,
   DiscordAPIError,
+  GatewayRateLimitError,
   type Guild,
   type GuildMember,
   type Snowflake,
@@ -128,7 +129,13 @@ async function checkReminders(guild: Guild): Promise<void> {
 
 async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
-  const allMembers = await guild.members.fetch();
+  const allMembers = await guild.members.fetch().catch((e) => {
+    if (e instanceof GatewayRateLimitError) {
+      console.warn("Rate limited while fetching members for checkMemberRoles, skipping this run");
+    } else throw e;
+  });
+
+  if (!allMembers) return;
 
   const shouldHaveBanditos = (mem: GuildMember) =>
     !mem.roles.cache.has(roles.banditos) &&

@@ -1,6 +1,6 @@
 import { type Image, createCanvas, loadImage } from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
-import { roles } from "../Configuration/config";
+import { flags, roles } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
@@ -45,9 +45,15 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     return member.roles.cache.has("350036748404785153");
   });
 
-  yield await createBadge("tb9.png", async () => {
-    return member.roles.cache.has("283272728084086784");
-  });
+  if (flags.TB_ENABLED) {
+    yield await createBadge("tb9.png", async () => {
+      return member.roles.cache.has("283272728084086784");
+    });
+  } else {
+    yield await createBadge("firebreather.png", async () => {
+      return member.roles.cache.has("283272728084086784");
+    });
+  }
 
   yield await createBadge("cliqueart.png", async () => {
     return member.roles.cache.has("705224524098043914");

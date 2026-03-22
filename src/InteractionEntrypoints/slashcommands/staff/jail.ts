@@ -1,18 +1,15 @@
 import {
   ActionRowBuilder,
-  AnyComponentBuilder,
-  ButtonBuilder,
-  ChannelSelectMenuBuilder,
+  DangerButtonBuilder,
   EmbedBuilder,
-  MentionableSelectMenuBuilder,
-  RoleSelectMenuBuilder,
-  StringSelectMenuBuilder,
-  UserSelectMenuBuilder,
+  LinkButtonBuilder,
+  SecondaryButtonBuilder,
+  createComponentBuilder,
+  type AnyActionRowComponentBuilder,
 } from "@discordjs/builders";
 import {
   ApplicationCommandOptionType,
   type ButtonComponent,
-  ButtonStyle,
   ChannelType,
   ComponentType,
   type GuildMember,
@@ -140,9 +137,8 @@ command.setHandler(async (ctx) => {
 
   jailEmbed.addFields([{ name: "Jailed", value: F.discordTimestamp(new Date(), "relative") }]);
 
-  const jailActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Secondary)
+  const jailActionRow = new ActionRowBuilder().addComponents(
+    new SecondaryButtonBuilder()
       .setLabel("Unmute Users")
       .setCustomId(
         genActionId({
@@ -151,8 +147,7 @@ command.setHandler(async (ctx) => {
           actionType: ActionTypes.UNMUTE_ALL.toString(),
         }),
       ),
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Danger)
+    new DangerButtonBuilder()
       .setLabel("Close channel")
       .setCustomId(
         genActionId({
@@ -160,7 +155,7 @@ command.setHandler(async (ctx) => {
           actionType: ActionTypes.CLOSE_JAIL.toString(),
         }),
       ),
-  ]);
+  );
 
   const m = await jailChan.send({
     content: `${mentions.join(" ")}`,
@@ -171,14 +166,12 @@ command.setHandler(async (ctx) => {
   const commandEmbed = new EmbedBuilder()
     .setAuthor({
       name: members[0].displayName,
-      iconURL: members[0].user.displayAvatarURL(),
+      icon_url: members[0].user.displayAvatarURL(),
     })
     .setTitle(`${members.length} user${members.length === 1 ? "" : "s"} jailed`)
     .addFields([{ name: "Users", value: mentions.join("\n") }]);
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View channel").setURL(m.url),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(new LinkButtonBuilder().setLabel("View channel").setURL(m.url));
   await ctx.editReply({ embeds: [commandEmbed], components: [actionRow] });
 });
 
@@ -186,6 +179,18 @@ type ActionExecutorArgs = {
   base64idarray: string;
   staffMember: GuildMember;
   jailedMembers: GuildMember[];
+};
+
+const createSecondaryButtonFromComponent = (component: { toJSON(): ReturnType<ButtonComponent["toJSON"]> }) => {
+  const data = component.toJSON();
+  if (!("custom_id" in data)) throw new Error("Expected a custom-id button");
+
+  return new SecondaryButtonBuilder({
+    custom_id: data.custom_id,
+    disabled: data.disabled,
+    emoji: data.emoji,
+    label: data.label,
+  });
 };
 
 const intArgs = <const>["actionType", "base64idarray"];
@@ -233,15 +238,10 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
   const [actionRow] = msg.components;
 
   if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
-  const newComponents = actionRow.components.map((c) => {
-    if (c.type === ComponentType.StringSelect) return new StringSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.UserSelect) return new UserSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.RoleSelect) return new RoleSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.MentionableSelect) return new MentionableSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.ChannelSelect) return new ChannelSelectMenuBuilder(c.toJSON());
-    if (c.type !== ComponentType.Button || c.label !== "Unmute Users") return new ButtonBuilder(c.toJSON());
+  const newComponents = actionRow.components.map<AnyActionRowComponentBuilder>((c) => {
+    if (c.type !== ComponentType.Button || c.label !== "Unmute Users") return createComponentBuilder(c.toJSON());
 
-    return new ButtonBuilder((c as ButtonComponent).toJSON())
+    return createSecondaryButtonFromComponent(c)
       .setCustomId(
         genActionId({
           base64idarray: args.base64idarray,
@@ -252,7 +252,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
   });
 
   await msg.edit({
-    components: [new ActionRowBuilder<AnyComponentBuilder>().setComponents(newComponents)],
+    components: [new ActionRowBuilder().addComponents(...newComponents)],
   });
 }
 
@@ -272,15 +272,10 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
   const [actionRow] = msg.components;
 
   if (actionRow.type !== ComponentType.ActionRow) throw new CommandError("Invalid action row");
-  const newComponents = actionRow.components.map((c) => {
-    if (c.type === ComponentType.StringSelect) return new StringSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.UserSelect) return new UserSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.RoleSelect) return new RoleSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.MentionableSelect) return new MentionableSelectMenuBuilder(c.toJSON());
-    if (c.type === ComponentType.ChannelSelect) return new ChannelSelectMenuBuilder(c.toJSON());
-    if (c.type !== ComponentType.Button) return c;
+  const newComponents = actionRow.components.map<AnyActionRowComponentBuilder>((c) => {
+    if (c.type !== ComponentType.Button || c.label !== "Remute Users") return createComponentBuilder(c.toJSON());
 
-    return new ButtonBuilder((c as ButtonComponent).toJSON())
+    return createSecondaryButtonFromComponent(c)
       .setCustomId(
         genActionId({
           base64idarray: args.base64idarray,
@@ -291,7 +286,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
   });
 
   await msg.edit({
-    components: [new ActionRowBuilder<AnyComponentBuilder>().setComponents(newComponents)],
+    components: [new ActionRowBuilder().addComponents(...newComponents)],
   });
 }
 
@@ -322,9 +317,9 @@ async function closeChannel(ctx: ListenerInteraction, args: ActionExecutorArgs):
   const timedListener = new TimedInteractionListener(m, <const>["cancelId"]);
   const [cancelId] = timedListener.customIDs;
 
-  const cancelActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("Cancel").setCustomId(cancelId).setStyle(ButtonStyle.Danger),
-  ]);
+  const cancelActionRow = new ActionRowBuilder().addComponents(
+    new DangerButtonBuilder().setLabel("Cancel").setCustomId(cancelId),
+  );
 
   await m.edit({ components: [cancelActionRow] });
 

@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
 
   embed.setAuthor({
     name: ctx.member?.displayName,
-    iconURL: ctx.user.displayAvatarURL(),
+    icon_url: ctx.user.displayAvatarURL(),
   });
   embed.setTitle(ctx.opts.question);
   embed.setDescription(`**The Wise Nico Says:** ${response}`);

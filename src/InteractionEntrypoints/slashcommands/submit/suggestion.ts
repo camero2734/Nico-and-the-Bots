@@ -27,7 +27,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `Suggestion from ${ctx.member.displayName}`,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .setColor(ctx.member.displayColor)
     .setTitle(title)

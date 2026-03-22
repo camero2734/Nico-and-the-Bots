@@ -60,7 +60,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${member?.displayName || "User"}'s warnings`,
-      iconURL: member?.user.displayAvatarURL(),
+      icon_url: member?.user.displayAvatarURL(),
     })
     .setColor(((255 * averageSeverity) / 10) << 16)
     .setFooter({ text: `Page ${page}/${numPages}` });

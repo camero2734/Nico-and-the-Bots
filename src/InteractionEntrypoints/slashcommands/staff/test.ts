@@ -77,7 +77,7 @@ command.setHandler(async (ctx) => {
         { label: "option 3", value: "3" },
       ]);
 
-    const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(stringSelect);
+    const actionRow = new ActionRowBuilder().addComponents(stringSelect);
 
     await ctx.editReply({ components: [actionRow], flags: MessageFlags.IsComponentsV2 });
   }

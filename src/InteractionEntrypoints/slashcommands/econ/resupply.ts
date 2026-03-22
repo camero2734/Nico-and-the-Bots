@@ -5,11 +5,15 @@ import {
   type Message,
   type MessageComponentInteraction,
   type StringSelectMenuInteraction,
-  ButtonStyle,
   MessageFlags,
 } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
-import { EmbedBuilder } from "@discordjs/builders";
+import {
+  ActionRowBuilder,
+  EmbedBuilder,
+  PrimaryButtonBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+} from "@discordjs/builders";
 import type { BishopType, DailyBox, User } from "../../../../generated/prisma/client";
 import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
@@ -53,7 +57,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
     .addFields([
@@ -86,11 +90,11 @@ command.setHandler(async (ctx) => {
     .setPlaceholder("Select a district to search")
     .setCustomId(genSelectId({ matchingBishop: bishop }));
 
-  const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents([menu]);
+  const actionRow = new ActionRowBuilder().addComponents(menu);
 
-  const buttonActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary),
-  ]);
+  const buttonActionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})),
+  );
 
   await ctx.editReply({
     embeds: [embed],
@@ -158,7 +162,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setColor(0xfce300)
     .setThumbnail("attachment://file.gif")
@@ -219,13 +223,13 @@ async function memberCaught(
   const embed = new EmbedBuilder()
     .setColor(0xea523b)
     .setTitle(`VIOLATION DETECTED BY ${issuingBishop.toUpperCase()}`)
-    .setAuthor({ name: issuingBishop, iconURL: emojiURL })
+    .setAuthor({ name: issuingBishop, icon_url: emojiURL })
     .setDescription(
       "You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.",
     )
     .setFooter({
       text: `You win nothing. ${tokensRemaining}`,
-      iconURL: "attachment://file.gif",
+      icon_url: "attachment://file.gif",
     });
 
   sendViolationNotice(ctx.member as GuildMember, {
@@ -290,7 +294,7 @@ async function memberWon(
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setColor(0xfce300)
     .setThumbnail("attachment://file.gif")

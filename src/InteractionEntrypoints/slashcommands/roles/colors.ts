@@ -17,9 +17,9 @@ command.setHandler(async (ctx) => {
 
   const roleIDs = userRoles.map((r) => r.roleId);
 
-  const actionRow = new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents([
+  const actionRow = new ActionRowBuilder().addComponents(
     new RoleSelectMenuBuilder().setCustomId(roleSelectedId({ originalUserId: ctx.user.id })).setMaxValues(1),
-  ]);
+  );
 
   if (!roleIDs || roleIDs.length === 0) {
     throw new CommandError(`You don't have any color roles! Visit <#${channelIDs.shop}> to learn how to get them.`);

@@ -37,7 +37,7 @@ command.setHandler(async (ctx) => {
     const member = await ctx.guild.members.fetch(tag.userId);
     embed.setAuthor({
       name: member.displayName,
-      iconURL: member.displayAvatarURL(),
+      icon_url: member.displayAvatarURL(),
     });
   } catch {
     //

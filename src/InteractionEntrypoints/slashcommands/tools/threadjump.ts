@@ -1,5 +1,5 @@
-import { type AnyThreadChannel, ButtonStyle, MessageFlags } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import { type AnyThreadChannel, MessageFlags } from "discord.js";
+import { ActionRowBuilder, LinkButtonBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -30,9 +30,7 @@ command.setHandler(async (ctx) => {
     throw new CommandError("Failed to fetch the thread's starter message");
   }
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-    new ButtonBuilder().setLabel("Jump to message").setURL(msg.url).setStyle(ButtonStyle.Link),
-  );
+  const actionRow = new ActionRowBuilder().addComponents(new LinkButtonBuilder().setLabel("Jump to message").setURL(msg.url));
 
   await ctx.editReply({
     content: "Here's the link to the first message in this thread",

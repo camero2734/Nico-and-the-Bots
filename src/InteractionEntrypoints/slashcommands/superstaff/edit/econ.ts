@@ -49,7 +49,7 @@ command.setHandler(async (ctx) => {
   if (!member) throw new CommandError("Couldn't find that member");
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setColor(member.displayColor)
     .setTitle("Edit successful");
 

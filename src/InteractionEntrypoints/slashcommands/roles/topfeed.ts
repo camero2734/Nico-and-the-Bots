@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, type GuildMember, type Snowflake, MessageFlags } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
-import { ActionRowBuilder, SelectMenuBuilder, SelectMenuOptionBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -43,10 +43,10 @@ command.setHandler(async (ctx) => {
   }
 
   const options = Object.entries(roles.topfeed.selectable);
-  const menu = new SelectMenuBuilder()
+  const menu = new StringSelectMenuBuilder()
     .addOptions(
       options.map(([roleName, roleID]) =>
-        new SelectMenuOptionBuilder({
+        new StringSelectMenuOptionBuilder({
           label: roleName,
           description: `Enable notifications for ${roleName}`,
           value: roleID,
@@ -59,7 +59,7 @@ command.setHandler(async (ctx) => {
     .setMaxValues(options.length)
     .setCustomId(genChoiceId({}));
 
-  const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([menu]);
+  const actionRow = new ActionRowBuilder().addComponents(menu);
 
   const embed = new EmbedBuilder().setDescription(
     "Select your topfeed roles below. You will receive a ping when the channel receives an update.",

@@ -110,7 +110,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: username,
-      iconURL: lastFMIcon,
+      icon_url: lastFMIcon,
       url: `https://www.last.fm/user/${username}`,
     })
     .setImage("attachment://chart.png")

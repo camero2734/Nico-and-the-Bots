@@ -1,6 +1,6 @@
 import { subYears } from "date-fns";
-import { ApplicationCommandOptionType, ButtonStyle, type GuildMember, MessageFlags } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, type GuildMember, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
@@ -64,9 +64,9 @@ command.setHandler(async (ctx) => {
   const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
   const [submitId] = ephemeralListener.customIDs;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder().setLabel("Submit Warning").setCustomId(submitId),
+  );
 
   await ctx.send({
     embeds: [confirmationEmbed.toJSON()],
@@ -109,11 +109,11 @@ command.setHandler(async (ctx) => {
     confirmationEmbed.setTitle("You have received a warning");
     confirmationEmbed.setAuthor({
       name: member.displayName,
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     });
     confirmationEmbed.setFooter({
       text: "Please refrain from committing these infractions again. Any questions can be directed to the staff!",
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     });
     await dm.send({ embeds: [confirmationEmbed] });
   } catch (e) {

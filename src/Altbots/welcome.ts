@@ -1,6 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
-  ButtonStyle,
   Client,
   MessageFlags,
   type AttachmentPayload,
@@ -9,7 +8,7 @@ import {
   type Snowflake,
   type TextChannel,
 } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
@@ -120,7 +119,7 @@ export class SacarverBot {
       .setTitle("Welcome to the twenty one pilots Discord server!")
       .setAuthor({
         name: member.displayName,
-        iconURL: member.user.displayAvatarURL(),
+        icon_url: member.user.displayAvatarURL(),
       })
       .setDescription(
         "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n",
@@ -133,14 +132,13 @@ export class SacarverBot {
     }
 
     // Functions
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-      new ButtonBuilder({
-        style: ButtonStyle.Primary,
+    const actionRow = new ActionRowBuilder().addComponents(
+      new PrimaryButtonBuilder({
         label: "Sign up for #announcements",
         custom_id: ANNOUNCEMENTS_ID,
         ...emoji("📢"),
       }),
-    ]);
+    );
 
     await welcomeChan.send({
       content: member.toString(),

@@ -1,6 +1,6 @@
 import { addMilliseconds } from "date-fns";
 import { TextInputStyle, MessageFlags } from "discord.js";
-import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
+import { EmbedBuilder, LabelBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import parseDuration from "parse-duration";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -21,25 +21,19 @@ ctxMenu.setHandler(async (ctx, msg) => {
     .setCustomId(genHandleId({ originalMessageId: msg.id }))
     .setTitle("⏰ Set a reminder");
 
-  const remindedAction = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const remindedAction = new LabelBuilder().setLabel("When would you like to be reminded?").setTextInputComponent(
     new TextInputBuilder()
       .setCustomId(REMIND_WHEN_CUSTOM_ID)
-      .setLabel("When would you like to be reminded?")
       .setPlaceholder("e.g. 4 hours and 30 minutes, or just a number for hours")
       .setStyle(TextInputStyle.Short)
       .setRequired(true),
   );
 
-  const extraTextAction = new ActionRowBuilder<TextInputBuilder>().setComponents(
-    new TextInputBuilder()
-      .setCustomId(REMIND_EXTRA_TEXT_CUSTOM_ID)
-      .setLabel("Any additional information?")
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(false),
+  const extraTextAction = new LabelBuilder().setLabel("Any additional information?").setTextInputComponent(
+    new TextInputBuilder().setCustomId(REMIND_EXTRA_TEXT_CUSTOM_ID).setStyle(TextInputStyle.Paragraph).setRequired(false),
   );
 
-  // Add inputs to the modal
-  modal.setComponents(remindedAction, extraTextAction);
+  modal.addLabelComponents(remindedAction, extraTextAction);
 
   await ctx.showModal(modal);
 });
@@ -77,7 +71,7 @@ const genHandleId = ctxMenu.addInteractionListener(
       .setTitle("Created reminder")
       .setAuthor({
         name: ctx.member.displayName,
-        iconURL: ctx.member.user.displayAvatarURL(),
+        icon_url: ctx.member.user.displayAvatarURL(),
       })
       .addFields([{ name: "Reminder", value: text }])
       .addFields([

@@ -223,12 +223,12 @@ client.on("guildMemberUpdate", async (oldMem, newMem) => {
     const embed = new EmbedBuilder()
       .setAuthor({
         name: newMem.displayName,
-        iconURL: newMem.displayAvatarURL(),
+        icon_url: newMem.displayAvatarURL(),
       })
       .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
       .setFooter({
         text: "PROPERTY OF DRAGON'S DEN INC.™️",
-        iconURL: newMem.client.user?.displayAvatarURL(),
+        icon_url: newMem.client.user?.displayAvatarURL(),
       });
 
     await fbAnnouncementChannel.send({ embeds: [embed] });

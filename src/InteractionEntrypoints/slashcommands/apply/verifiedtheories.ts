@@ -1,26 +1,27 @@
-import { Faker, en } from "@faker-js/faker";
-import {
-  type APIButtonComponent,
-  ButtonStyle,
-  ComponentType,
-  type GuildMember,
-  type Message,
-  type TextChannel,
-  TextInputStyle,
-  MessageFlags,
-  Colors,
-} from "discord.js";
 import {
   ActionRowBuilder,
-  ButtonBuilder,
+  DangerButtonBuilder,
   EmbedBuilder,
-  type MessageActionRowComponentBuilder,
+  LabelBuilder,
+  LinkButtonBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  SuccessButtonBuilder,
   TextInputBuilder,
 } from "@discordjs/builders";
 import { channelMention } from "@discordjs/formatters";
+import { Faker, en } from "@faker-js/faker";
+import {
+  APIButtonComponentWithCustomId,
+  Colors,
+  ComponentType,
+  type GuildMember,
+  type Message,
+  MessageFlags,
+  type TextChannel,
+  TextInputStyle
+} from "discord.js";
 import { guild } from "../../../../app";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -109,16 +110,16 @@ command.setHandler(async (ctx) => {
 
   const seed36 = F.hashToInt(`${ctx.user.id}:${Date.now()}`).toString(36);
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("Begin").setStyle(ButtonStyle.Success).setCustomId(genModalId({ seed36 })),
-    new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Danger).setCustomId(genCancelId({})),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder().setLabel("Begin").setCustomId(genModalId({ seed36 })),
+    new DangerButtonBuilder().setLabel("Cancel").setCustomId(genCancelId({})),
+  );
 
   await dmMessage.edit({ components: [actionRow] });
 
-  const dmActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(dmMessage.url).setLabel("View message"),
-  ]);
+  const dmActionRow = new ActionRowBuilder().addComponents(
+    new LinkButtonBuilder().setURL(dmMessage.url).setLabel("View message"),
+  );
 
   await ctx.editReply({
     embeds: [new EmbedBuilder().setDescription("The quiz was DM'd to you!")],
@@ -147,20 +148,19 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
 
   const questions = generatePartOne(seed);
 
-  const components = [];
+  const components: LabelBuilder[] = [];
   for (const [key, { encoded }] of Object.entries(questions)) {
-    const component = new ActionRowBuilder<TextInputBuilder>().addComponents(
+    const component = new LabelBuilder().setLabel("Decode the following").setTextInputComponent(
       new TextInputBuilder()
         .setCustomId(key)
         .setStyle(TextInputStyle.Paragraph)
         .setPlaceholder("Enter the decoded sentence here")
-        .setLabel("Decode the following")
         .setValue(encoded),
     );
     components.push(component);
   }
 
-  modal.setComponents(components);
+  modal.addLabelComponents(...components);
 
   await ctx.showModal(modal);
 
@@ -170,21 +170,37 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
     data: { lastTaken: new Date(), timesTaken: { increment: 1 } },
   });
 
-  const getLabel = (data: Partial<APIButtonComponent>) => {
-    return "label" in data ? data.label : undefined;
-  };
-
   const rawActionRow = ctx.message.components[0];
   if (rawActionRow.type !== ComponentType.ActionRow) throw new Error("Invalid action row");
 
-  const dmActionRow = new ActionRowBuilder<ButtonBuilder>(rawActionRow.toJSON());
-  const beginBtn = dmActionRow.components.find((c) => getLabel(c.data) === "Begin" || getLabel(c.data) === "Reopen");
-  const cancelBtn = dmActionRow.components.find((c) => getLabel(c.data) === "Cancel");
+  const getCustomIdButtonData = (labels: string[]) => {
+    const component = rawActionRow.components
+      .map((rowComponent) => rowComponent.toJSON())
+      .find(
+        (rowComponent): rowComponent is APIButtonComponentWithCustomId =>
+          !!(rowComponent.type === ComponentType.Button &&
+            "custom_id" in rowComponent &&
+            rowComponent.label &&
+            labels.includes(rowComponent.label)),
+      );
 
-  if (!beginBtn || !cancelBtn) throw new Error("Invalid components");
+    if (!component) throw new Error("Invalid components");
 
-  beginBtn.setLabel("Reopen");
-  cancelBtn.setDisabled(true);
+    return {
+      custom_id: component.custom_id,
+      disabled: component.disabled,
+      emoji: "emoji" in component ? component.emoji : undefined,
+      label: "label" in component ? component.label : undefined,
+    };
+  };
+
+  const beginData = getCustomIdButtonData(["Begin", "Reopen"]);
+  const cancelData = getCustomIdButtonData(["Cancel"]);
+
+  const dmActionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder(beginData).setLabel("Reopen"),
+    new DangerButtonBuilder(cancelData).setDisabled(true),
+  );
 
   const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
   embed.setFooter({
@@ -222,7 +238,7 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
   const staffEmbed = new EmbedBuilder()
     .setAuthor({
       name: ctx.user.username,
-      iconURL: ctx.user.displayAvatarURL(),
+      icon_url: ctx.user.displayAvatarURL(),
     })
     .setTitle(`${correct ? "Passed" : "Failed"}: Part 1`)
     .setColor(correct ? Colors.Blurple : 0xff8888)
@@ -326,7 +342,7 @@ async function generateEmbedAndButtons(
   answerEncode: PreviousAnswersEncoder,
   questionIDs: string,
   member: GuildMember,
-): Promise<[EmbedBuilder, ActionRowBuilder<MessageActionRowComponentBuilder>[]]> {
+): Promise<[EmbedBuilder, ActionRowBuilder[]]> {
   // Generate embed
   const newIndex = currentIndex + 1;
   const numQs = questionList.length;
@@ -362,7 +378,7 @@ async function generateEmbedAndButtons(
     ),
   );
 
-  const actionRows = [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu)];
+  const actionRows = [new ActionRowBuilder().addComponents(selectMenu)];
 
   return [embed, actionRows];
 }
@@ -371,13 +387,13 @@ async function sendFinalEmbed(
   questionList: Question[],
   answerEncode: PreviousAnswersEncoder,
   member: GuildMember,
-): Promise<[EmbedBuilder, ActionRowBuilder<MessageActionRowComponentBuilder>[]]> {
+): Promise<[EmbedBuilder, ActionRowBuilder[]]> {
   const answers = answerEncode.answerIndices;
 
   // Send to staff channel
   const staffEmbed = new EmbedBuilder().setAuthor({
     name: member.displayName,
-    iconURL: member.user.displayAvatarURL(),
+    icon_url: member.user.displayAvatarURL(),
   });
 
   let incorrect = 0;
@@ -448,7 +464,7 @@ async function sendFinalEmbed(
   ]);
 
   const createSelect = (selectMenu: StringSelectMenuBuilder) =>
-    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+    new ActionRowBuilder().addComponents(selectMenu);
 
   const questions = [
     ["I'll be on topic in the channel", "I can discuss anything I want", "I might send some memes"],
@@ -498,7 +514,7 @@ const genPartThreeBtnId = command.addInteractionListener("verifopenmodalagree", 
     newSelectMenu.setDisabled(true);
     newSelectMenu.setPlaceholder("You have agreed to this rule");
 
-    return new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(newSelectMenu);
+    return new ActionRowBuilder().addComponents(newSelectMenu);
   });
 
   await ctx.editReply({ components: newActionRows });

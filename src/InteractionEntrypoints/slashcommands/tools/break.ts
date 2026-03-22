@@ -46,7 +46,7 @@ command.setHandler(async (ctx) => {
 
   // Message timed out member
   const dmEmbed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setDescription(
       `You have been muted until ${timestamp}, per your request. You can always message the server moderators if you wish to be unmuted sooner.`,
     );

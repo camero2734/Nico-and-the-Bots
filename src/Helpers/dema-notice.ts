@@ -120,9 +120,10 @@ export async function sendViolationNotice(
     content: `${member}`,
     embeds: [transmissionEmbed],
   });
+  let description = transmissionEmbed.toJSON().description || "";
   for (let i = 0; i < 5; i++) {
-    const description = transmissionEmbed.data.description as string;
-    transmissionEmbed.setDescription(description.trim() + F.randomizeLetters(".      " as string, 0.1));
+    description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
+    transmissionEmbed.setDescription(description);
     await F.wait(1000);
     await m.edit({ embeds: [transmissionEmbed] });
   }

@@ -24,7 +24,7 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder().setAuthor({
     name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
-    iconURL: ctx.client.user?.displayAvatarURL(),
+    icon_url: ctx.client.user?.displayAvatarURL(),
   });
 
   if (ctx.opts.time) {

@@ -1,5 +1,5 @@
 import { type Snowflake, MessageFlags } from "discord.js";
-import { ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
 import * as R from "ramda";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -11,13 +11,13 @@ const command = new SlashCommand({
 
 command.setHandler(async (ctx) => {
   await ctx.deferReply({ flags: MessageFlags.Ephemeral });
-  const selectMenu = new SelectMenuBuilder()
+  const selectMenu = new StringSelectMenuBuilder()
     .setCustomId(genSelectId({}))
     .setMaxValues(Object.keys(roles.pronouns).length)
     .setPlaceholder("Select your pronoun role(s) from the list")
     .addOptions(
       Object.entries(roles.pronouns).map(([name, id]) =>
-        new SelectMenuOptionBuilder({ label: name, value: id }).toJSON(),
+        new StringSelectMenuOptionBuilder({ label: name, value: id }).toJSON(),
       ),
     );
 
@@ -27,7 +27,7 @@ command.setHandler(async (ctx) => {
       `You may select multiple. Don't see yours? Head over to <#${channelIDs.suggestions}> to suggest it!`,
     );
 
-  const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);
+  const actionRow = new ActionRowBuilder().addComponents(selectMenu);
 
   await ctx.editReply({ embeds: [selectEmbed], components: [actionRow] });
 });
@@ -50,7 +50,7 @@ const genSelectId = command.addInteractionListener("pronounRoleSelect", [], asyn
   const embed = new EmbedBuilder()
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.user.displayAvatarURL(),
+      icon_url: ctx.user.displayAvatarURL(),
     })
     .setDescription("Your pronoun roles have been updated!");
 

@@ -86,7 +86,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${ctx.member.displayName}'s Bounty`,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .setFooter({ text: `Bounties remaining: ${dailyBox.steals - 1}` });
 

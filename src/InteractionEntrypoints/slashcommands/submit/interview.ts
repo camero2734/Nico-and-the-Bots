@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, ButtonStyle, type TextChannel, MessageFlags, Colors } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, type TextChannel, MessageFlags, Colors } from "discord.js";
+import { ActionRowBuilder, DangerButtonBuilder, EmbedBuilder, LinkButtonBuilder, SuccessButtonBuilder } from "@discordjs/builders";
 import metascraper from "metascraper";
 import metascraperDate from "metascraper-date";
 import metascraperDescription from "metascraper-description";
@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
 
   embed.setAuthor({
     name: ctx.member.displayName,
-    iconURL: ctx.user.displayAvatarURL(),
+    icon_url: ctx.user.displayAvatarURL(),
   });
   embed.setTitle(fullTitle);
   embed.addFields([{ name: "Channel", value: channel, inline: true }]);
@@ -89,13 +89,10 @@ command.setHandler(async (ctx) => {
     data: { url, submittedByUserId: ctx.user.id },
   });
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setLabel("Approve")
-      .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setLabel("Reject").setCustomId(genNoId({})).setStyle(ButtonStyle.Danger),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder().setLabel("Approve").setCustomId(genYesID({ interviewId: `${dbInterview.id}` })),
+    new DangerButtonBuilder().setLabel("Reject").setCustomId(genNoId({})),
+  );
 
   await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 
@@ -117,12 +114,9 @@ const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], asy
     data: { approved: true },
   });
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setURL(embed.data.url || "")
-      .setLabel("View on YouTube")
-      .setStyle(ButtonStyle.Link),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new LinkButtonBuilder().setURL(embed.toJSON().url || "").setLabel("View on YouTube"),
+  );
   await chan.send({
     content: `<@&${roles.topfeed.selectable.interviews}>`,
     components: [actionRow],

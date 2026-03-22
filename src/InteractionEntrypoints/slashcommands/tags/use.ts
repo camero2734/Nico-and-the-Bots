@@ -57,7 +57,7 @@ command.setHandler(async (ctx) => {
       .setColor(tagAuthor.displayColor)
       .setFooter({
         text: `Created by ${tagAuthor.displayName}`,
-        iconURL: tagAuthor.user.displayAvatarURL(),
+        icon_url: tagAuthor.user.displayAvatarURL(),
       });
 
     await ctx.editReply({ embeds: [embed] });

@@ -1,5 +1,12 @@
-import { ButtonStyle, MessageFlags, type GuildMember } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, SelectMenuOptionBuilder, EmbedBuilder } from "@discordjs/builders";
+import { MessageFlags, type GuildMember } from "discord.js";
+import {
+  ActionRowBuilder,
+  DangerButtonBuilder,
+  EmbedBuilder,
+  PrimaryButtonBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+} from "@discordjs/builders";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -28,7 +35,7 @@ command.setHandler(async (ctx) => {
 });
 
 // Main list
-async function generateReminderList(member: GuildMember): Promise<[EmbedBuilder] | [EmbedBuilder, ActionRowBuilder<any>]> {
+async function generateReminderList(member: GuildMember): Promise<[EmbedBuilder] | [EmbedBuilder, ActionRowBuilder]> {
   const reminders = await prisma.reminder.findMany({
     where: { userId: member.id },
     orderBy: { sendAt: "asc" },
@@ -42,7 +49,7 @@ async function generateReminderList(member: GuildMember): Promise<[EmbedBuilder]
     ];
   }
 
-  const selectMenu = new SelectMenuBuilder()
+  const selectMenu = new StringSelectMenuBuilder()
     .setCustomId(
       genActionId({
         reminderId: "void",
@@ -59,7 +66,7 @@ async function generateReminderList(member: GuildMember): Promise<[EmbedBuilder]
     const label = r.text.substring(0, 25);
     const description = formatReminderDate(r.sendAt).substring(0, 50);
     selectMenu.addOptions([
-      new SelectMenuOptionBuilder({
+      new StringSelectMenuOptionBuilder({
         label,
         description,
         emoji: { id: emoji?.id },
@@ -68,7 +75,7 @@ async function generateReminderList(member: GuildMember): Promise<[EmbedBuilder]
     ]);
   }
 
-  const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);
+  const actionRow = new ActionRowBuilder().addComponents(selectMenu);
   const embed = new EmbedBuilder()
     .setTitle("Your reminders")
     .setDescription(
@@ -135,26 +142,24 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
 
     if (reminderBody !== "") embed.setDescription(`...${reminderBody}`);
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-      new ButtonBuilder()
+    const actionRow = new ActionRowBuilder().addComponents(
+      new PrimaryButtonBuilder()
         .setLabel("Back to List")
-        .setStyle(ButtonStyle.Primary)
         .setCustomId(
           genActionId({
             reminderId: "void",
             actionType: ActionTypes.ShowList.toString(),
           }),
         ),
-      new ButtonBuilder()
+      new DangerButtonBuilder()
         .setLabel("Delete Reminder")
-        .setStyle(ButtonStyle.Danger)
         .setCustomId(
           genActionId({
             reminderId: reminder.id.toString(),
             actionType: ActionTypes.DeleteReminder.toString(),
           }),
         ),
-    ]);
+    );
 
     await ctx.editReply({ components: [actionRow], embeds: [embed] });
   }

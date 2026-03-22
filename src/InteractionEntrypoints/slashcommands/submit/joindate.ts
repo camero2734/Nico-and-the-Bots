@@ -71,7 +71,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .setDescription("Your join date was updated!")
     .addFields([{ name: "Reference message", value: msg.content || "*No content*" }])

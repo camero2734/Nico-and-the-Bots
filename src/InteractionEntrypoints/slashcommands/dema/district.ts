@@ -1,6 +1,6 @@
 import { Faker, en } from "@faker-js/faker";
 import { Colors, TextInputStyle, MessageFlags } from "discord.js";
-import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
+import { EmbedBuilder, LabelBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -70,34 +70,31 @@ command.setHandler(async (ctx) => {
 
   const modal = new ModalBuilder().setTitle("DEMA-R FORM 1539").setCustomId(genModalSubmitId({}));
 
-  const firstQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const firstQuestion = new LabelBuilder().setLabel("DO YOU HAVE A PREFERRED DISTRICT?").setTextInputComponent(
     new TextInputBuilder()
       .setStyle(TextInputStyle.Short)
-      .setLabel("DO YOU HAVE A PREFERRED DISTRICT?")
       .setPlaceholder("ENTER DISTRICT NAME")
       .setCustomId(PREFERRED_DISTRICT_ID)
       .setRequired(false),
   );
 
-  const secondQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const secondQuestion = new LabelBuilder().setLabel("REASON FOR IMMIGRATION").setTextInputComponent(
     new TextInputBuilder()
       .setStyle(TextInputStyle.Paragraph)
-      .setLabel("REASON FOR IMMIGRATION")
       .setPlaceholder("WE'RE HAPPY TO HAVE YOU. PLEASE ENTER YOUR REASON FOR RELOCATING TO DEMA.")
       .setCustomId(REASON_FOR_RELOCATION_ID)
       .setRequired(true),
   );
 
-  const thirdQuestion = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const thirdQuestion = new LabelBuilder().setLabel("VIALIST TERMS AND CONDITIONS").setTextInputComponent(
     new TextInputBuilder()
       .setStyle(TextInputStyle.Paragraph)
-      .setLabel("VIALIST TERMS AND CONDITIONS")
       .setValue(termsAndConditions)
       .setCustomId(AGREE_TO_TERMS_ID)
       .setRequired(true),
   );
 
-  modal.setComponents(firstQuestion, secondQuestion, thirdQuestion);
+  modal.addLabelComponents(firstQuestion, secondQuestion, thirdQuestion);
 
   await ctx.showModal(modal);
 });

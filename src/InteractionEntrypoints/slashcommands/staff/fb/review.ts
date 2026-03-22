@@ -21,7 +21,7 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder().setAuthor({
     name: "Firebreather Application Review Queue",
-    iconURL: fbRole?.iconURL() || undefined,
+    icon_url: fbRole?.iconURL() || undefined,
   });
 
   for (const app of awaiting) {

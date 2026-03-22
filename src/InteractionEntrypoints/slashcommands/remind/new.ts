@@ -50,7 +50,7 @@ command.setHandler(async (ctx) => {
     .setTitle("Created reminder")
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .addFields([{ name: "Reminder", value: text }])
     .addFields([{ name: "Send time", value: F.discordTimestamp(sendAt, "longDateTime") }]);

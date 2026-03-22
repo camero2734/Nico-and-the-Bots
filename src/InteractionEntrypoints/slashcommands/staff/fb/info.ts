@@ -31,7 +31,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "Firebreather Application Stats",
-      iconURL: fbRole?.iconURL() || undefined,
+      icon_url: fbRole?.iconURL() || undefined,
     })
     .addFields([
       {

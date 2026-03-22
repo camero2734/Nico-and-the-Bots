@@ -21,7 +21,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.535.0",
     "@aws-sdk/s3-request-presigner": "^3.535.0",
-    "@discordjs/builders": "^1.13.1",
+    "@discordjs/builders": "2.0.0-dev.1773446773-2a067216c",
     "@faker-js/faker": "^8.4.1",
     "@googleapis/youtube": "^25.1.0",
     "@napi-rs/canvas": "^0.1.80",

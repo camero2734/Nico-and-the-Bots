@@ -31,7 +31,7 @@ const standardizeEmbed = (embed: EmbedBuilder): void => {
   embed
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setColor(0x7289da)
     .addFields([
@@ -43,7 +43,7 @@ const standardizeEmbed = (embed: EmbedBuilder): void => {
     .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")
     .setFooter({
       text: "DEMAtronix: Propaganda delivered promptly™",
-      iconURL: "https://cdn.discordapp.com/emojis/860015969253326858.png",
+      icon_url: "https://cdn.discordapp.com/emojis/860015969253326858.png",
     });
 };
 

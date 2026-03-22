@@ -1,6 +1,15 @@
 import { Colors, MessageFlags, type InteractionReplyOptions } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
-import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
+import {
+  ActionRowBuilder,
+  EmbedBuilder,
+  LabelBuilder,
+  ModalBuilder,
+  PrimaryButtonBuilder,
+  SecondaryButtonBuilder,
+  SuccessButtonBuilder,
+  TextInputBuilder,
+} from "@discordjs/builders";
+import { TextInputStyle } from "discord-api-types/payloads/v9";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -78,19 +87,16 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions>
     const sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
     if (!sectionFinished) allFinished = false;
 
-    return new ButtonBuilder()
-      .setLabel(label)
-      .setCustomId(genOpenModalId({ idx: idx.toString() }))
-      .setStyle(sectionFinished ? ButtonStyle.Secondary : ButtonStyle.Primary);
+    const builder = sectionFinished ? new SecondaryButtonBuilder() : new PrimaryButtonBuilder();
+    return builder.setLabel(label).setCustomId(genOpenModalId({ idx: idx.toString() }));
   });
 
-  const submitButton = new ButtonBuilder()
+  const submitButton = new SuccessButtonBuilder()
     .setLabel("Submit")
-    .setStyle(ButtonStyle.Success)
     .setCustomId(genSubmitApplicationId({}))
     .setDisabled(!allFinished);
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([...buttons, submitButton]);
+  const actionRow = new ActionRowBuilder().addComponents(...buttons, submitButton);
 
   return { components: [actionRow], embeds: [embed], flags: MessageFlags.Ephemeral };
 }
@@ -108,17 +114,16 @@ const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async 
     .setCustomId(genSubmitModalId({ name: ctx.component.label }));
 
   const textFields = Object.entries(formPart).map(([id, question]) => {
-    return new TextInputBuilder()
-      .setCustomId(id)
-      .setLabel(question.question)
-      .setPlaceholder(question.placeholder)
-      .setStyle(question.short ? TextInputStyle.Short : TextInputStyle.Paragraph)
-      .setValue(prevAnswers[id]);
+    return new LabelBuilder().setLabel(question.question).setTextInputComponent(
+      new TextInputBuilder()
+        .setCustomId(id)
+        .setPlaceholder(question.placeholder)
+        .setStyle(question.short ? TextInputStyle.Short : TextInputStyle.Paragraph)
+        .setValue(prevAnswers[id]),
+    );
   });
 
-  const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputBuilder>().addComponents([x]));
-
-  modal.setComponents(wrappedTextFields);
+  modal.addLabelComponents(...textFields);
 
   ctx.showModal(modal);
 });

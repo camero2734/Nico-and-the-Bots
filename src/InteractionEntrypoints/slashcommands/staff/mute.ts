@@ -58,7 +58,7 @@ command.setHandler(async (ctx) => {
 
   // Message timed out member
   const dmEmbed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setDescription(
       `You have been muted until ${timestamp}. You can always message the server moderators if you feel there has been a mistake.`,
     );

@@ -45,7 +45,7 @@ command.setHandler(async (ctx) => {
   }
 
   const bannedEmbed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setDescription("You have been banned from the twenty one pilots Discord server")
     .addFields([{ name: "Reason", value: reason || "None provided" }])
     .setColor(Colors.Red);

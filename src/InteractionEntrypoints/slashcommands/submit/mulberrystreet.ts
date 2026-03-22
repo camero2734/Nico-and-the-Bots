@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, ButtonStyle, type TextChannel, MessageFlags } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, type TextChannel, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, LinkButtonBuilder, SuccessButtonBuilder } from "@discordjs/builders";
 import FileType from "file-type";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -76,7 +76,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .setColor(0xe3b3d8)
     .setTitle(`"${title}"`)
@@ -86,15 +86,13 @@ command.setHandler(async (ctx) => {
     .addFields([{ name: "URL", value: url }])
     .setFooter({
       text: "Courtesy of Mulberry Street Creations™",
-      iconURL: "https://i.imgur.com/fkninOC.png",
+      icon_url: "https://i.imgur.com/fkninOC.png",
     });
 
   const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
   const [yesId] = timedListener.customIDs;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel("Submit").setCustomId(yesId),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(new SuccessButtonBuilder().setLabel("Submit").setCustomId(yesId));
 
   await ctx.editReply({ embeds: [embed], components: [actionRow] });
 
@@ -127,9 +125,7 @@ command.setHandler(async (ctx) => {
   const m = await chan.send({ embeds: [embed], files: [{ attachment: Buffer.from(buffer), name: fileName }] });
   m.react("💙");
 
-  const newActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View post").setURL(m.url),
-  ]);
+  const newActionRow = new ActionRowBuilder().addComponents(new LinkButtonBuilder().setLabel("View post").setURL(m.url));
 
   await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });
 });

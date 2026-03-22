@@ -1,5 +1,5 @@
-import { ButtonStyle, ChannelType, type ForumChannel, type Guild } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import { ChannelType, type ForumChannel, type Guild } from "discord.js";
+import { ActionRowBuilder, LinkButtonBuilder } from "@discordjs/builders";
 import { channelIDs } from "../../Configuration/config";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
@@ -101,13 +101,13 @@ class ConcertChannelManager {
 
     const initialMessage = `## Welcome to the ${toAdd.concert.title || toAdd.concert.venue.name} festival discussion thread!\n### 📍 ${toAdd.location}, ${toAdd.continent}\nFeel free to discuss the festival, tickets, share pictures, etc.`;
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setLabel("Tickets").setEmoji({ name: "🎟️" }).setStyle(ButtonStyle.Link).setURL(toAdd.concert.url),
+    const actionRow = new ActionRowBuilder().addComponents(
+      new LinkButtonBuilder().setLabel("Tickets").setEmoji({ name: "🎟️" }).setURL(toAdd.concert.url),
     );
 
     if (toAdd.presaleUrl) {
       actionRow.addComponents(
-        new ButtonBuilder().setLabel("Presale").setEmoji({ name: "⚡" }).setStyle(ButtonStyle.Link).setURL(toAdd.presaleUrl),
+        new LinkButtonBuilder().setLabel("Presale").setEmoji({ name: "⚡" }).setURL(toAdd.presaleUrl),
       );
     }
 

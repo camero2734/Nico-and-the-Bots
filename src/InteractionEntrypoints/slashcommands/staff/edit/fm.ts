@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, TextInputStyle } from "discord.js";
-import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
+import { LabelBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
@@ -30,17 +30,16 @@ command.setHandler(async (ctx) => {
   if (action === "MIGRATE_USERNAME") {
     const modal = new ModalBuilder().setCustomId(genMigrateModalId({ userId: user })).setTitle("Modify FM Integration");
 
-    const usernameInputRow = new ActionRowBuilder<TextInputBuilder>().setComponents(
+    const usernameInputRow = new LabelBuilder().setLabel("Enter the new last.fm username").setTextInputComponent(
       new TextInputBuilder()
         .setCustomId(MIGRATE_MODAL_USERNAME)
-        .setLabel("Enter the new last.fm username")
         .setPlaceholder("NOTE: This will delete the username from any other users")
         .setStyle(TextInputStyle.Short)
         .setRequired(true),
     );
 
     // Add inputs to the modal
-    modal.setComponents(usernameInputRow);
+    modal.addLabelComponents(usernameInputRow);
 
     await ctx.showModal(modal);
   }

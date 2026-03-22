@@ -1,5 +1,5 @@
 import { type BaseMessageOptions, type ButtonComponent, Collection, type GuildMember, type Message, type Snowflake, type TextChannel } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, type MessageActionRowComponentBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, EmbedBuilder, createComponentBuilder, type ButtonBuilder } from "@discordjs/builders";
 import { constants } from "../Configuration/config";
 
 export function strEmbed(strings: TemplateStringsArray, color?: number): EmbedBuilder {
@@ -34,8 +34,8 @@ export const MessageTools = {
   allocateButtonsIntoRows(
     buttons: (ButtonComponent | ButtonBuilder)[],
     options?: IAllocateButtonsOptions,
-  ): ActionRowBuilder<MessageActionRowComponentBuilder>[] {
-    const components = [] as ActionRowBuilder<MessageActionRowComponentBuilder>[];
+  ): ActionRowBuilder[] {
+    const components: ActionRowBuilder[] = [];
 
     const maxButtonsPerRow = options?.maxButtonsPerRow ?? constants.ACTION_ROW_MAX_ITEMS;
 
@@ -44,8 +44,8 @@ export const MessageTools = {
     for (let i = 0; i < buttons.length; i += maxButtonsPerRow) {
       const slicedButtons = buttons
         .slice(i, i + maxButtonsPerRow)
-        .map((b) => new ButtonBuilder("toJSON" in b ? b.toJSON() : b));
-      const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().setComponents(slicedButtons);
+        .map((b) => createComponentBuilder(b.toJSON()));
+      const actionRow = new ActionRowBuilder().addComponents(...slicedButtons);
       components.push(actionRow);
     }
 

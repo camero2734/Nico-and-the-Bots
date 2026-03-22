@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, ButtonStyle, MessageFlags } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { ActionRowBuilder, DangerButtonBuilder, EmbedBuilder, SuccessButtonBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -40,22 +40,20 @@ command.setHandler(async (ctx) => {
   const roleObj = await ctx.channel.guild.roles.fetch(role);
   if (!roleObj) throw new CommandError("Invalid role given");
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Success)
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder()
       .setLabel(`Get the ${roleObj.name} role`)
       .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Give}` }))
       .setEmoji({
         name: "😎",
       }),
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Danger)
+    new DangerButtonBuilder()
       .setLabel(`Remove the ${roleObj.name} role`)
       .setCustomId(genActionId({ roleId: roleObj.id, action: `${ActionTypes.Remove}` }))
       .setEmoji({
         name: "😔",
       }),
-  ]);
+  );
 
   const embed = new EmbedBuilder()
     .setTitle("Role Giver™️") //
@@ -89,7 +87,7 @@ const genActionId = command.addInteractionListener("reactForRole", ["roleId", "a
         description: `The ${role} role was successfully ${action === ActionTypes.Give ? "added" : "removed"}`,
       }),
     ],
-    flags: MessageFlags.Ephemeral
+    flags: MessageFlags.Ephemeral,
   });
 });
 

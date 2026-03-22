@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder() //
     .setAuthor({
       name: `${member.displayName}'s tags`,
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     });
 
   for (const tag of tags) {

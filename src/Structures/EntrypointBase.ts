@@ -1,13 +1,12 @@
 import {
   type ApplicationCommandData,
-  ButtonStyle,
   type Client,
   Collection,
   type Guild,
   type GuildMember,
   type Interaction,
 } from "discord.js";
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, SecondaryButtonBuilder } from "@discordjs/builders";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { ErrorHandler } from "./Errors";
@@ -57,13 +56,12 @@ export abstract class InteractionEntrypoint<
     this.reactionListeners.set(name, handler);
   }
 
-  addReplyListener(name: string, handler: ReplyListener): ActionRowBuilder<ButtonBuilder> {
+  addReplyListener(name: string, handler: ReplyListener): ActionRowBuilder {
     this.replyListeners.set(name, handler);
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder()
+    const actionRow = new ActionRowBuilder().addComponents(
+      new SecondaryButtonBuilder()
         .setCustomId(`##!!RL${name}RL!!##`)
-        .setStyle(ButtonStyle.Secondary)
         .setDisabled(true)
         .setEmoji({ name: "🚀" }),
     );

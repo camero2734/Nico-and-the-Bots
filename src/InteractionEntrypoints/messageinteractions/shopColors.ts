@@ -5,7 +5,16 @@ import {
   MessageFlags,
   SeparatorSpacingSize,
 } from "discord.js";
-import { ButtonBuilder, ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "@discordjs/builders";
+import {
+  ContainerBuilder,
+  DangerButtonBuilder,
+  PrimaryButtonBuilder,
+  SecondaryButtonBuilder,
+  SectionBuilder,
+  SeparatorBuilder,
+  SuccessButtonBuilder,
+  TextDisplayBuilder,
+} from "@discordjs/builders";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -20,6 +29,33 @@ enum ActionTypes {
 }
 
 const msgInt = new ManualEntrypoint();
+
+const setSectionAccessoryButton = (
+  section: SectionBuilder,
+  style: ButtonStyle.Primary | ButtonStyle.Secondary | ButtonStyle.Danger,
+  label: string,
+  customId: string,
+  disabled = false,
+  emoji?: { name: string },
+) => {
+  if (style === ButtonStyle.Danger) {
+    const button = new DangerButtonBuilder().setLabel(label).setCustomId(customId).setDisabled(disabled);
+    if (emoji) button.setEmoji(emoji);
+    section.setDangerButtonAccessory(button);
+    return;
+  }
+
+  if (style === ButtonStyle.Secondary) {
+    const button = new SecondaryButtonBuilder().setLabel(label).setCustomId(customId).setDisabled(disabled);
+    if (emoji) button.setEmoji(emoji);
+    section.setSecondaryButtonAccessory(button);
+    return;
+  }
+
+  const button = new PrimaryButtonBuilder().setLabel(label).setCustomId(customId).setDisabled(disabled);
+  if (emoji) button.setEmoji(emoji);
+  section.setPrimaryButtonAccessory(button);
+};
 
 export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
   await ctx.deferReply({ flags: MessageFlags.Ephemeral });
@@ -73,15 +109,14 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
     );
     const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-    const button = new ButtonBuilder()
-      .setDisabled(cantAfford)
-      .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
-      .setDisabled(cantAfford || ownsRole)
-      .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
-      .setCustomId(!ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID());
-    if (contraband) button.setEmoji({ name: "🩸" });
-
-    section.setButtonAccessory(button);
+    setSectionAccessoryButton(
+      section,
+      cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle,
+      role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""),
+      !ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID(),
+      cantAfford || ownsRole,
+      contraband ? { name: "🩸" } : undefined,
+    );
 
     container.addSectionComponents(section);
   });
@@ -96,7 +131,7 @@ const genSubmenuId = msgInt.addInteractionListener("shopColorSubmenu", ["categor
   }
 
   const actionRow = MessageTools.allocateButtonsIntoRows([
-    new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({})),
+    new DangerButtonBuilder().setLabel("Go back").setCustomId(genMainMenuId({})),
   ]);
 
   await ctx.editReply({ components: [container, ...actionRow] });
@@ -151,8 +186,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     }
 
     const roleComponents = MessageTools.allocateButtonsIntoRows([
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Success)
+      new SuccessButtonBuilder()
         .setLabel("Purchase")
         .setCustomId(
           genItemId({
@@ -160,8 +194,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
             itemId: args.itemId,
           }),
         ),
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Danger)
+      new DangerButtonBuilder()
         .setLabel("Go back")
         .setCustomId(genSubmenuId({ categoryId: category.id })),
     ]);
@@ -255,22 +288,20 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
     );
 
     const unlocked = item.data.unlockedFor(member, dbUser);
-    const button = new ButtonBuilder()
-      .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
-      .setLabel(
-        unlocked ? `${idx + 1}. ${label}` : `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`,
-      )
-      .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID());
-    if (!unlocked) {
-      button.setDisabled(true);
-      button.setEmoji({ name: "🔒" });
+    const lockedLabel = unlocked
+      ? `${idx + 1}. ${label}`
+      : item.data.locked
+        ? "Temporarily Unavailable"
+        : `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`;
 
-      if (item.data.locked) {
-        button.setLabel("Temporarily Unavailable");
-      }
-    }
-
-    section.setButtonAccessory(button);
+    setSectionAccessoryButton(
+      section,
+      unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary,
+      lockedLabel,
+      unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID(),
+      !unlocked,
+      !unlocked ? { name: "🔒" } : undefined,
+    );
 
     container.addSectionComponents(section);
     container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large));

@@ -30,7 +30,6 @@
     "@solely/simple-fm": "1.6.4",
     "absurd-sdk": "^0.0.5",
     "bigint-conversion": "^2.4.3",
-    "bufferutil": "^4.1.0",
     "bullmq": "^5.71.0",
     "chalk": "^4.1.2",
     "chart.js": "^4.5.1",

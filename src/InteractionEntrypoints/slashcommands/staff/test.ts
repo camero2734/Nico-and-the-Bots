@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
-import { ActionRowBuilder, StringSelectMenuBuilder } from "@discordjs/builders";
+import { LabelBuilder, ModalBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, CheckboxGroupComponentData, ComponentType } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -14,37 +14,18 @@ const command = new SlashCommand({
   options: [
     {
       name: "num",
-      description: "Number of times to test",
+      description: "Command number",
       required: false,
       type: ApplicationCommandOptionType.Integer,
-    },
-    {
-      name: "separator",
-      description: "A separator",
-      required: false,
-      type: ApplicationCommandOptionType.String,
-    },
-    {
-      name: "gap",
-      description: "A gap",
-      required: false,
-      type: ApplicationCommandOptionType.Boolean,
-    },
-    {
-      name: "divider",
-      description: "A divider",
-      required: false,
-      type: ApplicationCommandOptionType.Boolean,
-    },
+    }
   ],
 });
 
 command.setHandler(async (ctx) => {
   if (ctx.user.id !== userIDs.me) return;
 
-  await ctx.deferReply();
-
   if (ctx.opts.num === 1) {
+    await ctx.deferReply();
     const role = await ctx.guild.roles.fetch(roleIDs.new);
     if (!role) {
       throw new CommandError("New role not found");
@@ -61,25 +42,36 @@ command.setHandler(async (ctx) => {
 
     await ctx.editReply(`${m.content} (${i}/${role.members.size})\nDone removing role ${role.name} from members.`);
   } else if (ctx.opts.num === 2) {
+    await ctx.deferReply();
     await updateCurrentSongBattleMessage();
   } else if (ctx.opts.num === 3) {
+    await ctx.deferReply();
     await updatePreviousSongBattleMessage(1);
   } else if (ctx.opts.num === 433) {
+    await ctx.deferReply();
     songBattleCron();
   } else {
-    const stringSelect = new StringSelectMenuBuilder()
-      .setCustomId("a cool select menu")
-      .setPlaceholder("select an option")
-      .setMaxValues(2)
-      .setOptions([
-        { label: "option 1 <@&557303189976907788>", value: "1" },
-        { label: "option 2", value: "2" },
-        { label: "option 3", value: "3" },
-      ]);
+    const data: CheckboxGroupComponentData = {
+      type: ComponentType.CheckboxGroup,
+      customId: "myVeryCoolCheckbox",
+      "options": [
+        { "value": "march-4", "label": "March 4th" },
+        { "value": "march-5", "label": "March 5th" },
+        { "value": "march-7", "label": "March 7th", "description": "I know this is a Saturday and is tough" },
+        { "value": "march-9", "label": "March 9th" },
+        { "value": "march-10", "label": "March 10th" }
+      ]
+    }
 
-    const actionRow = new ActionRowBuilder().addComponents(stringSelect);
+    const label = new LabelBuilder().setLabel("Select a date");
+    label['data'].component = data as any;
 
-    await ctx.editReply({ components: [actionRow], flags: MessageFlags.IsComponentsV2 });
+    const modal = new ModalBuilder()
+      .setTitle("My Modal")
+      .setCustomId("myModal")
+      .addLabelComponents(label);
+
+    await ctx.showModal(modal);
   }
 });
 

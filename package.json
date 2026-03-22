@@ -82,7 +82,6 @@
     "wikijs": "6.3.3",
     "ws": "^8.20.0",
     "youtube.ts": "^0.2.9",
-    "zlib-sync": "^0.1.10",
     "zod": "^3.25.76"
   },
   "devDependencies": {

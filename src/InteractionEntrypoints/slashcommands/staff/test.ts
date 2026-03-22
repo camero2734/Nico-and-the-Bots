@@ -99,21 +99,21 @@ command.setHandler(async (ctx) => {
 
     modal.addLabelComponents(
       new LabelBuilder()
-        .setLabel("Any questionable behavior in your server history?")
-        .setDescription("Including messages, warnings, and demeanor towards others. Be thorough and provide context.")
-        .setTextInputComponent((builder) =>
-          builder.setCustomId("questionable_behavior").setStyle(TextInputStyle.Paragraph).setRequired(false)
-        )
-    );
-
-    modal.addLabelComponents(
-      new LabelBuilder()
         .setLabel("Likes/dislikes about the server community?")
         .setDescription("The general vibe of the community, events, channels, etc.")
         .setTextInputComponent((builder) =>
           builder.setCustomId("like_dislike").setStyle(TextInputStyle.Paragraph).setRequired(true)
         )
     )
+
+    modal.addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Any concerning prior behavior in the server?")
+        .setDescription("Including past messages, warnings, and demeanor towards others that reviewers should be aware of.")
+        .setTextInputComponent((builder) =>
+          builder.setCustomId("questionable_behavior").setStyle(TextInputStyle.Paragraph).setRequired(false)
+        )
+    );
 
     modal.addLabelComponents(
       new LabelBuilder()

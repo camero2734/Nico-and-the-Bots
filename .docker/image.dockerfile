@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.11-debian AS build
+FROM oven/bun:1.3.11-slim AS build
 
 STOPSIGNAL SIGTERM
 

@@ -52,15 +52,6 @@ export const client = new Discord.Client({
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === 'function') {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }
-const _origHandlePacket = (client as any)._handlePacket.bind(client);
-(client as any)._handlePacket = async (packet: unknown, shardId: number) => {
-  if (packet == null) return;
-  return _origHandlePacket(packet, shardId);
-};
-
-(client.ws as any).on('error', (err: Error) => {
-  console.error('[WS Manager Error]', err);
-});
 
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();

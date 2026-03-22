@@ -1,5 +1,5 @@
 import { LabelBuilder, ModalBuilder } from "@discordjs/builders";
-import { ApplicationCommandOptionType, ComponentType, RadioGroupComponentData } from "discord.js";
+import { ApplicationCommandOptionType, CheckboxGroupComponentData, ComponentType, RadioGroupComponentData, TextInputStyle } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -25,7 +25,17 @@ interface RadioGroupData extends Omit<RadioGroupComponentData, "customId"> {
   custom_id: string;
 }
 
-function addRadioComponent(modal: ModalBuilder, data: RadioGroupData, label: string) {
+interface CheckboxGroupData extends Omit<CheckboxGroupComponentData, "customId"> {
+  custom_id: string;
+}
+
+function addRadioComponent(modal: ModalBuilder, label: string, data: RadioGroupData) {
+  const labelBuilder = new LabelBuilder().setLabel(label);
+  labelBuilder['data'].component = { toJSON: () => data } as any;
+  modal.addLabelComponents(labelBuilder);
+}
+
+function addCheckboxComponent(modal: ModalBuilder, label: string, data: CheckboxGroupData) {
   const labelBuilder = new LabelBuilder().setLabel(label);
   labelBuilder['data'].component = { toJSON: () => data } as any;
   modal.addLabelComponents(labelBuilder);
@@ -61,24 +71,58 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     songBattleCron();
   } else {
-    const data: RadioGroupData = {
-      type: ComponentType.RadioGroup,
-      custom_id: "myVeryCoolCheckbox",
-      options: [
-        { value: "march-4", label: "March 4th" },
-        { value: "march-5", label: "March 5th" },
-        { value: "march-7", label: "March 7th", description: "I know this is a Saturday and is tough" },
-        { value: "march-9", label: "March 9th" },
-        { value: "march-10", label: "March 10th" }
-      ]
-    }
-
     const modal = new ModalBuilder()
-      .setTitle("My Modal")
-      .setCustomId("myModal")
+      .setTitle("Torchbearers Application")
+      .setCustomId("myModal");
 
-    addRadioComponent(modal, data, "Select a date");
-    addRadioComponent(modal, { ...data, custom_id: "myVeryCoolCheckbox2" }, "Select a date again");
+    addRadioComponent(modal, "Where did you find out about our server?", {
+      type: ComponentType.RadioGroup,
+      custom_id: "where_did_you_find_out",
+      options: [
+        { value: "march-4", label: "Reddit" },
+        { value: "march-5", label: "Twitter" },
+        { value: "march-7", label: "Instagram" },
+        { value: "march-9", label: "A friend" },
+        { value: "march-10", label: "Other", description: "Feel free to specify in the comments" }
+      ]
+    });
+
+    addCheckboxComponent(modal, "How have you been involved in Discord Clique events?", {
+      type: ComponentType.CheckboxGroup,
+      custom_id: "discord_clique_events",
+      options: [
+        { value: "have_participated", label: "I have participated in events in the server before" },
+        { value: "have_hosted", label: "I have hosted events in the server before" },
+        { value: "willing_to_host", label: "I would love to help host events in the future" }
+      ]
+    });
+
+    modal.addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Is there any questionable behavior that the staff might find upon reviewing your server history? If so, please describe.")
+        .setDescription("This encompasses things such as messages, warnings, and overall demeanor towards others. Please be as thorough as possible and provide context to anything that needs it.")
+        .setTextInputComponent((builder) =>
+          builder.setCustomId("questionable_behavior").setStyle(TextInputStyle.Paragraph).setRequired(false)
+        )
+    );
+
+    modal.addLabelComponents(
+      new LabelBuilder()
+        .setLabel("What do you like/dislike about the Discord Clique community?")
+        .setDescription("This can be anything from the general vibe of the community to specific events or channels. Please be as honest and thorough as possible.")
+        .setTextInputComponent((builder) =>
+          builder.setCustomId("like_dislike").setStyle(TextInputStyle.Paragraph).setRequired(true)
+        )
+    )
+
+    modal.addLabelComponents(
+      new LabelBuilder()
+        .setLabel("If you have any other final thoughts or comments regarding your application or your qualification, please leave them here.")
+        .setDescription("You can use this space to expand on previous questions or talk about anything else that you think is relevant to your application.")
+        .setTextInputComponent((builder) =>
+          builder.setCustomId("additional_comments").setStyle(TextInputStyle.Paragraph).setRequired(true)
+        )
+    )
 
     await ctx.showModal(modal.toJSON(false));
   }

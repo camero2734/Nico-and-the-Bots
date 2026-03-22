@@ -17,16 +17,16 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  const { interaction } = await ctx.deferReply({ withResponse: true });
-  const currentPing = Math.abs(ctx.createdTimestamp - interaction.createdTimestamp);
+  const now = Date.now();
+  const currentPing = Math.abs(now - ctx.createdTimestamp);
 
-  previousPings.push({ ping: currentPing, time: Date.now() });
+  previousPings.push({ ping: currentPing, time: now });
 
   let pingSum = 0;
   let pingCount = 0;
 
   for (let i = previousPings.length - 1; i >= 0; i--) {
-    if (previousPings[i].time + PING_TIME >= Date.now()) {
+    if (previousPings[i].time + PING_TIME >= now) {
       pingSum += previousPings[i].ping;
       pingCount++;
     } else {

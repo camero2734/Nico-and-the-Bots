@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ButtonStyle } from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, MessageFlags } from "discord.js";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -89,7 +89,7 @@ const genActionId = command.addInteractionListener("reactForRole", ["roleId", "a
         description: `The ${role} role was successfully ${action === ActionTypes.Give ? "added" : "removed"}`,
       }),
     ],
-    flags: 64,
+    flags: MessageFlags.Ephemeral
   });
 });
 

@@ -145,8 +145,8 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
 
     const image = msg.attachments.filter((a) => !!a.contentType?.startsWith("image")).first();
     if (image) {
-      const fileName = selectedReason === "NSFW_SLURS" ? "SPOILER_file.png" : "file.png";
-      msgOpts.files = [{ attachment: image.url, name: fileName }];
+      msgOpts.files = [{ attachment: image.url, name: "file.png", spoiler: selectedReason === "NSFW_SLURS" }];
+
       staffEmbed.setImage("attachment://file.png");
     }
 

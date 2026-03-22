@@ -1,4 +1,4 @@
-import { ButtonStyle, DiscordAPIError, type Message, MessageFlags } from "discord.js";
+import { ButtonStyle, Colors, DiscordAPIError, type Message, MessageFlags } from "discord.js";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../../../app";
 import { channelIDs } from "../../../Configuration/config";
@@ -100,7 +100,7 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
   }
 
   const updateEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
-  updateEmbed.setColor(accepted ? 0x57f287 : 0xed4245);
+  updateEmbed.setColor(accepted ? Colors.Green : Colors.Red);
   if (m)
     updateEmbed.addFields({
       name: "URL",

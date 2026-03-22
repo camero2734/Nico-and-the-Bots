@@ -3,6 +3,7 @@ import {
   ComponentType,
   MessageFlags,
   type AnyComponent,
+  Colors,
 } from "discord.js";
 import { ContainerBuilder } from "@discordjs/builders";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
@@ -102,7 +103,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     components: [
       new ContainerBuilder({
         components,
-        accent_color: 0x5865f2,
+        accent_color: Colors.Blurple,
       }),
     ],
     flags: MessageFlags.IsComponentsV2,

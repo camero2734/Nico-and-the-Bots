@@ -1,4 +1,4 @@
-import { MessageFlags } from "discord.js";
+import { Colors, MessageFlags } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -17,7 +17,7 @@ command.setHandler(async (ctx) => {
 
   const { sorted } = await calculateHistory();
 
-  const embed = new EmbedBuilder().setTitle("Song Battle Stats").setColor(0x5865f2);
+  const embed = new EmbedBuilder().setTitle("Song Battle Stats").setColor(Colors.Blurple);
 
   for (let i = 0; i < 10; i++) {
     const round = i + 1;

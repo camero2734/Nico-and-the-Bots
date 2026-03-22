@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ButtonStyle, type TextChannel, MessageFlags } from "discord.js";
+import { ApplicationCommandOptionType, ButtonStyle, type TextChannel, MessageFlags, Colors } from "discord.js";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import metascraper from "metascraper";
 import metascraperDate from "metascraper-date";
@@ -107,7 +107,7 @@ const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], asy
   await ctx.deferUpdate();
 
   const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
-  embed.setColor(0x57f287);
+  embed.setColor(Colors.Green);
 
   await ctx.editReply({ components: [], embeds: [embed] });
   const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
@@ -134,7 +134,7 @@ const genNoId = command.addInteractionListener("intvwNo", [], async (ctx) => {
   await ctx.deferUpdate();
 
   const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
-  embed.setColor(0xed4245);
+  embed.setColor(Colors.Red);
   embed.setFooter({ text: `Rejected by ${ctx.user.tag}` });
 
   await ctx.editReply({ components: [], embeds: [embed] });

@@ -1,5 +1,6 @@
 import {
   ActionRowBuilder,
+  AnyComponentBuilder,
   ButtonBuilder,
   ChannelSelectMenuBuilder,
   EmbedBuilder,
@@ -251,7 +252,7 @@ async function unmuteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs
   });
 
   await msg.edit({
-    components: [new ActionRowBuilder<any>().setComponents(newComponents)],
+    components: [new ActionRowBuilder<AnyComponentBuilder>().setComponents(newComponents)],
   });
 }
 
@@ -290,7 +291,7 @@ async function muteAllUsers(ctx: ListenerInteraction, args: ActionExecutorArgs):
   });
 
   await msg.edit({
-    components: [new ActionRowBuilder<any>().setComponents(newComponents)],
+    components: [new ActionRowBuilder<AnyComponentBuilder>().setComponents(newComponents)],
   });
 }
 

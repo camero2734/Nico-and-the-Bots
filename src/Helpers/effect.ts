@@ -1,5 +1,6 @@
 import {
   type APIComponentInContainer,
+  Colors,
   ComponentType,
   type Guild,
   MessageFlags,
@@ -30,7 +31,7 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   const { level, isSevere, message, annotations, cause } = log;
 
   // Determine accent color based on severity
-  const accentColor = isSevere ? 0xed4245 : 0x5865f2;
+  const accentColor = isSevere ? Colors.Red : Colors.Blurple;
 
   // --- Component Sections ---
 

@@ -4,6 +4,7 @@ import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/mig
 import { EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../../app";
 import { registerTask } from "../absurd";
+import { Colors } from "discord.js";
 
 type NotifiableChange = Exclude<Change, { type: "add" | "noChange" }>;
 
@@ -43,7 +44,7 @@ export const notifyChange = registerTask(
         case "delete": {
           embed
             .setTitle(`Color role ${params.change.name} deleted`)
-            .setColor(0xed4245)
+            .setColor(Colors.Red)
             .setDescription(
               `The color role **${params.change.name}** has been deleted and is no longer available in your inventory.\n\nView <#${channelIDs.shop}> to browse our new available color roles!`,
             )

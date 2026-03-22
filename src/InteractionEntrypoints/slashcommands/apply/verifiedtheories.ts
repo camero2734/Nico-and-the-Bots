@@ -8,6 +8,7 @@ import {
   type TextChannel,
   TextInputStyle,
   MessageFlags,
+  Colors,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -195,7 +196,7 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
 
 const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed36"], async (ctx, args) => {
   if (!ctx.isModalSubmit()) return;
-  await ctx.deferUpdate();
+  await ctx.deferUpdate({ withResponse: true });
 
   // Determine if they entered the correct answers to part one
   const seed = Number.parseInt(args.seed36, 36);
@@ -224,7 +225,7 @@ const genModalSubmitId = command.addInteractionListener("verifmodaldone", ["seed
       iconURL: ctx.user.displayAvatarURL(),
     })
     .setTitle(`${correct ? "Passed" : "Failed"}: Part 1`)
-    .setColor(correct ? 0x5865f2 : 0xff8888)
+    .setColor(correct ? Colors.Blurple : 0xff8888)
     .setFooter({ text: ctx.user.id });
 
   for (const key in partOne) {

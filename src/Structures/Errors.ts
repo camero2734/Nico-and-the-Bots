@@ -8,6 +8,7 @@ import {
   type TextBasedChannel,
   type TextChannel,
   MessageFlags,
+  Colors,
 } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../app";
@@ -73,7 +74,7 @@ export const ErrorHandler = async (
   if (errorChannel && !(e instanceof CommandError)) {
     const embed = new EmbedBuilder()
       .setTitle("An error occurred!")
-      .setColor(0x8b0000)
+      .setColor(Colors.DarkRed)
       .setDescription(`An error occurred in ${ctx.constructor.name}.\nError ID: ${errorId}`)
       .addFields({
         name: "Channel",
@@ -115,7 +116,7 @@ export const ErrorHandler = async (
     const embed = new EmbedBuilder()
       .setDescription(e.message)
       .setTitle("An error occurred!")
-      .setColor(0x8b0000)
+      .setColor(Colors.DarkRed)
       .setFooter({ text: `DEMA internet machine broke. Error ${errorId}` });
     ectx.send({
       embeds: [embed],

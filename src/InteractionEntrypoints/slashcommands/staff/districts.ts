@@ -3,6 +3,7 @@ import { EmbedBuilder } from "@discordjs/builders";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { Colors } from "discord.js";
 
 const command = new SlashCommand({
   description: "Shows the number of users in each district",
@@ -14,7 +15,7 @@ command.setHandler(async (ctx) => {
 
   const districts = F.entries(roles.districts);
 
-  const embed = new EmbedBuilder().setTitle("District Apportionment").setColor(0x5865f2);
+  const embed = new EmbedBuilder().setTitle("District Apportionment").setColor(Colors.Blurple);
 
   let sum = 0;
   for (const [name, id] of districts) {

@@ -198,7 +198,7 @@ async function handleGold(
   ]);
 
   const goldEmbed = new EmbedBuilder(goldBaseEmbed.toJSON());
-  const idx = goldEmbed.data.fields?.findIndex((f: { name: string }) => f.name === NOT_CERTIFIED_FIELD) || -1;
+  const idx = goldEmbed.data.fields?.findIndex(f => f.name === NOT_CERTIFIED_FIELD) || -1;
   if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
   if (goldsUntilCertified > 0) {

@@ -1,7 +1,7 @@
-import { type SKRSContext2D, createCanvas, loadImage } from "@napi-rs/canvas";
-import { BishopType, type ViolationType } from "../../generated/prisma/client";
-import { type AttachmentPayload, type GuildMember, type TextChannel } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { type SKRSContext2D, createCanvas, loadImage } from "@napi-rs/canvas";
+import { type GuildMember, type TextChannel } from "discord.js";
+import { BishopType, type ViolationType } from "../../generated/prisma/client";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -136,7 +136,7 @@ export async function sendViolationNotice(
   await m.edit({
     content: `${member}`,
     embeds: [transmissionEmbed],
-    files: [{ attachment: canvas.toBuffer("image/png"), name: fileName } satisfies AttachmentPayload],
+    files: [{ attachment: canvas.toBuffer("image/png"), name: fileName }],
   });
 }
 

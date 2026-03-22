@@ -125,7 +125,7 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
   let title = "Good Day Dema® Discord Shop";
   if (contraband) title = F.randomizeLetters(title);
 
-  const container = new ContainerBuilder().setAccentColor(Number.parseInt(role.hexColor.slice(1), 16) || 0);
+  const container = new ContainerBuilder().setAccentColor(role.colors.primaryColor);
 
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(`### <:gooddaydema:1226628716076204033> ${title}\n## ${role.name}\n`),

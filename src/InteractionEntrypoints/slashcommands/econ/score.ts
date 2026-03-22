@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
-import { ApplicationCommandOptionType, type AttachmentPayload, type GuildMember, type Snowflake } from "discord.js";
+import { ApplicationCommandOptionType, type GuildMember, type Snowflake } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { LevelCalculator, badgeLoader } from "../../../Helpers";
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
   const buffer = await generateScoreCard(member);
   await ctx.editReply({
     embeds: [],
-    files: [{ attachment: buffer, name: "score.webp" } satisfies AttachmentPayload],
+    files: [{ attachment: buffer, name: "score.webp" }],
   });
 });
 

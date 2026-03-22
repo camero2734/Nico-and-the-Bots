@@ -46,6 +46,10 @@ export const client = new Discord.Client({
   ],
   partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
 });
+if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === 'function') {
+  (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
+}
+
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
@@ -104,7 +108,7 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-client.on("clientReady", async () => {
+client.on(Discord.Events.ClientReady, async () => {
   console.log("===================================");
   console.log("||                               ||");
   console.log("||      🚀 Nico logged in!       ||");
@@ -168,7 +172,7 @@ async function getReplyInteractionId(msg: Discord.Message) {
   }
 }
 
-client.on("messageCreate", async (msg: Discord.Message) => {
+client.on(Discord.Events.MessageCreate, async (msg: Discord.Message) => {
   const { replyId, repliedTo } = (await getReplyInteractionId(msg)) || {};
   if (replyId && repliedTo) {
     const replyListener = ReplyHandlers.get(replyId);
@@ -180,7 +184,7 @@ client.on("messageCreate", async (msg: Discord.Message) => {
 });
 
 // Voice state updates for VC role
-client.on("voiceStateUpdate", async (oldState, newState) => {
+client.on(Discord.Events.VoiceStateUpdate, async (oldState, newState) => {
   const joinedVoiceChannel = !oldState.channelId && newState.channelId;
   const leftVoiceChannel = oldState.channelId && !newState.channelId;
 
@@ -195,8 +199,8 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 });
 
 // Pending member updates => give roles
-client.on("guildMemberUpdate", async (oldMem, mem) => {
-  if (oldMem.partial) {
+client.on(Discord.Events.GuildMemberUpdate, async (oldMem, mem) => {
+  if (!oldMem || oldMem.partial) {
     console.log("Old member was partial");
     return;
   }
@@ -219,8 +223,8 @@ client.on("guildMemberUpdate", async (oldMem, mem) => {
   await testChannel.send(`✅ ${mem.user.tag} passed membership screening`);
 });
 
-client.on("guildMemberUpdate", async (oldMem, newMem) => {
-  if (oldMem.partial) {
+client.on(Discord.Events.GuildMemberUpdate, async (oldMem, newMem) => {
+  if (!oldMem || oldMem.partial) {
     console.log("Old member was partial");
     return;
   }
@@ -244,7 +248,7 @@ client.on("guildMemberUpdate", async (oldMem, newMem) => {
   }
 });
 
-client.on("messageReactionAdd", async (reaction, user) => {
+client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
 
@@ -264,7 +268,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
   }
 });
 
-client.on("interactionCreate", async (interaction) => {
+client.on(Discord.Events.InteractionCreate, async (interaction) => {
   const receivedInteractionAt = new Date();
   if (interaction.isChatInputCommand()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);

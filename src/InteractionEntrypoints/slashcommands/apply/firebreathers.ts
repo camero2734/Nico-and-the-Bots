@@ -1,19 +1,15 @@
 import { addDays } from "date-fns";
+import { Colors, type Guild, type TextChannel, TextInputStyle, MessageFlags } from "discord.js";
 import {
   ActionRowBuilder,
-  AttachmentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  Colors,
   EmbedBuilder,
-  type Guild,
+  LabelBuilder,
+  LinkButtonBuilder,
   ModalBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  type TextChannel,
   TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+} from "@discordjs/builders";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
@@ -33,7 +29,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
     throw new CommandError("You are already a firebreather!");
@@ -77,16 +73,14 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.member.displayAvatarURL(),
+      icon_url: ctx.member.displayAvatarURL(),
     })
     .setDescription(
       "Click the button below to open the application. It should be pre-filled with your **Application ID**, which is a one-time code. This code is only valid for you, and only once.",
     )
     .addFields([{ name: "Application ID", value: applicationId }]);
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(link).setLabel("Open Application"),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(new LinkButtonBuilder().setURL(link).setLabel("Open Application"));
 
   await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -110,7 +104,7 @@ export async function sendToStaff(
     const embed = new EmbedBuilder()
       .setAuthor({
         name: `${member.displayName}'s application`,
-        iconURL: member.displayAvatarURL(),
+        icon_url: member.displayAvatarURL(),
       })
       .setFooter({ text: applicationId });
 
@@ -118,7 +112,7 @@ export async function sendToStaff(
       embed.addFields([{ name: name, value: value?.substring(0, 1000) || "*Nothing*" }]);
     }
 
-    const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents([
+    const actionRow = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .addOptions(
           [
@@ -135,10 +129,10 @@ export async function sendToStaff(
           ].map((o) => o.toJSON()),
         )
         .setCustomId(genModalId({ applicationId })),
-    ]);
+    );
 
     const scoreCard = await generateScoreCard(member);
-    const attachment = new AttachmentBuilder(scoreCard, { name: "score.png" });
+    const attachment = { attachment: scoreCard, name: "score.png" };
 
     const m = await fbApplicationChannel.send({
       embeds: [embed],
@@ -205,7 +199,7 @@ export async function sendToStaff(
 
 const MODAL_REASON = "fbAppModalReason";
 const genModalId = command.addInteractionListener("staffFBAppModal", ["applicationId"], async (ctx, args) => {
-  if (!ctx.isAnySelectMenu()) return;
+  if (!ctx.isStringSelectMenu()) return;
 
   const action: ActionTypes = +ctx.values[0];
 
@@ -216,16 +210,15 @@ const genModalId = command.addInteractionListener("staffFBAppModal", ["applicati
     .setTitle(`${verb}ing Firebreathers Application`)
     .setCustomId(genId({ applicationId: args.applicationId, type: action.toString() }));
 
-  const titleInput = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const titleInput = new LabelBuilder().setLabel(`${verb} Reason`).setTextInputComponent(
     new TextInputBuilder()
       .setStyle(TextInputStyle.Short)
       .setRequired(false)
-      .setLabel(`${verb} Reason`)
       .setPlaceholder(`Why was the application ${verbPast}? This is optional and will be sent to the user.`)
       .setCustomId(MODAL_REASON),
   );
 
-  await ctx.showModal(modal.setComponents(titleInput));
+  await ctx.showModal(modal.addLabelComponents(titleInput));
 });
 
 const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", "type"], async (ctx, args) => {
@@ -235,7 +228,7 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
   if (!ctx.isModalSubmit()) return;
 
   const action: ActionTypes = +args.type;
-  const reason = ctx.fields.getTextInputValue(MODAL_REASON);
+  const reason = ctx.components.getTextInputValue(MODAL_REASON);
 
   const applicationId = args.applicationId;
   const application = await prisma.firebreatherApplication.findUnique({
@@ -249,15 +242,13 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "Firebreathers Application results",
-      iconURL: member.client.user?.displayAvatarURL(),
+      icon_url: member.client.user?.displayAvatarURL(),
     })
     .setFooter({ text: applicationId });
 
-  if (!embed.data.author) return; // Just to make typescript happy
-
   if (reason) embed.addFields({ name: "Reason", value: reason });
 
-  const msgEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
+  const msgEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
 
   if (action === ActionTypes.Accept) {
     await prisma.firebreatherApplication.update({
@@ -266,7 +257,10 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
     });
     await member.roles.add(roles.deatheaters);
 
-    embed.data.author.name = "Firebreathers Application Approved";
+    embed.setAuthor({
+      name: "Firebreathers Application Approved",
+      icon_url: member.client.user?.displayAvatarURL(),
+    });
     embed.setDescription(`You are officially a Firebreather! You may now access <#${channelIDs.fairlylocals}>`);
 
     await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
@@ -278,7 +272,10 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
 
     const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
 
-    embed.data.author.name = "Firebreathers Application Denied";
+    embed.setAuthor({
+      name: "Firebreathers Application Denied",
+      icon_url: member.client.user?.displayAvatarURL(),
+    });
     embed.setDescription(`Unfortunately, your application for FB was denied. You may reapply ${timestamp}`);
     await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
   } else throw new Error("Invalid action type");
@@ -286,7 +283,7 @@ const genId = command.addInteractionListener("staffFBAppRes", ["applicationId", 
   const doneByEmbed = new EmbedBuilder()
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.member.displayAvatarURL(),
+      icon_url: ctx.member.displayAvatarURL(),
     })
     .setDescription(`${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s FB application`)
     .addFields([{ name: "Reason", value: reason || "*No reason given*" }])

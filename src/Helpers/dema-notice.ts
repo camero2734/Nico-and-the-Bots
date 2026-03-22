@@ -1,6 +1,7 @@
+import { EmbedBuilder } from "@discordjs/builders";
 import { type SKRSContext2D, createCanvas, loadImage } from "@napi-rs/canvas";
+import { type GuildMember, type TextChannel } from "discord.js";
 import { BishopType, type ViolationType } from "../../generated/prisma/client";
-import { AttachmentBuilder, EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
 import { channelIDs } from "../Configuration/config";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
@@ -119,9 +120,10 @@ export async function sendViolationNotice(
     content: `${member}`,
     embeds: [transmissionEmbed],
   });
+  let description = transmissionEmbed.toJSON().description || "";
   for (let i = 0; i < 5; i++) {
-    const description = transmissionEmbed.data.description as string;
-    transmissionEmbed.setDescription(description.trim() + F.randomizeLetters(".      " as string, 0.1));
+    description = description.trim() + F.randomizeLetters(".      " as string, 0.1);
+    transmissionEmbed.setDescription(description);
     await F.wait(1000);
     await m.edit({ embeds: [transmissionEmbed] });
   }
@@ -131,11 +133,11 @@ export async function sendViolationNotice(
   const fileName = `infraction_${infractionNo}.png`;
   transmissionEmbed.setDescription("MESSAGE RECEIVED FROM DEMA COUNCIL:");
   transmissionEmbed.setImage(`attachment://${fileName}`);
-  transmissionEmbed.setColor("Red");
+  transmissionEmbed.setColor(0xff0000);
   await m.edit({
     content: `${member}`,
     embeds: [transmissionEmbed],
-    files: [new AttachmentBuilder(canvas.toBuffer("image/png"), { name: fileName })],
+    files: [{ attachment: canvas.toBuffer("image/png"), name: fileName }],
   });
 }
 

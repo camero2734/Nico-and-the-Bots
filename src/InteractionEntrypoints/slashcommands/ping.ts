@@ -1,6 +1,7 @@
-import { Colors, EmbedBuilder } from "discord.js";
+import { Colors } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
 import { minutesToMilliseconds } from "date-fns";
+import { EmbedBuilder } from "@discordjs/builders";
 
 interface Ping {
   ping: number;
@@ -39,8 +40,7 @@ command.setHandler(async (ctx) => {
     .setColor(Colors.Gold)
     .setTitle(`${currentPing}ms ping`)
     .addFields([
-      { name: "Heartbeat", value: `${Math.floor(ctx.client.ws.ping)}ms` },
-      { name: "Websocket", value: `${ctx.client.ws.ping}ms` },
+      { name: "Heartbeat", value: `${Math.floor(ctx.client.ping ?? 0)}ms` },
       {
         name: "Average ping",
         value: `${average}ms over ${pingCount} ping${pingCount === 1 ? "" : "s"}`,

@@ -1,5 +1,6 @@
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import parseDuration from "parse-duration";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -57,7 +58,7 @@ command.setHandler(async (ctx) => {
 
   // Message timed out member
   const dmEmbed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setDescription(
       `You have been muted until ${timestamp}. You can always message the server moderators if you feel there has been a mistake.`,
     );

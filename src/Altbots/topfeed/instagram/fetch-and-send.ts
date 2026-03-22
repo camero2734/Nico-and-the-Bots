@@ -2,10 +2,10 @@ import { addHours } from "date-fns";
 import {
   type APIComponentInContainer,
   ComponentType,
-  ContainerBuilder,
   MessageFlags,
-  roleMention
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention } from "@discordjs/formatters";
 import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -109,7 +109,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   // Build the container
   const container = new ContainerBuilder({
     components: [...mainSection, ...mediaSection, ...footerSection],
-    accent_color: role.color,
+    accent_color: role.colors.primaryColor ?? undefined,
   });
 
   return container;

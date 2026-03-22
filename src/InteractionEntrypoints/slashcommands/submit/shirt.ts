@@ -1,4 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, DiscordAPIError, EmbedBuilder, type Message } from "discord.js";
+import { Colors, DiscordAPIError, type Message, MessageFlags } from "discord.js";
+import {
+  ActionRowBuilder,
+  DangerButtonBuilder,
+  EmbedBuilder,
+  LinkButtonBuilder,
+  SuccessButtonBuilder,
+} from "@discordjs/builders";
 import { guild } from "../../../../app";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -9,7 +16,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     const dm = await ctx.member.createDM();
@@ -43,21 +50,19 @@ const shirtReplyActionRow = command.addReplyListener("shirtReply", async (reply,
 
   const footer = new EmbedBuilder().setFooter({
     text: `Submitted by ${member.displayName}`,
-    iconURL: member.avatarURL() || undefined,
+    icon_url: member.avatarURL() || undefined,
   });
 
   const staffChan = await guild.channels.fetch(channelIDs.shirtSuggestions);
   if (!staffChan || !staffChan.isSendable()) return;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
-    new ButtonBuilder()
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder()
       .setCustomId(genAnswerId({ userId: reply.author.id, answer: "accept" }))
-      .setLabel("Accept")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
+      .setLabel("Accept"),
+    new DangerButtonBuilder()
       .setCustomId(genAnswerId({ userId: reply.author.id, answer: "reject" }))
-      .setLabel("Reject")
-      .setStyle(ButtonStyle.Danger),
+      .setLabel("Reject"),
   );
 
   await staffChan.send({
@@ -98,8 +103,8 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
     });
   }
 
-  const updateEmbed = EmbedBuilder.from(ctx.message.embeds[0]);
-  updateEmbed.setColor(accepted ? "Green" : "Red");
+  const updateEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  updateEmbed.setColor(accepted ? Colors.Green : Colors.Red);
   if (m)
     updateEmbed.addFields({
       name: "URL",
@@ -107,7 +112,7 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
     });
   updateEmbed.setFooter({
     text: `${ctx.message.embeds[0].footer?.text} | ${accepted ? "Accepted" : "Rejected"} by ${ctx.member.displayName}`,
-    iconURL: ctx.message.embeds[0].footer?.iconURL,
+    icon_url: ctx.message.embeds[0].footer?.iconURL,
   });
   await ctx.editReply({ components: [], embeds: [updateEmbed] });
 
@@ -120,14 +125,12 @@ const genAnswerId = command.addInteractionListener("shirtSbmtAnswer", ["userId",
       )
       .setFooter({
         text: `Submitted by ${originalMember.displayName}`,
-        iconURL: originalMember.avatarURL() || undefined,
+        icon_url: originalMember.avatarURL() || undefined,
       });
 
     const actionRow =
       m &&
-      new ActionRowBuilder<ButtonBuilder>().setComponents(
-        new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(m.url).setLabel("View Announcement"),
-      );
+      new ActionRowBuilder().addComponents(new LinkButtonBuilder().setURL(m.url).setLabel("View Announcement"));
 
     await dm.send({
       embeds: [embed],

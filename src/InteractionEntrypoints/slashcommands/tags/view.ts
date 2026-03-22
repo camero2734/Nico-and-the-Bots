@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -16,7 +17,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const userId = ctx.opts.user || ctx.user.id;
   const member = await ctx.guild.members.fetch(userId);
@@ -31,7 +32,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder() //
     .setAuthor({
       name: `${member.displayName}'s tags`,
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     });
 
   for (const tag of tags) {

@@ -1,4 +1,5 @@
-import { EmbedBuilder, type OverwriteResolvable } from "discord.js";
+import { type OverwriteResolvable, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
@@ -9,7 +10,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
   const channelPermissionsBackup = await prisma.channelPermissionsBackup.findFirst({
     where: { channelId: ctx.channel.id },
   });

@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -23,7 +24,7 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder().setAuthor({
     name: `Slowmode ${ctx.opts.time ? "enabled" : "disabled"}`,
-    iconURL: ctx.client.user?.displayAvatarURL(),
+    icon_url: ctx.client.user?.displayAvatarURL(),
   });
 
   if (ctx.opts.time) {

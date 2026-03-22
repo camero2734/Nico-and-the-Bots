@@ -1,5 +1,6 @@
 import { addMilliseconds, millisecondsToMinutes } from "date-fns";
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import parseDuration from "parse-duration";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -20,7 +21,7 @@ const command = new SlashCommand(<const>{
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
   const { time } = ctx.opts;
   const member = ctx.member;
 
@@ -45,7 +46,7 @@ command.setHandler(async (ctx) => {
 
   // Message timed out member
   const dmEmbed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setDescription(
       `You have been muted until ${timestamp}, per your request. You can always message the server moderators if you wish to be unmuted sooner.`,
     );

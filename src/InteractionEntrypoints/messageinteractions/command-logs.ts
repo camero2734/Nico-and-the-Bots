@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type TextChannel } from "discord.js";
+import { type TextChannel } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, LinkButtonBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { channelIDs } from "../../Configuration/config";
 import F from "../../Helpers/funcs";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
@@ -15,9 +16,9 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
 
   const staffChan = (await ctx.guild.channels.fetch(channelIDs.staff)) as TextChannel;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("View original").setURL(ctx.message.url),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new LinkButtonBuilder().setLabel("View original").setURL(ctx.message.url),
+  );
   const msg = await staffChan.send({
     embeds: [embed],
     components: [actionRow],
@@ -31,7 +32,7 @@ const GenStaffDiscussId = msgInt.addInteractionListener("discussEmbedStaff", arg
     .setTitle(args.title)
     .setAuthor({
       name: `${ctx.member.displayName} requested discussion`,
-      iconURL: ctx.user.displayAvatarURL(),
+      icon_url: ctx.user.displayAvatarURL(),
     })
     .setDescription("Feel free to discuss this incident in this thread");
 
@@ -48,14 +49,14 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
   const commandName = entrypoint.identifier;
   const args = opts
     ? Object.entries(opts)
-        .map(([key, val]) => `\`${key}\`: ${val}`)
-        .join(", ")
+      .map(([key, val]) => `\`${key}\`: ${val}`)
+      .join(", ")
     : "*None*";
 
   const embed = new EmbedBuilder()
     .setAuthor({
       name: member.displayName,
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     })
     .setTitle(`${commandName} used`)
     .addFields([{ name: "Args", value: args }])
@@ -63,16 +64,15 @@ EntrypointEvents.on("slashCommandFinished", async ({ entrypoint, ctx }) => {
 
   const staffCommandLogChan = (await member.guild.channels.fetch(channelIDs.logs.staffCommands)) as TextChannel;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Primary)
+  const actionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder()
       .setLabel("Discuss in #staff")
       .setCustomId(
         GenStaffDiscussId({
           title: `${commandName} used by ${member.displayName}`,
         }),
       ),
-  ]);
+  );
 
   await staffCommandLogChan.send({ embeds: [embed], components: [actionRow] });
 });

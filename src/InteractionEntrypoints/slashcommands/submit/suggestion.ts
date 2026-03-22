@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder, type TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, type TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -26,7 +27,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `Suggestion from ${ctx.member.displayName}`,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .setColor(ctx.member.displayColor)
     .setTitle(title)

@@ -1,17 +1,10 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  Colors,
-  EmbedBuilder,
-} from "discord.js";
+import { ApplicationCommandOptionType, Colors, MessageFlags } from "discord.js";
+import { ActionRowBuilder, DangerButtonBuilder, EmbedBuilder, SuccessButtonBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../Structures/TimedInteractionListener";
 import { fm } from "./_consts";
-
 const command = new SlashCommand({
   description: "Sets your lastfm username for use with other /fm commands",
   options: [
@@ -25,7 +18,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const fmUsername = ctx.opts.username;
   if (!fmUsername) {
@@ -67,7 +60,7 @@ command.setHandler(async (ctx) => {
   let trackEmbed = new EmbedBuilder()
     .setAuthor({
       name: fmUsername,
-      iconURL: avatar,
+      icon_url: avatar,
       url: `https://www.last.fm/user/${fmUsername}`,
     })
     .setTitle("You have not scrobbled any songs yet. Is this your profile?")
@@ -80,7 +73,7 @@ command.setHandler(async (ctx) => {
     trackEmbed = new EmbedBuilder()
       .setAuthor({
         name: fmUsername,
-        iconURL: avatar,
+        icon_url: avatar,
         url: `https://www.last.fm/user/${fmUsername}`,
       })
       .setTitle("This is your most recently scrobbled song. Does this look correct?")
@@ -95,10 +88,10 @@ command.setHandler(async (ctx) => {
   const timedListener = new TimedInteractionListener(ctx, <const>["fmSetYesId", "fmSetNoId"]);
   const [yesId, noId] = timedListener.customIDs;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("Yes").setStyle(ButtonStyle.Success).setCustomId(yesId),
-    new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Danger).setCustomId(noId),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder().setLabel("Yes").setCustomId(yesId),
+    new DangerButtonBuilder().setLabel("No").setCustomId(noId),
+  );
 
   await ctx.send({ embeds: [trackEmbed], components: [actionRow] });
 

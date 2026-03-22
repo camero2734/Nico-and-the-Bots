@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { LevelCalculator } from "Helpers";

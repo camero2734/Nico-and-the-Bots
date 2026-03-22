@@ -1,15 +1,12 @@
+import { type MessageCreateOptions, ComponentType, type TextChannel, MessageFlags } from "discord.js";
 import {
   ActionRowBuilder,
-  AttachmentBuilder,
-  type BaseMessageOptions,
-  ButtonBuilder,
-  ButtonStyle,
-  ComponentType,
   EmbedBuilder,
-  SelectMenuBuilder,
-  SelectMenuOptionBuilder,
-  type TextChannel,
-} from "discord.js";
+  LinkButtonBuilder,
+  PrimaryButtonBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+} from "@discordjs/builders";
 import type { Writeable } from "zod";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -29,7 +26,7 @@ type ReportReasonsType = typeof ReportReasons;
 const ctxMenu = new MessageContextMenu("🚩 Report message");
 
 ctxMenu.setHandler(async (ctx, msg) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const embed = new EmbedBuilder()
     .setTitle("Report message")
@@ -37,15 +34,15 @@ ctxMenu.setHandler(async (ctx, msg) => {
       "If you want to report this message to the server staff, please choose the reason in the dropdown below.\n\nIf this was an accident, you may safely ignore this message",
     );
 
-  const selectMenu = new SelectMenuBuilder()
+  const selectMenu = new StringSelectMenuBuilder()
     .setCustomId(genId({ channelId: msg.channelId, messageId: msg.id }))
     .addOptions(
       Object.entries(ReportReasons).map(([key, value]) =>
-        new SelectMenuOptionBuilder({ label: value, value: key }).toJSON(),
+        new StringSelectMenuOptionBuilder({ label: value, value: key }).toJSON(),
       ),
     );
 
-  const actionRow = new ActionRowBuilder<SelectMenuBuilder>().setComponents([selectMenu]);
+  const actionRow = new ActionRowBuilder().addComponents(selectMenu);
 
   await ctx.editReply({ embeds: [embed], components: [actionRow] });
 });
@@ -110,7 +107,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
       .addFields([{ name: "Reason", value: reasonText }])
       .setFooter({
         text: `Reported by ${ctx.member.displayName}`,
-        iconURL: ctx.member.displayAvatarURL(),
+        icon_url: ctx.member.displayAvatarURL(),
       });
 
     await prisma.userMessageReport.create({
@@ -129,37 +126,33 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
     const staffEmbed = new EmbedBuilder()
       .setAuthor({
         name: msgMember.displayName,
-        iconURL: msgMember.displayAvatarURL(),
+        icon_url: msgMember.displayAvatarURL(),
       })
       .setTitle("Message Reported")
       .setDescription(msg.content)
       .addFields([{ name: "Reason", value: ReportReasons[selectedReason] }])
       .setFooter({
         text: `Reported by ${ctx.member.displayName}`,
-        iconURL: ctx.member.displayAvatarURL(),
+        icon_url: ctx.member.displayAvatarURL(),
       });
 
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-      new ButtonBuilder()
+    const actionRow = new ActionRowBuilder().addComponents(
+      new PrimaryButtonBuilder()
         .setLabel(NUM_PEOPLE_TEXT(1))
-        .setStyle(ButtonStyle.Primary)
         .setDisabled(true)
         .setCustomId(NULL_CUSTOM_ID()),
-      new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(msg.url),
-    ]);
+      new LinkButtonBuilder().setLabel("View message").setURL(msg.url),
+    );
 
-    const msgOpts: BaseMessageOptions = {
+    const msgOpts: MessageCreateOptions = {
       embeds: [staffEmbed],
       components: [actionRow],
     };
 
     const image = msg.attachments.filter((a) => !!a.contentType?.startsWith("image")).first();
     if (image) {
-      const attachment = new AttachmentBuilder(image.url, {
-        name: "file.png",
-      });
-      if (selectedReason === "NSFW_SLURS") attachment.setSpoiler(true);
-      msgOpts.files = [attachment];
+      msgOpts.files = [{ attachment: image.url, name: "file.png", spoiler: selectedReason === "NSFW_SLURS" }];
+
       staffEmbed.setImage("attachment://file.png");
     }
 

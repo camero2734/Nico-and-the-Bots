@@ -1,9 +1,10 @@
 import { channelIDs } from "Configuration/config";
 import { prisma } from "Helpers/prisma-init";
 import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/migratecolorroles/_consts";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../../app";
 import { registerTask } from "../absurd";
+import { Colors } from "discord.js";
 
 type NotifiableChange = Exclude<Change, { type: "add" | "noChange" }>;
 
@@ -16,9 +17,9 @@ export const notifyChange = registerTask(
       const role = await guild.roles.fetch(params.roleId || "").catch(() => null);
       const userRole = params.roleId
         ? await prisma.colorRole.findUnique({
-            where: { roleId_userId: { roleId: params.roleId, userId: params.userId } },
-            select: { amountPaid: true },
-          })
+          where: { roleId_userId: { roleId: params.roleId, userId: params.userId } },
+          select: { amountPaid: true },
+        })
         : null;
 
       const embed = new EmbedBuilder();
@@ -43,7 +44,7 @@ export const notifyChange = registerTask(
         case "delete": {
           embed
             .setTitle(`Color role ${params.change.name} deleted`)
-            .setColor("Red")
+            .setColor(Colors.Red)
             .setDescription(
               `The color role **${params.change.name}** has been deleted and is no longer available in your inventory.\n\nView <#${channelIDs.shop}> to browse our new available color roles!`,
             )

@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder, type Snowflake, type TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, type Snowflake, type TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import normalizeURL from "normalize-url";
 import ordinal from "ordinal";
 import { guildID } from "../../../Configuration/config";
@@ -70,7 +71,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: ctx.member.displayName,
-      iconURL: ctx.member.user.displayAvatarURL(),
+      icon_url: ctx.member.user.displayAvatarURL(),
     })
     .setDescription("Your join date was updated!")
     .addFields([{ name: "Reference message", value: msg.content || "*No content*" }])

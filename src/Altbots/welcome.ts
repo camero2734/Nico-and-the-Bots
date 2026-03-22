@@ -1,16 +1,14 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
-  ActionRowBuilder,
-  AttachmentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   Client,
-  EmbedBuilder,
+  MessageFlags,
+  type AttachmentPayload,
   type GuildMember,
   type MessageComponentInteraction,
   type Snowflake,
   type TextChannel,
 } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
@@ -121,7 +119,7 @@ export class SacarverBot {
       .setTitle("Welcome to the twenty one pilots Discord server!")
       .setAuthor({
         name: member.displayName,
-        iconURL: member.user.displayAvatarURL(),
+        icon_url: member.user.displayAvatarURL(),
       })
       .setDescription(
         "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n",
@@ -134,14 +132,13 @@ export class SacarverBot {
     }
 
     // Functions
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-      new ButtonBuilder({
-        style: ButtonStyle.Primary,
+    const actionRow = new ActionRowBuilder().addComponents(
+      new PrimaryButtonBuilder({
         label: "Sign up for #announcements",
-        customId: ANNOUNCEMENTS_ID,
+        custom_id: ANNOUNCEMENTS_ID,
         ...emoji("📢"),
       }),
-    ]);
+    );
 
     await welcomeChan.send({
       content: member.toString(),
@@ -164,7 +161,7 @@ export class SacarverBot {
         }),
       ],
       allowedMentions: { repliedUser: false },
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -178,7 +175,7 @@ export class SacarverBot {
     displayName: string;
     guildMemberCount: number;
     memberNum: number;
-  }): Promise<AttachmentBuilder> {
+  }): Promise<AttachmentPayload> {
     const canvas = createCanvas(1000, 500);
     const ctx = canvas.getContext("2d");
 
@@ -224,8 +221,9 @@ export class SacarverBot {
     ctx.textAlign = "center";
     ctx.fillText(`#${memberNum}`, 180, 300);
 
-    return new AttachmentBuilder(canvas.toBuffer("image/webp", 100), {
+    return {
+      attachment: canvas.toBuffer("image/webp", 100),
       name: "welcome.webp",
-    });
+    };
   }
 }

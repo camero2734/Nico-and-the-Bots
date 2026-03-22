@@ -1,21 +1,19 @@
 import Cron from "croner";
 import { addDays } from "date-fns";
-import { ButtonStyle } from "discord-api-types/v10";
+import { MessageFlags, type Message, type Snowflake, type TextChannel } from "discord.js";
 import {
   ActionRowBuilder,
-  ButtonBuilder,
   ContainerBuilder,
   EmbedBuilder,
+  LinkButtonBuilder,
+  PrimaryButtonBuilder,
+  SecondaryButtonBuilder,
   TextDisplayBuilder,
-  MessageFlags,
-  userMention,
-  type Message,
-  type Snowflake,
-  type TextChannel, 
-  MediaGalleryBuilder, 
-  MediaGalleryItemBuilder, 
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   SectionBuilder,
-} from "discord.js";
+} from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
@@ -41,7 +39,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     return newGold(ctx, msg);
   }
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   // Ensure the message hasn't already been golded
   const givenGold = await prisma.gold.findFirst({
@@ -55,9 +53,9 @@ ctxMenu.setHandler(async (ctx, msg) => {
     }
 
     const embed = new EmbedBuilder().setDescription(MESSAGE_ALREADY_GOLD);
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-      new ButtonBuilder().setLabel("View post").setStyle(ButtonStyle.Link).setURL(givenGold.houseOfGoldMessageUrl),
-    ]);
+    const actionRow = new ActionRowBuilder().addComponents(
+      new LinkButtonBuilder().setLabel("View post").setURL(givenGold.houseOfGoldMessageUrl),
+    );
 
     return ctx.editReply({ embeds: [embed], components: [actionRow] });
   }
@@ -71,7 +69,7 @@ const genAdditionalGoldId = ctxMenu.addInteractionListener(
   async (ctx, args) => {
     if (!ctx.message.inGuild()) return;
 
-    await ctx.deferReply({ ephemeral: true });
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral });
     await handleGold(
       (<unknown>ctx) as typeof ContextMenu.GenericContextType,
       ctx.message,
@@ -109,11 +107,11 @@ async function handleGold(
   if (previousGold) throw new CommandError("You already gave this message gold!");
 
   const goldBaseEmbed = isAdditionalGold
-    ? EmbedBuilder.from(msg.embeds[0])
+    ? new EmbedBuilder(msg.embeds[0].toJSON())
     : new EmbedBuilder()
       .setAuthor({
         name: originalMember.displayName,
-        iconURL: originalMember.user.displayAvatarURL(),
+        icon_url: originalMember.user.displayAvatarURL(),
       })
       .setColor(0xfce300)
       .addFields([{ name: "Channel", value: `${msg.channel}`, inline: true }])
@@ -127,7 +125,7 @@ async function handleGold(
       .addFields([{ name: "Message", value: msg.content || "*No content*" }])
       .setFooter({
         text: `Given by ${ctxMember.displayName}.`,
-        iconURL: ctx.user.displayAvatarURL(),
+        icon_url: ctx.user.displayAvatarURL(),
       });
 
   if (!isAdditionalGold && msg.attachments.size > 0) {
@@ -135,7 +133,7 @@ async function handleGold(
     if (url) goldBaseEmbed.setImage(url);
   }
 
-  let askEmbed = EmbedBuilder.from(goldBaseEmbed).addFields([
+  let askEmbed = new EmbedBuilder(goldBaseEmbed.toJSON()).addFields([
     {
       name: "\u200b",
       value: "**Would you like to give gold to this message?**",
@@ -145,7 +143,7 @@ async function handleGold(
     askEmbed = new EmbedBuilder()
       .setAuthor({
         name: originalMember.displayName,
-        iconURL: originalMember.user.displayAvatarURL(),
+        icon_url: originalMember.user.displayAvatarURL(),
       })
       .setColor(0xfce300)
       .setDescription("Would you like to add another gold to this message?");
@@ -154,14 +152,13 @@ async function handleGold(
   const timedListener = new TimedInteractionListener(ctx, <const>["goldCtxYes", "goldCtxNo"]);
   const [yesId, noId] = timedListener.customIDs;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
+  const actionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder()
       .setLabel(`Yes (${cost} credits)`)
       .setEmoji({ id: emojiIDs.gold })
-      .setStyle(ButtonStyle.Primary)
       .setCustomId(yesId),
-    new ButtonBuilder().setLabel("No").setStyle(ButtonStyle.Secondary).setCustomId(noId),
-  ]);
+    new SecondaryButtonBuilder().setLabel("No").setCustomId(noId),
+  );
 
   await ctx.editReply({
     embeds: [askEmbed],
@@ -185,11 +182,10 @@ async function handleGold(
   const numGolds = 1 + (isAdditionalGold ? await prisma.gold.count({ where: { houseOfGoldMessageUrl: msg.url } }) : 0);
   const goldsUntilCertified = NUM_GOLDS_FOR_CERTIFICATION - numGolds;
 
-  const goldActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
+  const goldActionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder()
       .setLabel(`${numGolds} Gold${F.plural(numGolds)}`)
       .setEmoji({ id: emojiIDs.gold })
-      .setStyle(ButtonStyle.Primary)
       .setCustomId(
         genAdditionalGoldId({
           originalUserId: originalUserId ?? msg.author.id,
@@ -197,11 +193,11 @@ async function handleGold(
           originalChannelId,
         }),
       ),
-    new ButtonBuilder().setLabel("View message").setStyle(ButtonStyle.Link).setURL(originalMessageUrl),
-  ]);
+    new LinkButtonBuilder().setLabel("View message").setURL(originalMessageUrl),
+  );
 
-  const goldEmbed = EmbedBuilder.from(goldBaseEmbed);
-  const idx = goldEmbed.data.fields?.findIndex((f) => f.name === NOT_CERTIFIED_FIELD) || -1;
+  const goldEmbed = new EmbedBuilder(goldBaseEmbed.toJSON());
+  const idx = (goldEmbed.toJSON().fields || []).findIndex((field) => field.name === NOT_CERTIFIED_FIELD);
   if (idx !== -1) goldEmbed.spliceFields(idx, 1);
 
   if (goldsUntilCertified > 0) {
@@ -253,9 +249,9 @@ async function handleGold(
 
   const replyEmbed = new EmbedBuilder().setDescription("Gold successfully given");
 
-  const replyActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("View post").setStyle(ButtonStyle.Link).setURL(goldMessage.url),
-  ]);
+  const replyActionRow = new ActionRowBuilder().addComponents(
+    new LinkButtonBuilder().setLabel("View post").setURL(goldMessage.url),
+  );
 
   await ctx.editReply({
     embeds: [replyEmbed],
@@ -279,7 +275,7 @@ async function handleGold(
     .setColor(0xfce300)
     .setFooter({
       text: `Given in ${msg.channel.name}`,
-      iconURL: ctx.guild?.iconURL() || undefined,
+      icon_url: ctx.guild?.iconURL() || undefined,
     });
 
   await dm.send({ embeds: [dmEmbed], components: [replyActionRow] });
@@ -325,7 +321,7 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
 
   const emojiName = `pfp_${msg.author.id}`;
 
-  const emoji = existingEmojis.find((e) => e.name === emojiName) 
+  const emoji = existingEmojis.find((e) => e.name === emojiName)
     || await emojiManager.create({
       name: emojiName,
       attachment: msg.author.displayAvatarURL({ extension: "png", size: 128 }),
@@ -352,11 +348,10 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(`${userMention(msg.author.id)}`),
       )
-      .setButtonAccessory(
-        new ButtonBuilder()
+      .setLinkButtonAccessory(
+        new LinkButtonBuilder()
           .setLabel("View message")
           .setEmoji({ id: emoji.id })
-          .setStyle(ButtonStyle.Link)
           .setURL(msg.url),
       )
   )
@@ -366,11 +361,10 @@ async function newGold(ctx: typeof ContextMenu.GenericContextType, _msg: Message
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(`Given by ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, ${userMention(ctx.user.id)}, and 7 others.`),
       )
-      .setButtonAccessory(
-        new ButtonBuilder()
+      .setPrimaryButtonAccessory(
+        new PrimaryButtonBuilder()
           .setLabel("Give gold")
           .setEmoji({ id: emojiIDs.gold })
-          .setStyle(ButtonStyle.Primary)
           .setCustomId("?goldPlaceholder"),
       )
   )

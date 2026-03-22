@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder, type Snowflake } from "discord.js";
+import { ApplicationCommandOptionType, type Snowflake } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -30,15 +31,16 @@ command.setHandler(async (ctx) => {
 
     const embed = new EmbedBuilder();
     embed.setTitle(role.name);
-    embed.setColor(role.color);
+    embed.setColor(role.colors.primaryColor ?? 0);
     embed.addFields([{ name: "Hex", value: role.hexColor }]);
-    embed.addFields([{ name: "RGB", value: `(${F.intColorToRGB(role.color).join(", ")})` }]);
+    embed.addFields([{ name: "RGB", value: `(${F.intColorToRGB(role.colors.primaryColor ?? 0).join(", ")})` }]);
     embed.addFields({ name: "Colors", value: JSON.stringify(role.colors) });
     embed.addFields([{ name: "Members", value: `${role.members.size}` }]);
     embed.addFields([{ name: "Created", value: `${role.createdAt}` }]);
     embed.addFields([{ name: "ID", value: role.id }]);
 
-    if (role.icon) embed.setThumbnail(role.iconURL({ extension: "png", size: 128 }));
+    const roleIconUrl = role.iconURL({ extension: "png", size: 128 });
+    if (roleIconUrl) embed.setThumbnail(roleIconUrl);
 
     embeds.push(embed);
   }

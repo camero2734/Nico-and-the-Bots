@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
@@ -48,7 +49,7 @@ command.setHandler(async (ctx) => {
   if (!member) throw new CommandError("Couldn't find that member");
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setColor(member.displayColor)
     .setTitle("Edit successful");
 

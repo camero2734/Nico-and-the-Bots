@@ -1,5 +1,6 @@
 import { addMilliseconds } from "date-fns";
-import { ActionRowBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { TextInputStyle, MessageFlags } from "discord.js";
+import { EmbedBuilder, LabelBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import parseDuration from "parse-duration";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
@@ -20,25 +21,19 @@ ctxMenu.setHandler(async (ctx, msg) => {
     .setCustomId(genHandleId({ originalMessageId: msg.id }))
     .setTitle("⏰ Set a reminder");
 
-  const remindedAction = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const remindedAction = new LabelBuilder().setLabel("When would you like to be reminded?").setTextInputComponent(
     new TextInputBuilder()
       .setCustomId(REMIND_WHEN_CUSTOM_ID)
-      .setLabel("When would you like to be reminded?")
       .setPlaceholder("e.g. 4 hours and 30 minutes, or just a number for hours")
       .setStyle(TextInputStyle.Short)
       .setRequired(true),
   );
 
-  const extraTextAction = new ActionRowBuilder<TextInputBuilder>().setComponents(
-    new TextInputBuilder()
-      .setCustomId(REMIND_EXTRA_TEXT_CUSTOM_ID)
-      .setLabel("Any additional information?")
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(false),
+  const extraTextAction = new LabelBuilder().setLabel("Any additional information?").setTextInputComponent(
+    new TextInputBuilder().setCustomId(REMIND_EXTRA_TEXT_CUSTOM_ID).setStyle(TextInputStyle.Paragraph).setRequired(false),
   );
 
-  // Add inputs to the modal
-  modal.setComponents(remindedAction, extraTextAction);
+  modal.addLabelComponents(remindedAction, extraTextAction);
 
   await ctx.showModal(modal);
 });
@@ -48,10 +43,10 @@ const genHandleId = ctxMenu.addInteractionListener(
   <const>["originalMessageId"],
   async (ctx, args) => {
     if (!ctx.isModalSubmit()) return;
-    await ctx.deferReply({ ephemeral: true });
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const time = ctx.fields.getTextInputValue(REMIND_WHEN_CUSTOM_ID);
-    const extraText = ctx.fields.getTextInputValue(REMIND_EXTRA_TEXT_CUSTOM_ID);
+    const time = ctx.components.getTextInputValue(REMIND_WHEN_CUSTOM_ID);
+    const extraText = ctx.components.getTextInputValue(REMIND_EXTRA_TEXT_CUSTOM_ID);
 
     // const text = https://canary.discord.com/channels/269657133673349120/940390987841302598/1209926910247968818
     let text = `**👋 You asked me to remind you about this message:** https://discord.com/channels/${ctx.guildId}/${ctx.channelId}/${args.originalMessageId}`;
@@ -76,7 +71,7 @@ const genHandleId = ctxMenu.addInteractionListener(
       .setTitle("Created reminder")
       .setAuthor({
         name: ctx.member.displayName,
-        iconURL: ctx.member.user.displayAvatarURL(),
+        icon_url: ctx.member.user.displayAvatarURL(),
       })
       .addFields([{ name: "Reminder", value: text }])
       .addFields([

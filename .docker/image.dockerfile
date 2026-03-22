@@ -9,7 +9,7 @@ WORKDIR /code
 RUN apt update -qq && apt install -qq -y curl gnupg lsb-release && \
     curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/postgresql.list && \
-    apt update -qq && apt install -qq -y git-crypt pv postgresql-client-16 python3 && \
+    apt update -qq && apt install -qq -y git-crypt pv postgresql-client-16 python3 build-essential && \
     apt clean && rm -rf /var/lib/apt/lists/* && \
     curl -fsSL https://github.com/earendil-works/absurd/releases/download/0.0.5/absurdctl -o absurdctl && \
     chmod +x absurdctl && mv absurdctl /usr/local/bin/absurdctl

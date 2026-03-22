@@ -199,7 +199,10 @@ const F = {
   async sendMessageToUser(member: GuildMember, msgOpts: BaseMessageOptions) {
     try {
       const dm = await member.createDM();
-      await dm.send(msgOpts);
+      await dm.send({
+        ...msgOpts,
+        content: msgOpts.content ?? undefined,
+      });
     } catch {
       const commandsChan = (await member.guild.channels.fetch(channelIDs.commands)) as TextChannel;
       await commandsChan.send({
@@ -217,10 +220,10 @@ const F = {
   },
   userBishop(member: GuildMember):
     | {
-        name: keyof (typeof roles)["districts"];
-        role: Role;
-        bishop: BishopType;
-      }
+      name: keyof (typeof roles)["districts"];
+      role: Role;
+      bishop: BishopType;
+    }
     | undefined {
     const keys = F.entries(roles.districts);
     for (const [bishop, roleId] of keys) {

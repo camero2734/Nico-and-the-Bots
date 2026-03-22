@@ -1,15 +1,14 @@
 import { Cron } from "croner";
 import { addHours, addSeconds } from "date-fns";
 import {
-  AttachmentBuilder,
   ButtonStyle,
   ComponentType,
-  ContainerBuilder,
   type MessageEditOptions,
   MessageFlags,
-  roleMention,
   ThreadAutoArchiveDuration,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention } from "@discordjs/formatters";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
@@ -489,7 +488,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
 
   const files = [];
   if (chartBuffer && hasWinner) {
-    files.push(new AttachmentBuilder(chartBuffer, { name: "chart.png" }));
+    files.push({ attachment: chartBuffer, name: "chart.png" });
 
     container.addMediaGalleryComponents({
       type: ComponentType.MediaGallery,
@@ -506,7 +505,7 @@ function createMessageComponents(details: SongBattleDetails): MessageEditOptions
 }
 
 const genButtonId = entrypoint.addInteractionListener("songBattleButton", ["pollId", "songId"], async (ctx, args) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
   if (!ctx.isButton()) return;
 
   await ctx.editReply({ content: "Processing your vote..." });

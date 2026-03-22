@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -16,7 +17,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const { amount } = ctx.opts;
   const channel = ctx.channel;
@@ -25,7 +26,7 @@ command.setHandler(async (ctx) => {
 
   const deleted = await channel.bulkDelete(amount, true);
 
-  let numDeleted = deleted.size;
+  let numDeleted = deleted.length;
 
   // Need to manually fetch and delete remaining messages
   const remaining = amount - numDeleted;

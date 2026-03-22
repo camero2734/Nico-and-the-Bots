@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import ordinal from "ordinal";
 import { CommandError } from "../../../Configuration/definitions";
 import { queries } from "../../../Helpers/prisma-init";

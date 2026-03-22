@@ -1,14 +1,15 @@
+import { Colors, MessageFlags, type InteractionReplyOptions } from "discord.js";
 import {
   ActionRowBuilder,
-  ButtonBuilder,
-  Colors,
   EmbedBuilder,
-  type InteractionReplyOptions,
-  type MessageEditOptions,
+  LabelBuilder,
   ModalBuilder,
+  PrimaryButtonBuilder,
+  SecondaryButtonBuilder,
+  SuccessButtonBuilder,
   TextInputBuilder,
-} from "discord.js";
-import { ButtonStyle, TextInputStyle } from "discord-api-types/payloads/v9";
+} from "@discordjs/builders";
+import { TextInputStyle } from "discord-api-types/payloads/v9";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -51,10 +52,6 @@ const PART_TWO: Record<string, Question> = <const>{
     question: "Likes/dislikes about DiscordClique community?",
     placeholder: "Be honest!",
   },
-  SOCIAL_MEDIA: {
-    question: "Social media account you'd like to share?",
-    placeholder: "Not required, just useful for gauging your involvement in the community as a whole",
-  },
   FINAL_THOUGHTS: {
     question: "Final thoughts / clarifications / feedback?",
     placeholder: "If you don't have, just tell us your favorite song",
@@ -72,7 +69,7 @@ command.setHandler(async (ctx) => {
   await ctx.reply(await MainMenuPayload(ctx.user.id));
 });
 
-async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions & MessageEditOptions> {
+async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions> {
   const embed = new EmbedBuilder()
     .setTitle("Your Firebreathers Application")
     .setDescription(
@@ -90,21 +87,18 @@ async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions 
     const sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
     if (!sectionFinished) allFinished = false;
 
-    return new ButtonBuilder()
-      .setLabel(label)
-      .setCustomId(genOpenModalId({ idx: idx.toString() }))
-      .setStyle(sectionFinished ? ButtonStyle.Secondary : ButtonStyle.Primary);
+    const builder = sectionFinished ? new SecondaryButtonBuilder() : new PrimaryButtonBuilder();
+    return builder.setLabel(label).setCustomId(genOpenModalId({ idx: idx.toString() }));
   });
 
-  const submitButton = new ButtonBuilder()
+  const submitButton = new SuccessButtonBuilder()
     .setLabel("Submit")
-    .setStyle(ButtonStyle.Success)
     .setCustomId(genSubmitApplicationId({}))
     .setDisabled(!allFinished);
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([...buttons, submitButton]);
+  const actionRow = new ActionRowBuilder().addComponents(...buttons, submitButton);
 
-  return { components: [actionRow], embeds: [embed], ephemeral: true };
+  return { components: [actionRow], embeds: [embed], flags: MessageFlags.Ephemeral };
 }
 
 const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async (ctx) => {
@@ -120,17 +114,16 @@ const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async 
     .setCustomId(genSubmitModalId({ name: ctx.component.label }));
 
   const textFields = Object.entries(formPart).map(([id, question]) => {
-    return new TextInputBuilder()
-      .setCustomId(id)
-      .setLabel(question.question)
-      .setPlaceholder(question.placeholder)
-      .setStyle(question.short ? TextInputStyle.Short : TextInputStyle.Paragraph)
-      .setValue(prevAnswers[id]);
+    return new LabelBuilder().setLabel(question.question).setTextInputComponent(
+      new TextInputBuilder()
+        .setCustomId(id)
+        .setPlaceholder(question.placeholder)
+        .setStyle(question.short ? TextInputStyle.Short : TextInputStyle.Paragraph)
+        .setValue(prevAnswers[id]),
+    );
   });
 
-  const wrappedTextFields = textFields.map((x) => new ActionRowBuilder<TextInputBuilder>().addComponents([x]));
-
-  modal.setComponents(wrappedTextFields);
+  modal.addLabelComponents(...textFields);
 
   ctx.showModal(modal);
 });
@@ -144,7 +137,7 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"
   const newData: Record<string, string> = {};
 
   for (const id of Object.keys(formPart)) {
-    const value = ctx.fields.getTextInputValue(id);
+    const value = ctx.components.getTextInputValue(id);
     newData[id] = value;
   }
 
@@ -164,7 +157,8 @@ const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"
   });
 
   const msg = await ctx.fetchReply();
-  await msg.edit(await MainMenuPayload(ctx.user.id));
+  const payload = await MainMenuPayload(ctx.user.id);
+  await msg.edit({ components: payload.components, embeds: payload.embeds });
 });
 
 const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {

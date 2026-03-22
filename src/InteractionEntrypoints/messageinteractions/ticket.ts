@@ -1,13 +1,5 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ChannelType,
-  EmbedBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+import { ChannelType, TextInputStyle, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, LabelBuilder, ModalBuilder, PrimaryButtonBuilder, TextInputBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../../Configuration/config";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 
@@ -43,13 +35,12 @@ ticketInteraction.onBotReady(async (guild, client) => {
   const messages = await channel.messages.fetch({ limit: 100 });
   const ticketMessage = messages.find((m) => m.author.id === client.user?.id);
 
-  const button = new ButtonBuilder()
+  const button = new PrimaryButtonBuilder()
     .setLabel("Open a ticket")
-    .setStyle(ButtonStyle.Primary)
-    .setEmoji("🎫")
+    .setEmoji({ name: "🎫" })
     .setCustomId(genBtnId({}));
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+  const actionRow = new ActionRowBuilder().addComponents(button);
 
   if (ticketMessage) {
     await ticketMessage.edit({ content, embeds: [], components: [actionRow] });
@@ -63,31 +54,26 @@ const genBtnId = ticketInteraction.addInteractionListener("ticketOpenModal", [],
 
   const modal = new ModalBuilder().setTitle("Ticket Submission").setCustomId(genModalId({}));
 
-  const titleInput = new ActionRowBuilder<TextInputBuilder>().setComponents(
-    new TextInputBuilder()
-      .setStyle(TextInputStyle.Short)
-      .setLabel("Issue Title")
-      .setPlaceholder("A short title for your issue")
-      .setCustomId(MODAL_TITLE_ID),
+  const titleInput = new LabelBuilder().setLabel("Issue Title").setTextInputComponent(
+    new TextInputBuilder().setStyle(TextInputStyle.Short).setPlaceholder("A short title for your issue").setCustomId(MODAL_TITLE_ID),
   );
 
-  const descriptionInput = new ActionRowBuilder<TextInputBuilder>().setComponents(
+  const descriptionInput = new LabelBuilder().setLabel("Issue Description").setTextInputComponent(
     new TextInputBuilder()
       .setStyle(TextInputStyle.Paragraph)
-      .setLabel("Issue Description")
       .setPlaceholder("A detailed description of your issue")
       .setCustomId(MODAL_DESCRIPTION_ID),
   );
 
-  await ctx.showModal(modal.setComponents(titleInput, descriptionInput));
+  await ctx.showModal(modal.addLabelComponents(titleInput, descriptionInput));
 });
 
 const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal", [], async (ctx) => {
   if (!ctx.isModalSubmit()) return;
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
-  const title = ctx.fields.getTextInputValue(MODAL_TITLE_ID);
-  const description = ctx.fields.getTextInputValue(MODAL_DESCRIPTION_ID);
+  const title = ctx.components.getTextInputValue(MODAL_TITLE_ID);
+  const description = ctx.components.getTextInputValue(MODAL_DESCRIPTION_ID);
 
   const thread = await ctx.channel.threads.create({
     name: title,
@@ -105,11 +91,11 @@ const genModalId = ticketInteraction.addInteractionListener("ticketSubmitModal",
       new EmbedBuilder()
         .setAuthor({
           name: ctx.user.tag,
-          iconURL: ctx.user.displayAvatarURL(),
+          icon_url: ctx.user.displayAvatarURL(),
         })
         .setTitle(title)
         .setDescription(description)
-        .setColor("Blue"),
+        .setColor(0x0000ff),
     ],
   });
 

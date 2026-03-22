@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, LinkButtonBuilder, SecondaryButtonBuilder } from "@discordjs/builders";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { GeniusClient } from "../../../Helpers/apis/genius";
@@ -104,20 +105,19 @@ command.setHandler(async (ctx) => {
     .setTimestamp(track.rawDate)
     .setAuthor({
       name: `${total} total scrobbles`,
-      iconURL: "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",
+      icon_url: "http://icons.iconarchive.com/icons/sicons/flat-shadow-social/512/lastfm-icon.png",
       url: `https://www.last.fm/user/${username}`,
     });
 
-  const starActionRow = new ActionRowBuilder<ButtonBuilder>();
+  const starActionRow = new ActionRowBuilder();
 
   // Add star button if own FM
   if (selfFM) {
-    const starButton = new ButtonBuilder()
+    const starButton = new SecondaryButtonBuilder()
       .setLabel("0")
-      .setStyle(ButtonStyle.Secondary)
       .setEmoji({ name: "⭐" })
       .setCustomId(genStarId({ fmStarId: "" }));
-    starActionRow.addComponents([starButton]);
+    starActionRow.addComponents(starButton);
   }
 
   // Get Spotify and Genius links
@@ -126,29 +126,27 @@ command.setHandler(async (ctx) => {
   }).catch(() => null);
   const trackUrl = spotifyResults?.body.tracks?.items?.[0]?.external_urls.spotify;
   if (trackUrl) {
-    const spotifyButton = new ButtonBuilder()
+    const spotifyButton = new LinkButtonBuilder()
       .setEmoji({ id: emojiIDs.spotify })
       .setLabel("Listen")
-      .setStyle(ButtonStyle.Link)
       .setURL(trackUrl);
-    starActionRow.addComponents([spotifyButton]);
+    starActionRow.addComponents(spotifyButton);
   }
 
   const geniusResult = await GeniusClient.getSong([trackName, artistName].join(" "));
   if (geniusResult) {
-    const geniusButton = new ButtonBuilder()
+    const geniusButton = new LinkButtonBuilder()
       .setEmoji({ id: emojiIDs.genius })
       .setLabel("Lyrics")
-      .setStyle(ButtonStyle.Link)
       .setURL(geniusResult.result.url);
-    starActionRow.addComponents([geniusButton]);
+    starActionRow.addComponents(geniusButton);
   }
 
   await ctx.editReply({ embeds: [embed], components: [starActionRow] });
 });
 
 const genStarId = command.addInteractionListener("fmStarInt", ["fmStarId"], async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   await ctx.editReply({
     content: "This feature is coming in a future update",

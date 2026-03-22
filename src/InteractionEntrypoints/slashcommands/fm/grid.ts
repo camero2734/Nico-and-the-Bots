@@ -1,5 +1,6 @@
 import { Image, createCanvas, loadImage } from "@napi-rs/canvas";
-import { ApplicationCommandOptionType, Colors, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, Colors } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { Album, fm, getFMUsername } from "./_consts";
@@ -109,7 +110,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: username,
-      iconURL: lastFMIcon,
+      icon_url: lastFMIcon,
       url: `https://www.last.fm/user/${username}`,
     })
     .setImage("attachment://chart.png")

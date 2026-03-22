@@ -1,5 +1,5 @@
 import { LabelBuilder, ModalBuilder } from "@discordjs/builders";
-import { ApplicationCommandOptionType, CheckboxGroupComponentData, ComponentType } from "discord.js";
+import { ApplicationCommandOptionType, ComponentType } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -51,9 +51,9 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     songBattleCron();
   } else {
-    const data: CheckboxGroupComponentData = {
+    const data = {
       type: ComponentType.CheckboxGroup,
-      customId: "myVeryCoolCheckbox",
+      custom_id: "myVeryCoolCheckbox",
       "options": [
         { "value": "march-4", "label": "March 4th" },
         { "value": "march-5", "label": "March 5th" },
@@ -64,7 +64,7 @@ command.setHandler(async (ctx) => {
     }
 
     const label = new LabelBuilder().setLabel("Select a date");
-    label['data'].component = data as any;
+    label['data'].component = { toJSON: () => data } as any;
 
     const modal = new ModalBuilder()
       .setTitle("My Modal")

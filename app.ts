@@ -52,6 +52,15 @@ export const client = new Discord.Client({
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === 'function') {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }
+const _origHandlePacket = (client as any)._handlePacket.bind(client);
+(client as any)._handlePacket = async (packet: unknown, shardId: number) => {
+  if (packet == null) return;
+  return _origHandlePacket(packet, shardId);
+};
+
+(client.ws as any).on('error', (err: Error) => {
+  console.error('[WS Manager Error]', err);
+});
 
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
@@ -343,19 +352,14 @@ async function forwardMessageToErrorChannel(msg: string) {
 process.on("unhandledRejection", (reason, promise) => {
   const stack = reason instanceof Error ? reason.stack : undefined;
   console.error("Unhandled Rejection at:", promise, "reason:", reason, stack);
-  if (!(reason as string).includes("undefined is not an object (evaluating 'packet.t')")) {
-    forwardMessageToErrorChannel(
-      `Unhandled rejection:\n\nPromise:\n${promise}\n\nReason:\n${reason}\n\nStack:\n${stack}`,
-    );
-  }
-
+  forwardMessageToErrorChannel(
+    `Unhandled rejection:\n\nPromise:\n${promise}\n\nReason:\n${reason}\n\nStack:\n${stack}`,
+  );
 });
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception thrown", err);
-  if (!err.message.includes("undefined is not an object (evaluating 'packet.t')")) {
-    forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
-  }
+  forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
 });
 
 process.on("SIGTERM", async () => {

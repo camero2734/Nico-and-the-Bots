@@ -104,7 +104,7 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-client.on("ready", async () => {
+client.on("clientReady", async () => {
   console.log("===================================");
   console.log("||                               ||");
   console.log("||      🚀 Nico logged in!       ||");
@@ -352,6 +352,7 @@ async function forwardMessageToErrorChannel(msg: string) {
     await channel.send({ embeds: [embed] });
   } catch (e) {
     console.error("Unable to forward error to channel", msg);
+    console.error(e);
   }
 }
 

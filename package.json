@@ -21,12 +21,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1014.0",
     "@aws-sdk/s3-request-presigner": "^3.1014.0",
-    "@discordjs/builders": "2.0.0-dev.1773446773-2a067216c",
-    "@discordjs/collection": "3.0.0-dev.1773446773-2a067216c",
-    "@discordjs/formatters": "1.0.0-dev.1773446773-2a067216c",
-    "@discordjs/rest": "3.0.0-dev.1773446773-2a067216c",
-    "@discordjs/util": "2.0.0-dev.1773446773-2a067216c",
-    "@discordjs/ws": "^2.0.4",
     "@faker-js/faker": "^8.4.1",
     "@googleapis/youtube": "^25.1.0",
     "@napi-rs/canvas": "^0.1.97",

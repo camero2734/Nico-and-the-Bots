@@ -1,4 +1,4 @@
-import { AttachmentBuilder, type RoleColors } from "discord.js";
+import type { RoleColors } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
@@ -21,14 +21,9 @@ command.setHandler(async (ctx) => {
     });
   }
 
-  const file = new AttachmentBuilder(Buffer.from(JSON.stringify(data, null, 2), "utf-8"), {
-    name: "colorroles.json",
-    description: "Current color role data",
-  });
-
   await ctx.editReply({
     content: "Attached is the current color role data.",
-    files: [file],
+    files: [{ attachment: Buffer.from(JSON.stringify(data, null, 2), "utf-8"), name: "colorroles.json" }],
   });
 });
 

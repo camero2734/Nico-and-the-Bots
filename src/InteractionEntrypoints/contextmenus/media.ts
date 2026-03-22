@@ -2,9 +2,10 @@ import {
   type APIComponentInContainer,
   ComponentType,
   MessageFlags,
-  ContainerBuilder,
   type AnyComponent,
+  Colors,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 
 const ctxMenu = new MessageContextMenu("🔗 Get media URLs");
@@ -102,7 +103,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
     components: [
       new ContainerBuilder({
         components,
-        accent_color: 0x5865f2,
+        accent_color: Colors.Blurple,
       }),
     ],
     flags: MessageFlags.IsComponentsV2,

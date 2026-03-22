@@ -1,6 +1,6 @@
 import { channelIDs } from "Configuration/config";
 import { prisma } from "Helpers/prisma-init";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const rolesAvailableForRefundList = [
@@ -26,7 +26,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const botChan = await ctx.guild.channels.fetch(channelIDs.bottest);
   if (!botChan || !botChan.isTextBased()) {

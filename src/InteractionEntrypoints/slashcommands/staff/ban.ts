@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, Colors, EmbedBuilder, type TextChannel } from "discord.js";
+import { ApplicationCommandOptionType, Colors, type TextChannel } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { MessageTools } from "../../../Helpers";
@@ -44,7 +45,7 @@ command.setHandler(async (ctx) => {
   }
 
   const bannedEmbed = new EmbedBuilder()
-    .setAuthor({ name: member.displayName, iconURL: member.displayAvatarURL() })
+    .setAuthor({ name: member.displayName, icon_url: member.displayAvatarURL() })
     .setDescription("You have been banned from the twenty one pilots Discord server")
     .addFields([{ name: "Reason", value: reason || "None provided" }])
     .setColor(Colors.Red);
@@ -59,7 +60,7 @@ command.setHandler(async (ctx) => {
   }
 
   await MessageTools.safeDM(member, { embeds: [bannedEmbed] });
-  await member.ban({ deleteMessageDays: purge ? 7 : 0, reason });
+  await member.ban({ deleteMessageSeconds: purge ? 7 * 24 * 60 * 60 : 0, reason });
   await ctx.send({
     embeds: [
       new EmbedBuilder({

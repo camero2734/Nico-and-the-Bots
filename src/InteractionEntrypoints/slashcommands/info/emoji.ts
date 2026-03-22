@@ -1,4 +1,6 @@
-import { ApplicationCommandOptionType, EmbedBuilder, type Snowflake, userMention } from "discord.js";
+import { ApplicationCommandOptionType, type Snowflake } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

@@ -1,17 +1,19 @@
 import fs from "node:fs";
 import { format } from "date-fns";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
   type GuildMember,
   type Message,
   type MessageComponentInteraction,
-  StringSelectMenuBuilder,
   type StringSelectMenuInteraction,
-  StringSelectMenuOptionBuilder,
+  MessageFlags,
 } from "discord.js";
+import {
+  ActionRowBuilder,
+  EmbedBuilder,
+  PrimaryButtonBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+} from "@discordjs/builders";
 import type { BishopType, DailyBox, User } from "../../../../generated/prisma/client";
 import { roles } from "../../../Configuration/config";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
@@ -26,7 +28,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const buffer = await fs.promises.readFile("./src/Assets/images/banditos.gif");
 
@@ -55,15 +57,14 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setTitle("Connected via Vulture VPN<:eastisup_super:860624273457414204>")
     .addFields([
       {
         name: "**Tokens**",
-        value: `You have ${tokens} token${
-          tokens === 1 ? "" : "s"
-        } available. A token is used when searching a district.`,
+        value: `You have ${tokens} token${tokens === 1 ? "" : "s"
+          } available. A token is used when searching a district.`,
       },
     ])
     .addFields([{ name: "**CONSOLE**", value: description }])
@@ -89,11 +90,11 @@ command.setHandler(async (ctx) => {
     .setPlaceholder("Select a district to search")
     .setCustomId(genSelectId({ matchingBishop: bishop }));
 
-  const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents([menu]);
+  const actionRow = new ActionRowBuilder().addComponents(menu);
 
-  const buttonActionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})).setStyle(ButtonStyle.Primary),
-  ]);
+  const buttonActionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder().setLabel("View Supply List").setCustomId(genButtonId({})),
+  );
 
   await ctx.editReply({
     embeds: [embed],
@@ -161,7 +162,7 @@ const genButtonId = command.addInteractionListener("banditosBishopsButton", [], 
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setColor(0xfce300)
     .setThumbnail("attachment://file.gif")
@@ -222,13 +223,13 @@ async function memberCaught(
   const embed = new EmbedBuilder()
     .setColor(0xea523b)
     .setTitle(`VIOLATION DETECTED BY ${issuingBishop.toUpperCase()}`)
-    .setAuthor({ name: issuingBishop, iconURL: emojiURL })
+    .setAuthor({ name: issuingBishop, icon_url: emojiURL })
     .setDescription(
       "You have been found in violation of the laws set forth by The Sacred Municipality of Dema. The Dema Council has published a violation notice.",
     )
     .setFooter({
       text: `You win nothing. ${tokensRemaining}`,
-      iconURL: "attachment://file.gif",
+      icon_url: "attachment://file.gif",
     });
 
   sendViolationNotice(ctx.member as GuildMember, {
@@ -249,9 +250,8 @@ async function memberWon(
   dbUserWithBox: User & { dailyBox: DailyBox },
 ) {
   const prize = district.pickPrize();
-  const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${
-    dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
-  } remaining`;
+  const tokensRemaining = `${dbUserWithBox.dailyBox.tokens} token${dbUserWithBox.dailyBox.tokens === 1 ? "" : "s"
+    } remaining`;
   const member = ctx.member as GuildMember;
 
   let prizeDescription = `You now have ${dbUserWithBox.credits} credits.`;
@@ -294,7 +294,7 @@ async function memberWon(
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setColor(0xfce300)
     .setThumbnail("attachment://file.gif")
@@ -319,7 +319,7 @@ async function memberWon(
 
 async function sendWaitingMessage(interaction: MessageComponentInteraction, description: string) {
   const reply = (await interaction.fetchReply()) as Message;
-  const originalEmbed = EmbedBuilder.from(reply.embeds[0]);
+  const originalEmbed = new EmbedBuilder(reply.embeds[0].toJSON());
   originalEmbed.setFields([]);
   originalEmbed
     .setDescription(description)

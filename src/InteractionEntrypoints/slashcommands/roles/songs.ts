@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { withCache } from "../../../Helpers/cache";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -19,7 +20,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   const role = ctx.opts.role;
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const userRoles = await prisma.songRole.findMany({
     where: { userId: ctx.user.id },

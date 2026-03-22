@@ -35,7 +35,7 @@ export type AutocompleteNameOption<RawOptionsData extends Readonly<Tuple>> =
 export const transformAutocompleteInteraction = (
   int: AutocompleteInteraction,
 ): AutocompleteContext<unknown, unknown> => {
-  const focused = int.options.getFocused(true)?.name;
+  const focused = int.options.getFocused()?.name;
   const opts = extractOptsFromInteraction(int);
 
   const ctx = int as AutocompleteContext<unknown, unknown>;

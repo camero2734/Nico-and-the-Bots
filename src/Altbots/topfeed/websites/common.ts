@@ -1,11 +1,11 @@
 import {
   type APIComponentInContainer,
-  ContainerBuilder,
   ComponentType,
-  roleMention,
-  AttachmentBuilder,
   ButtonStyle,
+  type AttachmentPayload,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention } from "@discordjs/formatters";
 import type { BasicDataForWebsite } from "./orchestrator";
 import F from "../../../Helpers/funcs";
 import { keonsGuild } from "../topfeed";
@@ -28,10 +28,11 @@ export const createMessageComponents = async (
 
   const fetchedAt = new Date();
 
-  const file = new AttachmentBuilder(Buffer.from(newContent), {
+  const file: AttachmentPayload = {
+    attachment: Buffer.from(newContent),
     name: `${data.displayName.replace(/\s+/g, "_").toLowerCase()}_${contentType.toLowerCase()}_${fetchedAt.getTime()}.${contentType === "HTML" ? "html" : "txt"}`,
     description: `${contentType} content of the website as of ${fetchedAt.toISOString()}`,
-  });
+  };
 
   const mainSection: APIComponentInContainer[] = [
     {
@@ -73,7 +74,7 @@ export const createMessageComponents = async (
 
   const container = new ContainerBuilder({
     components: [...mainSection, ...attachmentsSection, ...footerSection],
-    accent_color: role.color,
+    accent_color: role.colors.primaryColor ?? undefined,
   });
 
   return { container, file };

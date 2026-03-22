@@ -3,11 +3,10 @@ import { addHours } from "date-fns";
 import {
   type APIComponentInContainer,
   ComponentType,
-  ContainerBuilder,
   MessageFlags,
-  roleMention,
-  userMention,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention, userMention } from "@discordjs/formatters";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
@@ -118,7 +117,7 @@ export async function youtubeVideoToComponents(post: FormattedYoutubePost, roleI
   // Build the container
   const container = new ContainerBuilder({
     components: [...mainSection, ...mediaSection, ...footerSection],
-    accent_color: role.color,
+    accent_color: role.colors.primaryColor ?? undefined,
   });
 
   return container;

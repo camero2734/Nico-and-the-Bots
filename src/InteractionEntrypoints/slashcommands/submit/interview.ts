@@ -1,11 +1,5 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type TextChannel,
-} from "discord.js";
+import { ApplicationCommandOptionType, type TextChannel, MessageFlags, Colors } from "discord.js";
+import { ActionRowBuilder, DangerButtonBuilder, EmbedBuilder, LinkButtonBuilder, SuccessButtonBuilder } from "@discordjs/builders";
 import metascraper from "metascraper";
 import metascraperDate from "metascraper-date";
 import metascraperDescription from "metascraper-description";
@@ -41,7 +35,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   const rawUrl = ctx.opts.link;
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   let id: string | undefined = "";
   if (rawUrl.indexOf("youtube.com/watch?v=") !== -1) {
@@ -72,7 +66,7 @@ command.setHandler(async (ctx) => {
 
   embed.setAuthor({
     name: ctx.member.displayName,
-    iconURL: ctx.user.displayAvatarURL(),
+    icon_url: ctx.user.displayAvatarURL(),
   });
   embed.setTitle(fullTitle);
   embed.addFields([{ name: "Channel", value: channel, inline: true }]);
@@ -95,13 +89,10 @@ command.setHandler(async (ctx) => {
     data: { url, submittedByUserId: ctx.user.id },
   });
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setLabel("Approve")
-      .setCustomId(genYesID({ interviewId: `${dbInterview.id}` }))
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setLabel("Reject").setCustomId(genNoId({})).setStyle(ButtonStyle.Danger),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder().setLabel("Approve").setCustomId(genYesID({ interviewId: `${dbInterview.id}` })),
+    new DangerButtonBuilder().setLabel("Reject").setCustomId(genNoId({})),
+  );
 
   await interviewsChannel.send({ embeds: [embed], components: [actionRow] });
 
@@ -112,8 +103,8 @@ command.setHandler(async (ctx) => {
 const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], async (ctx, args) => {
   await ctx.deferUpdate();
 
-  const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-  embed.setColor("Green");
+  const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  embed.setColor(Colors.Green);
 
   await ctx.editReply({ components: [], embeds: [embed] });
   const chan = <TextChannel>ctx.guild.channels.cache.get(channelIDs.interviews);
@@ -123,12 +114,9 @@ const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], asy
     data: { approved: true },
   });
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
-      .setURL(embed.data.url || "")
-      .setLabel("View on YouTube")
-      .setStyle(ButtonStyle.Link),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new LinkButtonBuilder().setURL(embed.toJSON().url || "").setLabel("View on YouTube"),
+  );
   await chan.send({
     content: `<@&${roles.topfeed.selectable.interviews}>`,
     components: [actionRow],
@@ -139,8 +127,8 @@ const genYesID = command.addInteractionListener("intvwYes", ["interviewId"], asy
 const genNoId = command.addInteractionListener("intvwNo", [], async (ctx) => {
   await ctx.deferUpdate();
 
-  const embed = EmbedBuilder.from(ctx.message.embeds[0]);
-  embed.setColor("Red");
+  const embed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  embed.setColor(Colors.Red);
   embed.setFooter({ text: `Rejected by ${ctx.user.tag}` });
 
   await ctx.editReply({ components: [], embeds: [embed] });

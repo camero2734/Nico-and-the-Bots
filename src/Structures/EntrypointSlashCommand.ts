@@ -1,10 +1,8 @@
 import {
-  ActionRowBuilder,
   type ApplicationCommandOptionData,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   type BaseMessageOptions,
-  ButtonBuilder,
   type ButtonComponent,
   ButtonStyle,
   type ChatInputApplicationCommandData,
@@ -20,6 +18,14 @@ import {
   type Snowflake,
   type TextChannel,
 } from "discord.js";
+import {
+  ActionRowBuilder,
+  DangerButtonBuilder,
+  SecondaryButtonBuilder,
+  SuccessButtonBuilder,
+  createComponentBuilder,
+  type ButtonBuilder,
+} from "@discordjs/builders";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
 import F from "../Helpers/funcs";
@@ -49,6 +55,18 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
   SlashCommandHandler<T>,
   [OptsType<SlashCommandData<T>>]
 > {
+  private createCustomIdButtonData(button: ButtonComponent | ButtonBuilder) {
+    const data = button.toJSON();
+    if (!("custom_id" in data)) throw new Error("Expected a custom-id button");
+
+    return {
+      custom_id: data.custom_id,
+      disabled: data.disabled,
+      emoji: data.emoji,
+      label: data.label,
+    };
+  }
+
   public commandIdentifier: string;
   public commandData: ChatInputApplicationCommandData;
 
@@ -59,6 +77,17 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
     string,
     AutocompleteListener<OptsType<SlashCommandData<T>>, SlashCommandData<T>["options"]>
   >();
+
+  private createButtonWithStyle(
+    button: ButtonComponent | ButtonBuilder,
+    style: ButtonStyle.Secondary | ButtonStyle.Success | ButtonStyle.Danger,
+  ): SecondaryButtonBuilder | SuccessButtonBuilder | DangerButtonBuilder {
+    const data = this.createCustomIdButtonData(button);
+
+    if (style === ButtonStyle.Success) return new SuccessButtonBuilder(data);
+    if (style === ButtonStyle.Danger) return new DangerButtonBuilder(data);
+    return new SecondaryButtonBuilder(data);
+  }
 
   constructor(commandData: SlashCommandData<T>) {
     super();
@@ -190,26 +219,35 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
         const btn = actionRow.components.find(
           (c) => c.type === ComponentType.Button && c.emoji?.name?.startsWith(name),
         ) as ButtonComponent;
-        return ButtonBuilder.from(btn);
+        return btn ? createComponentBuilder(btn.toJSON()) : undefined;
       };
       const upvoteButton = getMessageButtonWithEmoji("upvote");
       const downvoteButton = getMessageButtonWithEmoji("downvote");
       if (!upvoteButton || !downvoteButton) return;
 
-      if (isUpvote) upvoteButton.setStyle(ButtonStyle.Success);
-      else downvoteButton.setStyle(ButtonStyle.Danger);
+      const activeUpvoteButton = this.createButtonWithStyle(
+        upvoteButton,
+        isUpvote ? ButtonStyle.Success : ButtonStyle.Secondary,
+      ).setLabel(`${upvotes}`);
+      const activeDownvoteButton = this.createButtonWithStyle(
+        downvoteButton,
+        isUpvote ? ButtonStyle.Secondary : ButtonStyle.Danger,
+      ).setLabel(`${downvotes}`);
 
-      upvoteButton.setLabel(`${upvotes}`);
-      downvoteButton.setLabel(`${downvotes}`);
-
-      await ctx.editReply({ components: [actionRow] });
+      await ctx.editReply({
+        components: [new ActionRowBuilder().addComponents(activeUpvoteButton, activeDownvoteButton)],
+      });
 
       await F.wait(1000);
 
-      upvoteButton.setStyle(ButtonStyle.Secondary);
-      downvoteButton.setStyle(ButtonStyle.Secondary);
-
-      await ctx.editReply({ components: [actionRow] });
+      await ctx.editReply({
+        components: [
+          new ActionRowBuilder().addComponents(
+            this.createButtonWithStyle(activeUpvoteButton, ButtonStyle.Secondary),
+            this.createButtonWithStyle(activeDownvoteButton, ButtonStyle.Secondary),
+          ),
+        ],
+      });
     });
 
     const createActionRow = async (ctx: SlashCommandInteraction<T> | Message, title?: string) => {
@@ -221,18 +259,16 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
         },
       });
 
-      return new ActionRowBuilder<ButtonBuilder>().setComponents([
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Secondary)
+      return new ActionRowBuilder().addComponents(
+        new SecondaryButtonBuilder()
           .setLabel("0")
           .setCustomId(gen({ isUpvote: "1", pollID: `${poll.id}` }))
           .setEmoji({ id: emojiIDs.upvote }),
-        new ButtonBuilder()
-          .setStyle(ButtonStyle.Secondary)
+        new SecondaryButtonBuilder()
           .setLabel("0")
           .setCustomId(gen({ isUpvote: "0", pollID: `${poll.id}` }))
           .setEmoji({ id: emojiIDs.downvote }),
-      ]);
+      );
     };
 
     return createActionRow;

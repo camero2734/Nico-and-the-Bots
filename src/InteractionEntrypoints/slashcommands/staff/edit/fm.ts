@@ -1,11 +1,5 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  userMention,
-} from "discord.js";
+import { ApplicationCommandOptionType, TextInputStyle } from "discord.js";
+import { LabelBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
@@ -36,17 +30,16 @@ command.setHandler(async (ctx) => {
   if (action === "MIGRATE_USERNAME") {
     const modal = new ModalBuilder().setCustomId(genMigrateModalId({ userId: user })).setTitle("Modify FM Integration");
 
-    const usernameInputRow = new ActionRowBuilder<TextInputBuilder>().setComponents(
+    const usernameInputRow = new LabelBuilder().setLabel("Enter the new last.fm username").setTextInputComponent(
       new TextInputBuilder()
         .setCustomId(MIGRATE_MODAL_USERNAME)
-        .setLabel("Enter the new last.fm username")
         .setPlaceholder("NOTE: This will delete the username from any other users")
         .setStyle(TextInputStyle.Short)
         .setRequired(true),
     );
 
     // Add inputs to the modal
-    modal.setComponents(usernameInputRow);
+    modal.addLabelComponents(usernameInputRow);
 
     await ctx.showModal(modal);
   }
@@ -60,7 +53,7 @@ const genMigrateModalId = command.addInteractionListener("fmMigrateModal", ["use
   const user = await ctx.guild.members.fetch(args.userId);
   if (!user) throw new Error("Could not find user");
 
-  const fmUsername = ctx.fields.getTextInputValue(MIGRATE_MODAL_USERNAME);
+  const fmUsername = ctx.components.getTextInputValue(MIGRATE_MODAL_USERNAME);
 
   // Remove fm from any other users
   await prisma.userLastFM.deleteMany({ where: { username: fmUsername } });
@@ -72,7 +65,7 @@ const genMigrateModalId = command.addInteractionListener("fmMigrateModal", ["use
   });
 
   await ctx.editReply({
-    content: `Successfully migrated ${userMention(user.id)}'s FM username to ${fmUsername}`,
+    content: `Successfully migrated <@${user.id}>'s FM username to ${fmUsername}`,
   });
 });
 

@@ -1,12 +1,6 @@
 import { subYears } from "date-fns";
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type GuildMember,
-} from "discord.js";
+import { ApplicationCommandOptionType, type GuildMember, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
@@ -53,7 +47,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   const { user, rule, severity, explanation } = ctx.opts;
 
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const ruleBroken = rules.find((r) => r.toLowerCase().startsWith(rule[0].toLowerCase()));
 
@@ -70,9 +64,9 @@ command.setHandler(async (ctx) => {
   const ephemeralListener = new TimedInteractionListener(ctx, <const>["warningSubmission"]);
   const [submitId] = ephemeralListener.customIDs;
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder().setLabel("Submit Warning").setStyle(ButtonStyle.Primary).setCustomId(submitId),
-  ]);
+  const actionRow = new ActionRowBuilder().addComponents(
+    new PrimaryButtonBuilder().setLabel("Submit Warning").setCustomId(submitId),
+  );
 
   await ctx.send({
     embeds: [confirmationEmbed.toJSON()],
@@ -115,17 +109,17 @@ command.setHandler(async (ctx) => {
     confirmationEmbed.setTitle("You have received a warning");
     confirmationEmbed.setAuthor({
       name: member.displayName,
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     });
     confirmationEmbed.setFooter({
       text: "Please refrain from committing these infractions again. Any questions can be directed to the staff!",
-      iconURL: member.user.displayAvatarURL(),
+      icon_url: member.user.displayAvatarURL(),
     });
     await dm.send({ embeds: [confirmationEmbed] });
   } catch (e) {
     await ctx.followUp({
       content: "> Unable to DM user about their warning, you may want to message them so they are aware",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -146,7 +140,7 @@ async function autoJailCheck(ctx: (typeof command)["ContextType"], member: Guild
     embed.setDescription(
       `${Math.max(0, 3 - recentWarns)} more warning${recentWarns === 1 ? "" : "s"} until this user is auto-jailed.`,
     );
-    return await ctx.followUp({ embeds: [embed], ephemeral: true });
+    return await ctx.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
   }
 
   // Automatically run the jail command on the user

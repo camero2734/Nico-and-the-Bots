@@ -1,5 +1,5 @@
 import { addMinutes, differenceInSeconds } from "date-fns";
-import { userMention } from "discord.js";
+import { userMention } from "@discordjs/formatters";
 import { Effect } from "effect";
 import { type TwitterApiUtilsResponse, TwitterOpenApi, type TwitterOpenApiClient } from "twitter-openapi-typescript";
 import { channelIDs, userIDs } from "../../../Configuration/config";

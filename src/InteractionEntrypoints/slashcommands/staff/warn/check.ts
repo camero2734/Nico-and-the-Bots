@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import R from "ramda";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -59,7 +60,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${member?.displayName || "User"}'s warnings`,
-      iconURL: member?.user.displayAvatarURL(),
+      icon_url: member?.user.displayAvatarURL(),
     })
     .setColor(((255 * averageSeverity) / 10) << 16)
     .setFooter({ text: `Page ${page}/${numPages}` });

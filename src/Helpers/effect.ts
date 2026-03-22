@@ -1,11 +1,12 @@
 import {
   type APIComponentInContainer,
+  Colors,
   ComponentType,
-  ContainerBuilder,
   type Guild,
   MessageFlags,
-  userMention,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { Effect, HashMap, LogLevel, Logger, Option } from "effect";
 import { guild as nicoGuild } from "../../app";
 import { keonsGuild } from "../../src/Altbots/topfeed/topfeed";
@@ -30,19 +31,19 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   const { level, isSevere, message, annotations, cause } = log;
 
   // Determine accent color based on severity
-  const accentColor = isSevere ? 0xed4245 : 0x5865f2;
+  const accentColor = isSevere ? Colors.Red : Colors.Blurple;
 
   // --- Component Sections ---
 
   // Optional mention section for severe logs
   const mentionSection: APIComponentInContainer[] = isSevere
     ? [
-        {
-          type: ComponentType.TextDisplay,
-          content: `-# ${userMention(userIDs.me)}`,
-        },
-        { type: ComponentType.Separator, divider: false, spacing: 1 },
-      ]
+      {
+        type: ComponentType.TextDisplay,
+        content: `-# ${userMention(userIDs.me)}`,
+      },
+      { type: ComponentType.Separator, divider: false, spacing: 1 },
+    ]
     : [];
 
   // Main log information
@@ -60,26 +61,26 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   // Section for the cause, if provided
   const causeSection: APIComponentInContainer[] = cause
     ? [
-        { type: ComponentType.Separator, divider: true, spacing: 1 },
-        {
-          type: ComponentType.TextDisplay,
-          content: `**Cause:** ${cause}`,
-        },
-      ]
+      { type: ComponentType.Separator, divider: true, spacing: 1 },
+      {
+        type: ComponentType.TextDisplay,
+        content: `**Cause:** ${cause}`,
+      },
+    ]
     : [];
 
   // Section for annotations, if provided
   const annotationsSection: APIComponentInContainer[] =
     annotations.length > 0
       ? [
-          { type: ComponentType.Separator, divider: true, spacing: 1 },
-          {
-            type: ComponentType.TextDisplay,
-            content: `**Annotations:** ${annotations
-              .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-              .join(" ")}`,
-          },
-        ]
+        { type: ComponentType.Separator, divider: true, spacing: 1 },
+        {
+          type: ComponentType.TextDisplay,
+          content: `**Annotations:** ${annotations
+            .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+            .join(" ")}`,
+        },
+      ]
       : [];
 
   // Footer with a timestamp

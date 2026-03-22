@@ -1,5 +1,6 @@
 import { differenceInMilliseconds, parse } from "date-fns";
-import { type BaseMessageOptions, Colors, EmbedBuilder, type Message } from "discord.js";
+import { type BaseMessageOptions, Colors, type Message } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import progressBar from "string-progressbar";
 import { channelIDs, emojiIDs } from "../../Configuration/config";
 import F from "../funcs";
@@ -30,7 +31,7 @@ const standardizeEmbed = (embed: EmbedBuilder): void => {
   embed
     .setAuthor({
       name: "DEMAtronix™ Telephony System",
-      iconURL: "https://i.imgur.com/csHALvp.png",
+      icon_url: "https://i.imgur.com/csHALvp.png",
     })
     .setColor(0x7289da)
     .addFields([
@@ -42,7 +43,7 @@ const standardizeEmbed = (embed: EmbedBuilder): void => {
     .setImage("https://media.discordapp.net/attachments/470324442082312192/893975637184880710/teaser.gif")
     .setFooter({
       text: "DEMAtronix: Propaganda delivered promptly™",
-      iconURL: "https://cdn.discordapp.com/emojis/860015969253326858.png",
+      icon_url: "https://cdn.discordapp.com/emojis/860015969253326858.png",
     });
 };
 
@@ -61,13 +62,13 @@ const update = async (msg: Message) => {
   const [progress, isDone] = generateProgressBar();
 
   if (!isDone) {
-    const embed = EmbedBuilder.from(msg.embeds[0]);
+    const embed = new EmbedBuilder(msg.embeds[0].toJSON());
     embed.setDescription(progress);
     standardizeEmbed(embed);
 
     await msg.edit({ embeds: [embed] });
   } else {
-    const embed = EmbedBuilder.from(msg.embeds[0]);
+    const embed = new EmbedBuilder(msg.embeds[0].toJSON());
     embed.setDescription(progress);
     standardizeEmbed(embed);
     embed.setFields([]);

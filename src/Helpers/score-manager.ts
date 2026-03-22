@@ -2,13 +2,13 @@ import type { User } from "../../generated/prisma/client";
 import { startOfDay } from "date-fns";
 import {
   DiscordAPIError,
-  EmbedBuilder,
   type Message,
   type MessageReference,
   MessageReferenceType,
   type Snowflake,
   type TextChannel,
 } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { prisma } from "./prisma-init";
 
 import { Queue, Worker } from "bullmq";

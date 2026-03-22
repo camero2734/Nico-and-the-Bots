@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { roles } from "../../../../Configuration/config";
@@ -33,7 +33,7 @@ command.setHandler(async (ctx) => {
   const embed = new EmbedBuilder()
     .setTitle("Color Role Ownership Stats")
     .setDescription(colorRoles.map((r) => `**${r.name}**: ${r.count} active user(s)`).join("\n"))
-    .setColor("Random")
+    .setColor(Math.floor(Math.random() * 0xffffff))
     .setTimestamp();
 
   await ctx.editReply({ embeds: [embed] });

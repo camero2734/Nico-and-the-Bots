@@ -74,7 +74,11 @@ async function findOrCreateMessage(name: string, messageUpdate: MessageUpdate): 
     } else return m;
   }
 
-  const m = await channel.send(await messageUpdate.initialMessage());
+  const initial = await messageUpdate.initialMessage();
+  const m = await channel.send({
+    ...initial,
+    content: initial.content ?? undefined,
+  });
   await prisma.messageReference.create({
     data: { messageId: m.id, channelId: m.channel.id, name },
   });

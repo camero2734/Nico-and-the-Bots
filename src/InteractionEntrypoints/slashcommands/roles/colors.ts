@@ -1,4 +1,5 @@
-import { ActionRowBuilder, EmbedBuilder, RoleSelectMenuBuilder } from "discord.js";
+import { ActionRowBuilder, RoleSelectMenuBuilder } from "@discordjs/builders";
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -16,9 +17,9 @@ command.setHandler(async (ctx) => {
 
   const roleIDs = userRoles.map((r) => r.roleId);
 
-  const actionRow = new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents([
+  const actionRow = new ActionRowBuilder().addComponents(
     new RoleSelectMenuBuilder().setCustomId(roleSelectedId({ originalUserId: ctx.user.id })).setMaxValues(1),
-  ]);
+  );
 
   if (!roleIDs || roleIDs.length === 0) {
     throw new CommandError(`You don't have any color roles! Visit <#${channelIDs.shop}> to learn how to get them.`);
@@ -46,6 +47,9 @@ const roleSelectedId = command.addInteractionListener("roleSelected", ["original
   const role = ctx.roles.first();
   if (!role) return;
 
+  const guildRole = await ctx.guild.roles.fetch(role.id);
+  if (!guildRole) return;
+
   const roleIds = (
     await prisma.colorRole.findMany({
       where: { userId: ctx.user.id },
@@ -54,7 +58,7 @@ const roleSelectedId = command.addInteractionListener("roleSelected", ["original
   ).map((r) => r.roleId);
 
   // Not a valid role
-  if (!roleIds.includes(role.id)) {
+  if (!roleIds.includes(guildRole.id)) {
     throw new CommandError(`You don't own this color role (or it is not a color role)`);
   }
 
@@ -69,18 +73,18 @@ const roleSelectedId = command.addInteractionListener("roleSelected", ["original
   }
 
   // If they requested a role they already had, leave them with no color roles
-  if (currentlyEquippedRoles.includes(role.id)) {
+  if (currentlyEquippedRoles.includes(guildRole.id)) {
     const embed = new EmbedBuilder().setTitle("Success!").setDescription("Removed your color role");
     await ctx.editReply({ embeds: [embed], components: [] });
     return;
   }
 
   // Otherwise add the role they requested
-  await ctx.member.roles.add(role.id);
+  await ctx.member.roles.add(guildRole.id);
   const embed = new EmbedBuilder()
     .setTitle("Success!")
-    .setDescription(`You now have the ${role} color role!`)
-    .setColor(role.color);
+    .setDescription(`You now have the ${guildRole} color role!`)
+    .setColor(guildRole.colors.primaryColor ?? 0);
   await ctx.message.edit({ embeds: [embed], components: [] });
 });
 

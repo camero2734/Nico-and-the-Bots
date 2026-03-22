@@ -1,4 +1,5 @@
-import { EmbedBuilder } from "discord.js";
+import { MessageFlags } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -11,7 +12,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   // Ensure the channel hasn't already been locked down
   const channelPermissionsBackup = await prisma.channelPermissionsBackup.findFirst({

@@ -3,9 +3,9 @@ import {
   type APIMediaGalleryItem,
   ButtonStyle,
   ComponentType,
-  ContainerBuilder,
-  roleMention,
 } from "discord.js";
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention } from "@discordjs/formatters";
 import F from "../../../Helpers/funcs";
 import { keonsGuild } from "../topfeed";
 
@@ -137,16 +137,16 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const mediaSection: APIComponentInContainer[] =
     mediaItems.length > 0
       ? [
-          {
-            type: ComponentType.Separator,
-            divider: false,
-            spacing: 1,
-          },
-          {
-            type: ComponentType.MediaGallery,
-            items: mediaItems,
-          },
-        ]
+        {
+          type: ComponentType.Separator,
+          divider: false,
+          spacing: 1,
+        },
+        {
+          type: ComponentType.MediaGallery,
+          items: mediaItems,
+        },
+      ]
       : [];
 
   const footerSection: APIComponentInContainer[] = [
@@ -159,7 +159,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
   // Build the container
   const container = new ContainerBuilder({
     components: [...mainSection, ...mediaSection, ...contextSection, ...footerSection],
-    accent_color: role.color,
+    accent_color: role.colors.primaryColor ?? undefined,
   });
 
   return container;

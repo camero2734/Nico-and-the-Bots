@@ -1,6 +1,7 @@
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
+import { EmbedBuilder } from '@discordjs/builders';
 import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
@@ -45,6 +46,12 @@ export const client = new Discord.Client({
   ],
   partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
 });
+
+// Temporary fix for fetchShardCount being called in discord.js
+if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === 'function') {
+  (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
+}
+
 const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
@@ -103,7 +110,7 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-client.on("ready", async () => {
+client.on(Discord.Events.ClientReady, async () => {
   console.log("===================================");
   console.log("||                               ||");
   console.log("||      🚀 Nico logged in!       ||");
@@ -123,7 +130,7 @@ client.on("ready", async () => {
   const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
   await botChan.send({
     embeds: [
-      new Discord.EmbedBuilder({
+      new EmbedBuilder({
         description: "Bot is now running",
         footer: { text: secrets.commitSha || "No commit associated" },
       }),
@@ -133,7 +140,7 @@ client.on("ready", async () => {
 
   await botChan.send({
     embeds: [
-      new Discord.EmbedBuilder({
+      new EmbedBuilder({
         description: `Fetched all ${guild.members.cache.size} members`,
       }),
     ],
@@ -167,7 +174,7 @@ async function getReplyInteractionId(msg: Discord.Message) {
   }
 }
 
-client.on("messageCreate", async (msg: Discord.Message) => {
+client.on(Discord.Events.MessageCreate, async (msg: Discord.Message) => {
   const { replyId, repliedTo } = (await getReplyInteractionId(msg)) || {};
   if (replyId && repliedTo) {
     const replyListener = ReplyHandlers.get(replyId);
@@ -179,7 +186,7 @@ client.on("messageCreate", async (msg: Discord.Message) => {
 });
 
 // Voice state updates for VC role
-client.on("voiceStateUpdate", async (oldState, newState) => {
+client.on(Discord.Events.VoiceStateUpdate, async (oldState, newState) => {
   const joinedVoiceChannel = !oldState.channelId && newState.channelId;
   const leftVoiceChannel = oldState.channelId && !newState.channelId;
 
@@ -194,7 +201,11 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 });
 
 // Pending member updates => give roles
-client.on("guildMemberUpdate", async (oldMem, mem) => {
+client.on(Discord.Events.GuildMemberUpdate, async (oldMem, mem) => {
+  if (!oldMem || oldMem.partial) {
+    console.log("Old member was partial");
+    return;
+  }
   const noLongerPending = oldMem.pending && !mem.pending;
 
   if (
@@ -214,27 +225,32 @@ client.on("guildMemberUpdate", async (oldMem, mem) => {
   await testChannel.send(`✅ ${mem.user.tag} passed membership screening`);
 });
 
-client.on("guildMemberUpdate", async (oldMem, newMem) => {
+client.on(Discord.Events.GuildMemberUpdate, async (oldMem, newMem) => {
+  if (!oldMem || oldMem.partial) {
+    console.log("Old member was partial");
+    return;
+  }
+
   if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
     const fbAnnouncementChannel = (await newMem.guild.channels.fetch(
       channelIDs.fairlyannouncements,
     )) as Discord.TextChannel;
-    const embed = new Discord.EmbedBuilder()
+    const embed = new EmbedBuilder()
       .setAuthor({
         name: newMem.displayName,
-        iconURL: newMem.displayAvatarURL(),
+        icon_url: newMem.displayAvatarURL(),
       })
       .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
       .setFooter({
         text: "PROPERTY OF DRAGON'S DEN INC.™️",
-        iconURL: newMem.client.user?.displayAvatarURL(),
+        icon_url: newMem.client.user?.displayAvatarURL(),
       });
 
     await fbAnnouncementChannel.send({ embeds: [embed] });
   }
 });
 
-client.on("messageReactionAdd", async (reaction, user) => {
+client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
 
@@ -254,7 +270,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
   }
 });
 
-client.on("interactionCreate", async (interaction) => {
+client.on(Discord.Events.InteractionCreate, async (interaction) => {
   const receivedInteractionAt = new Date();
   if (interaction.isChatInputCommand()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
@@ -287,7 +303,7 @@ client.on("interactionCreate", async (interaction) => {
     }
   } else if (interaction.isAutocomplete()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
-    const optionIdentifier = interaction.options.getFocused(true)?.name;
+    const optionIdentifier = interaction.options.getFocused()?.name;
 
     const slashcommand = SlashCommands.get(commandIdentifier);
     if (!slashcommand) return console.log(`Failed to find command ${commandIdentifier} for autocomplete`);
@@ -314,6 +330,10 @@ async function setup() {
   GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
   GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
 
+  console.log({
+    "Registered fonts": GlobalFonts.families.map((f) => f.family).join(", "),
+  });
+
   Scheduler(client);
   logEntrypointEvents();
 }
@@ -333,11 +353,12 @@ async function forwardMessageToErrorChannel(msg: string) {
     const channel = await guild.channels.fetch(channelIDs.bottest);
     if (!channel?.isSendable()) return;
 
-    const embed = new Discord.EmbedBuilder().setDescription(msg).setColor("Red");
+    const embed = new EmbedBuilder().setDescription(msg).setColor(Discord.Colors.Red);
 
     await channel.send({ embeds: [embed] });
   } catch (e) {
     console.error("Unable to forward error to channel", msg);
+    console.error(e);
   }
 }
 
@@ -358,6 +379,18 @@ process.on("SIGTERM", async () => {
   console.log("Received SIGTERM, shutting down gracefully...");
 
   try {
+    const botChan = await guild.channels.fetch(channelIDs.bottest);
+    if (botChan?.isTextBased()) {
+      await botChan.send({
+        embeds: [
+          new EmbedBuilder({
+            description: "Bot is restarting...",
+            color: Discord.Colors.Yellow,
+          }),
+        ],
+      });
+    }
+
     await prisma.$disconnect();
     await client.destroy();
   } catch (e) {

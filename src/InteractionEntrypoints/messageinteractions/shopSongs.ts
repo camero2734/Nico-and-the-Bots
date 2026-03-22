@@ -1,11 +1,17 @@
 import {
-  ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
   type GuildMember,
   type InteractionEditReplyOptions,
-  italic,
+  MessageFlags,
 } from "discord.js";
+import { italic } from "@discordjs/formatters";
+import {
+  DangerButtonBuilder,
+  EmbedBuilder,
+  PrimaryButtonBuilder,
+  SecondaryButtonBuilder,
+  SuccessButtonBuilder,
+} from "@discordjs/builders";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -21,8 +27,17 @@ enum ActionTypes {
 
 const msgInt = new ManualEntrypoint();
 
+const buildSongShopButton = (
+  style: ButtonStyle.Primary | ButtonStyle.Secondary | ButtonStyle.Danger | ButtonStyle.Success,
+) => {
+  if (style === ButtonStyle.Danger) return new DangerButtonBuilder();
+  if (style === ButtonStyle.Success) return new SuccessButtonBuilder();
+  if (style === ButtonStyle.Secondary) return new SecondaryButtonBuilder();
+  return new PrimaryButtonBuilder();
+};
+
 export const GenSongBtnId = msgInt.addInteractionListener("shopSongsBtn", [], async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const initialMsg = await generateMainMenuEmbed(ctx.member);
   await ctx.editReply(initialMsg);
@@ -51,7 +66,7 @@ const genSubmenuId = msgInt.addInteractionListener("songSongsSubmenu", ["categor
   const embed = new EmbedBuilder()
     .setAuthor({
       name: "Good Day Dema® Discord Shop",
-      iconURL: "https://i.redd.it/wd53naq96lr61.png",
+      icon_url: "https://i.redd.it/wd53naq96lr61.png",
     })
     .setTitle(name)
     .setColor(0xd07a21)
@@ -75,9 +90,7 @@ const genSubmenuId = msgInt.addInteractionListener("songSongsSubmenu", ["categor
     const ownsRole = dbUser.songRoles.some((r) => r.roleId === role.id);
     const defaultStyle = contraband ? ButtonStyle.Danger : ButtonStyle.Primary;
 
-    const builder = new ButtonBuilder()
-      .setDisabled(cantAfford)
-      .setStyle(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
+    const builder = buildSongShopButton(cantAfford || ownsRole ? ButtonStyle.Secondary : defaultStyle)
       .setDisabled(cantAfford || ownsRole)
       .setLabel(role.name + (cantAfford ? ` (${missingCredits} more credits)` : ""))
       .setCustomId(!ownsRole ? genItemId({ itemId: role.id, action: `${ActionTypes.View}` }) : NULL_CUSTOM_ID());
@@ -87,7 +100,7 @@ const genSubmenuId = msgInt.addInteractionListener("songSongsSubmenu", ["categor
 
   const components = MessageTools.allocateButtonsIntoRows([
     ...rawComponents,
-    new ButtonBuilder().setStyle(ButtonStyle.Danger).setLabel("Go back").setCustomId(genMainMenuId({})),
+    new DangerButtonBuilder().setLabel("Go back").setCustomId(genMainMenuId({})),
   ]);
 
   await ctx.editReply({ embeds: [embed], components });
@@ -119,15 +132,15 @@ const genItemId = msgInt.addInteractionListener("songSongsItem", ["itemId", "act
   const shopImage = contraband ? "https://i.imgur.com/eQEaugK.png" : "https://i.redd.it/wd53naq96lr61.png";
   const footer = contraband
     ? F.randomizeLetters(
-        "thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
-        0.1,
-      )
+      "thEy mustn't know you were here. it's al l propaganda. no one should ever find out About this. you can never tell anyone about thiS -- for The sake of the others' survIval, you muSt keep this silent. it's al l propa ganda. we mUst keeP silent. no one can know. no one can know. no o ne c an kn ow_",
+      0.1,
+    )
     : "This product has been approved by The Sacred Municipality of Dema. Under the terms established by DMA ORG, any unapproved items are considered contraband and violators will be referred to Dema Council.";
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: title, iconURL: shopImage })
+    .setAuthor({ name: title, icon_url: shopImage })
     .setTitle(role.name)
-    .setColor(role.color)
+    .setColor(role.colors.primaryColor ?? 0)
     .setFooter({ text: footer });
 
   if (actionType === ActionTypes.View) {
@@ -153,8 +166,7 @@ const genItemId = msgInt.addInteractionListener("songSongsItem", ["itemId", "act
     }
 
     const roleComponents = MessageTools.allocateButtonsIntoRows([
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Success)
+      new SuccessButtonBuilder()
         .setLabel("Purchase")
         .setCustomId(
           genItemId({
@@ -163,8 +175,7 @@ const genItemId = msgInt.addInteractionListener("songSongsItem", ["itemId", "act
           }),
         ),
 
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Danger)
+      new DangerButtonBuilder()
         .setLabel("Go back")
         .setCustomId(genSubmenuId({ categoryId: category.id })),
     ]);
@@ -211,9 +222,10 @@ const genItemId = msgInt.addInteractionListener("songSongsItem", ["itemId", "act
     } catch (e) {
       //
     } finally {
+      const description = embed.toJSON().description || "";
       embed.setFields([]);
       embed.setDescription(
-        `${embed.data.description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`,
+        `${description} This receipt was${sent ? "" : " unable to be"} forwarded to your DMs. ${sent ? "" : "Please save a screenshot of this as proof of purchase in case any errors occur."}`,
       );
 
       await ctx.editReply({ embeds: [embed], components: [] });
@@ -236,7 +248,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
   const MenuEmbed = new EmbedBuilder()
     .setAuthor({
       name: "Good Day Dema® Discord Shop",
-      iconURL: "https://i.redd.it/wd53naq96lr61.png",
+      icon_url: "https://i.redd.it/wd53naq96lr61.png",
     })
     .setColor(0xd07a21)
     .setDescription(
@@ -253,8 +265,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
   const actionRows = MessageTools.allocateButtonsIntoRows(
     Object.entries(categories).map(([label, item], idx) => {
       const unlocked = item.data.unlockedFor(member, dbUser);
-      const builder = new ButtonBuilder()
-        .setStyle(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      const builder = buildSongShopButton(unlocked ? ButtonStyle.Primary : ButtonStyle.Secondary)
         .setLabel(
           unlocked
             ? `${idx + 1}. ${label}`

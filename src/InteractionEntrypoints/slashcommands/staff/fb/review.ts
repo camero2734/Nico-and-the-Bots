@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import { roles } from "../../../../Configuration/config";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
@@ -21,7 +21,7 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder().setAuthor({
     name: "Firebreather Application Review Queue",
-    iconURL: fbRole?.iconURL() || undefined,
+    icon_url: fbRole?.iconURL() || undefined,
   });
 
   for (const app of awaiting) {

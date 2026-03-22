@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { ActionRowBuilder, EmbedBuilder, SuccessButtonBuilder } from "@discordjs/builders";
 import { CommandError } from "../../../Configuration/definitions";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -24,7 +25,7 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const existingTag = await prisma.tag.findUnique({
     where: { name: ctx.opts.name },
@@ -55,18 +56,17 @@ command.setHandler(async (ctx) => {
     .setDescription(ctx.opts.text)
     .setFooter({ text: "Select yes or no" });
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().setComponents([
-    new ButtonBuilder()
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder()
       .setLabel("Yes")
-      .setStyle(ButtonStyle.Success)
       .setCustomId(generateYesID({ name: ctx.opts.name, textLookup: `${textLookup.id}` })),
-  ]);
+  );
 
   await ctx.send({ embeds: [embed], components: [actionRow] });
 });
 
 const generateYesID = command.addInteractionListener("tcYes", ["name", "textLookup"], async (ctx, args) => {
-  await ctx.deferReply({ ephemeral: true });
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const { value: text, id } =
     (await prisma.temporaryText.findUnique({

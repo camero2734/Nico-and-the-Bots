@@ -71,7 +71,7 @@ command.setHandler(async (ctx) => {
       .setCustomId("myModal")
       .addLabelComponents(label);
 
-    await ctx.showModal(modal);
+    await ctx.showModal(modal.toJSON(false));
   }
 });
 

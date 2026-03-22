@@ -45,13 +45,16 @@ command.setHandler(async (ctx) => {
     ]
   });
 
-  addCheckboxComponent(modal, "How have you been involved in server events?", {
+  addCheckboxComponent(modal, "Would you be willing to help host events?", {
     type: ComponentType.CheckboxGroup,
     custom_id: "server_events",
+    minValues: 1,
     options: [
-      { value: "have_participated", label: "I have participated in events in the server before" },
-      { value: "have_hosted", label: "I have helped host events in the server before" },
-      { value: "willing_to_host", label: "I would love to help host events in the future" }
+      { value: "art", label: "Art events" },
+      { value: "gaming", label: "Gaming events" },
+      { value: "music", label: "Music events" },
+      { value: "social", label: "Social events" },
+      { value: "none", label: "I am not interested in helping with events" }
     ]
   });
 

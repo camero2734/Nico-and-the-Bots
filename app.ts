@@ -350,7 +350,9 @@ process.on("unhandledRejection", (reason, promise) => {
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception thrown", err);
-  forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
+  if (!err.message.includes("undefined is not an object (evaluating 'packet.t')")) {
+    forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
+  }
 });
 
 process.on("SIGTERM", async () => {

@@ -1,5 +1,5 @@
 import { LabelBuilder, ModalBuilder } from "@discordjs/builders";
-import { ApplicationCommandOptionType, ComponentType } from "discord.js";
+import { ApplicationCommandOptionType, ComponentType, RadioGroupComponentData } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -20,6 +20,16 @@ const command = new SlashCommand({
     }
   ],
 });
+
+interface RadioGroupData extends Omit<RadioGroupComponentData, "customId"> {
+  custom_id: string;
+}
+
+function addRadioComponent(modal: ModalBuilder, data: RadioGroupData, label: string) {
+  const labelBuilder = new LabelBuilder().setLabel(label);
+  labelBuilder['data'].component = { toJSON: () => data } as any;
+  modal.addLabelComponents(labelBuilder);
+}
 
 command.setHandler(async (ctx) => {
   if (ctx.user.id !== userIDs.me) return;
@@ -51,25 +61,24 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     songBattleCron();
   } else {
-    const data = {
-      type: ComponentType.CheckboxGroup,
+    const data: RadioGroupData = {
+      type: ComponentType.RadioGroup,
       custom_id: "myVeryCoolCheckbox",
-      "options": [
-        { "value": "march-4", "label": "March 4th" },
-        { "value": "march-5", "label": "March 5th" },
-        { "value": "march-7", "label": "March 7th", "description": "I know this is a Saturday and is tough" },
-        { "value": "march-9", "label": "March 9th" },
-        { "value": "march-10", "label": "March 10th" }
+      options: [
+        { value: "march-4", label: "March 4th" },
+        { value: "march-5", label: "March 5th" },
+        { value: "march-7", label: "March 7th", description: "I know this is a Saturday and is tough" },
+        { value: "march-9", label: "March 9th" },
+        { value: "march-10", label: "March 10th" }
       ]
     }
-
-    const label = new LabelBuilder().setLabel("Select a date");
-    label['data'].component = { toJSON: () => data } as any;
 
     const modal = new ModalBuilder()
       .setTitle("My Modal")
       .setCustomId("myModal")
-      .addLabelComponents(label);
+
+    addRadioComponent(modal, data, "Select a date");
+    addRadioComponent(modal, { ...data, custom_id: "myVeryCoolCheckbox2" }, "Select a date again");
 
     await ctx.showModal(modal.toJSON(false));
   }

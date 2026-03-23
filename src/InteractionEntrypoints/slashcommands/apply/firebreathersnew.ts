@@ -1,217 +1,174 @@
-import { Colors, MessageFlags, type InteractionReplyOptions } from "discord.js";
+import { LabelBuilder, ModalBuilder } from "@discordjs/builders";
 import {
-  ActionRowBuilder,
-  EmbedBuilder,
-  LabelBuilder,
-  ModalBuilder,
-  PrimaryButtonBuilder,
-  SecondaryButtonBuilder,
-  SuccessButtonBuilder,
-  TextInputBuilder,
-} from "@discordjs/builders";
-import { TextInputStyle } from "discord-api-types/payloads/v9";
-import { roles } from "../../../Configuration/config";
+  type CheckboxGroupComponentData,
+  ComponentType,
+  MessageFlags,
+  type RadioGroupComponentData,
+  TextInputStyle,
+} from "discord.js";
+import { roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { FB_DELAY_DAYS, getActiveFirebreathersApplication } from "./_consts";
 import { sendToStaff } from "./firebreathers";
 
 const command = new SlashCommand({
-  description: "Test command",
+  description: "Opens an application to the Firebreathers role",
   options: [],
 });
 
-interface Question {
-  question: string;
-  placeholder: string;
-  short?: boolean;
+interface RadioGroupData extends Omit<RadioGroupComponentData, "customId"> {
+  custom_id: string;
 }
 
-const PART_ONE: Record<string, Question> = <const>{
-  REFERRED_FROM: {
-    question: "Where did you find out about our server?",
-    placeholder: "Reddit, Twitter, a friend, etc.",
-    short: true,
-  },
-  EVENTS_PARTICIPATION: {
-    question: "Have you participated in any server events?",
-    placeholder: "Answer `yes` or `no`. Feel free to expand on which ones!",
-  },
-  HELP_PLAN_EVENTS: {
-    question: "Would you be willing to host server events?",
-    placeholder: "Answer `yes` or `no`. Have any interesting ideas?",
-  },
-  QUESTIONABLE_BEHAVIOR: {
-    question: "Any past issues the staff might find?",
-    placeholder: "Please describe as thoroughly as necessary (can include messages, warnings, etc.)",
-  },
-};
+interface CheckboxGroupData extends Omit<CheckboxGroupComponentData, "customId"> {
+  custom_id: string;
+}
 
-const PART_TWO: Record<string, Question> = <const>{
-  LIKE_OR_DISLIKE: {
-    question: "Likes/dislikes about DiscordClique community?",
-    placeholder: "Be honest!",
-  },
-  FINAL_THOUGHTS: {
-    question: "Final thoughts / clarifications / feedback?",
-    placeholder: "If you don't have, just tell us your favorite song",
-  },
-};
+function addRadioComponent(modal: ModalBuilder, label: string, data: RadioGroupData) {
+  const labelBuilder = new LabelBuilder().setLabel(label);
+  labelBuilder["data"].component = { toJSON: () => data } as any;
+  modal.addLabelComponents(labelBuilder);
+}
 
-const FORM: Record<string, typeof PART_ONE> = {
-  "SERVER HISTORY": PART_ONE,
-  "ABOUT YOU": PART_TWO,
-};
+function addCheckboxComponent(modal: ModalBuilder, label: string, data: CheckboxGroupData) {
+  const labelBuilder = new LabelBuilder().setLabel(label);
+  labelBuilder["data"].component = { toJSON: () => data } as any;
+  modal.addLabelComponents(labelBuilder);
+}
 
 command.setHandler(async (ctx) => {
-  if (!ctx.member.roles.cache.has(roles.staff)) return ctx.reply("Command unavailable!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
-  await ctx.reply(await MainMenuPayload(ctx.user.id));
-});
-
-async function MainMenuPayload(userId: string): Promise<InteractionReplyOptions> {
-  const embed = new EmbedBuilder()
-    .setTitle("Your Firebreathers Application")
-    .setDescription(
-      `Please fill out all parts below. You may go back and review your answers at any time before submitting.\
-            You also can close and come back later; your answers will be saved.
-            
-            Once you are finished, click the Submit button below.`,
-    )
-    .setColor(Colors.NotQuiteBlack);
-
-  const currentApp = (await getCurrentApplication(userId))?.responseData as Record<string, string> | undefined;
-
-  let allFinished = true;
-  const buttons = Object.keys(FORM).map((label, idx) => {
-    const sectionFinished = Object.keys(FORM[label]).every((key) => currentApp?.[key]);
-    if (!sectionFinished) allFinished = false;
-
-    const builder = sectionFinished ? new SecondaryButtonBuilder() : new PrimaryButtonBuilder();
-    return builder.setLabel(label).setCustomId(genOpenModalId({ idx: idx.toString() }));
-  });
-
-  const submitButton = new SuccessButtonBuilder()
-    .setLabel("Submit")
-    .setCustomId(genSubmitApplicationId({}))
-    .setDisabled(!allFinished);
-
-  const actionRow = new ActionRowBuilder().addComponents(...buttons, submitButton);
-
-  return { components: [actionRow], embeds: [embed], flags: MessageFlags.Ephemeral };
-}
-
-const genOpenModalId = command.addInteractionListener("openFBA", ["idx"], async (ctx) => {
-  if (!ctx.isButton() || !("label" in ctx.component) || !ctx.component.label) return;
-
-  const formPart = FORM[ctx.component.label];
-  if (!formPart) return;
-
-  const prevAnswers = await getPreviousAnswers(ctx.user.id);
-
-  const modal = new ModalBuilder()
-    .setTitle("Firebreathers Application")
-    .setCustomId(genSubmitModalId({ name: ctx.component.label }));
-
-  const textFields = Object.entries(formPart).map(([id, question]) => {
-    return new LabelBuilder().setLabel(question.question).setTextInputComponent(
-      new TextInputBuilder()
-        .setCustomId(id)
-        .setPlaceholder(question.placeholder)
-        .setStyle(question.short ? TextInputStyle.Short : TextInputStyle.Paragraph)
-        .setValue(prevAnswers[id]),
-    );
-  });
-
-  modal.addLabelComponents(...textFields);
-
-  ctx.showModal(modal);
-});
-
-const genSubmitModalId = command.addInteractionListener("modalCloseFBA", ["name"], async (ctx, args) => {
-  if (!ctx.isModalSubmit()) return;
-
-  const formPart = FORM[args.name];
-  if (!formPart) return;
-
-  const newData: Record<string, string> = {};
-
-  for (const id of Object.keys(formPart)) {
-    const value = ctx.components.getTextInputValue(id);
-    newData[id] = value;
+  if (ctx.member.roles.cache.has(roles.deatheaters)) {
+    throw new CommandError("You are already a firebreather!");
   }
 
-  const current = await getCurrentApplication(ctx.user.id);
-  const currentData = (current?.responseData as Record<string, string>) || {};
+  const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 
-  await prisma.firebreatherApplication.upsert({
-    where: { applicationId: current?.applicationId || Bun.randomUUIDv7() },
-    create: {
-      responseData: { ...currentData, ...newData },
-      userId: ctx.user.id,
-      startedAt: new Date(),
-    },
-    update: {
-      responseData: { ...currentData, ...newData },
-    },
+  if (activeApplication && ctx.user.id !== userIDs.myAlt) {
+    if (activeApplication.decidedAt) {
+      const timestamp = F.discordTimestamp(new Date(Date.now() + FB_DELAY_DAYS * 24 * 60 * 60 * 1000), "relative");
+      throw new CommandError(`You have already recently applied! You can apply again ${timestamp}`);
+    }
+    if (!activeApplication.submittedAt) {
+      throw new CommandError(
+        `You have not submitted your previous application. To do so, use the button/message again.\n\nIf you believe this is a mistake, please contact the staff.`,
+      );
+    }
+    const timestamp = F.discordTimestamp(activeApplication.submittedAt || new Date(), "relative");
+    throw new CommandError(
+      `Your previous application has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,
+    );
+  }
+
+  let application = activeApplication;
+  if (!application) {
+    application = await prisma.firebreatherApplication.create({
+      data: { userId: ctx.user.id, startedAt: new Date() },
+    });
+  }
+
+  const modal = new ModalBuilder()
+    .setTitle("Torchbearers Application")
+    .setCustomId(genModalId({ applicationId: application.applicationId }));
+
+  addRadioComponent(modal, "Where did you find out about the server?", {
+    type: ComponentType.RadioGroup,
+    custom_id: "where_did_you_find_out",
+    options: [
+      { value: "reddit", label: "Reddit" },
+      { value: "twitter", label: "Twitter" },
+      { value: "bluesky", label: "Bluesky" },
+      { value: "instagram", label: "Instagram" },
+      { value: "friend", label: "A friend" },
+      { value: "other", label: "Other", description: "Feel free to specify in the final comment section." },
+    ],
   });
 
-  const msg = await ctx.fetchReply();
-  const payload = await MainMenuPayload(ctx.user.id);
-  await msg.edit({ components: payload.components, embeds: payload.embeds });
+  addCheckboxComponent(modal, "Would you be willing to help host events?", {
+    type: ComponentType.CheckboxGroup,
+    custom_id: "server_events",
+    minValues: 1,
+    options: [
+      { value: "art", label: "Art events" },
+      { value: "gaming", label: "Gaming events" },
+      { value: "music", label: "Music events" },
+      { value: "social", label: "Social events" },
+      { value: "none", label: "I am not interested in helping with events" },
+    ],
+  });
+
+  modal.addLabelComponents(
+    new LabelBuilder()
+      .setLabel("Likes/dislikes about the server community?")
+      .setDescription("The general vibe of the community, events, channels, etc.")
+      .setTextInputComponent((builder) =>
+        builder.setCustomId("like_dislike").setStyle(TextInputStyle.Paragraph).setRequired(true),
+      ),
+  );
+
+  modal.addLabelComponents(
+    new LabelBuilder()
+      .setLabel("Any concerning prior behavior in the server?")
+      .setDescription(
+        "Including past messages, warnings, and demeanor towards others that reviewers should be aware of.",
+      )
+      .setTextInputComponent((builder) =>
+        builder.setCustomId("questionable_behavior").setStyle(TextInputStyle.Paragraph).setRequired(false),
+      ),
+  );
+
+  modal.addLabelComponents(
+    new LabelBuilder()
+      .setLabel("Final thoughts/comments on your application?")
+      .setDescription(
+        "Feel free to expand on previous questions or talk about anything else that you think is relevant.",
+      )
+      .setTextInputComponent((builder) =>
+        builder.setCustomId("additional_comments").setStyle(TextInputStyle.Paragraph).setRequired(true),
+      ),
+  );
+
+  await ctx.showModal(modal.toJSON(false));
 });
 
-const genSubmitApplicationId = command.addInteractionListener("submitFBA", [], async (ctx) => {
-  const embed = new EmbedBuilder()
-    .setTitle("FB Application Submitted!")
-    .setDescription(
-      "Thank you for submitting your application for the Firebreathers role. Staff members will review your application and make a decision as soon as possible.\n\nIn the mean time, I encourage you to listen to Clear.",
-    )
-    .setColor(Colors.DarkGreen);
+const genModalId = command.addInteractionListener("tbAppModal", ["applicationId"], async (ctx, opts) => {
+  if (!ctx.isModalSubmit()) return;
 
-  const msg = await ctx.fetchReply();
-  await msg.edit({ embeds: [embed], components: [] });
+  const applicationId = opts.applicationId;
 
-  const { applicationId, responseData } = (await getCurrentApplication(ctx.user.id)) || {};
-  if (!applicationId || !responseData) return;
+  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const whereDidYouFindOut = ctx.components.getRadioGroup("where_did_you_find_out") || "Not provided";
+  const serverEvents = ctx.components.getCheckboxGroup("server_events")?.join(", ") || "None selected";
+  const likeDislike = ctx.components.getTextInputValue("like_dislike") || "Not provided";
+  const questionableBehavior = ctx.components.getTextInputValue("questionable_behavior") || "None";
+  const additionalComments = ctx.components.getTextInputValue("additional_comments") || "Not provided";
+
+  const data: Record<string, string> = {
+    "Where did you find out about the server?": whereDidYouFindOut,
+    "Would you be willing to help host events?": serverEvents,
+    "Likes/dislikes about the server community?": likeDislike,
+    "Any concerning prior behavior in the server?": questionableBehavior,
+    "Final thoughts/comments on your application?": additionalComments,
+  };
+
+  const messageUrl = await sendToStaff(ctx.guild, applicationId, data);
+  if (!messageUrl) {
+    throw new CommandError("Failed to send application to staff. Please contact an administrator.");
+  }
 
   await prisma.firebreatherApplication.update({
     where: { applicationId },
-    data: {
-      submittedAt: new Date(),
-    },
+    data: { submittedAt: new Date(), messageUrl, responseData: data as any },
   });
 
-  const transformedData: Record<string, string> = {};
-  for (const [id, value] of Object.entries(responseData)) {
-    let question: Question | undefined;
-    for (const part of Object.values(FORM)) {
-      if (part[id]) question = part[id];
-    }
-    if (!question) throw new CommandError("You didn't finish the quiz!");
-
-    transformedData[question.question] = value;
-  }
-
-  await sendToStaff(ctx.guild, applicationId, transformedData);
+  await ctx.editReply({
+    content: "Your application has been submitted! The staff team will review it shortly.",
+  });
 });
-
-async function getPreviousAnswers(userId: string): Promise<Record<string, string>> {
-  const current = await getCurrentApplication(userId);
-  if (!current?.responseData) return {};
-
-  return current.responseData as Record<string, string>;
-}
-
-async function getCurrentApplication(userId: string) {
-  return await prisma.firebreatherApplication.findFirst({
-    orderBy: { startedAt: "desc" },
-    where: {
-      userId: userId,
-      submittedAt: null,
-    },
-    select: { responseData: true, applicationId: true },
-  });
-}
 
 export default command;

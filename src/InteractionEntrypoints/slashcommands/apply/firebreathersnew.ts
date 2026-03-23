@@ -232,6 +232,8 @@ export async function sendToStaff(
             }),
           ].map((o) => o.toJSON()),
         )
+        .setPlaceholder("Select an action")
+        .setDisabled(false)
         .setCustomId(genStaffModalId({ applicationId })),
     );
 

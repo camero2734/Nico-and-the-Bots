@@ -118,6 +118,9 @@ async function checkReminders(guild: Guild): Promise<void> {
       if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
         sentReminderIds.push(rem.id);
         await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`, e);
+      } else if (e instanceof DiscordAPIError && e.code.toString() === "10007") {
+        sentReminderIds.push(rem.id);
+        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} because they are not in the guild. Will not retry.`, e);
       } else {
         await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
       }

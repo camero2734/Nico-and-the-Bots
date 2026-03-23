@@ -97,11 +97,10 @@ export const ErrorHandler = async (
       });
     }
 
-    const commandString = ctx instanceof ChatInputCommandInteraction && getCommandString(ctx);
-    if (commandString) {
+    if (ctx instanceof ChatInputCommandInteraction) {
       embed.addFields({
         name: "Command",
-        value: commandString,
+        value: getCommandString(ctx) || "Unable to parse command",
       });
     }
 

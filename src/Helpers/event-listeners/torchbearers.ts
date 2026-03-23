@@ -1,7 +1,8 @@
-import { Client, Events } from "discord.js";
-import { channelIDs, flags, roles } from "../../Configuration/config";
-import { prisma } from "../prisma-init";
 import { EmbedBuilder } from "@discordjs/builders";
+import { type Client, Events } from "discord.js";
+import { channelIDs, roles } from "../../Configuration/config";
+import { isFlagEnabled } from "../feature-flags";
+import { prisma } from "../prisma-init";
 
 export function listenForTorchbearers(client: Client) {
   client.on(Events.GuildMemberUpdate, async (oldMem, newMem) => {
@@ -10,16 +11,14 @@ export function listenForTorchbearers(client: Client) {
       return;
     }
 
-    if (!flags.TB_ENABLED) return;
+    if (!(await isFlagEnabled("TB_ENABLED"))) return;
 
     const hadRole = oldMem.roles.cache.has(roles.deatheaters);
     const hasRole = newMem.roles.cache.has(roles.deatheaters);
 
     if (hadRole || !hasRole) return;
 
-    const fbAnnouncementChannel = await newMem.guild.channels.fetch(
-      channelIDs.fairlyannouncements,
-    );
+    const fbAnnouncementChannel = await newMem.guild.channels.fetch(channelIDs.fairlyannouncements);
     if (!fbAnnouncementChannel?.isTextBased()) return;
 
     const count = await prisma.counter.upsert({
@@ -33,7 +32,9 @@ export function listenForTorchbearers(client: Client) {
         name: newMem.displayName,
         icon_url: newMem.displayAvatarURL(),
       })
-      .setDescription(`${newMem} has tried to stop the cycle and failed. This has happened ${count.value} times already.`)
+      .setDescription(
+        `${newMem} has tried to stop the cycle and failed. This has happened ${count.value} times already.`,
+      )
       .setFooter({
         text: "MATERIAL SUBJECT TO AUDIT UNDER NOVA BISHOP PROTOCOL",
         icon_url: newMem.client.user?.displayAvatarURL(),

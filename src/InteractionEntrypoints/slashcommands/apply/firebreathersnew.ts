@@ -180,7 +180,7 @@ const genModalId = command.addInteractionListener("tbSubmitModal", ["application
 
   await prisma.firebreatherApplication.update({
     where: { applicationId },
-    data: { submittedAt: new Date(), messageUrl, responseData: data as any },
+    data: { submittedAt: new Date(), messageUrl, responseData: data },
   });
 
   await ctx.editReply({

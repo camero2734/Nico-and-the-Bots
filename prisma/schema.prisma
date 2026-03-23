@@ -471,3 +471,11 @@ model Concert {
 
   createdAt DateTime @default(now())
 }
+
+model FeatureFlag {
+  name        String @id
+  enabled     Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

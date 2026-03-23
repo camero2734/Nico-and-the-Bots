@@ -67,23 +67,18 @@ command.setHandler(async (ctx) => {
 
   const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 
-  if (activeApplication && ctx.user.id !== userIDs.myAlt) {
-    if (activeApplication.decidedAt) {
-      const timestamp = F.discordTimestamp(
-        addDays(activeApplication.submittedAt || new Date(), FB_DELAY_DAYS),
-        "relative",
-      );
-      throw new CommandError(`You have already recently applied! You can apply again ${timestamp}`);
-    }
-    if (!activeApplication.submittedAt) {
-      throw new CommandError(
-        `You have not submitted your previous application. To do so, use the button/message again.\n\nIf you believe this is a mistake, please contact the staff.`,
-      );
-    }
+  if (activeApplication?.submittedAt) {
     const timestamp = F.discordTimestamp(activeApplication.submittedAt || new Date(), "relative");
     throw new CommandError(
       `Your previous application has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,
     );
+  }
+  if (activeApplication?.decidedAt) {
+    const timestamp = F.discordTimestamp(
+      addDays(activeApplication.submittedAt || new Date(), FB_DELAY_DAYS),
+      "relative",
+    );
+    throw new CommandError(`You have already recently applied! You can apply again ${timestamp}`);
   }
 
   let application = activeApplication;

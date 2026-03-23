@@ -1,16 +1,16 @@
+import { EmbedBuilder } from "@discordjs/builders";
 import {
   ChannelType,
+  Colors,
   type CommandInteraction,
   type DMChannel,
   type GuildTextBasedChannel,
   type Interaction,
   InteractionType,
+  MessageFlags,
   type TextBasedChannel,
   type TextChannel,
-  MessageFlags,
-  Colors,
 } from "discord.js";
-import { EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
@@ -97,9 +97,26 @@ export const ErrorHandler = async (
       });
     }
 
+    const formatStack = (err: Error): string => {
+      const lines: string[] = [`${err.name}: ${err.message}`];
+      let current: Error = err;
+      while (current?.cause) {
+        const cause = current.cause as Error;
+        lines.push(`Caused by: ${cause.name}: ${cause.message}`);
+        current = cause;
+      }
+      const stackParts = (err.stack || "").split("\n");
+      for (const line of stackParts.slice(1)) {
+        if (!line.includes("node:") && !line.includes("node_modules/")) {
+          lines.push(line);
+        }
+      }
+      return lines.join("\n");
+    };
+
     embed.addFields({
       name: "Error",
-      value: `\`\`\`js\n${e instanceof Error ? e.stack : e}\`\`\``,
+      value: `\`\`\`js\n${e instanceof Error ? formatStack(e) : e}\`\`\``,
     });
     await errorChannel.send({ embeds: [embed] });
     sentInErrorChannel = true;

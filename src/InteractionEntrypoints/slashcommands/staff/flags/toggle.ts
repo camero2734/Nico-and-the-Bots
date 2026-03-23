@@ -25,7 +25,7 @@ const command = new SlashCommand({
 
 command.setHandler(async (ctx) => {
   const { value, flag: flagName } = ctx.opts;
-  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
+  await ctx.deferReply();
 
   const flag = await prisma.featureFlag.findUnique({
     where: { name: flagName },

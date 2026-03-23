@@ -59,7 +59,6 @@ command.setHandler(async (ctx) => {
   if (ctx.user.id !== userIDs.me && ctx.user.id !== userIDs.myAlt) {
     throw new CommandError("This command is currently unavailable.");
   }
-  await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
     throw new CommandError("You are already a firebreather!");

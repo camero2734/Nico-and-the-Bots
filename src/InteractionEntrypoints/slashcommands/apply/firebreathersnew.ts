@@ -17,7 +17,7 @@ import {
   type RadioGroupComponentData,
   TextInputStyle
 } from "discord.js";
-import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -56,8 +56,8 @@ function addCheckboxComponent(modal: ModalBuilder, label: string, data: Checkbox
 }
 
 command.setHandler(async (ctx) => {
-  if (ctx.user.id !== userIDs.me && ctx.user.id !== userIDs.myAlt) {
-    throw new CommandError("This command is currently unavailable.");
+  if (!ctx.member.roles.cache.has(roles.staff)) {
+    throw new CommandError("Command unavailable");
   }
 
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
@@ -233,7 +233,6 @@ export async function sendToStaff(
           ].map((o) => o.toJSON()),
         )
         .setPlaceholder("Select an action")
-        .setDisabled(false)
         .setCustomId(genStaffModalId({ applicationId })),
     );
 

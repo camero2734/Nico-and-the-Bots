@@ -1,6 +1,7 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import {
   ChannelType,
+  ChatInputCommandInteraction,
   Colors,
   type CommandInteraction,
   type DMChannel,
@@ -52,6 +53,12 @@ const getChannelName = (ctx: TextBasedChannel | Interaction): string => {
   return `${interactionType}: ${ctx.user.tag} in ${ctx.channel ? getChannelName(ctx.channel) : "?"}`;
 };
 
+const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
+  const { commandName, options } = ctx;
+  const args = options.data.map((opt) => `${opt.name}:${opt.value}`).join(" ");
+  return `/${commandName} ${args}`.trim();
+};
+
 export const ErrorHandler = async (
   ctx: TextChannel | DMChannel | Interaction,
   e: unknown,
@@ -87,6 +94,14 @@ export const ErrorHandler = async (
       embed.addFields({
         name: "Handler",
         value: handler,
+      });
+    }
+
+    const commandString = ctx instanceof ChatInputCommandInteraction && getCommandString(ctx);
+    if (commandString) {
+      embed.addFields({
+        name: "Command",
+        value: commandString,
       });
     }
 

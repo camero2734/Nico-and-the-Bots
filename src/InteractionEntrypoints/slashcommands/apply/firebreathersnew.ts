@@ -1,23 +1,39 @@
-import { LabelBuilder, ModalBuilder } from "@discordjs/builders";
+import {
+  ActionRowBuilder,
+  EmbedBuilder,
+  LabelBuilder,
+  ModalBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextInputBuilder,
+} from "@discordjs/builders";
+import { addDays } from "date-fns";
 import {
   type CheckboxGroupComponentData,
+  Colors,
   ComponentType,
+  type Guild,
   MessageFlags,
   type RadioGroupComponentData,
-  TextInputStyle,
+  TextInputStyle
 } from "discord.js";
-import { roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { generateScoreCard } from "../econ/score";
 import { FB_DELAY_DAYS, getActiveFirebreathersApplication } from "./_consts";
-import { sendToStaff } from "./firebreathers";
 
 const command = new SlashCommand({
   description: "Opens an application to the Firebreathers role",
   options: [],
 });
+
+enum ActionTypes {
+  Accept = 0,
+  Deny = 1,
+}
 
 interface RadioGroupData extends Omit<RadioGroupComponentData, "customId"> {
   custom_id: string;
@@ -40,6 +56,9 @@ function addCheckboxComponent(modal: ModalBuilder, label: string, data: Checkbox
 }
 
 command.setHandler(async (ctx) => {
+  if (ctx.user.id !== userIDs.me && ctx.user.id !== userIDs.myAlt) {
+    throw new CommandError("This command is currently unavailable.");
+  }
   await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
@@ -50,7 +69,10 @@ command.setHandler(async (ctx) => {
 
   if (activeApplication && ctx.user.id !== userIDs.myAlt) {
     if (activeApplication.decidedAt) {
-      const timestamp = F.discordTimestamp(new Date(Date.now() + FB_DELAY_DAYS * 24 * 60 * 60 * 1000), "relative");
+      const timestamp = F.discordTimestamp(
+        addDays(activeApplication.submittedAt || new Date(), FB_DELAY_DAYS),
+        "relative",
+      );
       throw new CommandError(`You have already recently applied! You can apply again ${timestamp}`);
     }
     if (!activeApplication.submittedAt) {
@@ -135,7 +157,8 @@ command.setHandler(async (ctx) => {
   await ctx.showModal(modal.toJSON(false));
 });
 
-const genModalId = command.addInteractionListener("tbAppModal", ["applicationId"], async (ctx, opts) => {
+// User submits the application modal, send the application to staff for review
+const genModalId = command.addInteractionListener("tbSubmitModal", ["applicationId"], async (ctx, opts) => {
   if (!ctx.isModalSubmit()) return;
 
   const applicationId = opts.applicationId;
@@ -169,6 +192,225 @@ const genModalId = command.addInteractionListener("tbAppModal", ["applicationId"
   await ctx.editReply({
     content: "Your application has been submitted! The staff team will review it shortly.",
   });
+});
+
+export async function sendToStaff(
+  guild: Guild,
+  applicationId: string,
+  data: Record<string, string>,
+): Promise<string | undefined> {
+  try {
+    const tbApplicationChannel = (await guild.channels.fetch(channelIDs.deapplications));
+    if (!tbApplicationChannel?.isTextBased()) throw new Error("TB Application channel not found");
+
+    const application = await prisma.firebreatherApplication.findUnique({
+      where: { applicationId },
+    });
+    if (!application) throw new Error("No application found");
+
+    const member = await guild.members.fetch(application.userId);
+    if (!member) throw new Error("No member found");
+
+    const embed = new EmbedBuilder()
+      .setAuthor({
+        name: `${member.displayName}'s application`,
+        icon_url: member.displayAvatarURL(),
+      })
+      .setFooter({ text: applicationId });
+
+    for (const [name, value] of Object.entries(data)) {
+      embed.addFields([{ name: name, value: value?.substring(0, 1000) || "*Nothing*" }]);
+    }
+
+    const actionRow = new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .addOptions(
+          [
+            new StringSelectMenuOptionBuilder({
+              label: "Accept",
+              value: ActionTypes.Accept.toString(),
+              emoji: { id: emojiIDs.upvote },
+            }),
+            new StringSelectMenuOptionBuilder({
+              label: "Deny",
+              value: ActionTypes.Deny.toString(),
+              emoji: { id: emojiIDs.downvote },
+            }),
+          ].map((o) => o.toJSON()),
+        )
+        .setCustomId(genStaffModalId({ applicationId })),
+    );
+
+    const scoreCard = await generateScoreCard(member);
+    const attachment = { attachment: scoreCard, name: "score.png" };
+
+    const m = await tbApplicationChannel.send({
+      embeds: [embed],
+      components: [actionRow],
+    });
+
+    try {
+      const thread = await m.startThread({
+        name: `${member.displayName} application discussion (${applicationId})`,
+        autoArchiveDuration: 10080,
+      });
+
+      await thread.send({ content: `${member}`, files: [attachment] });
+
+      const userWarnings = await prisma.warning.findMany({
+        where: { warnedUserId: member.id },
+        take: 5,
+        orderBy: { createdAt: "desc" },
+      });
+      const totalWarnings = await prisma.warning.count({
+        where: { warnedUserId: member.id },
+      });
+
+      const warningsEmbed = new EmbedBuilder()
+        .setTitle(`${member.displayName}'s most recent warnings`)
+        .setFooter({ text: `${totalWarnings} total warning(s)` });
+      if (userWarnings.length > 0) {
+        for (const warn of userWarnings) {
+          warningsEmbed.addFields([
+            {
+              name: `${warn.reason.substring(0, 200)} [${warn.severity}]`,
+              value: F.discordTimestamp(warn.createdAt, "relative"),
+            },
+          ]);
+        }
+      } else {
+        warningsEmbed.setDescription("*This user has no warnings*");
+      }
+
+      await thread.send({ embeds: [warningsEmbed] });
+
+      await F.sendMessageToUser(member, {
+        embeds: [
+          new EmbedBuilder({
+            description: `Your TB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`,
+          }),
+        ],
+      });
+
+      await m.react(emojiIDs.upvote);
+      await m.react(emojiIDs.downvote);
+    } catch (e) {
+      await m.delete();
+      return;
+    }
+
+    return m.url;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+// Staff clicks accept/deny, show them a modal to optionally provide a reason for their decision
+const MODAL_REASON = "tbAppModalReason";
+const genStaffModalId = command.addInteractionListener("staffTBAppModal", ["applicationId"], async (ctx, args) => {
+  if (!ctx.isStringSelectMenu()) return;
+
+  const action: ActionTypes = +ctx.values[0];
+
+  const verb = action === ActionTypes.Accept ? "Accept" : "Deny";
+  const verbPast = action === ActionTypes.Accept ? "accepted" : "denied";
+
+  const modal = new ModalBuilder()
+    .setTitle(`${verb}ing Torchbearers Application`)
+    .setCustomId(genId({ applicationId: args.applicationId, type: action.toString() }));
+
+  const reasonInput = new LabelBuilder()
+    .setLabel(`${verb} Reason`)
+    .setTextInputComponent(
+      new TextInputBuilder()
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false)
+        .setPlaceholder(`Why was the application ${verbPast}? This is optional and will be sent to the user.`)
+        .setCustomId(MODAL_REASON),
+    );
+
+  await ctx.showModal(modal.addLabelComponents(reasonInput));
+});
+
+// Staff submits the modal, update application and notify user of the decision
+const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", "type"], async (ctx, args) => {
+  await ctx.deferUpdate();
+  await ctx.editReply({ components: [] });
+
+  if (!ctx.isModalSubmit()) return;
+
+  const action: ActionTypes = +args.type;
+  const reason = ctx.components.getTextInputValue(MODAL_REASON);
+
+  const applicationId = args.applicationId;
+  const application = await prisma.firebreatherApplication.findUnique({
+    where: { applicationId },
+  });
+  if (!application) throw new CommandError("This application no longer exists");
+
+  const member = await ctx.guild.members.fetch(application.userId);
+  if (!member) throw new CommandError("This member appears to have left the server");
+
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: "Torchbearers Application results",
+      icon_url: member.client.user?.displayAvatarURL(),
+    })
+    .setFooter({ text: applicationId });
+
+  if (reason) embed.addFields({ name: "Reason", value: reason });
+
+  const msgEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+
+  if (action === ActionTypes.Accept) {
+    await prisma.firebreatherApplication.update({
+      where: { applicationId },
+      data: { approved: true, decidedAt: new Date() },
+    });
+    await member.roles.add(roles.deatheaters);
+
+    embed.setAuthor({
+      name: "Torchbearers Application Approved",
+      icon_url: member.client.user?.displayAvatarURL(),
+    });
+    embed.setDescription(`You are officially a Torchbearer! You may now access <#${channelIDs.fairlylocals}>`);
+
+    await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
+  } else if (action === ActionTypes.Deny) {
+    await prisma.firebreatherApplication.update({
+      where: { applicationId },
+      data: { approved: false, decidedAt: new Date() },
+    });
+
+    const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
+
+    embed.setAuthor({
+      name: "Torchbearers Application Denied",
+      icon_url: member.client.user?.displayAvatarURL(),
+    });
+    embed.setDescription(`Unfortunately, your application for TB was denied. You may reapply ${timestamp}`);
+    await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
+  } else throw new Error("Invalid action type");
+
+  const doneByEmbed = new EmbedBuilder()
+    .setAuthor({
+      name: ctx.member.displayName,
+      icon_url: ctx.member.displayAvatarURL(),
+    })
+    .setDescription(`${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s TB application`)
+    .addFields([{ name: "Reason", value: reason || "*No reason given*" }])
+    .setFooter({ text: applicationId });
+
+  const thread = ctx.message.thread;
+  if (thread) {
+    await thread.setArchived(true, "Decision was made, thread no longer necessary");
+
+    doneByEmbed.addFields([{ name: "Thread", value: `${thread}` }]);
+  }
+
+  await ctx.followUp({ embeds: [doneByEmbed] });
+
+  await F.sendMessageToUser(member, { embeds: [embed] });
 });
 
 export default command;

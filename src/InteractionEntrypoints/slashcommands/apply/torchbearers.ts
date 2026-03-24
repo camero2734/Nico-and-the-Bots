@@ -410,6 +410,7 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   const member = await ctx.guild.members.fetch(application.userId);
   if (!member) throw new CommandError("This member appears to have left the server");
 
+  console.log(`Updating application ${applicationId} as ${action === ActionTypes.Accept ? "accepted" : "denied"} by ${ctx.member?.displayName} with reason: ${reason}`);
   await prisma.firebreatherApplication.update({
     where: { applicationId },
     data: { approved: action === ActionTypes.Accept, decidedAt: new Date() },

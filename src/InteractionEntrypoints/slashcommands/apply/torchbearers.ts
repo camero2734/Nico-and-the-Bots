@@ -57,10 +57,6 @@ function addCheckboxComponent(modal: ModalBuilder, label: string, data: Checkbox
 }
 
 command.setHandler(async (ctx) => {
-  if (!ctx.member.roles.cache.has(roles.staff)) {
-    throw new CommandError("Command unavailable");
-  }
-
   if (!(await isFlagEnabled("ACCEPT_TB_APPLICATIONS"))) {
     throw new CommandError("Applications are currently closed, please try again later.");
   }

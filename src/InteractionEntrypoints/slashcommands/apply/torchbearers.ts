@@ -375,7 +375,22 @@ const genStaffModalId = command.addInteractionListener("staffTBAppModal", ["appl
 // Staff submits the modal, update application and notify user of the decision
 const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", "type"], async (ctx, args) => {
   await ctx.deferUpdate();
-  await ctx.editReply({ components: [] });
+
+  // Disable the select menu
+  const components = ctx.message.components.map(c => c.toJSON());
+  for (const container of components) {
+    if (container.type !== ComponentType.Container) continue;
+    for (const row of container.components) {
+      if (row.type !== ComponentType.ActionRow) continue;
+      for (const component of row.components) {
+        if (component.type === ComponentType.StringSelect) {
+          component.disabled = true;
+        }
+      }
+    }
+  }
+
+  await ctx.editReply({ components });
 
   if (!ctx.isModalSubmit()) return;
 

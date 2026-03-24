@@ -374,12 +374,20 @@ const genStaffModalId = command.addInteractionListener("staffTBAppModal", ["appl
 
 // Staff submits the modal, update application and notify user of the decision
 const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", "type"], async (ctx, args) => {
+  if (!ctx.isModalSubmit()) return;
   await ctx.deferUpdate();
+
+  const action: ActionTypes = +args.type;
+  const reason = ctx.components.getTextInputValue(MODAL_REASON);
+  const verb = action === ActionTypes.Accept ? "accepted" : "denied";
+  const color = action === ActionTypes.Accept ? Colors.Green : Colors.Red;
 
   // Disable the select menu
   const components = ctx.message.components.map(c => c.toJSON());
   for (const container of components) {
     if (container.type !== ComponentType.Container) continue;
+
+    container.accent_color = color;
     for (const row of container.components) {
       if (row.type !== ComponentType.ActionRow) continue;
       for (const component of row.components) {
@@ -392,11 +400,6 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
 
   await ctx.editReply({ components });
 
-  if (!ctx.isModalSubmit()) return;
-
-  const action: ActionTypes = +args.type;
-  const reason = ctx.components.getTextInputValue(MODAL_REASON);
-
   const applicationId = args.applicationId;
   const application = await prisma.firebreatherApplication.findUnique({
     where: { applicationId },
@@ -405,9 +408,6 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
 
   const member = await ctx.guild.members.fetch(application.userId);
   if (!member) throw new CommandError("This member appears to have left the server");
-
-  const verb = action === ActionTypes.Accept ? "accepted" : "denied";
-  const color = action === ActionTypes.Accept ? Colors.Green : Colors.Red;
 
   await prisma.firebreatherApplication.update({
     where: { applicationId },
@@ -430,9 +430,7 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
       ),
     );
 
-  console.log("BEFORE EDIT REPLY");
-  await ctx.editReply({ components: [resultContainer] });
-  console.log("AFTER EDIT REPLY");
+  await ctx.followUp({ components: [resultContainer], flags: MessageFlags.IsComponentsV2 });
 
   if (action === ActionTypes.Accept) {
     const userNotification = new ContainerBuilder()

@@ -218,7 +218,7 @@ export async function sendToStaff(
             `## Torchbearers Application\n` +
             `-# **Applicant:** ${userMention(member.id)}\n` +
             `-# **Application ID:** \`${applicationId}\`\n` +
-            `-# **User ID:** \`${member.id}\``,
+            `-# **Submitted:** ${F.discordTimestamp(application.submittedAt || new Date(), "relative")}`,
           ),
         )
         .setThumbnailAccessory((builder) => builder.setURL(member.displayAvatarURL({ extension: "png", size: 256 }))),

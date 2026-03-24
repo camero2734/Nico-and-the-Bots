@@ -24,7 +24,7 @@ import {
   type RadioGroupComponentData,
   TextInputStyle,
 } from "discord.js";
-import { channelIDs, emojiIDs, roles, userIDs } from "../../../Configuration/config";
+import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -73,7 +73,7 @@ command.setHandler(async (ctx) => {
 
   const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);
 
-  if (activeApplication?.submittedAt && ctx.user.id !== userIDs.me) {
+  if (activeApplication?.submittedAt) {
     const timestamp = F.discordTimestamp(activeApplication.submittedAt || new Date(), "relative");
     throw new CommandError(
       `Your previous application has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,

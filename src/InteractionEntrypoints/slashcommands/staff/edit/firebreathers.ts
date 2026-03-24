@@ -2,6 +2,7 @@ import { addYears } from "date-fns";
 import { ApplicationCommandOptionType } from "discord.js";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
+import { getActiveFirebreathersApplication } from "../../apply/_consts";
 
 const command = new SlashCommand({
   description: "Edits a user's firebreathers application status",
@@ -65,7 +66,7 @@ command.setHandler(async (ctx) => {
     });
   } else if (action === "RESET_TIMER") {
     // Find the most recent firebreathers application and reset the timer
-    const latestApplication = await prisma.firebreatherApplication.findFirst({
+    const latestApplication = (await getActiveFirebreathersApplication(user)) || await prisma.firebreatherApplication.findFirst({
       where: { userId: user },
       orderBy: { startedAt: "desc" },
     });

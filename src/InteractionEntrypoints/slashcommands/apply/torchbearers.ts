@@ -264,91 +264,91 @@ export async function sendToStaff(
       flags: MessageFlags.IsComponentsV2,
     });
 
-    console.log("Going to start thread");
-    try {
-      const thread = await m.startThread({
-        name: `${member.displayName} application discussion (${applicationId})`,
-        autoArchiveDuration: 10080,
-      });
+    // console.log("Going to start thread");
+    // try {
+    //   const thread = await m.startThread({
+    //     name: `${member.displayName} application discussion (${applicationId})`,
+    //     autoArchiveDuration: 10080,
+    //   });
 
-      // Send score card in thread with v2 components
-      const scoreContainer = new ContainerBuilder().setAccentColor(Colors.Gold);
-      scoreContainer.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`## Score Card for ${member.displayName}`),
-      );
-      scoreContainer.addMediaGalleryComponents(
-        new MediaGalleryBuilder().addItems(
-          new MediaGalleryItemBuilder()
-            .setURL(`attachment://score.png`)
-            .setDescription(`${member.displayName}'s score card`),
-        ),
-      );
+    //   // Send score card in thread with v2 components
+    //   const scoreContainer = new ContainerBuilder().setAccentColor(Colors.Gold);
+    //   scoreContainer.addTextDisplayComponents(
+    //     new TextDisplayBuilder().setContent(`## Score Card for ${member.displayName}`),
+    //   );
+    //   scoreContainer.addMediaGalleryComponents(
+    //     new MediaGalleryBuilder().addItems(
+    //       new MediaGalleryItemBuilder()
+    //         .setURL(`attachment://score.png`)
+    //         .setDescription(`${member.displayName}'s score card`),
+    //     ),
+    //   );
 
-      await thread.send({
-        content: `${member}`,
-        components: [scoreContainer],
-        files: [{ attachment: scoreCard, name: "score.png" }],
-        flags: MessageFlags.IsComponentsV2,
-      });
+    //   await thread.send({
+    //     content: `${member}`,
+    //     components: [scoreContainer],
+    //     files: [{ attachment: scoreCard, name: "score.png" }],
+    //     flags: MessageFlags.IsComponentsV2,
+    //   });
 
-      // Get user warnings
-      const userWarnings = await prisma.warning.findMany({
-        where: { warnedUserId: member.id },
-        take: 5,
-        orderBy: { createdAt: "desc" },
-      });
-      const totalWarnings = await prisma.warning.count({
-        where: { warnedUserId: member.id },
-      });
+    //   // Get user warnings
+    //   const userWarnings = await prisma.warning.findMany({
+    //     where: { warnedUserId: member.id },
+    //     take: 5,
+    //     orderBy: { createdAt: "desc" },
+    //   });
+    //   const totalWarnings = await prisma.warning.count({
+    //     where: { warnedUserId: member.id },
+    //   });
 
-      // Warnings container
-      const warningsContainer = new ContainerBuilder().setAccentColor(
-        userWarnings.length > 0 ? Colors.Red : Colors.Green,
-      );
-      warningsContainer.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `## ${member.displayName}'s Warning History\n**Total Warnings:** ${totalWarnings}`,
-        ),
-      );
+    //   // Warnings container
+    //   const warningsContainer = new ContainerBuilder().setAccentColor(
+    //     userWarnings.length > 0 ? Colors.Red : Colors.Green,
+    //   );
+    //   warningsContainer.addTextDisplayComponents(
+    //     new TextDisplayBuilder().setContent(
+    //       `## ${member.displayName}'s Warning History\n**Total Warnings:** ${totalWarnings}`,
+    //     ),
+    //   );
 
-      const warningsText =
-        userWarnings.length > 0
-          ? userWarnings
-            .map(
-              (warn) =>
-                `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n*${F.discordTimestamp(warn.createdAt, "relative")}*`,
-            )
-            .join("\n\n")
-          : "*This user has no warnings* ✅";
-      warningsContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(warningsText));
+    //   const warningsText =
+    //     userWarnings.length > 0
+    //       ? userWarnings
+    //         .map(
+    //           (warn) =>
+    //             `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n*${F.discordTimestamp(warn.createdAt, "relative")}*`,
+    //         )
+    //         .join("\n\n")
+    //       : "*This user has no warnings* ✅";
+    //   warningsContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(warningsText));
 
-      await thread.send({
-        components: [warningsContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
+    //   await thread.send({
+    //     components: [warningsContainer],
+    //     flags: MessageFlags.IsComponentsV2,
+    //   });
 
-      // Notify user
-      const userNotificationContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
-      userNotificationContainer.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `## 📋 Application Received\n\n` +
-          `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
-          `Please allow a few days for it to be reviewed.\n\n` +
-          `We'll notify you once a decision has been made.`,
-        ),
-      );
+    //   // Notify user
+    //   const userNotificationContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
+    //   userNotificationContainer.addTextDisplayComponents(
+    //     new TextDisplayBuilder().setContent(
+    //       `## 📋 Application Received\n\n` +
+    //       `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
+    //       `Please allow a few days for it to be reviewed.\n\n` +
+    //       `We'll notify you once a decision has been made.`,
+    //     ),
+    //   );
 
-      await F.sendMessageToUser(member, {
-        components: [userNotificationContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
+    //   await F.sendMessageToUser(member, {
+    //     components: [userNotificationContainer],
+    //     flags: MessageFlags.IsComponentsV2,
+    //   });
 
-      await m.react(emojiIDs.upvote);
-      await m.react(emojiIDs.downvote);
-    } catch (e) {
-      await m.delete();
-      return;
-    }
+    //   await m.react(emojiIDs.upvote);
+    //   await m.react(emojiIDs.downvote);
+    // } catch (e) {
+    //   await m.delete();
+    //   return;
+    // }
 
     return m.url;
   } catch (e) {

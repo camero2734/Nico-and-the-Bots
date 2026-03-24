@@ -11,7 +11,7 @@ import {
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
   TextInputBuilder,
-  ThumbnailBuilder
+  ThumbnailBuilder,
 } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
@@ -223,9 +223,9 @@ export async function sendToStaff(
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `## Torchbearers Application\n` +
-            `**Applicant:** ${userMention(member.id)}\n` +
-            `**Application ID:** \`${applicationId}\`\n` +
-            `**User ID:** \`${member.id}\``,
+              `**Applicant:** ${userMention(member.id)}\n` +
+              `**Application ID:** \`${applicationId}\`\n` +
+              `**User ID:** \`${member.id}\``,
           ),
         )
         .setThumbnailAccessory(
@@ -244,29 +244,31 @@ export async function sendToStaff(
       );
     }
 
-    // Action buttons section
-    const actionRow = new ActionRowBuilder().addComponents(
-      new StringSelectMenuBuilder()
-        .addOptions(
-          [
-            new StringSelectMenuOptionBuilder({
-              label: "Accept",
-              value: ActionTypes.Accept.toString(),
-              emoji: { id: emojiIDs.upvote },
-            }),
-            new StringSelectMenuOptionBuilder({
-              label: "Deny",
-              value: ActionTypes.Deny.toString(),
-              emoji: { id: emojiIDs.downvote },
-            }),
-          ].map((o) => o.toJSON()),
-        )
-        .setPlaceholder("Select an action")
-        .setCustomId(genStaffModalId({ applicationId })),
+    // Action buttons section - add to container directly
+    mainContainer.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .addOptions(
+            [
+              new StringSelectMenuOptionBuilder({
+                label: "Accept",
+                value: ActionTypes.Accept.toString(),
+                emoji: { id: emojiIDs.upvote },
+              }),
+              new StringSelectMenuOptionBuilder({
+                label: "Deny",
+                value: ActionTypes.Deny.toString(),
+                emoji: { id: emojiIDs.downvote },
+              }),
+            ].map((o) => o.toJSON()),
+          )
+          .setPlaceholder("Select an action")
+          .setCustomId(genStaffModalId({ applicationId })),
+      ),
     );
 
     const m = await tbApplicationChannel.send({
-      components: [mainContainer, actionRow],
+      components: [mainContainer],
       flags: MessageFlags.IsComponentsV2,
     });
 
@@ -322,7 +324,7 @@ export async function sendToStaff(
             new SectionBuilder().addTextDisplayComponents(
               new TextDisplayBuilder().setContent(
                 `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n` +
-                `*${F.discordTimestamp(warn.createdAt, "relative")}*`,
+                  `*${F.discordTimestamp(warn.createdAt, "relative")}*`,
               ),
             ),
           );
@@ -343,9 +345,9 @@ export async function sendToStaff(
       userNotificationContainer.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `## 📋 Application Received\n\n` +
-          `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
-          `Please allow a few days for it to be reviewed.\n\n` +
-          `We'll notify you once a decision has been made.`,
+            `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
+            `Please allow a few days for it to be reviewed.\n\n` +
+            `We'll notify you once a decision has been made.`,
         ),
       );
 

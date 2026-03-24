@@ -1,12 +1,19 @@
 import {
   ActionRowBuilder,
+  ContainerBuilder,
   EmbedBuilder,
   LabelBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   ModalBuilder,
+  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  TextDisplayBuilder,
   TextInputBuilder,
+  ThumbnailBuilder
 } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
 import {
   type CheckboxGroupComponentData,
@@ -15,7 +22,7 @@ import {
   type Guild,
   MessageFlags,
   type RadioGroupComponentData,
-  TextInputStyle
+  TextInputStyle,
 } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -194,7 +201,7 @@ export async function sendToStaff(
   data: Record<string, string>,
 ): Promise<string | undefined> {
   try {
-    const tbApplicationChannel = (await guild.channels.fetch(channelIDs.deapplications));
+    const tbApplicationChannel = await guild.channels.fetch(channelIDs.deapplications);
     if (!tbApplicationChannel?.isTextBased()) throw new Error("TB Application channel not found");
 
     const application = await prisma.firebreatherApplication.findUnique({
@@ -205,17 +212,39 @@ export async function sendToStaff(
     const member = await guild.members.fetch(application.userId);
     if (!member) throw new Error("No member found");
 
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${member.displayName}'s application`,
-        icon_url: member.displayAvatarURL(),
-      })
-      .setFooter({ text: `${applicationId} | ${member.id}` });
+    const scoreCard = await generateScoreCard(member);
 
+    // Create main container with application details
+    const mainContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
+
+    // Header section with member info and thumbnail
+    mainContainer.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `## Torchbearers Application\n` +
+            `**Applicant:** ${userMention(member.id)}\n` +
+            `**Application ID:** \`${applicationId}\`\n` +
+            `**User ID:** \`${member.id}\``,
+          ),
+        )
+        .setThumbnailAccessory(
+          new ThumbnailBuilder({
+            media: { url: member.displayAvatarURL({ extension: "png", size: 256 }) },
+          }),
+        ),
+    );
+
+    // Application responses
     for (const [name, value] of Object.entries(data)) {
-      embed.addFields([{ name: name, value: value?.substring(0, 1000) || "*Nothing*" }]);
+      mainContainer.addSectionComponents(
+        new SectionBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`),
+        ),
+      );
     }
 
+    // Action buttons section
     const actionRow = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
         .addOptions(
@@ -236,12 +265,9 @@ export async function sendToStaff(
         .setCustomId(genStaffModalId({ applicationId })),
     );
 
-    const scoreCard = await generateScoreCard(member);
-    const attachment = { attachment: scoreCard, name: "score.png" };
-
     const m = await tbApplicationChannel.send({
-      embeds: [embed],
-      components: [actionRow],
+      components: [mainContainer, actionRow],
+      flags: MessageFlags.IsComponentsV2,
     });
 
     try {
@@ -250,8 +276,27 @@ export async function sendToStaff(
         autoArchiveDuration: 10080,
       });
 
-      await thread.send({ content: `${member}`, files: [attachment] });
+      // Send score card in thread with v2 components
+      const scoreContainer = new ContainerBuilder().setAccentColor(Colors.Gold);
+      scoreContainer.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`## Score Card for ${member.displayName}`),
+      );
+      scoreContainer.addMediaGalleryComponents(
+        new MediaGalleryBuilder().addItems(
+          new MediaGalleryItemBuilder()
+            .setURL(`attachment://score.png`)
+            .setDescription(`${member.displayName}'s score card`),
+        ),
+      );
 
+      await thread.send({
+        content: `${member}`,
+        components: [scoreContainer],
+        files: [{ attachment: scoreCard, name: "score.png" }],
+        flags: MessageFlags.IsComponentsV2,
+      });
+
+      // Get user warnings
       const userWarnings = await prisma.warning.findMany({
         where: { warnedUserId: member.id },
         take: 5,
@@ -261,30 +306,52 @@ export async function sendToStaff(
         where: { warnedUserId: member.id },
       });
 
-      const warningsEmbed = new EmbedBuilder()
-        .setTitle(`${member.displayName}'s most recent warnings`)
-        .setFooter({ text: `${totalWarnings} total warning(s)` });
+      // Warnings container
+      const warningsContainer = new ContainerBuilder().setAccentColor(
+        userWarnings.length > 0 ? Colors.Red : Colors.Green,
+      );
+      warningsContainer.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `## ${member.displayName}'s Warning History\n**Total Warnings:** ${totalWarnings}`,
+        ),
+      );
+
       if (userWarnings.length > 0) {
         for (const warn of userWarnings) {
-          warningsEmbed.addFields([
-            {
-              name: `${warn.reason.substring(0, 200)} [${warn.severity}]`,
-              value: F.discordTimestamp(warn.createdAt, "relative"),
-            },
-          ]);
+          warningsContainer.addSectionComponents(
+            new SectionBuilder().addTextDisplayComponents(
+              new TextDisplayBuilder().setContent(
+                `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n` +
+                `*${F.discordTimestamp(warn.createdAt, "relative")}*`,
+              ),
+            ),
+          );
         }
       } else {
-        warningsEmbed.setDescription("*This user has no warnings*");
+        warningsContainer.addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("*This user has no warnings* ✅"),
+        );
       }
 
-      await thread.send({ embeds: [warningsEmbed] });
+      await thread.send({
+        components: [warningsContainer],
+        flags: MessageFlags.IsComponentsV2,
+      });
+
+      // Notify user
+      const userNotificationContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
+      userNotificationContainer.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `## 📋 Application Received\n\n` +
+          `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
+          `Please allow a few days for it to be reviewed.\n\n` +
+          `We'll notify you once a decision has been made.`,
+        ),
+      );
 
       await F.sendMessageToUser(member, {
-        embeds: [
-          new EmbedBuilder({
-            description: `Your TB application (${applicationId}) has been received by the staff. Please allow a few days for it to be reviewed.`,
-          }),
-        ],
+        components: [userNotificationContainer],
+        flags: MessageFlags.IsComponentsV2,
       });
 
       await m.react(emojiIDs.upvote);

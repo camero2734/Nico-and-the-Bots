@@ -285,7 +285,6 @@ export async function sendToStaff(
       );
 
       await thread.send({
-        content: `${member}`,
         components: [scoreContainer],
         files: [{ attachment: scoreCard, name: "score.png" }],
         flags: MessageFlags.IsComponentsV2,

@@ -6,14 +6,11 @@ import {
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   ModalBuilder,
-  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
-  TextInputBuilder,
-  ThumbnailBuilder,
+  TextInputBuilder
 } from "@discordjs/builders";
-import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
 import {
   type CheckboxGroupComponentData,
@@ -242,27 +239,27 @@ export async function sendToStaff(
     // mainContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(responsesText));
 
     // Action buttons section - add to container directly
-    mainContainer.addActionRowComponents(
-      new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .addOptions(
-            [
-              new StringSelectMenuOptionBuilder({
-                label: "Accept",
-                value: ActionTypes.Accept.toString(),
-                emoji: { id: emojiIDs.upvote },
-              }),
-              new StringSelectMenuOptionBuilder({
-                label: "Deny",
-                value: ActionTypes.Deny.toString(),
-                emoji: { id: emojiIDs.downvote },
-              }),
-            ]
-          )
-          .setPlaceholder("Select an action")
-          .setCustomId(genStaffModalId({ applicationId })),
-      ),
-    );
+    // mainContainer.addActionRowComponents(
+    //   new ActionRowBuilder().addComponents(
+    //     new StringSelectMenuBuilder()
+    //       .addOptions([
+    //         new StringSelectMenuOptionBuilder({
+    //           label: "Accept",
+    //           value: ActionTypes.Accept.toString(),
+    //           emoji: { id: emojiIDs.upvote },
+    //         }),
+    //         new StringSelectMenuOptionBuilder({
+    //           label: "Deny",
+    //           value: ActionTypes.Deny.toString(),
+    //           emoji: { id: emojiIDs.downvote },
+    //         }),
+    //       ])
+    //       .setPlaceholder("Select an action")
+    //       .setCustomId(genStaffModalId({ applicationId })),
+    //   ),
+    // );
+
+    mainContainer.addTextDisplayComponents(builder => builder.setContent("Test!"))
 
     const m = await tbApplicationChannel.send({
       components: [mainContainer],

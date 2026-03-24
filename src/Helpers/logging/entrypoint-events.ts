@@ -1,3 +1,4 @@
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { EntrypointEvents } from "../../Structures/Events";
 import { prisma } from "../prisma-init";
 
@@ -6,16 +7,22 @@ async function storeStartedCommands() {
   for await (const event of startedEvents) {
     const { entrypoint, ctx } = event;
 
-    await prisma.commandUsed.create({
-      data: {
-        id: ctx.id,
-        channelId: ctx.channel?.id,
-        identifier: entrypoint.identifier,
-        type: ctx.type.toString(),
-        userId: ctx.user.id,
-        createdAt: ctx.createdAt,
-      },
-    });
+    try {
+      await prisma.commandUsed.create({
+        data: {
+          id: ctx.id,
+          channelId: ctx.channel?.id,
+          identifier: entrypoint.identifier,
+          type: ctx.type.toString(),
+          userId: ctx.user.id,
+          createdAt: ctx.createdAt,
+        },
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+        console.warn(`Duplicate commandUsed entry for ctx.id ${ctx.id}, ignoring.`);
+      } else throw error;
+    }
   }
 }
 

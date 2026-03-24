@@ -322,7 +322,7 @@ export async function sendToStaff(
           `## 📋 Application Received\n\n` +
           `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
           `Please allow a few days for it to be reviewed.\n\n` +
-          `We'll notify you once a decision has been made.`,
+          `You'll receive a notification once a decision has been made.`,
         ),
       );
 

@@ -267,7 +267,7 @@ export async function sendToStaff(
       // Send score card in thread with v2 components
       const scoreContainer = new ContainerBuilder().setAccentColor(Colors.Gold);
       scoreContainer.addTextDisplayComponents((builder) =>
-        builder.setContent(`## Score Card for ${member.displayName}`),
+        builder.setContent(`## Score Card for ${userMention(member.id)}`),
       );
       scoreContainer.addMediaGalleryComponents((galleryBuilder) =>
         galleryBuilder.addItems((itemBuilder) =>

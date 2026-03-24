@@ -1,5 +1,4 @@
 import {
-  ActionRowBuilder,
   ContainerBuilder,
   EmbedBuilder,
   LabelBuilder,
@@ -7,9 +6,7 @@ import {
   SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  TextDisplayBuilder,
-  TextInputBuilder,
-  ThumbnailBuilder
+  TextInputBuilder
 } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
@@ -337,10 +334,10 @@ export async function sendToStaff(
         ),
       );
 
-      // await F.sendMessageToUser(member, {
-      //   components: [userNotificationContainer],
-      //   flags: MessageFlags.IsComponentsV2,
-      // });
+      await F.sendMessageToUser(member, {
+        components: [userNotificationContainer],
+        flags: MessageFlags.IsComponentsV2,
+      });
 
       await m.react(emojiIDs.upvote);
       await m.react(emojiIDs.downvote);

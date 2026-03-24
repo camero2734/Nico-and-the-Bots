@@ -1,8 +1,8 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { FEATURE_FLAGS } from "../../../../Helpers/feature-flags";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
-import { FEATURE_FLAGS } from "../../../../Helpers/feature-flags";
 
 const command = new SlashCommand({
   description: "Toggle a feature flag",

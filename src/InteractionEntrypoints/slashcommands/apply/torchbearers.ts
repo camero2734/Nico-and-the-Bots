@@ -210,7 +210,7 @@ export async function sendToStaff(
         name: `${member.displayName}'s application`,
         icon_url: member.displayAvatarURL(),
       })
-      .setFooter({ text: applicationId });
+      .setFooter({ text: `${applicationId} | ${member.id}` });
 
     for (const [name, value] of Object.entries(data)) {
       embed.addFields([{ name: name, value: value?.substring(0, 1000) || "*Nothing*" }]);

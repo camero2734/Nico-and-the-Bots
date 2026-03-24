@@ -5,7 +5,7 @@ import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-  description: "Shows the # of FB apps in various states",
+  description: "Shows the # of TB apps in various states",
   options: [],
 });
 
@@ -30,7 +30,7 @@ command.setHandler(async (ctx) => {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: "Firebreather Application Stats",
+      name: "Torchbearer Application Stats",
       icon_url: fbRole?.iconURL() || undefined,
     })
     .addFields([

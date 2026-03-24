@@ -69,7 +69,7 @@ command.setHandler(async (ctx) => {
   if (activeApplication?.submittedAt) {
     const timestamp = F.discordTimestamp(activeApplication.submittedAt || new Date(), "relative");
     throw new CommandError(
-      `Your previous application has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,
+      `Your previous application (${activeApplication.applicationId}) has not been reviewed by staff yet.\n\nIt was submitted ${timestamp}.`,
     );
   }
   if (activeApplication?.decidedAt) {
@@ -393,6 +393,7 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
       for (const component of row.components) {
         if (component.type === ComponentType.StringSelect) {
           component.disabled = true;
+          component.placeholder = `Application ${verb}`;
         }
       }
     }

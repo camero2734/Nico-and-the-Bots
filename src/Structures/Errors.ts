@@ -9,6 +9,7 @@ import {
   type Interaction,
   InteractionType,
   MessageFlags,
+  type ModalSubmitInteraction,
   type TextBasedChannel,
   type TextChannel,
 } from "discord.js";
@@ -17,8 +18,23 @@ import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
 
-const getReplyMethod = async (ctx: CommandInteraction) => {
-  if (!ctx.isRepliable() || !ctx.isChatInputCommand()) {
+const getReplyMethod = async (ctx: CommandInteraction | ModalSubmitInteraction) => {
+  if (!ctx.isRepliable()) {
+    if (ctx.channel?.isSendable()) {
+      return ctx.channel.send;
+    }
+    return () => { };
+  }
+
+  if (ctx.isModalSubmit()) {
+    if (ctx.deferred) {
+      return ctx.editReply;
+    }
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral, withResponse: true });
+    return ctx.editReply;
+  }
+
+  if (!ctx.isChatInputCommand()) {
     if (ctx.channel?.isSendable()) {
       return ctx.channel.send;
     }
@@ -136,7 +152,7 @@ export const ErrorHandler = async (
     sentInErrorChannel = true;
   }
 
-  const ectx = ctx as unknown as CommandInteraction & {
+  const ectx = ctx as unknown as (CommandInteraction | ModalSubmitInteraction) & {
     send: CommandInteraction["reply"];
   };
   ectx.send = (await getReplyMethod(ectx)) as unknown as (typeof ectx)["send"];

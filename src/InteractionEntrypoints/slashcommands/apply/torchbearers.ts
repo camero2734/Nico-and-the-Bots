@@ -1,13 +1,10 @@
 import {
-  ActionRowBuilder,
   ContainerBuilder,
   EmbedBuilder,
   LabelBuilder,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   ModalBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
   TextInputBuilder
 } from "@discordjs/builders";
@@ -198,7 +195,6 @@ export async function sendToStaff(
   data: Record<string, string>,
 ): Promise<string | undefined> {
   try {
-    console.log("Called sendToStaff with data:", { applicationId, data });
     const tbApplicationChannel = await guild.channels.fetch(channelIDs.deapplications);
     if (!tbApplicationChannel?.isTextBased()) throw new Error("TB Application channel not found");
 
@@ -260,7 +256,7 @@ export async function sendToStaff(
     //   ),
     // );
 
-    mainContainer.addTextDisplayComponents(builder => builder.setContent("Test!"))
+    mainContainer.addTextDisplayComponents((builder) => builder.setContent("Test!"));
 
     console.log("Sending application to staff...");
     const m = await tbApplicationChannel.send({

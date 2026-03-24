@@ -415,7 +415,9 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
       ),
     );
 
-  await ctx.editReply({ components: [resultContainer], flags: MessageFlags.IsComponentsV2 });
+  console.log("BEFORE EDIT REPLY");
+  await ctx.editReply({ components: [resultContainer] });
+  console.log("AFTER EDIT REPLY");
 
   if (action === ActionTypes.Accept) {
     const userNotification = new ContainerBuilder()

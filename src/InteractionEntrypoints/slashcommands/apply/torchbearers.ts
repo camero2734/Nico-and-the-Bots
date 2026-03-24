@@ -1,13 +1,17 @@
 import {
+  ActionRowBuilder,
   ContainerBuilder,
   EmbedBuilder,
   LabelBuilder,
-  MediaGalleryBuilder,
-  MediaGalleryItemBuilder,
   ModalBuilder,
+  SectionBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
-  TextInputBuilder
+  TextInputBuilder,
+  ThumbnailBuilder
 } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
 import {
   type CheckboxGroupComponentData,
@@ -212,49 +216,49 @@ export async function sendToStaff(
     const mainContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
 
     // Header section with member info and thumbnail
-    // mainContainer.addSectionComponents(
-    //   new SectionBuilder()
-    //     .addTextDisplayComponents(
-    //       new TextDisplayBuilder().setContent(
-    //         `## Torchbearers Application\n` +
-    //         `**Applicant:** ${userMention(member.id)}\n` +
-    //         `**Application ID:** \`${applicationId}\`\n` +
-    //         `**User ID:** \`${member.id}\``,
-    //       ),
-    //     )
-    //     .setThumbnailAccessory(
-    //       new ThumbnailBuilder({
-    //         media: { url: member.displayAvatarURL({ extension: "png", size: 256 }) },
-    //       }),
-    //     ),
-    // );
+    mainContainer.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `## Torchbearers Application\n` +
+            `**Applicant:** ${userMention(member.id)}\n` +
+            `**Application ID:** \`${applicationId}\`\n` +
+            `**User ID:** \`${member.id}\``,
+          ),
+        )
+        .setThumbnailAccessory(
+          new ThumbnailBuilder({
+            media: { url: member.displayAvatarURL({ extension: "png", size: 256 }) },
+          }),
+        ),
+    );
 
-    // // Application responses
-    // const responsesText = Object.entries(data)
-    //   .map(([name, value]) => `**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`)
-    //   .join("\n\n");
-    // mainContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(responsesText));
+    // Application responses
+    const responsesText = Object.entries(data)
+      .map(([name, value]) => `**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`)
+      .join("\n\n");
+    mainContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(responsesText));
 
     // Action buttons section - add to container directly
-    // mainContainer.addActionRowComponents(
-    //   new ActionRowBuilder().addComponents(
-    //     new StringSelectMenuBuilder()
-    //       .addOptions([
-    //         new StringSelectMenuOptionBuilder({
-    //           label: "Accept",
-    //           value: ActionTypes.Accept.toString(),
-    //           emoji: { id: emojiIDs.upvote },
-    //         }),
-    //         new StringSelectMenuOptionBuilder({
-    //           label: "Deny",
-    //           value: ActionTypes.Deny.toString(),
-    //           emoji: { id: emojiIDs.downvote },
-    //         }),
-    //       ])
-    //       .setPlaceholder("Select an action")
-    //       .setCustomId(genStaffModalId({ applicationId })),
-    //   ),
-    // );
+    mainContainer.addActionRowComponents(
+      new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .addOptions([
+            new StringSelectMenuOptionBuilder({
+              label: "Accept",
+              value: ActionTypes.Accept.toString(),
+              emoji: { id: emojiIDs.upvote },
+            }),
+            new StringSelectMenuOptionBuilder({
+              label: "Deny",
+              value: ActionTypes.Deny.toString(),
+              emoji: { id: emojiIDs.downvote },
+            }),
+          ])
+          .setPlaceholder("Select an action")
+          .setCustomId(genStaffModalId({ applicationId })),
+      ),
+    );
 
     mainContainer.addTextDisplayComponents((builder) => builder.setContent("Test!"));
 

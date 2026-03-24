@@ -2,6 +2,9 @@
  * Manages things that are scheduled in the database (reminders, mutes, etc.)
  */
 
+import { EmbedBuilder } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
+import { Cron, type ProtectCallbackFn } from "croner";
 import { differenceInHours, subDays } from "date-fns";
 import {
   ChannelType,
@@ -15,15 +18,8 @@ import {
   type TextChannel,
   type VoiceChannel,
 } from "discord.js";
-import { EmbedBuilder } from "@discordjs/builders";
-import { userMention } from "@discordjs/formatters";
-import { Cron, type ProtectCallbackFn } from "croner";
-import { JWT } from "google-auth-library";
-import { type GoogleSpreadsheetWorksheet, GoogleSpreadsheet } from "google-spreadsheet";
-import { guildID, roles, channelIDs, userIDs } from "../Configuration/config";
-import secrets from "../Configuration/secrets";
+import { channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
-import { sendToStaff } from "../InteractionEntrypoints/slashcommands/apply/firebreathers";
 import F from "./funcs";
 import { prisma } from "./prisma-init";
 
@@ -42,16 +38,6 @@ const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) 
 
 export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
-
-  const serviceAccountAuth = new JWT({
-    email: secrets.apis.google.sheets.client_email,
-    key: secrets.apis.google.sheets.private_key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  const doc = new GoogleSpreadsheet("1M63thXZZLKUc-3Y0IZmCLRYK2BsaFbAs_0P1xSeVRd0", serviceAccountAuth);
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
 
   // Helper function to log errors to both console and Discord
   const logError = async (message: string, error: unknown) => {
@@ -79,7 +65,6 @@ export default async function (client: Client): Promise<void> {
   // Create safe versions of each task
   const safeCheckReminders = createSafeTask("checkReminders", () => checkReminders(guild), 10_000);
   const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45_000);
-  const safeCheckFBApplication = createSafeTask("checkFBApplication", () => checkFBApplication(guild, sheet), 45_000);
   const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 100_000);
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
   const protect: ProtectCallbackFn = async (job) => {
@@ -89,7 +74,7 @@ export default async function (client: Client): Promise<void> {
   Cron("*/5 * * * * *", { protect }, safeCheckReminders);
 
   Cron("*/30 * * * * *", { protect }, async () => {
-    await Promise.all([safeCheckHouseOfGold(), safeCheckFBApplication()]);
+    await Promise.all([safeCheckHouseOfGold()]);
   });
 
   Cron("0 */2 * * * *", { protect }, async () => {
@@ -246,44 +231,4 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
     }
   }
   console.log("[Scheduler] checkHouseOfGold end");
-}
-
-async function checkFBApplication(guild: Guild, sheet: GoogleSpreadsheetWorksheet): Promise<void> {
-  console.log("[Scheduler] checkFBApplication start");
-
-  const rows = await sheet.getRows();
-  const ApplicationIdKey = "Application ID";
-
-  console.log(`[Scheduler] checkFBApplication loaded ${rows.length} rows from sheet`);
-
-  const _lookingForIds = await prisma.firebreatherApplication.findMany({
-    where: { submittedAt: null },
-    select: { applicationId: true },
-  });
-  const lookingForIds = new Set(_lookingForIds.map((l) => l.applicationId));
-
-  console.log(`[Scheduler] checkFBApplication looking for ${lookingForIds.size} applications`);
-
-  for (const row of rows) {
-    const applicationId = row.get(ApplicationIdKey);
-
-    if (!lookingForIds.has(applicationId)) continue;
-    lookingForIds.delete(applicationId); // Ignore any resubmissions
-
-    const keys = row._worksheet.headerValues.filter((k) => !k.startsWith("_") && k !== ApplicationIdKey);
-
-    const jsonData = Object.fromEntries(keys.map((k) => [k, row.get(k)]));
-
-    // Send to Discord
-    const messageUrl = await sendToStaff(guild, applicationId, jsonData);
-    if (!messageUrl) continue;
-
-    // Save to DB
-    await prisma.firebreatherApplication.update({
-      where: { applicationId },
-      data: { submittedAt: new Date(), messageUrl, responseData: jsonData },
-    });
-  }
-
-  console.log("[Scheduler] checkFBApplication end");
 }

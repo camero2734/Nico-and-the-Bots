@@ -1,5 +1,4 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { userMention } from "@discordjs/formatters";
 import { ApplicationCommandOptionType } from "discord.js";
 import { channelIDs, roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -66,7 +65,7 @@ command.setHandler(async (ctx) => {
         icon_url: newMem.displayAvatarURL(),
       })
       .setDescription(
-        `${userMention(newMem.id)} has tried to stop the cycle and failed. This has happened 1 time already.`,
+        `He tried to stop the cycle and failed. This has happened 1 time already.`,
       )
       .setFooter({
         text: "MATERIAL SUBJECT TO AUDIT UNDER NOVA BISHOP PROTOCOL",

@@ -72,9 +72,9 @@ export class KeonsBot {
             "Levels are determined by the number of **points** you have. To check the number of points you have, your level, and how far away you are from the next level, use the `/score` command.",
         },
         {
-          name: "What is the Firebreathers role?",
+          name: "What is the Torchbearers role?",
           value:
-            "The Firebreathers role is awarded to users who have contributed to our community, usually by being active. You may apply at any time by using the `/roles firebreathers` command, but we generally recommend to wait until you've been here for at least a few months.",
+            "The Torchbearers role is awarded to users who have contributed to our community, usually by being active. You may apply at any time by using the `/apply torchbearers` command, but we generally recommend to wait until you've been here for at least a few months.",
         },
         {
           name: "I have a suggestion for a new shop item",

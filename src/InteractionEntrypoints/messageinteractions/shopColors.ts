@@ -292,7 +292,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
       ? `${idx + 1}. ${label}`
       : item.data.locked
         ? "Temporarily Unavailable"
-        : `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`;
+        : `Level ${item.data.level}${item.data.requiresDE ? " & Torchbearers" : ""}`;
 
     setSectionAccessoryButton(
       section,

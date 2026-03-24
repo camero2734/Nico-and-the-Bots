@@ -27,7 +27,7 @@ import { FB_DELAY_DAYS, getActiveFirebreathersApplication } from "./_consts";
 import { isFlagEnabled } from "../../../Helpers/feature-flags";
 
 const command = new SlashCommand({
-  description: "Opens an application to the Firebreathers role",
+  description: "Opens an application to the Torchbearers role",
   options: [],
 });
 
@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
   }
 
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
-    throw new CommandError("You are already a firebreather!");
+    throw new CommandError("You are already a torchbearer!");
   }
 
   const activeApplication = await getActiveFirebreathersApplication(ctx.user.id);

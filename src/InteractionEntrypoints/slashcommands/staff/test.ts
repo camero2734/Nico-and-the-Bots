@@ -7,6 +7,7 @@ import {
   updateCurrentSongBattleMessage,
   updatePreviousSongBattleMessage,
 } from "../../scheduled/songbattle";
+import { prisma } from "../../../Helpers/prisma-init";
 
 const command = new SlashCommand({
   description: "Test command",
@@ -50,7 +51,13 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     songBattleCron();
   } else {
-    await ctx.reply("No valid number provided.");
+    await prisma.badge.create({
+      data: {
+        userId: "721081496714215496",
+        type: "LGBT",
+      }
+    })
+    await ctx.reply("Done");
   }
 });
 

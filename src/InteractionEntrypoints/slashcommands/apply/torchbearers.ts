@@ -218,28 +218,28 @@ export async function sendToStaff(
     const mainContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
 
     // Header section with member info and thumbnail
-    mainContainer.addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `## Torchbearers Application\n` +
-              `**Applicant:** ${userMention(member.id)}\n` +
-              `**Application ID:** \`${applicationId}\`\n` +
-              `**User ID:** \`${member.id}\``,
-          ),
-        )
-        .setThumbnailAccessory(
-          new ThumbnailBuilder({
-            media: { url: member.displayAvatarURL({ extension: "png", size: 256 }) },
-          }),
-        ),
-    );
+    // mainContainer.addSectionComponents(
+    //   new SectionBuilder()
+    //     .addTextDisplayComponents(
+    //       new TextDisplayBuilder().setContent(
+    //         `## Torchbearers Application\n` +
+    //         `**Applicant:** ${userMention(member.id)}\n` +
+    //         `**Application ID:** \`${applicationId}\`\n` +
+    //         `**User ID:** \`${member.id}\``,
+    //       ),
+    //     )
+    //     .setThumbnailAccessory(
+    //       new ThumbnailBuilder({
+    //         media: { url: member.displayAvatarURL({ extension: "png", size: 256 }) },
+    //       }),
+    //     ),
+    // );
 
-    // Application responses
-    const responsesText = Object.entries(data)
-      .map(([name, value]) => `**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`)
-      .join("\n\n");
-    mainContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(responsesText));
+    // // Application responses
+    // const responsesText = Object.entries(data)
+    //   .map(([name, value]) => `**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`)
+    //   .join("\n\n");
+    // mainContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(responsesText));
 
     // Action buttons section - add to container directly
     mainContainer.addActionRowComponents(
@@ -257,7 +257,7 @@ export async function sendToStaff(
                 value: ActionTypes.Deny.toString(),
                 emoji: { id: emojiIDs.downvote },
               }),
-            ].map((o) => o.toJSON()),
+            ]
           )
           .setPlaceholder("Select an action")
           .setCustomId(genStaffModalId({ applicationId })),
@@ -318,11 +318,11 @@ export async function sendToStaff(
       const warningsText =
         userWarnings.length > 0
           ? userWarnings
-              .map(
-                (warn) =>
-                  `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n*${F.discordTimestamp(warn.createdAt, "relative")}*`,
-              )
-              .join("\n\n")
+            .map(
+              (warn) =>
+                `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n*${F.discordTimestamp(warn.createdAt, "relative")}*`,
+            )
+            .join("\n\n")
           : "*This user has no warnings* ✅";
       warningsContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(warningsText));
 
@@ -336,9 +336,9 @@ export async function sendToStaff(
       userNotificationContainer.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `## 📋 Application Received\n\n` +
-            `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
-            `Please allow a few days for it to be reviewed.\n\n` +
-            `We'll notify you once a decision has been made.`,
+          `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
+          `Please allow a few days for it to be reviewed.\n\n` +
+          `We'll notify you once a decision has been made.`,
         ),
       );
 

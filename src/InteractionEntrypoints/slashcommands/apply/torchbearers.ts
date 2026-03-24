@@ -1,12 +1,10 @@
 import {
   ContainerBuilder,
-  EmbedBuilder,
   LabelBuilder,
   ModalBuilder,
   SectionBuilder,
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-  TextInputBuilder
+  StringSelectMenuOptionBuilder
 } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
@@ -215,7 +213,7 @@ export async function sendToStaff(
     // Header section with member info and thumbnail
     mainContainer.addSectionComponents(
       new SectionBuilder()
-        .addTextDisplayComponents(builder =>
+        .addTextDisplayComponents((builder) =>
           builder.setContent(
             `## Torchbearers Application\n` +
             `-# **Applicant:** ${userMention(member.id)}\n` +
@@ -223,19 +221,17 @@ export async function sendToStaff(
             `-# **User ID:** \`${member.id}\``,
           ),
         )
-        .setThumbnailAccessory(builder =>
-          builder.setURL(member.displayAvatarURL({ extension: "png", size: 256 })),
-        ),
+        .setThumbnailAccessory((builder) => builder.setURL(member.displayAvatarURL({ extension: "png", size: 256 }))),
     );
 
     // Application responses
     const responsesText = Object.entries(data)
       .map(([name, value]) => `**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`)
       .join("\n\n");
-    mainContainer.addTextDisplayComponents(builder => builder.setContent(responsesText));
+    mainContainer.addTextDisplayComponents((builder) => builder.setContent(responsesText));
 
     // Action buttons section - add to container directly
-    mainContainer.addActionRowComponents(builder =>
+    mainContainer.addActionRowComponents((builder) =>
       builder.addComponents(
         new StringSelectMenuBuilder()
           .addOptions([
@@ -270,14 +266,12 @@ export async function sendToStaff(
 
       // Send score card in thread with v2 components
       const scoreContainer = new ContainerBuilder().setAccentColor(Colors.Gold);
-      scoreContainer.addTextDisplayComponents(builder =>
+      scoreContainer.addTextDisplayComponents((builder) =>
         builder.setContent(`## Score Card for ${member.displayName}`),
       );
-      scoreContainer.addMediaGalleryComponents(
-        galleryBuilder => galleryBuilder.addItems(
-          itemBuilder => itemBuilder
-            .setURL(`attachment://score.png`)
-            .setDescription(`${member.displayName}'s score card`),
+      scoreContainer.addMediaGalleryComponents((galleryBuilder) =>
+        galleryBuilder.addItems((itemBuilder) =>
+          itemBuilder.setURL(`attachment://score.png`).setDescription(`${member.displayName}'s score card`),
         ),
       );
 
@@ -301,10 +295,8 @@ export async function sendToStaff(
       const warningsContainer = new ContainerBuilder().setAccentColor(
         userWarnings.length > 0 ? Colors.Red : Colors.Green,
       );
-      warningsContainer.addTextDisplayComponents(builder =>
-        builder.setContent(
-          `## ${member.displayName}'s Warning History\n**Total Warnings:** ${totalWarnings}`,
-        ),
+      warningsContainer.addTextDisplayComponents((builder) =>
+        builder.setContent(`## ${member.displayName}'s Warning History\n**Total Warnings:** ${totalWarnings}`),
       );
 
       const warningsText =
@@ -316,7 +308,7 @@ export async function sendToStaff(
             )
             .join("\n\n")
           : "*This user has no warnings* ✅";
-      warningsContainer.addTextDisplayComponents(builder => builder.setContent(warningsText));
+      warningsContainer.addTextDisplayComponents((builder) => builder.setContent(warningsText));
 
       await thread.send({
         components: [warningsContainer],
@@ -325,7 +317,7 @@ export async function sendToStaff(
 
       // Notify user
       const userNotificationContainer = new ContainerBuilder().setAccentColor(Colors.Blue);
-      userNotificationContainer.addTextDisplayComponents(builder =>
+      userNotificationContainer.addTextDisplayComponents((builder) =>
         builder.setContent(
           `## 📋 Application Received\n\n` +
           `Your Torchbearers application (**${applicationId}**) has been received by the staff. ` +
@@ -370,7 +362,7 @@ const genStaffModalId = command.addInteractionListener("staffTBAppModal", ["appl
   const reasonInput = new LabelBuilder()
     .setLabel(`${verb} Reason`)
     .setTextInputComponent(
-      new TextInputBuilder()
+      builder => builder
         .setStyle(TextInputStyle.Short)
         .setRequired(false)
         .setPlaceholder(`Why was the application ${verbPast}? This is optional and will be sent to the user.`)
@@ -399,66 +391,68 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   const member = await ctx.guild.members.fetch(application.userId);
   if (!member) throw new CommandError("This member appears to have left the server");
 
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: "Torchbearers Application results",
-      icon_url: member.client.user?.displayAvatarURL(),
-    })
-    .setFooter({ text: applicationId });
+  const verb = action === ActionTypes.Accept ? "accepted" : "denied";
+  const color = action === ActionTypes.Accept ? Colors.Green : Colors.Red;
 
-  if (reason) embed.addFields({ name: "Reason", value: reason });
-
-  const msgEmbed = new EmbedBuilder(ctx.message.embeds[0].toJSON());
+  await prisma.firebreatherApplication.update({
+    where: { applicationId },
+    data: { approved: action === ActionTypes.Accept, decidedAt: new Date() },
+  });
 
   if (action === ActionTypes.Accept) {
-    await prisma.firebreatherApplication.update({
-      where: { applicationId },
-      data: { approved: true, decidedAt: new Date() },
-    });
     await member.roles.add(roles.deatheaters);
+  }
 
-    embed.setAuthor({
-      name: "Torchbearers Application Approved",
-      icon_url: member.client.user?.displayAvatarURL(),
+  const resultContainer = new ContainerBuilder()
+    .setAccentColor(color)
+    .addTextDisplayComponents(
+      builder => builder.setContent(
+        `## Torchbearers Application ${verb.charAt(0).toUpperCase() + verb.slice(1)}\n` +
+        `**Applicant:** ${userMention(member.id)}\n` +
+        `**Decision by:** ${ctx.member}\n` +
+        `**Reason:** ${reason || "*No reason given*"}\n` +
+        `**Application ID:** \`${applicationId}\``,
+      ),
+    );
+
+  await ctx.editReply({ components: [resultContainer], flags: MessageFlags.IsComponentsV2 });
+
+  if (action === ActionTypes.Accept) {
+    const userNotification = new ContainerBuilder()
+      .setAccentColor(Colors.Green)
+      .addTextDisplayComponents(
+        builder => builder.setContent(
+          `## ✅ Application Approved\n\n` +
+          `You are officially a Torchbearer! You may now access <#${channelIDs.fairlylocals}>.\n\n` +
+          `**Reason:** ${reason || "*No reason given*"}`,
+        ),
+      );
+    await F.sendMessageToUser(member, {
+      components: [userNotification],
+      flags: MessageFlags.IsComponentsV2,
     });
-    embed.setDescription(`You are officially a Torchbearer! You may now access <#${channelIDs.fairlylocals}>`);
-
-    await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Green)] });
-  } else if (action === ActionTypes.Deny) {
-    await prisma.firebreatherApplication.update({
-      where: { applicationId },
-      data: { approved: false, decidedAt: new Date() },
-    });
-
+  } else {
     const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
-
-    embed.setAuthor({
-      name: "Torchbearers Application Denied",
-      icon_url: member.client.user?.displayAvatarURL(),
+    const userNotification = new ContainerBuilder()
+      .setAccentColor(Colors.Red)
+      .addTextDisplayComponents(
+        builder => builder.setContent(
+          `## ❌ Application Denied\n\n` +
+          `Unfortunately, your Torchbearers application was denied.\n\n` +
+          `You may reapply ${timestamp}.\n\n` +
+          `**Reason:** ${reason || "*No reason given*"}`,
+        ),
+      );
+    await F.sendMessageToUser(member, {
+      components: [userNotification],
+      flags: MessageFlags.IsComponentsV2,
     });
-    embed.setDescription(`Unfortunately, your application for TB was denied. You may reapply ${timestamp}`);
-    await ctx.editReply({ embeds: [msgEmbed.setColor(Colors.Red)] });
-  } else throw new Error("Invalid action type");
-
-  const doneByEmbed = new EmbedBuilder()
-    .setAuthor({
-      name: ctx.member.displayName,
-      icon_url: ctx.member.displayAvatarURL(),
-    })
-    .setDescription(`${ctx.member} ${action === ActionTypes.Accept ? "accepted" : "denied"} ${member}'s TB application`)
-    .addFields([{ name: "Reason", value: reason || "*No reason given*" }])
-    .setFooter({ text: applicationId });
+  }
 
   const thread = ctx.message.thread;
   if (thread) {
     await thread.setArchived(true, "Decision was made, thread no longer necessary");
-
-    doneByEmbed.addFields([{ name: "Thread", value: `${thread}` }]);
   }
-
-  await ctx.followUp({ embeds: [doneByEmbed] });
-
-  await F.sendMessageToUser(member, { embeds: [embed] });
 });
 
 export default command;

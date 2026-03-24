@@ -236,13 +236,10 @@ export async function sendToStaff(
     );
 
     // Application responses
-    for (const [name, value] of Object.entries(data)) {
-      mainContainer.addSectionComponents(
-        new SectionBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`),
-        ),
-      );
-    }
+    const responsesText = Object.entries(data)
+      .map(([name, value]) => `**${name}**\n${value?.substring(0, 1000) || "*Nothing*"}`)
+      .join("\n\n");
+    mainContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(responsesText));
 
     // Action buttons section - add to container directly
     mainContainer.addActionRowComponents(
@@ -318,22 +315,16 @@ export async function sendToStaff(
         ),
       );
 
-      if (userWarnings.length > 0) {
-        for (const warn of userWarnings) {
-          warningsContainer.addSectionComponents(
-            new SectionBuilder().addTextDisplayComponents(
-              new TextDisplayBuilder().setContent(
-                `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n` +
-                  `*${F.discordTimestamp(warn.createdAt, "relative")}*`,
-              ),
-            ),
-          );
-        }
-      } else {
-        warningsContainer.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent("*This user has no warnings* ✅"),
-        );
-      }
+      const warningsText =
+        userWarnings.length > 0
+          ? userWarnings
+              .map(
+                (warn) =>
+                  `**${warn.reason.substring(0, 200)}** [${warn.severity}]\n*${F.discordTimestamp(warn.createdAt, "relative")}*`,
+              )
+              .join("\n\n")
+          : "*This user has no warnings* ✅";
+      warningsContainer.addTextDisplayComponents(new TextDisplayBuilder().setContent(warningsText));
 
       await thread.send({
         components: [warningsContainer],

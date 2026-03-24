@@ -469,6 +469,7 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   const thread = ctx.message.thread;
   if (thread) {
     await thread.setArchived(true, "Decision was made, thread no longer necessary");
+    await thread.setLocked(true, "Decision was made, lock thread to prevent further messages");
   }
 });
 

@@ -73,7 +73,7 @@ command.setHandler(async (ctx) => {
         icon_url: newMem.client.user?.displayAvatarURL(),
       });
 
-    await msg.edit({ embeds: [embed] });
+    await msg.edit({ embeds: [embed], allowedMentions: { users: [newMem.id] } });
   }
 });
 

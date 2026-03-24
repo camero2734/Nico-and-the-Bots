@@ -5,7 +5,7 @@ import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { getActiveFirebreathersApplication } from "../../apply/_consts";
 
 const command = new SlashCommand({
-  description: "Edits a user's firebreathers application status",
+  description: "Edits a user's torchbearers application status",
   options: [
     {
       name: "user",
@@ -32,7 +32,7 @@ command.setHandler(async (ctx) => {
   const { user, action } = ctx.opts;
 
   if (action === "BAN") {
-    // Find the most recent firebreathers application and ban the user by setting decidedAt far in the future
+    // Find the most recent torchbearers application and ban the user by setting decidedAt far in the future
     const latestApplication = await prisma.firebreatherApplication.findMany({
       where: { userId: user },
       orderBy: { startedAt: "desc" },
@@ -62,10 +62,10 @@ command.setHandler(async (ctx) => {
     }
 
     await ctx.editReply({
-      content: "User can no longer apply for firebreathers",
+      content: "User can no longer apply for torchbearers",
     });
   } else if (action === "RESET_TIMER") {
-    // Find the most recent firebreathers application and reset the timer
+    // Find the most recent torchbearers application and reset the timer
     const latestApplication = (await getActiveFirebreathersApplication(user)) || await prisma.firebreatherApplication.findFirst({
       where: { userId: user },
       orderBy: { startedAt: "desc" },
@@ -81,11 +81,11 @@ command.setHandler(async (ctx) => {
         },
       });
       await ctx.editReply({
-        content: "User's firebreathers application timer has been reset.",
+        content: "User's torchbearers application timer has been reset.",
       });
     } else {
       await ctx.editReply({
-        content: "No firebreathers application found for this user.",
+        content: "No torchbearers application found for this user.",
       });
     }
   }

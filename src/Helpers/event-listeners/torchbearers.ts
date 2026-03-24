@@ -40,6 +40,6 @@ export function listenForTorchbearers(client: Client) {
         icon_url: newMem.client.user?.displayAvatarURL(),
       });
 
-    await fbAnnouncementChannel.send({ embeds: [embed] });
+    await fbAnnouncementChannel.send({ embeds: [embed], allowedMentions: { parse: [] } });
   });
 }

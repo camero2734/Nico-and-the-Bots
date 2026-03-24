@@ -46,7 +46,7 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     return member.roles.cache.has("350036748404785153");
   });
 
-  if (await isFlagEnabled("TB_ENABLED")) {
+  if (await isFlagEnabled("TB_V2")) {
     yield await createBadge("tb9.png", async () => {
       return member.roles.cache.has("283272728084086784");
     });

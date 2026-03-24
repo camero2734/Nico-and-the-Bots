@@ -367,7 +367,3 @@ export const constants = {
   ACTION_ROW_MAX_ITEMS: 5,
   MAX_ACTION_ROWS: 5,
 };
-
-export const flags = {
-  TB_ENABLED: false
-}

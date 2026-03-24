@@ -1,9 +1,9 @@
-import { flags as configFlags } from "../Configuration/config";
 import { withCache } from "./cache";
 import { prisma } from "./prisma-init";
 
 export const FEATURE_FLAGS = Object.freeze({
-  TB_ENABLED: "TB_ENABLED",
+  TB_V2: "TB_V2",
+  ACCEPT_TB_APPLICATIONS: "ACCEPT_TB_APPLICATIONS",
 } as const);
 
 export type FlagName = (typeof FEATURE_FLAGS)[keyof typeof FEATURE_FLAGS];
@@ -16,10 +16,7 @@ export async function isFlagEnabled(flagName: FlagName): Promise<boolean> {
         where: { name: flagName },
       });
 
-      if (flag) return flag.enabled;
-
-      const defaultValue = (configFlags as Record<string, boolean>)[flagName] ?? false;
-      return defaultValue;
+      return flag?.enabled ?? false;
     },
     5,
   );

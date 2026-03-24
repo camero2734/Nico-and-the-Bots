@@ -24,6 +24,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { generateScoreCard } from "../econ/score";
 import { FB_DELAY_DAYS, getActiveFirebreathersApplication } from "./_consts";
+import { isFlagEnabled } from "../../../Helpers/feature-flags";
 
 const command = new SlashCommand({
   description: "Opens an application to the Firebreathers role",
@@ -60,6 +61,10 @@ command.setHandler(async (ctx) => {
     throw new CommandError("Command unavailable");
   }
 
+  if (!(await isFlagEnabled("ACCEPT_TB_APPLICATIONS"))) {
+    throw new CommandError("Applications are currently closed, please try again later.");
+  }
+
   if (ctx.member.roles.cache.has(roles.deatheaters)) {
     throw new CommandError("You are already a firebreather!");
   }
@@ -94,6 +99,7 @@ command.setHandler(async (ctx) => {
   addRadioComponent(modal, "Where did you find out about the server?", {
     type: ComponentType.RadioGroup,
     custom_id: "where_did_you_find_out",
+    required: true,
     options: [
       { value: "reddit", label: "Reddit" },
       { value: "twitter", label: "Twitter" },
@@ -107,6 +113,7 @@ command.setHandler(async (ctx) => {
   addCheckboxComponent(modal, "Would you be willing to help host events?", {
     type: ComponentType.CheckboxGroup,
     custom_id: "server_events",
+    required: true,
     minValues: 1,
     options: [
       { value: "art", label: "Art events" },

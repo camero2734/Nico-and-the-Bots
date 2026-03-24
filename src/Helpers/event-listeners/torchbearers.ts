@@ -11,7 +11,7 @@ export function listenForTorchbearers(client: Client) {
       return;
     }
 
-    if (!(await isFlagEnabled("TB_ENABLED"))) return;
+    if (!(await isFlagEnabled("TB_V2"))) return;
 
     const hadRole = oldMem.roles.cache.has(roles.deatheaters);
     const hasRole = newMem.roles.cache.has(roles.deatheaters);

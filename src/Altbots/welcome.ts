@@ -43,13 +43,20 @@ export class SacarverBot {
     });
     this.client.login(secrets.bots.sacarver);
 
+    console.log("Logging in Sacarver bot...");
+
     this.ready = new Promise((resolve) => {
-      this.client.on(Events.ClientReady, () => resolve());
+      this.client.on(Events.ClientReady, () => {
+        console.log(`Welcome bot ready.`);
+        resolve();
+      });
     });
   }
 
   async beginWelcomingMembers(): Promise<void> {
     await this.ready; // Wait until the bot is logged in
+
+    console.log("Listening for events");
 
     this.client.on(Events.GuildMemberAdd, (member) => this.welcomeMember(member));
 

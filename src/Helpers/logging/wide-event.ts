@@ -13,7 +13,7 @@ export interface WideEvent {
   timestamp: string;
   duration_ms: number;
   event_id: string;
-  discord: {
+  discord?: {
     guild_id: string;
     channel_id: string | null;
     user_id: string;
@@ -33,13 +33,13 @@ export interface WideEvent {
   bot: {
     entrypoint?: string;
     identifier?: string;
+    job_name?: string;
   };
   outcome: "success" | "error";
   error?: {
     type: string;
     message: string;
     stack: string;
-    is_command_error: boolean;
     error_id: string;
   };
   extended: Record<string, unknown>;
@@ -74,11 +74,11 @@ function extractCommandOptions(interaction: ChatInputCommandInteraction): Record
   return Object.keys(options).length > 0 ? options : undefined;
 }
 
-export function createWideEvent(interaction: Interaction): WideEvent {
+export function createWideEvent(interaction: Interaction) {
   const eventId = Bun.randomUUIDv7();
   const member = interaction.member as GuildMember | null;
 
-  const wideEvent: WideEvent = {
+  const wideEvent: WideEvent & { discord: NonNullable<WideEvent["discord"]> } = {
     timestamp: new Date().toISOString(),
     duration_ms: 0,
     event_id: eventId,
@@ -123,6 +123,21 @@ export function createWideEvent(interaction: Interaction): WideEvent {
   return wideEvent;
 }
 
+export function createBackgroundEvent(jobName: string): WideEvent {
+  const eventId = Bun.randomUUIDv7();
+
+  return {
+    timestamp: new Date().toISOString(),
+    duration_ms: 0,
+    event_id: eventId,
+    bot: {
+      job_name: jobName,
+    },
+    outcome: "success",
+    extended: {},
+  };
+}
+
 export function setBotContext(wideEvent: WideEvent, entrypoint: string, identifier: string): WideEvent {
   wideEvent.bot.entrypoint = entrypoint;
   wideEvent.bot.identifier = identifier;
@@ -131,13 +146,11 @@ export function setBotContext(wideEvent: WideEvent, entrypoint: string, identifi
 
 export function buildErrorInfo(error: unknown, eventId: string): WideEvent["error"] {
   const isError = error instanceof Error;
-  const isCommandError = isError && error.constructor.name === "CommandError";
 
   return {
     type: isError ? error.constructor.name : typeof error,
     message: isError ? error.message : String(error),
     stack: isError ? (error.stack ?? "") : "",
-    is_command_error: isCommandError,
     error_id: eventId,
   };
 }

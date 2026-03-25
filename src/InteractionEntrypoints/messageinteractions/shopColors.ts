@@ -1,11 +1,4 @@
 import {
-  ButtonStyle,
-  type GuildMember,
-  type InteractionEditReplyOptions,
-  MessageFlags,
-  SeparatorSpacingSize,
-} from "discord.js";
-import {
   ContainerBuilder,
   DangerButtonBuilder,
   PrimaryButtonBuilder,
@@ -15,6 +8,13 @@ import {
   SuccessButtonBuilder,
   TextDisplayBuilder,
 } from "@discordjs/builders";
+import {
+  ButtonStyle,
+  type GuildMember,
+  type InteractionEditReplyOptions,
+  MessageFlags,
+  SeparatorSpacingSize,
+} from "discord.js";
 import { CommandError, NULL_CUSTOM_ID } from "../../Configuration/definitions";
 import { MessageTools } from "../../Helpers";
 import { sendViolationNotice } from "../../Helpers/dema-notice";
@@ -186,17 +186,13 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
     }
 
     const roleComponents = MessageTools.allocateButtonsIntoRows([
-      new SuccessButtonBuilder()
-        .setLabel("Purchase")
-        .setCustomId(
-          genItemId({
-            action: `${ActionTypes.Purchase}`,
-            itemId: args.itemId,
-          }),
-        ),
-      new DangerButtonBuilder()
-        .setLabel("Go back")
-        .setCustomId(genSubmenuId({ categoryId: category.id })),
+      new SuccessButtonBuilder().setLabel("Purchase").setCustomId(
+        genItemId({
+          action: `${ActionTypes.Purchase}`,
+          itemId: args.itemId,
+        }),
+      ),
+      new DangerButtonBuilder().setLabel("Go back").setCustomId(genSubmenuId({ categoryId: category.id })),
     ]);
 
     await ctx.editReply({ components: [container, ...roleComponents] });
@@ -240,7 +236,8 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
       dm.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
       sent = true;
     } catch (e) {
-      console.error(e);
+      ctx.wideEvent.extended.dm_failed = true;
+      ctx.wideEvent.extended.dm_error = e instanceof Error ? e.message : "Unknown error";
     } finally {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(

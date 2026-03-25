@@ -13,7 +13,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
-import { createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext } from "./src/Helpers/logging/wide-event";
+import { createBackgroundEvent, createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext } from "./src/Helpers/logging/wide-event";
 import "./src/Helpers/message-updates/_queue";
 import { prisma } from "./src/Helpers/prisma-init";
 import Scheduler from "./src/Helpers/scheduler";
@@ -231,20 +231,25 @@ client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
 
+  const wideEvent = createBackgroundEvent("reaction_added");
   for (const [name, handler] of ReactionHandlers.entries()) {
     const wasSuccessful = await handler(fullReaction, fullUser, async (promise) => {
       try {
         await promise;
       } catch (e) {
         const m = await fullUser.createDM();
-        ErrorHandler(m, e);
+        ErrorHandler(m, wideEvent);
       }
     });
     if (wasSuccessful) {
-      console.log(`[Reaction] ${name}`);
+      wideEvent.extended.handledVia = name;
+      finalizeWideEvent(wideEvent, "success");
+      emitWideEvent(wideEvent);
       return;
     }
   }
+
+  // No handler successful, just a reaction that doesn't trigger anything
 });
 
 client.on(Discord.Events.InteractionCreate, async (interaction) => {
@@ -278,7 +283,7 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
       finalizeWideEvent(wideEvent, "success");
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
-      ErrorHandler(interaction, e, interactionHandler.name, receivedInteractionAt);
+      ErrorHandler(interaction, wideEvent, interactionHandler.name, receivedInteractionAt);
     }
 
     emitWideEvent(wideEvent);

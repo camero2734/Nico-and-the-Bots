@@ -1,3 +1,5 @@
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention } from "@discordjs/formatters";
 import { Cron } from "croner";
 import { addHours, addSeconds } from "date-fns";
 import {
@@ -7,13 +9,12 @@ import {
   MessageFlags,
   ThreadAutoArchiveDuration,
 } from "discord.js";
-import { ContainerBuilder } from "@discordjs/builders";
-import { roleMention } from "@discordjs/formatters";
 import { guild } from "../../../app";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../Helpers/logging/wide-event";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
@@ -84,104 +85,119 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
 });
 
 export async function songBattleCron() {
-  console.log("[SB] Cron started");
-  if (!CRON_ENABLED) return;
+  const wideEvent = createBackgroundEvent("songbattle_cron");
 
-  // Get song battle channel
-  const channel = await guild.channels.fetch(channelIDs.songbattles);
-  if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
+  try {
+    if (!CRON_ENABLED) {
+      wideEvent.extended.enabled = false;
+      finalizeWideEvent(wideEvent, "success");
+      emitWideEvent(wideEvent);
+      return;
+    }
 
-  // Determine the next matchup
-  const history = await calculateHistory();
+    // Get song battle channel
+    const channel = await guild.channels.fetch(channelIDs.songbattles);
+    if (!channel?.isTextBased()) throw new CommandError("Invalid channel");
 
-  // Update the previous battle's message
-  await updatePreviousSongBattleMessage();
+    // Determine the next matchup
+    const history = await calculateHistory();
 
-  const {
-    song1,
-    song2,
-    song1Wins,
-    song2Wins,
-    song1Losses,
-    song2Losses,
-    album1,
-    album2,
-    nextBattleNumber,
-    totalMatches,
-  } = determineNextMatchup(history);
+    // Update the previous battle's message
+    await updatePreviousSongBattleMessage();
 
-  const startsAt = new Date();
-  const endsAt = getNextCronRun(startsAt);
-  if (!endsAt) throw new CommandError("Failed to determine end time");
+    const {
+      song1,
+      song2,
+      song1Wins,
+      song2Wins,
+      song1Losses,
+      song2Losses,
+      album1,
+      album2,
+      nextBattleNumber,
+      totalMatches,
+    } = determineNextMatchup(history);
 
-  // Ping message
-  const mention = roleMention(roles.songBattles);
-  await channel.send({
-    flags: MessageFlags.IsComponentsV2,
-    components: [{ type: ComponentType.TextDisplay, content: mention }],
-    allowedMentions: { roles: [roles.songBattles] },
-  });
+    const startsAt = new Date();
+    const endsAt = getNextCronRun(startsAt);
+    if (!endsAt) throw new CommandError("Failed to determine end time");
 
-  // Placeholder message
-  const m = await channel.send({
-    flags: MessageFlags.IsComponentsV2,
-    components: [
-      {
-        type: ComponentType.Container,
-        components: [
-          {
-            type: ComponentType.TextDisplay,
-            content: "Receiving new song battle...",
-          },
-        ],
+    // Ping message
+    const mention = roleMention(roles.songBattles);
+    await channel.send({
+      flags: MessageFlags.IsComponentsV2,
+      components: [{ type: ComponentType.TextDisplay, content: mention }],
+      allowedMentions: { roles: [roles.songBattles] },
+    });
+
+    // Placeholder message
+    const m = await channel.send({
+      flags: MessageFlags.IsComponentsV2,
+      components: [
+        {
+          type: ComponentType.Container,
+          components: [
+            {
+              type: ComponentType.TextDisplay,
+              content: "Receiving new song battle...",
+            },
+          ],
+        },
+      ],
+    });
+
+    // Create database poll
+    const pollName = `${PREFIX}${nextBattleNumber}-${Bun.randomUUIDv7()}`;
+    const poll = await prisma.poll.create({
+      data: {
+        name: pollName,
+        options: [toSongId(song1, album1), toSongId(song2, album2), m.id],
       },
-    ],
-  });
+    });
 
-  // Create database poll
-  const pollName = `${PREFIX}${nextBattleNumber}-${Bun.randomUUIDv7()}`;
-  const poll = await prisma.poll.create({
-    data: {
-      name: pollName,
-      options: [toSongId(song1, album1), toSongId(song2, album2), m.id],
-    },
-  });
-
-  const msgOptions = createMessageComponents({
-    pollId: poll.id,
-    nextBattleNumber,
-    totalMatches,
-    startsAt,
-    song1: {
-      song: song1,
-      album: album1,
+    const msgOptions = createMessageComponents({
+      pollId: poll.id,
       nextBattleNumber,
-      wins: song1Wins,
-      losses: song1Losses,
-    },
-    song2: {
-      song: song2,
-      album: album2,
-      nextBattleNumber,
-      wins: song2Wins,
-      losses: song2Losses,
-    },
-  });
+      totalMatches,
+      startsAt,
+      song1: {
+        song: song1,
+        album: album1,
+        nextBattleNumber,
+        wins: song1Wins,
+        losses: song1Losses,
+      },
+      song2: {
+        song: song2,
+        album: album2,
+        nextBattleNumber,
+        wins: song2Wins,
+        losses: song2Losses,
+      },
+    });
 
-  // Send the main message
-  await m.edit(msgOptions);
-  // Create a discussion thread
-  const thread = await m.startThread({
-    name: `2025 Championship Song Battles ${nextBattleNumber}`,
-    autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
-  });
+    // Send the main message
+    await m.edit(msgOptions);
+    // Create a discussion thread
+    const thread = await m.startThread({
+      name: `2025 Championship Song Battles ${nextBattleNumber}`,
+      autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+    });
 
-  await thread.send(
-    `**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(
-      endsAt,
-      "relative",
-    )}`,
-  );
+    await thread.send(
+      `**Welcome to the song battle!** Discuss the two songs here. The winner will be revealed ${F.discordTimestamp(
+        endsAt,
+        "relative",
+      )}`,
+    );
+
+    finalizeWideEvent(wideEvent, "success");
+  } catch (error) {
+    finalizeWideEvent(wideEvent, "error", error);
+    throw error;
+  }
+
+  emitWideEvent(wideEvent);
 }
 
 export async function updatePreviousSongBattleMessage(skip = 0) {

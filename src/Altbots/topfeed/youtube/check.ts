@@ -1,9 +1,8 @@
 import { userMention } from "@discordjs/formatters";
 import { channelIDs, userIDs } from "../../../Configuration/config";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../../Helpers/logging/wide-event";
 import { keonsGuild } from "../topfeed";
 import { fetchYoutube, usernameData, type usernamesToWatch, youtube } from "./fetch-and-send";
-
-const logger = (...args: unknown[]) => console.log("[YT:Check]", ...args);
 
 const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
   twentyonepilots: 0,
@@ -12,65 +11,80 @@ const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
 };
 
 export async function checkYoutube() {
-  const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
-  if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
+  const wideEvent = createBackgroundEvent("youtube_check");
 
-  const response = await youtube.channels.list({
-    part: ["statistics", "snippet", "contentDetails"],
-    id: Object.values(usernameData).map((data) => data.youtubeChannelId),
-    maxResults: 10,
-  });
+  try {
+    const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
+    if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
-  if (!response.data.items || response.data.items.length === 0) {
-    logger("No YouTube channels found.");
-    return;
-  }
+    const response = await youtube.channels.list({
+      part: ["statistics", "snippet", "contentDetails"],
+      id: Object.values(usernameData).map((data) => data.youtubeChannelId),
+      maxResults: 10,
+    });
 
-  for (const channel of response.data.items) {
-    const username = Object.keys(usernameData).find(
-      (key) => usernameData[key as (typeof usernamesToWatch)[number]].youtubeChannelId === channel.id,
-    ) as (typeof usernamesToWatch)[number] | undefined;
-
-    if (!username) {
-      logger(`No matching username found for channel ID: ${channel.id}`);
-      continue;
+    if (!response.data.items || response.data.items.length === 0) {
+      wideEvent.extended.channels_found = 0;
+      finalizeWideEvent(wideEvent, "success");
+      emitWideEvent(wideEvent);
+      return;
     }
 
-    const videoCountStr = channel.statistics?.videoCount;
-    if (!videoCountStr) {
-      logger(`No video count found for channel ID: ${channel.id}`);
-      continue;
-    }
+    wideEvent.extended.channels_found = response.data.items.length;
+    const channelsProcessed: string[] = [];
+    const channelsUpdated: string[] = [];
 
-    const postCount = Number.parseInt(videoCountStr, 10);
+    for (const channel of response.data.items) {
+      const username = Object.keys(usernameData).find(
+        (key) => usernameData[key as (typeof usernamesToWatch)[number]].youtubeChannelId === channel.id,
+      ) as (typeof usernamesToWatch)[number] | undefined;
 
-    logger(`User ${username} has ${postCount} posts (previously ${postCountMap[username]})`);
+      if (!username) {
+        continue;
+      }
 
-    if (postCount !== postCountMap[username]) {
-      if (postCountMap[username] !== 0) {
-        logger(`New posts for ${username}: ${postCount - postCountMap[username]} (Total: ${postCount})`);
+      const videoCountStr = channel.statistics?.videoCount;
+      if (!videoCountStr) {
+        continue;
+      }
+
+      const postCount = Number.parseInt(videoCountStr, 10);
+      channelsProcessed.push(username);
+
+      if (postCount !== postCountMap[username]) {
+        if (postCountMap[username] !== 0) {
+          channelsUpdated.push(username);
+          await testChan.send(
+            `${userMention(userIDs.me)} YouTube posts for ${username} went from ${postCountMap[username]} to ${postCount}.`,
+          );
+        }
+        postCountMap[username] = postCount;
+
+        const authorThumbnail =
+          channel.snippet?.thumbnails?.maxres?.url ||
+          channel.snippet?.thumbnails?.high?.url ||
+          channel.snippet?.thumbnails?.default?.url ||
+          "https://www.iconpacks.net/icons/2/free-youtube-logo-icon-2431-thumb.png";
+
+        await fetchYoutube({
+          username,
+          authorThumbnail,
+          source: "scheduled",
+        });
+      } else if (Math.random() < 0.01) {
         await testChan.send(
-          `${userMention(userIDs.me)} YouTube posts for ${username} went from ${postCountMap[username]} to ${postCount}.`,
+          `[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``,
         );
       }
-      postCountMap[username] = postCount;
-
-      const authorThumbnail =
-        channel.snippet?.thumbnails?.maxres?.url ||
-        channel.snippet?.thumbnails?.high?.url ||
-        channel.snippet?.thumbnails?.default?.url ||
-        "https://www.iconpacks.net/icons/2/free-youtube-logo-icon-2431-thumb.png";
-
-      logger(`Fetching new posts for ${username} with thumbnail: ${authorThumbnail}`);
-      await fetchYoutube({
-        username,
-        authorThumbnail,
-        source: "scheduled",
-      });
-    } else if (Math.random() < 0.01) {
-      await testChan.send(
-        `[random] Current post counts: \n\`\`\`json\n${JSON.stringify(postCountMap, null, 2)}\n\`\`\``,
-      );
     }
+
+    wideEvent.extended.channels_processed = channelsProcessed;
+    wideEvent.extended.channels_updated = channelsUpdated;
+    finalizeWideEvent(wideEvent, "success");
+  } catch (error) {
+    finalizeWideEvent(wideEvent, "error", error);
+    throw error;
   }
+
+  emitWideEvent(wideEvent);
 }

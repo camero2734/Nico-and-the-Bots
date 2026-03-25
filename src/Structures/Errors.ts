@@ -78,20 +78,12 @@ const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
 
 export const ErrorHandler = async (
   ctx: TextChannel | DMChannel | Interaction & { wideEvent?: WideEvent },
-  e: unknown,
+  e: WideEvent,
   handler?: string,
   receivedInteractionAt?: Date,
 ) => {
-  const errorId = ('wideEvent' in ctx ? ctx.wideEvent?.event_id : undefined) ?? Bun.randomUUIDv7();
+  const errorId = e.event_id;
   const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
-
-  console.log("===================================");
-  console.log("||                               ||");
-  console.log(`----> ${(e as object).constructor.name} Error!`);
-  console.log(`----> Error ID: ${errorId}`);
-  console.log("||                               ||");
-  console.log("===================================");
-  if (e instanceof Error) console.log(e.stack);
 
   let sentInErrorChannel = false;
   const errorChannel = await getErrorChannel();
@@ -173,7 +165,6 @@ export const ErrorHandler = async (
       allowedMentions: { users: [], roles: [] },
     });
   } else {
-    console.log("Unknown error:", e);
     const embed = new EmbedBuilder().setTitle("An unknown error occurred!").setFooter({
       text: `DEMA internet machine really broke. Error ${errorId} ${sentInErrorChannel ? "📝" : ""}`,
     });

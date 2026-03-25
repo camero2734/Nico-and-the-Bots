@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType } from "discord.js";
 import R from "ramda";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
@@ -68,11 +68,9 @@ command.setHandler(async (ctx) => {
     const emoji = severityEmoji(warn.severity);
     const timestamp = F.discordTimestamp(warn.createdAt, "relative");
 
-    console.log(`Warning of length: ${warn.reason.length}`);
     try {
       embed.addFields([{ name: `${emoji} ${warn.type}`, value: `${warn.reason?.substring(0, 4000)}\n${timestamp}` }]);
-    } catch (e) {
-      console.log(`Caught error: ${e}`);
+    } catch {
       embed.addFields({ name: "UNABLE TO FETCH", value: "ERROR" });
     }
   }

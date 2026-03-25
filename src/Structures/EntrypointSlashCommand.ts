@@ -1,4 +1,12 @@
 import {
+  ActionRowBuilder,
+  type ButtonBuilder,
+  createComponentBuilder,
+  DangerButtonBuilder,
+  SecondaryButtonBuilder,
+  SuccessButtonBuilder,
+} from "@discordjs/builders";
+import {
   type ApplicationCommandOptionData,
   ApplicationCommandOptionType,
   ApplicationCommandType,
@@ -18,28 +26,21 @@ import {
   type Snowflake,
   type TextChannel,
 } from "discord.js";
-import {
-  ActionRowBuilder,
-  DangerButtonBuilder,
-  SecondaryButtonBuilder,
-  SuccessButtonBuilder,
-  createComponentBuilder,
-  type ButtonBuilder,
-} from "@discordjs/builders";
 import R from "ramda";
 import { emojiIDs } from "../Configuration/config";
 import F from "../Helpers/funcs";
+import type { WideEvent } from "../Helpers/logging/wide-event";
 import { prisma } from "../Helpers/prisma-init";
+import { ApplicationData, SlashCommands } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 import { EntrypointEvents } from "./Events";
 import type { AutocompleteListener, AutocompleteNameOption } from "./ListenerAutocomplete";
 import {
   type CommandOptions,
+  extractOptsFromInteraction,
   type OptsType,
   type SlashCommandData,
-  extractOptsFromInteraction,
 } from "./SlashCommandOptions";
-import { ApplicationData, SlashCommands } from "./data";
 
 type SlashCommandInteraction<T extends CommandOptions = []> = ChatInputCommandInteraction & {
   opts: OptsType<SlashCommandData<T>>;
@@ -47,6 +48,7 @@ type SlashCommandInteraction<T extends CommandOptions = []> = ChatInputCommandIn
   channel: TextChannel;
   guild: Guild;
   guildId: Snowflake;
+  wideEvent: WideEvent;
   send(payload: BaseMessageOptions & { ephemeral?: boolean }): Promise<Message | undefined>;
 };
 type SlashCommandHandler<T extends CommandOptions = []> = (ctx: SlashCommandInteraction<T>) => Promise<unknown>;
@@ -108,11 +110,12 @@ export class SlashCommand<const T extends CommandOptions = []> extends Interacti
     this.autocompleteListeners.set(name, handler);
   }
 
-  async _run(interaction: Interaction, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
+  async _run(interaction: Interaction, wideEvent: WideEvent, opts?: OptsType<SlashCommandData<T>>): Promise<void> {
     const ctx = interaction as SlashCommandInteraction<T>;
 
     if (!ctx.isCommand()) return;
 
+    ctx.wideEvent = wideEvent;
     ctx.send = async (payload) => {
       if (ctx.replied || ctx.deferred) return ctx.editReply(payload) as Promise<Message>;
 

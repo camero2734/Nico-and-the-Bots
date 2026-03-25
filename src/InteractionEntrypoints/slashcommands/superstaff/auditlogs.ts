@@ -23,7 +23,6 @@ command.setHandler(async (ctx) => {
   let lastDate: Date | undefined;
 
   for (let i = 0; i < 100; i++) {
-    console.log(`Fetching audit logs, iteration ${i + 1}`);
     const logs = await ctx.guild.fetchAuditLogs({
       type: AuditLogEvent.MemberRoleUpdate,
       limit: 100,
@@ -33,7 +32,6 @@ command.setHandler(async (ctx) => {
     if (logs.entries.size === 0) break;
 
     if (lastDate && lastDate < date) {
-      console.log("Reached logs before the specified date, stopping.");
       break;
     }
 
@@ -61,7 +59,8 @@ command.setHandler(async (ctx) => {
     }
   }
 
-  console.log(`Reached ${lastDate}, last ID: ${lastId}`);
+  ctx.wideEvent.extended.last_date = lastDate?.toISOString();
+  ctx.wideEvent.extended.users_found = usersWithRole.size;
 
   const dbUsersWithRole = await prisma.badge.findMany({ where: { type: "BFX" }, select: { userId: true } });
 
@@ -81,7 +80,8 @@ command.setHandler(async (ctx) => {
         update: {},
       });
     } catch (error) {
-      console.error(`Failed to give badge to user ${userId}:`, error);
+      ctx.wideEvent.extended.failed_user_id = userId;
+      ctx.wideEvent.extended.error_message = error instanceof Error ? error.message : "Unknown error";
       await ctx.editReply({
         content: `Failed to give badge to user <@${userId}>: ${error instanceof Error ? error.message : "Unknown error"}`,
       });

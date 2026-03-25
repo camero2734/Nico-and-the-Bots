@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, type TextChannel, MessageFlags } from "discord.js";
 import { ActionRowBuilder, EmbedBuilder, LinkButtonBuilder, SuccessButtonBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, MessageFlags, type TextChannel } from "discord.js";
 import FileType from "file-type";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
@@ -56,8 +56,7 @@ command.setHandler(async (ctx) => {
 
   const res = await fetch(url, {
     body: JSON.stringify({ size: MAX_FILE_SIZE }),
-  }).catch((e) => {
-    console.log(e);
+  }).catch(() => {
     throw new CommandError("Unable to get the file from that URL.");
   });
 
@@ -67,7 +66,7 @@ command.setHandler(async (ctx) => {
   if (!fileType) throw new CommandError("An error occurred while parsing your file");
 
   if (!["audio", "video", "image"].some((mime) => fileType.mime.startsWith(mime))) {
-    console.log(fileType);
+    ctx.wideEvent.extended.invalid_file_type = fileType.mime;
     throw new CommandError("Invalid file type. Must be a url to an image, video, or audio file.");
   }
 
@@ -92,7 +91,9 @@ command.setHandler(async (ctx) => {
   const timedListener = new TimedInteractionListener(ctx, <const>["msYes"]);
   const [yesId] = timedListener.customIDs;
 
-  const actionRow = new ActionRowBuilder().addComponents(new SuccessButtonBuilder().setLabel("Submit").setCustomId(yesId));
+  const actionRow = new ActionRowBuilder().addComponents(
+    new SuccessButtonBuilder().setLabel("Submit").setCustomId(yesId),
+  );
 
   await ctx.editReply({ embeds: [embed], components: [actionRow] });
 
@@ -125,7 +126,9 @@ command.setHandler(async (ctx) => {
   const m = await chan.send({ embeds: [embed], files: [{ attachment: Buffer.from(buffer), name: fileName }] });
   m.react("💙");
 
-  const newActionRow = new ActionRowBuilder().addComponents(new LinkButtonBuilder().setLabel("View post").setURL(m.url));
+  const newActionRow = new ActionRowBuilder().addComponents(
+    new LinkButtonBuilder().setLabel("View post").setURL(m.url),
+  );
 
   await ctx.editReply({ embeds: [doneEmbed], components: [newActionRow] });
 });

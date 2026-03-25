@@ -1,5 +1,5 @@
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import { ActionRowBuilder, EmbedBuilder, LinkButtonBuilder, SecondaryButtonBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import { emojiIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { GeniusClient } from "../../../Helpers/apis/genius";
@@ -90,7 +90,9 @@ command.setHandler(async (ctx) => {
     track.image?.replace("/34s/", "/300x300/") ||
     "http://orig14.deviantart.net/5162/f/2014/153/9/e/no_album_art__no_cover___placeholder_picture_by_cmdrobot-d7kpm65.jpg";
 
-  console.log(thumbnail);
+  ctx.wideEvent.extended.track_name = trackName;
+  ctx.wideEvent.extended.artist_name = artistName;
+  ctx.wideEvent.extended.username = username;
 
   const embed = new EmbedBuilder()
     .setColor(0xff0000)

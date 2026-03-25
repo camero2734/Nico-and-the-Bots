@@ -1,3 +1,4 @@
+import { ActionRowBuilder, SecondaryButtonBuilder } from "@discordjs/builders";
 import {
   type ApplicationCommandData,
   type Client,
@@ -6,19 +7,19 @@ import {
   type GuildMember,
   type Interaction,
 } from "discord.js";
-import { ActionRowBuilder, SecondaryButtonBuilder } from "@discordjs/builders";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
+import { createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext, type WideEvent } from "../Helpers/logging/wide-event";
+import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import { EntrypointEvents } from "./Events";
 import {
+  createInteractionListener,
   type InteractionListener,
   type ListenerCustomIdGenerator,
-  createInteractionListener,
 } from "./ListenerInteraction";
 import type { ReactionListener } from "./ListenerReaction";
 import type { ReplyListener } from "./ListenerReply";
-import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 
 type OnBotReadyFunc = (guild: Guild, client: Client) => Promise<void> | void;
 
@@ -60,19 +61,19 @@ export abstract class InteractionEntrypoint<
     this.replyListeners.set(name, handler);
 
     const actionRow = new ActionRowBuilder().addComponents(
-      new SecondaryButtonBuilder()
-        .setCustomId(`##!!RL${name}RL!!##`)
-        .setDisabled(true)
-        .setEmoji({ name: "🚀" }),
+      new SecondaryButtonBuilder().setCustomId(`##!!RL${name}RL!!##`).setDisabled(true).setEmoji({ name: "🚀" }),
     );
 
     return actionRow;
   }
 
-  abstract _run(ctx: Interaction, ...HandlerArgs: HandlerArgs): Promise<unknown>;
+  abstract _run(ctx: Interaction, wideEvent: WideEvent, ...HandlerArgs: HandlerArgs): Promise<unknown>;
 
   // Wraps the _run function to catch errors and ensure the handler has been registered
   async run(ctx: Interaction, ...HandlerArgs: HandlerArgs): Promise<void> {
+    const wideEvent = createWideEvent(ctx);
+    setBotContext(wideEvent, this.constructor.name, this.identifier ?? "Unknown");
+
     try {
       if (!this.handler) throw new Error(`Handler not registered for ${this.constructor.name}`);
 
@@ -84,13 +85,17 @@ export abstract class InteractionEntrypoint<
         throw new CommandError("You don't have permission to use this command!");
       }
 
-      EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx });
-      await this._run(ctx, ...HandlerArgs);
-      EntrypointEvents.emit("entrypointFinished", { entrypoint: this, ctx });
+      EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx, wideEvent });
+      await this._run(ctx, wideEvent, ...HandlerArgs);
+      finalizeWideEvent(wideEvent, "success");
+      EntrypointEvents.emit("entrypointFinished", { entrypoint: this, ctx, wideEvent });
     } catch (e) {
-      EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx });
+      finalizeWideEvent(wideEvent, "error", e);
+      EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx, wideEvent, error: e });
       ErrorHandler(ctx, e, this.identifier);
     }
+
+    emitWideEvent(wideEvent);
   }
 
   async onBotReady(func: OnBotReadyFunc): Promise<void> {

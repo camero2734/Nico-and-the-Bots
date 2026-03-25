@@ -95,7 +95,7 @@ async function getAlltimeScores(
     skip: startAt,
     take: 10,
   });
-  console.log("Time taken to get paginated users: ", Date.now() - start2);
+  ctx.wideEvent.extended.db_query_ms = Date.now() - start2;
 
   return await Promise.all(
     paginatedUsers.map(async (u) => {
@@ -172,7 +172,7 @@ async function generateImage(
     cctx.translate(10, 0);
     const avatar = await loadImage(
       member?.user.displayAvatarURL({ extension: "png", size: 128 }) ||
-      "https://cdn.landesa.org/wp-content/uploads/default-user-image.png",
+        "https://cdn.landesa.org/wp-content/uploads/default-user-image.png",
     );
 
     cctx.shadowBlur = 1;

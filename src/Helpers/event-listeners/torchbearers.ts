@@ -1,7 +1,6 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { type Client, Events } from "discord.js";
 import { channelIDs, roles } from "../../Configuration/config";
-import { isFlagEnabled } from "../feature-flags";
 import { prisma } from "../prisma-init";
 
 export function listenForTorchbearers(client: Client) {
@@ -9,9 +8,7 @@ export function listenForTorchbearers(client: Client) {
     if (!oldMem || oldMem.partial) {
       console.log("Old member data is missing or partial, skipping torchbearers check.");
       return;
-    }
-
-    if (!(await isFlagEnabled("TB_V2"))) return;
+    };
 
     const hadRole = oldMem.roles.cache.has(roles.deatheaters);
     const hasRole = newMem.roles.cache.has(roles.deatheaters);

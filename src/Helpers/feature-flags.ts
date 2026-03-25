@@ -2,7 +2,6 @@ import { withCache } from "./cache";
 import { prisma } from "./prisma-init";
 
 export const FEATURE_FLAGS = Object.freeze({
-  TB_V2: "TB_V2",
   ACCEPT_TB_APPLICATIONS: "ACCEPT_TB_APPLICATIONS",
 } as const);
 

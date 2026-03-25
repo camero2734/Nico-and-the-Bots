@@ -6,8 +6,7 @@ import {
   MessageFlags,
   type AttachmentPayload,
   type GuildMember,
-  type MessageComponentInteraction,
-  type Snowflake
+  type MessageComponentInteraction
 } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
@@ -15,10 +14,6 @@ import F from "../Helpers/funcs";
 import { queries } from "../Helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
-
-const emoji = (name: string, id: Snowflake | null = null) => ({
-  emoji: { name, id: id as Snowflake },
-});
 
 export class SacarverBot {
   client: Client;
@@ -145,7 +140,7 @@ export class SacarverBot {
       new PrimaryButtonBuilder({
         label: "Sign up for #announcements",
         custom_id: ANNOUNCEMENTS_ID,
-        ...emoji("📢"),
+        emoji: { name: "📢" },
       }),
     );
 

@@ -17,6 +17,7 @@ import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
+import { WideEvent } from "../Helpers/logging/wide-event";
 
 const getReplyMethod = async (ctx: CommandInteraction | ModalSubmitInteraction) => {
   if (!ctx.isRepliable()) {
@@ -76,12 +77,12 @@ const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
 };
 
 export const ErrorHandler = async (
-  ctx: TextChannel | DMChannel | Interaction,
+  ctx: TextChannel | DMChannel | Interaction & { wideEvent?: WideEvent },
   e: unknown,
   handler?: string,
   receivedInteractionAt?: Date,
 ) => {
-  const errorId = Bun.randomUUIDv7();
+  const errorId = ('wideEvent' in ctx ? ctx.wideEvent?.event_id : undefined) ?? Bun.randomUUIDv7();
   const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
 
   console.log("===================================");

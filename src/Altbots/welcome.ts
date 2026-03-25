@@ -1,6 +1,7 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
   Client,
+  Events,
   MessageFlags,
   type AttachmentPayload,
   type GuildMember,
@@ -43,16 +44,16 @@ export class SacarverBot {
     this.client.login(secrets.bots.sacarver);
 
     this.ready = new Promise((resolve) => {
-      this.client.on("ready", () => resolve());
+      this.client.on(Events.ClientReady, () => resolve());
     });
   }
 
   async beginWelcomingMembers(): Promise<void> {
     await this.ready; // Wait until the bot is logged in
 
-    this.client.on("guildMemberAdd", (member) => this.welcomeMember(member));
+    this.client.on(Events.GuildMemberAdd, (member) => this.welcomeMember(member));
 
-    this.client.on("interaction", (interaction) => {
+    this.client.on(Events.InteractionCreate, (interaction) => {
       if (!interaction.isMessageComponent()) return;
       if (interaction.customId === ANNOUNCEMENTS_ID) return this.giveAnnouncementsRole(interaction);
     });

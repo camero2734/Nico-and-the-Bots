@@ -1,6 +1,5 @@
-import { EmbedBuilder } from "@discordjs/builders";
 import { ApplicationCommandOptionType } from "discord.js";
-import { channelIDs, roles as roleIDs, userIDs } from "../../../Configuration/config";
+import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
@@ -51,28 +50,7 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     songBattleCron();
   } else {
-    const channel = await ctx.guild.channels.fetch(channelIDs.fairlyannouncements);
-    if (!channel || !channel.isTextBased()) {
-      throw new CommandError("Channel not found or not text-based");
-    }
-    const msg = await channel.messages.fetch("1486107522086605050");
-    if (!msg) throw new CommandError("Message not found");
-
-    const newMem = await ctx.guild.members.fetch("706274989082673232");
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: newMem.displayName,
-        icon_url: newMem.displayAvatarURL(),
-      })
-      .setDescription(
-        `He tried to stop the cycle and failed. This has happened 1 time already.`,
-      )
-      .setFooter({
-        text: "MATERIAL SUBJECT TO AUDIT UNDER NOVA BISHOP PROTOCOL",
-        icon_url: newMem.client.user?.displayAvatarURL(),
-      });
-
-    await msg.edit({ embeds: [embed], allowedMentions: { users: [newMem.id] } });
+    throw new CommandError("Invalid number");
   }
 });
 

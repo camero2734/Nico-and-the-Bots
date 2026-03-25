@@ -1,3 +1,4 @@
+import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
   Client,
@@ -6,10 +7,8 @@ import {
   type AttachmentPayload,
   type GuildMember,
   type MessageComponentInteraction,
-  type Snowflake,
-  type TextChannel,
+  type Snowflake
 } from "discord.js";
-import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
@@ -47,7 +46,6 @@ export class SacarverBot {
 
     this.ready = new Promise((resolve) => {
       this.client.on(Events.ClientReady, () => {
-        console.log(`Welcome bot ready.`);
         resolve();
       });
     });
@@ -55,8 +53,6 @@ export class SacarverBot {
 
   async beginWelcomingMembers(): Promise<void> {
     await this.ready; // Wait until the bot is logged in
-
-    console.log("Listening for events");
 
     this.client.on(Events.GuildMemberAdd, (member) => this.welcomeMember(member));
 
@@ -73,10 +69,15 @@ export class SacarverBot {
   }
 
   async welcomeMember(member: GuildMember): Promise<void> {
-    const welcomeChan = member.guild.channels.cache.get(channelIDs.welcome) as TextChannel;
+    console.log(`[WELCOME] Member ${member.user.tag} (${member.id}) joined.`);
+    const welcomeChan = await member.guild.channels.fetch(channelIDs.welcome);
+    if (!welcomeChan?.isTextBased()) {
+      console.error("Welcome channel not found or not text-based");
+      return;
+    }
 
     const memberNum = await this.getMemberNumber(member);
-    console.log(`Member #${memberNum} joined`);
+    console.log(`[WELCOME] Member #${memberNum} joined`);
 
     const attachment = await SacarverBot.generateWelcomeImage({
       avatarUrl: member.user.displayAvatarURL({ extension: "png" }),

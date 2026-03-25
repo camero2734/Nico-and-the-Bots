@@ -25,8 +25,6 @@ command.setHandler(async (ctx) => {
 
   const embeds: EmbedBuilder[] = [];
 
-  await ctx.guild.members.fetch();
-
   for (const emojiMention of emojis) {
     const emojiId = emojiMention.match(/\d+/)?.[0];
     if (!emojiId) continue;

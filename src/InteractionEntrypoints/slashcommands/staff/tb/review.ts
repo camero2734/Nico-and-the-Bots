@@ -5,7 +5,7 @@ import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-  description: "Shows the oldest FB apps that have yet to be reviewe",
+  description: "Shows the oldest TB apps that have yet to be reviewe",
   options: [],
 });
 
@@ -20,7 +20,7 @@ command.setHandler(async (ctx) => {
   const fbRole = await ctx.guild.roles.fetch(roles.deatheaters);
 
   const embed = new EmbedBuilder().setAuthor({
-    name: "Firebreather Application Review Queue",
+    name: "Torchbearer Application Review Queue",
     icon_url: fbRole?.iconURL() || undefined,
   });
 

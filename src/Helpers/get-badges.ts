@@ -1,4 +1,4 @@
-import { type Image, createCanvas, loadImage } from "@napi-rs/canvas";
+import { createCanvas, type Image, loadImage } from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
 import { roles } from "../Configuration/config";
 import F from "./funcs";
@@ -45,7 +45,7 @@ async function* getBadge(member: GuildMember, numGolds: number, placeNum: number
     return member.roles.cache.has("350036748404785153");
   });
 
-  yield await createBadge("firebreather.png", async () => {
+  yield await createBadge("tb9.png", async () => {
     return member.roles.cache.has("283272728084086784");
   });
 

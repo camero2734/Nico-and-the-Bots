@@ -27,6 +27,7 @@ import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
+import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 
 export const client = new Discord.Client({
   intents: [
@@ -225,31 +226,6 @@ client.on(Discord.Events.GuildMemberUpdate, async (oldMem, mem) => {
   await testChannel.send(`✅ ${mem.user.tag} passed membership screening`);
 });
 
-client.on(Discord.Events.GuildMemberUpdate, async (oldMem, newMem) => {
-  if (!oldMem || oldMem.partial) {
-    console.log("Old member was partial");
-    return;
-  }
-
-  if (!oldMem.roles.cache.has(roles.deatheaters) && newMem.roles.cache.has(roles.deatheaters)) {
-    const fbAnnouncementChannel = (await newMem.guild.channels.fetch(
-      channelIDs.fairlyannouncements,
-    )) as Discord.TextChannel;
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: newMem.displayName,
-        icon_url: newMem.displayAvatarURL(),
-      })
-      .setDescription(`${newMem} has learned to fire breathe. Ouch.`)
-      .setFooter({
-        text: "PROPERTY OF DRAGON'S DEN INC.™️",
-        icon_url: newMem.client.user?.displayAvatarURL(),
-      });
-
-    await fbAnnouncementChannel.send({ embeds: [embed] });
-  }
-});
-
 client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
@@ -323,6 +299,8 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
     contextMenu.run(interaction);
   }
 });
+
+listenForTorchbearers(client);
 
 async function setup() {
   GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");

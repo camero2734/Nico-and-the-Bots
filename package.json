@@ -22,20 +22,15 @@
     "@aws-sdk/client-s3": "^3.1014.0",
     "@aws-sdk/s3-request-presigner": "^3.1014.0",
     "@discordjs/builders": "2.0.0-dev.1773446773-2a067216c",
-    "@discordjs/collection": "3.0.0-dev.1773446773-2a067216c",
-    "@discordjs/formatters": "1.0.0-dev.1773446773-2a067216c",
-    "@discordjs/rest": "3.0.0-dev.1773446773-2a067216c",
-    "@discordjs/util": "2.0.0-dev.1773446773-2a067216c",
-    "@discordjs/ws": "3.0.0-dev.1773446773-2a067216c",
     "@faker-js/faker": "^8.4.1",
     "@googleapis/youtube": "^25.1.0",
     "@napi-rs/canvas": "^0.1.97",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@solely/simple-fm": "1.6.4",
+    "@vladfrangu/async_event_emitter": "2.4.6",
     "absurd-sdk": "^0.0.5",
     "bigint-conversion": "^2.4.3",
-    "bufferutil": "^4.1.0",
     "bullmq": "^5.71.0",
     "chalk": "^4.1.2",
     "chart.js": "^4.5.1",
@@ -82,7 +77,6 @@
     "wikijs": "6.3.3",
     "ws": "^8.20.0",
     "youtube.ts": "^0.2.9",
-    "zlib-sync": "^0.1.10",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -96,11 +90,11 @@
     "@types/node": "^22.19.15",
     "@types/ramda": "^0.27.66",
     "@types/spotify-web-api-node": "^5.0.11",
-    "@types/ws": "8.2.2",
     "@typescript/native-preview": "^7.0.0-dev.20260322.1"
   },
   "overrides": {
-    "re2": "npm:@dashevo/wasm-re2"
+    "re2": "npm:@dashevo/wasm-re2",
+    "@vladfrangu/async_event_emitter": "2.4.6"
   },
   "patchedDependencies": {
     "instagram-private-api@1.46.1": "patches/instagram-private-api@1.46.1.patch"

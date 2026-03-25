@@ -1,5 +1,4 @@
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
-import { ActionRowBuilder, StringSelectMenuBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -14,37 +13,18 @@ const command = new SlashCommand({
   options: [
     {
       name: "num",
-      description: "Number of times to test",
+      description: "Command number",
       required: false,
       type: ApplicationCommandOptionType.Integer,
-    },
-    {
-      name: "separator",
-      description: "A separator",
-      required: false,
-      type: ApplicationCommandOptionType.String,
-    },
-    {
-      name: "gap",
-      description: "A gap",
-      required: false,
-      type: ApplicationCommandOptionType.Boolean,
-    },
-    {
-      name: "divider",
-      description: "A divider",
-      required: false,
-      type: ApplicationCommandOptionType.Boolean,
-    },
+    }
   ],
 });
 
 command.setHandler(async (ctx) => {
   if (ctx.user.id !== userIDs.me) return;
 
-  await ctx.deferReply();
-
   if (ctx.opts.num === 1) {
+    await ctx.deferReply();
     const role = await ctx.guild.roles.fetch(roleIDs.new);
     if (!role) {
       throw new CommandError("New role not found");
@@ -61,25 +41,16 @@ command.setHandler(async (ctx) => {
 
     await ctx.editReply(`${m.content} (${i}/${role.members.size})\nDone removing role ${role.name} from members.`);
   } else if (ctx.opts.num === 2) {
+    await ctx.deferReply();
     await updateCurrentSongBattleMessage();
   } else if (ctx.opts.num === 3) {
+    await ctx.deferReply();
     await updatePreviousSongBattleMessage(1);
   } else if (ctx.opts.num === 433) {
+    await ctx.deferReply();
     songBattleCron();
   } else {
-    const stringSelect = new StringSelectMenuBuilder()
-      .setCustomId("a cool select menu")
-      .setPlaceholder("select an option")
-      .setMaxValues(2)
-      .setOptions([
-        { label: "option 1 <@&557303189976907788>", value: "1" },
-        { label: "option 2", value: "2" },
-        { label: "option 3", value: "3" },
-      ]);
-
-    const actionRow = new ActionRowBuilder().addComponents(stringSelect);
-
-    await ctx.editReply({ components: [actionRow], flags: MessageFlags.IsComponentsV2 });
+    throw new CommandError("Invalid number");
   }
 });
 

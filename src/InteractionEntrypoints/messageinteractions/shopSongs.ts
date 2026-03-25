@@ -269,7 +269,7 @@ async function generateMainMenuEmbed(member: GuildMember): Promise<InteractionEd
         .setLabel(
           unlocked
             ? `${idx + 1}. ${label}`
-            : `Level ${item.data.level}${item.data.requiresDE ? " & Firebreathers" : ""}`,
+            : `Level ${item.data.level}${item.data.requiresDE ? " & Torchbearers" : ""}`,
         )
         .setCustomId(unlocked ? genSubmenuId({ categoryId: item.id }) : NULL_CUSTOM_ID());
       if (!unlocked) {

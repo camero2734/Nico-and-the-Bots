@@ -1,5 +1,5 @@
 import { secondsToMilliseconds } from "date-fns";
-import { Client } from "discord.js";
+import { Client, Events } from "discord.js";
 import { guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
 import { queue } from "./worker";
@@ -22,7 +22,7 @@ const client = new Client({
 });
 
 await client.login(secrets.bots.keons);
-await new Promise((resolve) => client.once("ready", resolve));
+await new Promise((resolve) => client.once(Events.ClientReady, resolve));
 
 export const keonsGuild = await client.guilds.fetch(guildID);
 

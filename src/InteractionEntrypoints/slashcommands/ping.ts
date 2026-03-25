@@ -1,5 +1,6 @@
 import { Colors } from "discord.js";
 import { SlashCommand } from "../../Structures/EntrypointSlashCommand";
+import { minutesToMilliseconds } from "date-fns";
 import { EmbedBuilder } from "@discordjs/builders";
 
 interface Ping {
@@ -8,6 +9,7 @@ interface Ping {
 }
 
 const previousPings: Ping[] = [];
+const PING_TIME = minutesToMilliseconds(5);
 
 const command = new SlashCommand({
   description: "Checks the bot's ping",
@@ -15,30 +17,24 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  const PING_TIME = 1000 * 60 * 5; // 5 MINUTES
+  const now = Date.now();
+  const currentPing = Math.abs(now - ctx.createdTimestamp);
 
-  await ctx.send({ content: "Pinging..." });
+  await ctx.deferReply();
 
-  const prior = Date.now();
-  const after = ctx.createdAt.getTime();
-
-  const currentPing = Math.abs(after - prior);
-
-  previousPings.push({ ping: currentPing, time: Date.now() });
+  previousPings.push({ ping: currentPing, time: now });
 
   let pingSum = 0;
   let pingCount = 0;
 
   for (let i = previousPings.length - 1; i >= 0; i--) {
-    if (previousPings[i].time + PING_TIME >= Date.now()) {
+    if (previousPings[i].time + PING_TIME >= now) {
       pingSum += previousPings[i].ping;
       pingCount++;
     } else {
       previousPings.splice(i, 1);
     }
   }
-
-  previousPings[0].time;
 
   const average = Math.floor(pingSum / pingCount);
 

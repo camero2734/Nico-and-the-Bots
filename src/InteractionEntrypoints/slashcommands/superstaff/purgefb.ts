@@ -4,7 +4,7 @@ import F from "../../../Helpers/funcs";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-  description: "Removes all firebreathers",
+  description: "Removes all torchbearers",
   options: [],
 });
 

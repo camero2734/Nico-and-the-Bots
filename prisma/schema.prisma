@@ -208,6 +208,11 @@ model TemporaryText {
   value String
 }
 
+model Counter {
+  name  String @id
+  value Int    @default(0)
+}
+
 model UserLastFM {
   username String @id
 
@@ -465,4 +470,12 @@ model Concert {
   channelId String
 
   createdAt DateTime @default(now())
+}
+
+model FeatureFlag {
+  name        String @id
+  enabled     Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

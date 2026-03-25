@@ -1,13 +1,13 @@
-import * as crypto from "node:crypto";
 import { Faker, en } from "@faker-js/faker";
 import type { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import type { BishopType } from "../../generated/prisma/client";
 import * as bigintConversion from "bigint-conversion";
 import { type TCountryCode, continents, getCountryData } from "countries-list";
-import type { BaseMessageOptions, Guild, GuildMember, Message, Role, Snowflake, TextChannel } from "discord.js";
+import type { Guild, GuildMember, Message, MessageCreateOptions, Role, Snowflake, TextChannel } from "discord.js";
 import countries from "iso-3166-1-alpha-2";
+import * as crypto from "node:crypto";
 import radix64Setup from "radix-64";
 import * as R from "ramda";
+import type { BishopType } from "../../generated/prisma/client";
 import { channelIDs, roles } from "../Configuration/config";
 /**
  * Just some commonly used short functions
@@ -196,7 +196,7 @@ const F = {
     return count + (maxLength - minLength);
   },
   // Tries to DM user, defaults to pinging in #commands
-  async sendMessageToUser(member: GuildMember, msgOpts: BaseMessageOptions) {
+  async sendMessageToUser(member: GuildMember, msgOpts: MessageCreateOptions) {
     try {
       const dm = await member.createDM();
       await dm.send({

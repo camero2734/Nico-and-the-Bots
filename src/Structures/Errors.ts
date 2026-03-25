@@ -1,23 +1,40 @@
+import { EmbedBuilder } from "@discordjs/builders";
 import {
   ChannelType,
+  ChatInputCommandInteraction,
+  Colors,
   type CommandInteraction,
   type DMChannel,
   type GuildTextBasedChannel,
   type Interaction,
   InteractionType,
+  MessageFlags,
+  type ModalSubmitInteraction,
   type TextBasedChannel,
   type TextChannel,
-  MessageFlags,
-  Colors,
 } from "discord.js";
-import { EmbedBuilder } from "@discordjs/builders";
 import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
 
-const getReplyMethod = async (ctx: CommandInteraction) => {
-  if (!ctx.isRepliable() || !ctx.isChatInputCommand()) {
+const getReplyMethod = async (ctx: CommandInteraction | ModalSubmitInteraction) => {
+  if (!ctx.isRepliable()) {
+    if (ctx.channel?.isSendable()) {
+      return ctx.channel.send;
+    }
+    return () => { };
+  }
+
+  if (ctx.isModalSubmit()) {
+    if (ctx.deferred) {
+      return ctx.editReply;
+    }
+    await ctx.deferReply({ flags: MessageFlags.Ephemeral, withResponse: true });
+    return ctx.editReply;
+  }
+
+  if (!ctx.isChatInputCommand()) {
     if (ctx.channel?.isSendable()) {
       return ctx.channel.send;
     }
@@ -50,6 +67,12 @@ const getChannelName = (ctx: TextBasedChannel | Interaction): string => {
     F.keys(InteractionType).find((k) => InteractionType[k as keyof typeof InteractionType] === ctx.type) ||
     "Unknown Interaction";
   return `${interactionType}: ${ctx.user.tag} in ${ctx.channel ? getChannelName(ctx.channel) : "?"}`;
+};
+
+const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
+  const { commandName, options } = ctx;
+  const args = options.data.map((opt) => `${opt.name}:${opt.value}`).join(" ");
+  return `/${commandName} ${args}`.trim();
 };
 
 export const ErrorHandler = async (
@@ -90,6 +113,13 @@ export const ErrorHandler = async (
       });
     }
 
+    if (ctx instanceof ChatInputCommandInteraction) {
+      embed.addFields({
+        name: "Command",
+        value: getCommandString(ctx) || "Unable to parse command",
+      });
+    }
+
     if (errorDelta) {
       embed.addFields({
         name: "Time to Error",
@@ -97,15 +127,32 @@ export const ErrorHandler = async (
       });
     }
 
+    const formatStack = (err: Error): string => {
+      const lines: string[] = [`${err.name}: ${err.message}`];
+      let current: Error = err;
+      while (current?.cause) {
+        const cause = current.cause as Error;
+        lines.push(`Caused by: ${cause.name}: ${cause.message}`);
+        current = cause;
+      }
+      const stackParts = (err.stack || "").split("\n");
+      for (const line of stackParts.slice(1)) {
+        if (!line.includes("node:") && !line.includes("node_modules/")) {
+          lines.push(line);
+        }
+      }
+      return lines.join("\n");
+    };
+
     embed.addFields({
       name: "Error",
-      value: `\`\`\`js\n${e instanceof Error ? e.stack : e}\`\`\``,
+      value: `\`\`\`js\n${e instanceof Error ? formatStack(e) : e}\`\`\``,
     });
     await errorChannel.send({ embeds: [embed] });
     sentInErrorChannel = true;
   }
 
-  const ectx = ctx as unknown as CommandInteraction & {
+  const ectx = ctx as unknown as (CommandInteraction | ModalSubmitInteraction) & {
     send: CommandInteraction["reply"];
   };
   ectx.send = (await getReplyMethod(ectx)) as unknown as (typeof ectx)["send"];

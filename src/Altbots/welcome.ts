@@ -97,7 +97,7 @@ export class SacarverBot {
         },
         {
           emoji: "🎟️",
-          title: "The Clancy World Tour",
+          title: "Breach Festivals",
           text: `Head over to <#${channelIDs.concertsForum}> to find thread chats for your shows`,
         },
         {

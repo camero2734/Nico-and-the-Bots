@@ -92,7 +92,7 @@ export abstract class InteractionEntrypoint<
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
       EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx, wideEvent, error: e });
-      ErrorHandler(ctx, wideEvent, this.identifier);
+      ErrorHandler(ctx, wideEvent, e instanceof Error ? e : new Error(String(e)), this.identifier);
     }
 
     emitWideEvent(wideEvent);

@@ -78,16 +78,17 @@ const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
 
 export const ErrorHandler = async (
   ctx: TextChannel | DMChannel | Interaction & { wideEvent?: WideEvent },
-  e: WideEvent,
+  wideEvent: WideEvent,
+  error: Error,
   handler?: string,
   receivedInteractionAt?: Date,
 ) => {
-  const errorId = e.event_id;
+  const errorId = wideEvent.event_id;
   const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
 
   let sentInErrorChannel = false;
   const errorChannel = await getErrorChannel();
-  if (errorChannel && !(e instanceof CommandError)) {
+  if (errorChannel && !(error instanceof CommandError)) {
     const embed = new EmbedBuilder()
       .setTitle("An error occurred!")
       .setColor(Colors.DarkRed)
@@ -139,7 +140,7 @@ export const ErrorHandler = async (
 
     embed.addFields({
       name: "Error",
-      value: `\`\`\`js\n${e instanceof Error ? formatStack(e) : e}\`\`\``,
+      value: `\`\`\`js\n${error instanceof Error ? formatStack(error) : error}\`\`\``,
     });
     await errorChannel.send({ embeds: [embed] });
     sentInErrorChannel = true;
@@ -152,9 +153,9 @@ export const ErrorHandler = async (
 
   if (!ectx.send) return;
 
-  if (e instanceof CommandError) {
+  if (error instanceof CommandError) {
     const embed = new EmbedBuilder()
-      .setDescription(e.message)
+      .setDescription(error.message)
       .setTitle("An error occurred!")
       .setColor(Colors.DarkRed)
       .setFooter({ text: `DEMA internet machine broke. Error ${errorId}` });

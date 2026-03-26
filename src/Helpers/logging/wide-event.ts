@@ -1,4 +1,4 @@
-import { type ChatInputCommandInteraction, ComponentType, type GuildMember, type Interaction } from "discord.js";
+import { ComponentType, type GuildMember, type Interaction } from "discord.js";
 
 type InteractionTypeString =
   | "chat_input"
@@ -24,7 +24,7 @@ export interface WideEvent {
     command_name?: string;
     subcommand_group?: string;
     subcommand?: string;
-    command_options?: Record<string, unknown>;
+    command_string?: string;
     custom_id?: string;
     component_type?: string;
     deferred: boolean;
@@ -61,28 +61,6 @@ function getComponentTypeName(componentType: ComponentType | undefined): string 
   return ComponentType[componentType];
 }
 
-function extractCommandOptions(interaction: ChatInputCommandInteraction): Record<string, unknown> | undefined {
-  const options: Record<string, unknown> = {};
-  const data = interaction.options.data;
-
-  for (const d of data) {
-    if (d.type === 1 && d.options) {
-      // Subcommand group
-      const subcommandOpts: Record<string, unknown> = {};
-      for (const subOption of d.options) {
-        if ("value" in subOption) {
-          subcommandOpts[subOption.name] = subOption.value;
-        }
-      }
-      options[d.name] = subcommandOpts;
-    } else if ("value" in d) {
-      options[d.name] = d.value;
-    }
-  }
-
-  return Object.keys(options).length > 0 ? options : undefined;
-}
-
 export function createWideEvent(interaction: Interaction) {
   const eventId = Bun.randomUUIDv7();
   const member = interaction.member as GuildMember | null;
@@ -113,7 +91,7 @@ export function createWideEvent(interaction: Interaction) {
     const subcommand = interaction.options.getSubcommand(false);
     if (subcommandGroup) wideEvent.discord.subcommand_group = subcommandGroup;
     if (subcommand) wideEvent.discord.subcommand = subcommand;
-    wideEvent.discord.command_options = extractCommandOptions(interaction);
+    wideEvent.discord.command_string = interaction.toString();
   }
 
   if (interaction.isMessageComponent()) {

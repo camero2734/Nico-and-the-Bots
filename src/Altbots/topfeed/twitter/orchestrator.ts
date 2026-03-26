@@ -119,7 +119,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs: number |
     yield* Effect.race(
       pipe(
         fetchTwitterOfficialApi(query),
-        Effect.andThen((response) => handleTwitterResponse(response, wideEvent!)),
+        Effect.andThen((response) => handleTwitterResponse(response, wideEvent)),
         Effect.tapError(Effect.logError),
         Effect.filterOrFail(
           (newTweets) => newTweets,
@@ -130,7 +130,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs: number |
       ),
       pipe(
         fetchTwitterUnofficialApi(query),
-        Effect.andThen((response) => handleTwitterResponse(response, wideEvent!)),
+        Effect.andThen((response) => handleTwitterResponse(response, wideEvent)),
         Effect.tapError(Effect.logError),
         Effect.filterOrFail(
           (newTweets) => newTweets,

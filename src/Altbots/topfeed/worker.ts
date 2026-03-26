@@ -1,11 +1,12 @@
 import { Queue, Worker } from "bullmq";
+import { Effect } from "effect";
 import { Redis } from "ioredis";
+import { DiscordLogProvider } from "../../Helpers/effect";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../Helpers/logging/wide-event";
 import { checkInstagram } from "./instagram/check";
 import { checkTwitter } from "./twitter/check";
-import { checkYoutube } from "./youtube/check";
 import { fetchWebsites } from "./websites/orchestrator";
-import { DiscordLogProvider } from "../../../src/Helpers/effect";
-import { Effect } from "effect";
+import { checkYoutube } from "./youtube/check";
 
 const QUEUE_NAME = "TopfeedCheck";
 const redisOpts = {
@@ -29,30 +30,26 @@ type QueueJobType = NonNullable<Awaited<ReturnType<typeof queue.getJob>>>["name"
 export const worker = new Worker(
   QUEUE_NAME,
   async (job) => {
-    const start = Date.now();
     const name = job.name as QueueJobType;
+    const wideEvent = createBackgroundEvent(`topfeed_${name.toLowerCase()}`);
 
     try {
       if (name === "TWITTER") {
-        console.log(`Checking Twitter group: ${name} at ${Date.now()}`);
         await checkTwitter();
       } else if (name === "INSTAGRAM") {
-        console.log(`Checking Instagram group: ${name} at ${Date.now()}`);
         await checkInstagram();
       } else if (name === "YOUTUBE") {
-        console.log(`Checking YouTube group: ${name} at ${Date.now()}`);
         await checkYoutube();
       } else if (name === "WEBSITES") {
-        console.log(`Checking Websites group: ${name} at ${Date.now()}`);
         await Effect.runPromise(fetchWebsites.pipe(DiscordLogProvider));
       }
+      finalizeWideEvent(wideEvent, "success");
     } catch (error) {
-      console.error(`Error processing job ${name}:`, error);
+      finalizeWideEvent(wideEvent, "error", error);
       throw error;
     }
 
-    const duration = Date.now() - start;
-    console.log(`Job ${name} completed in ${duration}ms`);
+    emitWideEvent(wideEvent);
   },
   {
     ...redisOpts,

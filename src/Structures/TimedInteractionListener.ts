@@ -37,7 +37,9 @@ export class TimedInteractionListener<IDs extends Readonly<string[]>> {
           clearTimeout(timeout);
           resolve([customID, ctx]);
         });
-        collector.on("end", () => console.log(`${customID} collector ended`));
+        collector.on("end", () => {
+          // Collector ended
+        });
       });
     });
 

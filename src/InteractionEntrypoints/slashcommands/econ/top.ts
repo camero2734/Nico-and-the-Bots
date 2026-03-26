@@ -68,13 +68,14 @@ async function getMemberScores(
   ctx: typeof command.ContextType,
   pageNum: number,
   timeperiod?: number,
-): Promise<{ member?: GuildMember; score: number }[]> {
+): Promise<{ member?: GuildMember; userId: string; score: number }[]> {
   const startAt = pageNum * 10;
   const paginatedUsers = await queries.scoresOverTime(timeperiod, startAt, 10);
 
   return await Promise.all(
     paginatedUsers.map(async (u) => ({
       member: await ctx.member.guild.members.fetch(u.userId).catch(() => undefined),
+      userId: u.userId,
       score: u.score,
     })),
   );
@@ -83,7 +84,7 @@ async function getMemberScores(
 async function getAlltimeScores(
   ctx: typeof command.ContextType,
   pageNum: number,
-): Promise<{ member?: GuildMember; score: number }[]> {
+): Promise<{ member?: GuildMember; userId: string; score: number }[]> {
   const startAt = pageNum * 10;
 
   const start2 = Date.now();
@@ -95,12 +96,13 @@ async function getAlltimeScores(
     skip: startAt,
     take: 10,
   });
-  console.log("Time taken to get paginated users: ", Date.now() - start2);
+  ctx.wideEvent.extended.db_query_ms = Date.now() - start2;
 
   return await Promise.all(
     paginatedUsers.map(async (u) => {
       return {
         member: await ctx.member.guild.members.fetch(u.id).catch(() => undefined),
+        userId: u.id,
         score: u.score,
       };
     }),
@@ -108,7 +110,7 @@ async function getAlltimeScores(
 }
 
 async function generateImage(
-  userScores: { member?: GuildMember; score: number }[],
+  userScores: { member?: GuildMember; userId: string; score: number }[],
   pageNum: number,
   timePeriodStr: string,
 ): Promise<Buffer> {
@@ -158,7 +160,7 @@ async function generateImage(
 
   for (let i = 0; i < userScores.length; i++) {
     cctx.save();
-    const { member, score } = userScores[i];
+    const { member, userId, score } = userScores[i];
     const placeNum = startNum + i;
 
     // Place num
@@ -172,7 +174,7 @@ async function generateImage(
     cctx.translate(10, 0);
     const avatar = await loadImage(
       member?.user.displayAvatarURL({ extension: "png", size: 128 }) ||
-      "https://cdn.landesa.org/wp-content/uploads/default-user-image.png",
+      `https://cdn.discordapp.com/embed/avatars/${+(userId.at(-1) || 0) % 5}.png`,
     );
 
     cctx.shadowBlur = 1;
@@ -210,13 +212,13 @@ async function generateImage(
     // Level
     cctx.font = "20px Futura";
     cctx.fillStyle = "white";
-    drawText(`Level: ${LevelCalculator.calculateLevel(score)}`, 0, 55);
+    drawText(`Level: ${LevelCalculator.calculateLevel(score)} `, 0, 55);
 
     // Score
     cctx.translate(325, 25);
     cctx.font = "28px FiraCode";
     cctx.textAlign = "end";
-    drawText(`${score}`, 0, 0);
+    drawText(`${score} `, 0, 0);
 
     cctx.restore();
     cctx.translate(0, 65);
@@ -228,7 +230,7 @@ async function generateImage(
   cctx.textAlign = "end";
   cctx.fillStyle = "white";
   cctx.font = "20px Futura";
-  drawText(`${pageNum + 1}`, UNIT_WIDTH - 10, 0);
+  drawText(`${pageNum + 1} `, UNIT_WIDTH - 10, 0);
 
   return canvas.toBuffer("image/png");
 }

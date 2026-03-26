@@ -17,6 +17,7 @@ import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
+import { WideEvent } from "../Helpers/logging/wide-event";
 
 const getReplyMethod = async (ctx: CommandInteraction | ModalSubmitInteraction) => {
   if (!ctx.isRepliable()) {
@@ -76,25 +77,18 @@ const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
 };
 
 export const ErrorHandler = async (
-  ctx: TextChannel | DMChannel | Interaction,
-  e: unknown,
+  ctx: TextChannel | DMChannel | Interaction & { wideEvent?: WideEvent },
+  wideEvent: WideEvent,
+  error: Error,
   handler?: string,
   receivedInteractionAt?: Date,
 ) => {
-  const errorId = Bun.randomUUIDv7();
+  const errorId = wideEvent.event_id;
   const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
-
-  console.log("===================================");
-  console.log("||                               ||");
-  console.log(`----> ${(e as object).constructor.name} Error!`);
-  console.log(`----> Error ID: ${errorId}`);
-  console.log("||                               ||");
-  console.log("===================================");
-  if (e instanceof Error) console.log(e.stack);
 
   let sentInErrorChannel = false;
   const errorChannel = await getErrorChannel();
-  if (errorChannel && !(e instanceof CommandError)) {
+  if (errorChannel && !(error instanceof CommandError)) {
     const embed = new EmbedBuilder()
       .setTitle("An error occurred!")
       .setColor(Colors.DarkRed)
@@ -146,7 +140,7 @@ export const ErrorHandler = async (
 
     embed.addFields({
       name: "Error",
-      value: `\`\`\`js\n${e instanceof Error ? formatStack(e) : e}\`\`\``,
+      value: `\`\`\`js\n${error instanceof Error ? formatStack(error) : error}\`\`\``,
     });
     await errorChannel.send({ embeds: [embed] });
     sentInErrorChannel = true;
@@ -159,9 +153,9 @@ export const ErrorHandler = async (
 
   if (!ectx.send) return;
 
-  if (e instanceof CommandError) {
+  if (error instanceof CommandError) {
     const embed = new EmbedBuilder()
-      .setDescription(e.message)
+      .setDescription(error.message)
       .setTitle("An error occurred!")
       .setColor(Colors.DarkRed)
       .setFooter({ text: `DEMA internet machine broke. Error ${errorId}` });
@@ -172,7 +166,6 @@ export const ErrorHandler = async (
       allowedMentions: { users: [], roles: [] },
     });
   } else {
-    console.log("Unknown error:", e);
     const embed = new EmbedBuilder().setTitle("An unknown error occurred!").setFooter({
       text: `DEMA internet machine really broke. Error ${errorId} ${sentInErrorChannel ? "📝" : ""}`,
     });

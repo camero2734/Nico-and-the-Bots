@@ -8,16 +8,21 @@ import {
   type UserContextMenuCommandInteraction,
 } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
-import { InteractionEntrypoint } from "./EntrypointBase";
+import type { WideEvent } from "../Helpers/logging/wide-event";
 import { ApplicationData, ContextMenus } from "./data";
+import { InteractionEntrypoint } from "./EntrypointBase";
 
 export type TargetTypes = {
   [ApplicationCommandType.Message]: Message;
   [ApplicationCommandType.User]: GuildMember;
 };
 
+export type ContextMenuInteraction = (MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) & {
+  wideEvent: WideEvent;
+};
+
 export type ContextMenuHandler<T extends keyof TargetTypes> = (
-  ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction,
+  ctx: ContextMenuInteraction,
   target: TargetTypes[T],
 ) => Promise<unknown>;
 
@@ -37,11 +42,13 @@ export abstract class ContextMenu<T extends keyof TargetTypes> extends Interacti
     ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction,
   ): TargetTypes[T];
 
-  async _run(ctx: Interaction): Promise<void> {
+  async _run(ctx: Interaction, wideEvent: WideEvent): Promise<void> {
     if (!ctx.isContextMenuCommand()) throw new CommandError("Not a context menu");
 
+    const contextCtx = ctx as ContextMenuInteraction;
+    contextCtx.wideEvent = wideEvent;
     const target = this.getTarget(ctx);
-    await this.handler(ctx, target);
+    await this.handler(contextCtx, target);
   }
 
   _register(): string {

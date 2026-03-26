@@ -1,19 +1,19 @@
-import type { User } from "../../generated/prisma/client";
+import { EmbedBuilder } from "@discordjs/builders";
 import { startOfDay } from "date-fns";
 import {
-  DiscordAPIError,
   type Message,
   type MessageReference,
   MessageReferenceType,
   type Snowflake,
-  type TextChannel,
+  type TextChannel
 } from "discord.js";
-import { EmbedBuilder } from "@discordjs/builders";
+import type { User } from "../../generated/prisma/client";
 import { prisma } from "./prisma-init";
 
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
 import { NicoClient } from "../../app";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent, WideEvent } from "./logging/wide-event";
 
 const QUEUE_NAME = "ScoreUpdate";
 
@@ -47,11 +47,12 @@ new Worker(
   QUEUE_NAME,
   async (job) => {
     if (job.name !== "score") return;
+
+    const wideEvent = createBackgroundEvent("score_update");
+
     try {
       const count = await scoreQueue.count();
-      if (count > 10) {
-        console.log(`[Score Queue]: Items in queue: ${count}`);
-      }
+      wideEvent.extended.queueSize = count;
 
       const msgRef = job.data as MessageReference;
       if (!msgRef?.messageId) throw Error("no msg id");
@@ -61,10 +62,10 @@ new Worker(
       const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
       const msg = await channel.messages.fetch(msgRef.messageId);
 
-      await updateUserScoreWorker(msg);
+      await updateUserScoreWorker(msg, wideEvent);
     } catch (e) {
-      if (e instanceof DiscordAPIError) return;
-      console.log(e);
+      finalizeWideEvent(wideEvent, "error", e);
+      emitWideEvent(wideEvent);
     }
   },
   {
@@ -74,12 +75,14 @@ new Worker(
 );
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
-const updateUserScoreWorker = async (msg: Message): Promise<void> => {
+const updateUserScoreWorker = async (msg: Message, wideEvent: WideEvent): Promise<void> => {
   const dbUser = await prisma.user.upsert({
     where: { id: msg.author.id },
     update: {},
     create: { id: msg.author.id, dailyBox: { create: {} } },
   });
+
+  wideEvent.extended.user_id = msg.author.id;
 
   const now = Date.now();
   const timeSince = Math.max(now - dbUser.lastMessageSent.getTime(), 0);
@@ -123,8 +126,11 @@ const updateUserScoreWorker = async (msg: Message): Promise<void> => {
     },
   };
 
+  wideEvent.extended.earnedPoint = earnedPoint;
+
   if (earnedPoint) {
     const userUpdateData = await onEarnPoint(msg, dbUser);
+    wideEvent.extended.update_data = userUpdateData.data;
 
     await prisma.messageHistory.upsert(upsertData);
     await prisma.user.update(userUpdateData);

@@ -1,4 +1,3 @@
-import { MessageFlags, type GuildMember } from "discord.js";
 import {
   ActionRowBuilder,
   DangerButtonBuilder,
@@ -7,6 +6,7 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } from "@discordjs/builders";
+import { type GuildMember, MessageFlags } from "discord.js";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
@@ -90,7 +90,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
   const actionType = +args.actionType;
   ctx.deferred = true;
 
-  console.log(`Got ${actionType}`, args);
+  ctx.wideEvent.extended.action_type = ActionTypes[actionType];
 
   if (actionType === ActionTypes.ShowList) {
     const [embed, actionRow] = await generateReminderList(ctx.member);
@@ -101,7 +101,6 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
     return;
   }
   if (actionType === ActionTypes.DeleteReminder) {
-    console.log("delete", /SELECT/);
     if (!ctx.isButton()) return;
     ctx.deferred = true;
 

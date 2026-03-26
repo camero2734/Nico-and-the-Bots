@@ -5,7 +5,7 @@ import type { Response, Tweet } from "../constants";
 
 const twitter = new TwitterOpenApi();
 
-class TwitterLoginError extends Data.TaggedError("HttpError") {}
+class TwitterLoginError extends Data.TaggedError("HttpError") { }
 
 let twitterClient: TwitterOpenApiClient | null = null;
 export class TwitterApiClient extends Effect.Service<TwitterApiClient>()("TwitterApiClient", {
@@ -13,7 +13,6 @@ export class TwitterApiClient extends Effect.Service<TwitterApiClient>()("Twitte
     try: async () => {
       if (twitterClient) return twitterClient;
 
-      console.log("Logging in to Twitter API...");
       twitterClient = await twitter.getClientFromCookies({
         ct0: secrets.apis.twitter.ct0,
         auth_token: secrets.apis.twitter.auth_token,
@@ -23,7 +22,7 @@ export class TwitterApiClient extends Effect.Service<TwitterApiClient>()("Twitte
     },
     catch: () => new TwitterLoginError(),
   }),
-}) {}
+}) { }
 
 export const fetchTwitterOfficialApi = (query: string) =>
   Effect.gen(function* () {
@@ -63,14 +62,14 @@ export const fetchTwitterOfficialApi = (query: string) =>
             media_url_https: m.mediaUrlHttps,
             video_info: m.videoInfo
               ? {
-                  aspect_ratio: [m.videoInfo.aspectRatio[0], m.videoInfo.aspectRatio[1]],
-                  duration_millis: m.videoInfo.durationMillis,
-                  variants: m.videoInfo.variants.map((v) => ({
-                    content_type: v.contentType,
-                    url: v.url,
-                    bitrate: v.bitrate,
-                  })),
-                }
+                aspect_ratio: [m.videoInfo.aspectRatio[0], m.videoInfo.aspectRatio[1]],
+                duration_millis: m.videoInfo.durationMillis,
+                variants: m.videoInfo.variants.map((v) => ({
+                  content_type: v.contentType,
+                  url: v.url,
+                  bitrate: v.bitrate,
+                })),
+              }
               : undefined,
           })),
         },

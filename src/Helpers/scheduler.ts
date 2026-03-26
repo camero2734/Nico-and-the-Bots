@@ -21,44 +21,42 @@ import {
 import { channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "./logging/wide-event";
 import { prisma } from "./prisma-init";
 
-// Helper function to log errors to both console and Discord
+// Helper function to log errors to Discord
 const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) => {
-  console.error(message, error);
   try {
     const testChannel = await guild.channels.fetch(channelIDs.bottest);
     if (testChannel?.isTextBased()) {
       await testChannel.send(`🚨 **Scheduler Error**: ${message}\n\`\`\`${String(error)}\`\`\``);
     }
   } catch (discordError) {
-    console.error("Failed to send error to Discord:", discordError);
+    // Failed to send to Discord, error will be in wide event
   }
 };
 
 export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
-  // Helper function to log errors to both console and Discord
-  const logError = async (message: string, error: unknown) => {
-    console.error(message, error);
-    await logErrorToDiscord(guild, message, error);
-  };
-
-  // Helper function to wrap tasks with error handling and timeout
+  // Helper function to wrap tasks with error handling, timeout, and wide event logging
   const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs: number) => {
     return async () => {
-      try {
-        console.log(`[Scheduler] ${taskName} running`);
+      const wideEvent = createBackgroundEvent(`task.${taskName}`);
 
+      try {
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error(`Task timed out after ${timeoutMs}ms`)), timeoutMs),
         );
 
         await Promise.race([taskFn(), timeoutPromise]);
+        finalizeWideEvent(wideEvent, "success");
       } catch (error) {
-        await logError(`Error in ${taskName}`, error);
+        finalizeWideEvent(wideEvent, "error", error);
+        await logErrorToDiscord(guild, `Error in ${taskName}`, error);
       }
+
+      emitWideEvent(wideEvent);
     };
   };
 
@@ -80,8 +78,6 @@ export default async function (client: Client): Promise<void> {
   Cron("0 */2 * * * *", { protect }, async () => {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
   });
-
-  console.log("[Scheduler] All cron jobs initialized successfully");
 }
 
 async function checkReminders(guild: Guild): Promise<void> {
@@ -136,7 +132,6 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
   const testChannel = await guild.channels.fetch(channelIDs.bottest);
   if (!testChannel?.isTextBased()) throw new Error("Test channel is not text-based");
   for (const mem of membersNoBanditos.values()) {
-    console.log(`Adding banditos/new to ${mem.user.tag}`);
     await testChannel.send(`${userMention(userIDs.me)} ${mem.user.tag} did not have banditos role, adding it now.`);
     await mem.roles.add(roles.banditos);
     await mem.roles.add(roles.new);
@@ -184,7 +179,6 @@ async function checkVCRoles(guild: Guild): Promise<void> {
 }
 
 async function checkHouseOfGold(guild: Guild): Promise<void> {
-  console.log("[Scheduler] checkHouseOfGold start");
   const msgsToDelete = await prisma.gold.groupBy({
     by: ["houseOfGoldMessageUrl"],
     _count: true,
@@ -204,11 +198,8 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
     },
   });
 
-  console.log(`[Scheduler] checkHouseOfGold fetched ${msgsToDelete.length} messages to delete`);
-
   for (const toDelete of msgsToDelete) {
     try {
-      console.log(`DELETING ${toDelete.houseOfGoldMessageUrl}`);
       const ids = F.parseMessageUrl(toDelete.houseOfGoldMessageUrl as string);
 
       if (!ids) continue;
@@ -230,5 +221,4 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
       await logErrorToDiscord(guild, `Unable to delete House of Gold message: ${toDelete.houseOfGoldMessageUrl}`, e);
     }
   }
-  console.log("[Scheduler] checkHouseOfGold end");
 }

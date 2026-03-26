@@ -1,16 +1,17 @@
 import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
+  type AttachmentPayload,
   Client,
   Events,
-  MessageFlags,
-  type AttachmentPayload,
   type GuildMember,
-  type MessageComponentInteraction
+  type MessageComponentInteraction,
+  MessageFlags,
 } from "discord.js";
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../Helpers/logging/wide-event";
 import { queries } from "../Helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
@@ -37,8 +38,6 @@ export class SacarverBot {
     });
     this.client.login(secrets.bots.sacarver);
 
-    console.log("Logging in Sacarver bot...");
-
     this.ready = new Promise((resolve) => {
       this.client.on(Events.ClientReady, () => {
         resolve();
@@ -64,92 +63,102 @@ export class SacarverBot {
   }
 
   async welcomeMember(member: GuildMember): Promise<void> {
-    console.log(`[WELCOME] Member ${member.user.tag} (${member.id}) joined.`);
-    const welcomeChan = await member.guild.channels.fetch(channelIDs.welcome);
-    if (!welcomeChan?.isTextBased()) {
-      console.error("Welcome channel not found or not text-based");
-      return;
+    const wideEvent = createBackgroundEvent("welcome_member");
+
+    try {
+      const welcomeChan = await member.guild.channels.fetch(channelIDs.welcome);
+      if (!welcomeChan?.isTextBased()) {
+        finalizeWideEvent(wideEvent, "error", "Welcome channel not found or not text-based");
+        emitWideEvent(wideEvent);
+        return;
+      }
+
+      const memberNum = await this.getMemberNumber(member);
+      wideEvent.extended.member_number = memberNum;
+      wideEvent.extended.user_id = member.id;
+
+      const attachment = await SacarverBot.generateWelcomeImage({
+        avatarUrl: member.user.displayAvatarURL({ extension: "png" }),
+        displayName: member.displayName,
+        guildMemberCount: member.guild.memberCount,
+        memberNum,
+      });
+
+      const noteworthyChannels = [
+        {
+          emoji: "📜",
+          title: "Rules & Announcements",
+          text: `Make sure you've read our server's <#${channelIDs.rules}> and <#${channelIDs.info}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related news`,
+        },
+        {
+          emoji: "💬",
+          title: "General chats",
+          text: `For the dedicated band chat check out <#${channelIDs.pilotsDiscussion}> and for general discussion, check out <#${channelIDs.hometown}>, <#${channelIDs.slowtown}>, <#${channelIDs.paladinStrait}> and <#${channelIDs.international}>`,
+        },
+        {
+          emoji: "🎟️",
+          title: "The Clancy World Tour",
+          text: `Head over to <#${channelIDs.concertsForum}> to find thread chats for your shows`,
+        },
+        {
+          emoji: "<:DEMA:1218335710457757726>",
+          title: "Theories and Lore",
+          text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theoryForum}>`,
+        },
+        {
+          emoji: "🎨",
+          title: "Creations",
+          text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.musiccreations}>`,
+        },
+        {
+          emoji: "🤖",
+          title: "Our bots",
+          text: `Use our custom bots in <#${channelIDs.commands}>`,
+        },
+        {
+          emoji: "🥁",
+          title: "Tøpfeed",
+          text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command or from <id:customize>`,
+        },
+      ];
+
+      const embed = new EmbedBuilder()
+        .setTitle("Welcome to the twenty one pilots Discord server!")
+        .setAuthor({
+          name: member.displayName,
+          icon_url: member.user.displayAvatarURL(),
+        })
+        .setDescription(
+          "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n",
+        )
+        .setImage("attachment://welcome.webp");
+
+      embed.addFields([{ name: "\u200b", value: "\u200b" }]);
+      for (const { emoji, title, text } of noteworthyChannels) {
+        embed.addFields([{ name: `${emoji} ${title}`, value: text }]);
+      }
+
+      const actionRow = new ActionRowBuilder().addComponents(
+        new PrimaryButtonBuilder({
+          label: "Sign up for #announcements",
+          custom_id: ANNOUNCEMENTS_ID,
+          emoji: { name: "📢" },
+        }),
+      );
+
+      await welcomeChan.send({
+        content: member.toString(),
+        embeds: [embed],
+        files: [attachment],
+        components: [actionRow],
+      });
+
+      finalizeWideEvent(wideEvent, "success");
+    } catch (error) {
+      finalizeWideEvent(wideEvent, "error", error);
     }
 
-    const memberNum = await this.getMemberNumber(member);
-    console.log(`[WELCOME] Member #${memberNum} joined`);
-
-    const attachment = await SacarverBot.generateWelcomeImage({
-      avatarUrl: member.user.displayAvatarURL({ extension: "png" }),
-      displayName: member.displayName,
-      guildMemberCount: member.guild.memberCount,
-      memberNum,
-    });
-
-    const noteworthyChannels = [
-      {
-        emoji: "📜",
-        title: "Rules & Announcements",
-        text: `Make sure you've read our server's <#${channelIDs.rules}> and <#${channelIDs.info}> before hopping into anything! You can also check out <#${channelIDs.announcements}> for band/server related news`,
-      },
-      {
-        emoji: "💬",
-        title: "General chats",
-        text: `For the dedicated band chat check out <#${channelIDs.pilotsDiscussion}> and for general discussion, check out <#${channelIDs.hometown}>, <#${channelIDs.slowtown}>, <#${channelIDs.paladinStrait}> and <#${channelIDs.international}>`,
-      },
-      {
-        emoji: "🎟️",
-        title: "The Clancy World Tour",
-        text: `Head over to <#${channelIDs.concertsForum}> to find thread chats for your shows`,
-      },
-      {
-        emoji: "<:DEMA:1218335710457757726>",
-        title: "Theories and Lore",
-        text: `Discuss theories in <#${channelIDs.leakstheories}> and share yours in <#${channelIDs.theoryForum}>`,
-      },
-      {
-        emoji: "🎨",
-        title: "Creations",
-        text: `Check out our community's <#${channelIDs.creations}> and <#${channelIDs.musiccreations}>`,
-      },
-      {
-        emoji: "🤖",
-        title: "Our bots",
-        text: `Use our custom bots in <#${channelIDs.commands}>`,
-      },
-      {
-        emoji: "🥁",
-        title: "Tøpfeed",
-        text: `Stay up to date with the band's posts in <#${channelIDs.band}>, and get notified if dmaorg.info updates in <#${channelIDs.dmaorg}>. You can sign up for notifications by using the \`/roles topfeed\` command or from <id:customize>`,
-      },
-    ];
-
-    const embed = new EmbedBuilder()
-      .setTitle("Welcome to the twenty one pilots Discord server!")
-      .setAuthor({
-        name: member.displayName,
-        icon_url: member.user.displayAvatarURL(),
-      })
-      .setDescription(
-        "Curious to explore the server? We listed some of the most popular channels below for you to check out!\n\nWe make announcements any time something happens with the band or the server - stay up to date by clicking the button at the end of this message.\n",
-      )
-      .setImage("attachment://welcome.webp");
-
-    embed.addFields([{ name: "\u200b", value: "\u200b" }]);
-    for (const { emoji, title, text } of noteworthyChannels) {
-      embed.addFields([{ name: `${emoji} ${title}`, value: text }]);
-    }
-
-    // Functions
-    const actionRow = new ActionRowBuilder().addComponents(
-      new PrimaryButtonBuilder({
-        label: "Sign up for #announcements",
-        custom_id: ANNOUNCEMENTS_ID,
-        emoji: { name: "📢" },
-      }),
-    );
-
-    await welcomeChan.send({
-      content: member.toString(),
-      embeds: [embed],
-      files: [attachment],
-      components: [actionRow],
-    });
+    emitWideEvent(wideEvent);
   }
 
   async giveAnnouncementsRole(interaction: MessageComponentInteraction): Promise<void> {

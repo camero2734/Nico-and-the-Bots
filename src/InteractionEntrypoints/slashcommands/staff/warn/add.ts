@@ -1,13 +1,13 @@
+import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { subYears } from "date-fns";
 import { ApplicationCommandOptionType, type GuildMember, MessageFlags } from "discord.js";
-import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
+import { WarningType } from "../../../../../generated/prisma/client";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import { prisma, queries } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { TimedInteractionListener } from "../../../../Structures/TimedInteractionListener";
 import JailCommand from "./../jail";
-import { WarningType } from "../../../../../generated/prisma/client";
 
 const rules = Object.values(WarningType);
 
@@ -132,7 +132,7 @@ async function autoJailCheck(ctx: (typeof command)["ContextType"], member: Guild
     where: { warnedUserId: member.id, createdAt: { gt: oneYearAgo } },
   });
 
-  console.log(`Recent warns: ${recentWarns}`);
+  ctx.wideEvent.extended.warn_count = recentWarns;
 
   if (recentWarns < 3) {
     const embed = new EmbedBuilder();
@@ -142,6 +142,8 @@ async function autoJailCheck(ctx: (typeof command)["ContextType"], member: Guild
     );
     return await ctx.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
   }
+
+  ctx.wideEvent.extended.auto_jailed = true;
 
   // Automatically run the jail command on the user
   JailCommand.run(ctx, {

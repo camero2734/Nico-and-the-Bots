@@ -1,6 +1,6 @@
-import { Image, createCanvas, loadImage } from "@napi-rs/canvas";
-import { ApplicationCommandOptionType, Colors } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { createCanvas, Image, loadImage } from "@napi-rs/canvas";
+import { ApplicationCommandOptionType, Colors } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { Album, fm, getFMUsername } from "./_consts";
@@ -76,7 +76,8 @@ command.setHandler(async (ctx) => {
 
   const imageSize = size < 15 ? "/300x300/" : "/34s/";
 
-  console.log(JSON.stringify(collected));
+  ctx.wideEvent.extended.album_count = collected.length;
+  ctx.wideEvent.extended.grid_size = size;
 
   const images = await Promise.allSettled(
     collected.map((c) => loadImage(c.image?.replace("/300x300/", imageSize) || "")),

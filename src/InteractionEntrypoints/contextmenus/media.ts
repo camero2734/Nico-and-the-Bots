@@ -1,11 +1,5 @@
-import {
-  type APIComponentInContainer,
-  ComponentType,
-  MessageFlags,
-  type AnyComponent,
-  Colors,
-} from "discord.js";
 import { ContainerBuilder } from "@discordjs/builders";
+import { type AnyComponent, type APIComponentInContainer, Colors, ComponentType, MessageFlags } from "discord.js";
 import { MessageContextMenu } from "../../Structures/EntrypointContextMenu";
 
 const ctxMenu = new MessageContextMenu("🔗 Get media URLs");
@@ -98,7 +92,8 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
   const m = await msg.forward(dm);
 
-  console.log("Replying with components");
+  ctx.wideEvent.extended.media_urls_count = urls.size;
+
   await m.reply({
     components: [
       new ContainerBuilder({

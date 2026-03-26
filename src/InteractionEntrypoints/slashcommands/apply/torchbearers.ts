@@ -4,7 +4,7 @@ import {
   ModalBuilder,
   SectionBuilder,
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder
+  StringSelectMenuOptionBuilder,
 } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";
@@ -12,19 +12,19 @@ import {
   type CheckboxGroupComponentData,
   Colors,
   ComponentType,
-  type Guild,
   MessageFlags,
   type RadioGroupComponentData,
-  TextInputStyle,
+  TextInputStyle
 } from "discord.js";
 import { channelIDs, emojiIDs, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import { isFlagEnabled } from "../../../Helpers/feature-flags";
 import F from "../../../Helpers/funcs";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
+import { ListenerInteraction } from "../../../Structures/ListenerInteraction";
 import { generateScoreCard } from "../econ/score";
 import { FB_DELAY_DAYS, getActiveFirebreathersApplication } from "./_consts";
-import { isFlagEnabled } from "../../../Helpers/feature-flags";
 
 const command = new SlashCommand({
   description: "Opens an application to the Torchbearers role",
@@ -176,10 +176,14 @@ const genModalId = command.addInteractionListener("tbSubmitModal", ["application
     "Final thoughts/comments on your application?": additionalComments,
   };
 
-  const messageUrl = await sendToStaff(ctx.guild, applicationId, data);
+  const messageUrl = await sendToStaff(ctx, applicationId, data);
   if (!messageUrl) {
+    ctx.wideEvent.extended.success = false;
+    ctx.wideEvent.extended.error = "Failed to send application to staff";
     throw new CommandError("Failed to send application to staff. Please contact an administrator.");
   }
+
+  ctx.wideEvent.extended.application_id = applicationId;
 
   await prisma.firebreatherApplication.update({
     where: { applicationId },
@@ -192,11 +196,13 @@ const genModalId = command.addInteractionListener("tbSubmitModal", ["application
 });
 
 export async function sendToStaff(
-  guild: Guild,
+  ctx: ListenerInteraction,
   applicationId: string,
   data: Record<string, string>,
 ): Promise<string | undefined> {
   try {
+    const guild = ctx.guild;
+
     const tbApplicationChannel = await guild.channels.fetch(channelIDs.deapplications);
     if (!tbApplicationChannel?.isTextBased()) throw new Error("TB Application channel not found");
 
@@ -254,13 +260,11 @@ export async function sendToStaff(
       ),
     );
 
-    console.log("Sending application to staff...");
     const m = await tbApplicationChannel.send({
       components: [mainContainer],
       flags: MessageFlags.IsComponentsV2,
     });
 
-    console.log("Going to start thread");
     try {
       const thread = await m.startThread({
         name: `${member.displayName} application discussion (${applicationId})`,
@@ -337,14 +341,12 @@ export async function sendToStaff(
       await m.react(emojiIDs.upvote);
       await m.react(emojiIDs.downvote);
     } catch (e) {
-      // await m.delete();
-      console.error("Failed to start thread for application:", e);
-      return;
+      ctx.wideEvent.extended.failed_to_create_thread = true;
     }
 
     return m.url;
   } catch (e) {
-    console.log("Error in sendToStaff:", e);
+    ctx.wideEvent.extended.failed_to_send_to_staff = true;
   }
 }
 
@@ -364,8 +366,8 @@ const genStaffModalId = command.addInteractionListener("staffTBAppModal", ["appl
 
   const reasonInput = new LabelBuilder()
     .setLabel(`${verb} Reason`)
-    .setTextInputComponent(
-      builder => builder
+    .setTextInputComponent((builder) =>
+      builder
         .setStyle(TextInputStyle.Short)
         .setRequired(false)
         .setPlaceholder(`Why was the application ${verbPast}? This is optional and will be sent to the user.`)
@@ -386,7 +388,7 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   const color = action === ActionTypes.Accept ? Colors.Green : Colors.Red;
 
   // Disable the select menu
-  const components = ctx.message.components.map(c => c.toJSON());
+  const components = ctx.message.components.map((c) => c.toJSON());
   for (const container of components) {
     if (container.type !== ComponentType.Container) continue;
 
@@ -413,7 +415,11 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   const member = await ctx.guild.members.fetch(application.userId);
   if (!member) throw new CommandError("This member appears to have left the server");
 
-  console.log(`Updating application ${applicationId} as ${action === ActionTypes.Accept ? "accepted" : "denied"} by ${ctx.member?.displayName} with reason: ${reason}`);
+  ctx.wideEvent.extended.application_id = applicationId;
+  ctx.wideEvent.extended.action = action === ActionTypes.Accept ? "accepted" : "denied";
+  ctx.wideEvent.extended.target_user_id = application.userId;
+  ctx.wideEvent.extended.reason = reason || null;
+
   await prisma.firebreatherApplication.update({
     where: { applicationId },
     data: { approved: action === ActionTypes.Accept, decidedAt: new Date() },
@@ -425,8 +431,8 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
 
   const resultContainer = new ContainerBuilder()
     .setAccentColor(color)
-    .addTextDisplayComponents(
-      builder => builder.setContent(
+    .addTextDisplayComponents((builder) =>
+      builder.setContent(
         `## Torchbearers Application ${verb.charAt(0).toUpperCase() + verb.slice(1)}\n` +
         `**Applicant:** ${userMention(member.id)}\n` +
         `**Decision by:** ${ctx.member}\n` +
@@ -440,8 +446,8 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   if (action === ActionTypes.Accept) {
     const userNotification = new ContainerBuilder()
       .setAccentColor(Colors.Green)
-      .addTextDisplayComponents(
-        builder => builder.setContent(
+      .addTextDisplayComponents((builder) =>
+        builder.setContent(
           `## ✅ Application Approved\n\n` +
           `You are officially a Torchbearer! You may now access <#${channelIDs.fairlylocals}>.\n\n` +
           `**Reason:** ${reason || "*No reason given*"}`,
@@ -455,8 +461,8 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
     const timestamp = F.discordTimestamp(addDays(application.submittedAt || new Date(), FB_DELAY_DAYS), "relative");
     const userNotification = new ContainerBuilder()
       .setAccentColor(Colors.Red)
-      .addTextDisplayComponents(
-        builder => builder.setContent(
+      .addTextDisplayComponents((builder) =>
+        builder.setContent(
           `## ❌ Application Denied\n\n` +
           `Unfortunately, your Torchbearers application was denied.\n\n` +
           `You may reapply ${timestamp}.\n\n` +

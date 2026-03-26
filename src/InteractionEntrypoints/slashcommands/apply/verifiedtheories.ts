@@ -11,16 +11,16 @@ import {
   TextInputBuilder,
 } from "@discordjs/builders";
 import { channelMention } from "@discordjs/formatters";
-import { Faker, en } from "@faker-js/faker";
+import { en, Faker } from "@faker-js/faker";
 import {
-  APIButtonComponentWithCustomId,
+  type APIButtonComponentWithCustomId,
   Colors,
   ComponentType,
   type GuildMember,
   type Message,
   MessageFlags,
   type TextChannel,
-  TextInputStyle
+  TextInputStyle,
 } from "discord.js";
 import { guild } from "../../../../app";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
@@ -31,13 +31,14 @@ import type { Question } from "../../../Helpers/verified-quiz/question";
 import QuizQuestions from "../../../Helpers/verified-quiz/quiz"; // .gitignored
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
-  PreviousAnswersEncoder,
-  QuestionIDEncoder,
-  VerifiedQuizConsts,
   caesarEncode,
   generateWords,
   morseEncode,
+  PreviousAnswersEncoder,
+  QuestionIDEncoder,
+  VerifiedQuizConsts,
 } from "./_consts";
+
 export { VerifiedQuizConsts } from "./_consts";
 
 const command = new SlashCommand({
@@ -150,13 +151,15 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
 
   const components: LabelBuilder[] = [];
   for (const [key, { encoded }] of Object.entries(questions)) {
-    const component = new LabelBuilder().setLabel("Decode the following").setTextInputComponent(
-      new TextInputBuilder()
-        .setCustomId(key)
-        .setStyle(TextInputStyle.Paragraph)
-        .setPlaceholder("Enter the decoded sentence here")
-        .setValue(encoded),
-    );
+    const component = new LabelBuilder()
+      .setLabel("Decode the following")
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId(key)
+          .setStyle(TextInputStyle.Paragraph)
+          .setPlaceholder("Enter the decoded sentence here")
+          .setValue(encoded),
+      );
     components.push(component);
   }
 
@@ -178,10 +181,12 @@ const genModalId = command.addInteractionListener("verifmodal", ["seed36"], asyn
       .map((rowComponent) => rowComponent.toJSON())
       .find(
         (rowComponent): rowComponent is APIButtonComponentWithCustomId =>
-          !!(rowComponent.type === ComponentType.Button &&
+          !!(
+            rowComponent.type === ComponentType.Button &&
             "custom_id" in rowComponent &&
             rowComponent.label &&
-            labels.includes(rowComponent.label)),
+            labels.includes(rowComponent.label)
+          ),
       );
 
     if (!component) throw new Error("Invalid components");
@@ -310,7 +315,10 @@ const genVeriquizId = command.addInteractionListener(
 
     const member = await guild.members.fetch(ctx.user.id);
 
-    if (!member) return console.log(`[Verified Quiz] Member does not exist: ${ctx.user.id}`);
+    if (!member) {
+      ctx.wideEvent.extended.error = "Member does not exist";
+      return;
+    }
 
     const questionList = QuestionIDEncoder.decode(questionIDs);
 
@@ -320,7 +328,7 @@ const genVeriquizId = command.addInteractionListener(
     answerEncode.markAnswer(questionList[currentIndex], chosenAnswer);
 
     if (!questionList || questionList.length === 0) {
-      console.log("BAD", args);
+      ctx.wideEvent.extended.error = "Invalid question list";
       return;
     }
 
@@ -430,9 +438,10 @@ async function sendFinalEmbed(
     .setTitle(`${correct}/${questionList.length} correct`)
     .setColor(passed ? 0x88ff88 : 0xff8888)
     .setDescription(
-      `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
-        ? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
-        : `You may apply again in ${hours} hours.`
+      `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
+        passed
+          ? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
+          : `You may apply again in ${hours} hours.`
       }`,
     );
 
@@ -463,8 +472,7 @@ async function sendFinalEmbed(
     },
   ]);
 
-  const createSelect = (selectMenu: StringSelectMenuBuilder) =>
-    new ActionRowBuilder().addComponents(selectMenu);
+  const createSelect = (selectMenu: StringSelectMenuBuilder) => new ActionRowBuilder().addComponents(selectMenu);
 
   const questions = [
     ["I'll be on topic in the channel", "I can discuss anything I want", "I might send some memes"],

@@ -1,3 +1,5 @@
+import { ContainerBuilder } from "@discordjs/builders";
+import { roleMention, userMention } from "@discordjs/formatters";
 import { youtube_v3 } from "@googleapis/youtube";
 import { addHours } from "date-fns";
 import {
@@ -5,11 +7,10 @@ import {
   ComponentType,
   MessageFlags,
 } from "discord.js";
-import { ContainerBuilder } from "@discordjs/builders";
-import { roleMention, userMention } from "@discordjs/formatters";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
+import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../../Helpers/logging/wide-event";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
 
@@ -18,8 +19,6 @@ type DataForUsername = {
   roleId: (typeof roles.topfeed.selectable)[keyof typeof roles.topfeed.selectable];
   channelId: (typeof channelIDs.topfeed)[keyof typeof channelIDs.topfeed];
 };
-
-const logger = (...args: unknown[]) => console.log("[YT:Fetch]", ...args);
 
 export const usernamesToWatch = ["twentyonepilots", "slushieguys", "JoshuaDun"] as const;
 export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
@@ -128,6 +127,8 @@ export async function fetchYoutube({
   authorThumbnail,
   source,
 }: { username: keyof typeof usernameData; authorThumbnail: string; source: "scheduled" }) {
+  const wideEvent = createBackgroundEvent("fetch_youtube");
+
   const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
@@ -151,7 +152,8 @@ export async function fetchYoutube({
     return;
   }
 
-  logger(`Fetching recent YouTube posts for ${username} from playlistId:${uploadsPlaylistId} (${source})`);
+  wideEvent.extended.username = username;
+  wideEvent.extended.source = source;
   await testChan.send(`[${source}] Fetching recent YouTube posts for ${username}`).catch(console.error);
 
   const uploads = await youtube.playlistItems.list({
@@ -161,16 +163,14 @@ export async function fetchYoutube({
   });
 
   if (!uploads.data.items || uploads.data.items.length === 0) {
-    logger("No YouTube uploads found.");
+    finalizeWideEvent(wideEvent, "error", "No uploads found or failed to fetch uploads");
+    emitWideEvent(wideEvent);
     return;
   }
 
   for (const upload of uploads.data.items) {
     const videoId = upload.contentDetails?.videoId;
-    if (!videoId) {
-      logger("No video ID found for upload:", upload);
-      continue;
-    }
+    if (!videoId) continue;
 
     const existing = await prisma.topfeedPost.findFirst({
       where: {
@@ -180,10 +180,7 @@ export async function fetchYoutube({
       },
     });
 
-    if (existing) {
-      logger(`YT video already exists for ${username}: ${videoId}`);
-      continue;
-    }
+    if (existing) continue;
 
     const formattedPost: FormattedYoutubePost = {
       title: upload.snippet?.title || "*No title*",
@@ -200,7 +197,6 @@ export async function fetchYoutube({
     };
 
     if (addHours(new Date(formattedPost.postedAt), 3) < new Date()) {
-      logger(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`);
       await testChan
         .send(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`)
         .catch(console.error);

@@ -5,10 +5,7 @@ import { prisma } from "../prisma-init";
 
 export function listenForTorchbearers(client: Client) {
   client.on(Events.GuildMemberUpdate, async (oldMem, newMem) => {
-    if (!oldMem || oldMem.partial) {
-      console.log("Old member data is missing or partial, skipping torchbearers check.");
-      return;
-    };
+    if (!oldMem || oldMem.partial) return;
 
     const hadRole = oldMem.roles.cache.has(roles.deatheaters);
     const hasRole = newMem.roles.cache.has(roles.deatheaters);

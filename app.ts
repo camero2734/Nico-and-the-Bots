@@ -1,7 +1,7 @@
+import { EmbedBuilder } from "@discordjs/builders";
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
-import { EmbedBuilder } from '@discordjs/builders';
 import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
@@ -11,7 +11,9 @@ import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
+import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
+import { createBackgroundEvent, createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext } from "./src/Helpers/logging/wide-event";
 import "./src/Helpers/message-updates/_queue";
 import { prisma } from "./src/Helpers/prisma-init";
 import Scheduler from "./src/Helpers/scheduler";
@@ -27,7 +29,6 @@ import { SlashCommand } from "./src/Structures/EntrypointSlashCommand";
 import { ErrorHandler } from "./src/Structures/Errors";
 import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
-import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 
 export const client = new Discord.Client({
   intents: [
@@ -49,7 +50,7 @@ export const client = new Discord.Client({
 });
 
 // Temporary fix for fetchShardCount being called in discord.js
-if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === 'function') {
+if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }
 
@@ -230,20 +231,28 @@ client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
 
+  const wideEvent = createBackgroundEvent("reaction_added");
   for (const [name, handler] of ReactionHandlers.entries()) {
     const wasSuccessful = await handler(fullReaction, fullUser, async (promise) => {
       try {
         await promise;
       } catch (e) {
         const m = await fullUser.createDM();
-        ErrorHandler(m, e);
+        await ErrorHandler(m, wideEvent, e instanceof Error ? e : new Error(String(e)));
+        finalizeWideEvent(wideEvent, "error", e);
+        emitWideEvent(wideEvent);
+        return;
       }
     });
     if (wasSuccessful) {
-      console.log(`[Reaction] ${name}`);
+      wideEvent.extended.handledVia = name;
+      finalizeWideEvent(wideEvent, "success");
+      emitWideEvent(wideEvent);
       return;
     }
   }
+
+  // No handler successful, just a reaction that doesn't trigger anything
 });
 
 client.on(Discord.Events.InteractionCreate, async (interaction) => {
@@ -257,7 +266,6 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
   } else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
     if (interaction.customId.startsWith(NULL_CUSTOM_ID_PREFIX)) return;
 
-    console.log(`Got interaction: ${interaction.customId}`);
     const [interactionID] = interaction.customId.split(":");
     if (!interactionID) return;
 
@@ -267,16 +275,21 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
     if ("webhookId" in interaction) await interaction.message?.fetchWebhook();
     if ("messageId" in interaction) await interaction.message?.fetch();
 
+    const wideEvent = createWideEvent(interaction);
+    setBotContext(wideEvent, "InteractionListener", interactionHandler.name);
+
+    const ctx = interaction as ListenerInteraction;
+    ctx.wideEvent = wideEvent;
+
     try {
-      console.log("Handling interaction via:", interactionHandler.name);
-      await interactionHandler.handler(
-        interaction as ListenerInteraction,
-        interactionHandler.pattern.toDict(interaction.customId),
-      );
+      await interactionHandler.handler(ctx, interactionHandler.pattern.toDict(interaction.customId));
+      finalizeWideEvent(wideEvent, "success");
     } catch (e) {
-      console.log("Error in interaction handler", e);
-      ErrorHandler(interaction, e, interactionHandler.name, receivedInteractionAt);
+      finalizeWideEvent(wideEvent, "error", e);
+      await ErrorHandler(interaction, wideEvent, e instanceof Error ? e : new Error(String(e)), interactionHandler.name, receivedInteractionAt);
     }
+
+    emitWideEvent(wideEvent);
   } else if (interaction.isAutocomplete()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
     const optionIdentifier = interaction.options.getFocused()?.name;

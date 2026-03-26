@@ -2,7 +2,7 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { ApplicationCommandOptionType, type GuildMember, type Snowflake } from "discord.js";
 import { roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import { LevelCalculator, badgeLoader } from "../../../Helpers";
+import { badgeLoader, LevelCalculator } from "../../../Helpers";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -28,6 +28,8 @@ command.setHandler(async (ctx) => {
   if (!member) throw new CommandError("Unable to find that member");
   if (member?.user?.bot)
     throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue.");
+
+  ctx.wideEvent.extended.target_user_id = userID;
 
   const buffer = await generateScoreCard(member);
   await ctx.editReply({
@@ -60,8 +62,6 @@ export async function generateScoreCard(member: GuildMember): Promise<Buffer> {
   const totalBetweenLevels = LevelCalculator.pointsToNextLevel(LevelCalculator.calculateScore(dbUser.level));
   const remainingBetweenLevels = LevelCalculator.pointsToNextLevel(dbUser.score);
   const percent = (1 - remainingBetweenLevels / totalBetweenLevels).toFixed(3);
-
-  console.log({ totalBetweenLevels, remainingBetweenLevels, percent });
 
   //FIND USER ALBUM ROLE (BREACH => DEFAULT)
   const src = Object.values(albumRoles).find((id) => member.roles.cache.get(id)) || albumRoles.BREACH;

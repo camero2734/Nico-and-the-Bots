@@ -65,7 +65,7 @@ function extractCommandOptions(interaction: ChatInputCommandInteraction): Record
   const options: Record<string, unknown> = {};
   const opts = interaction.options.data;
 
-  console.log("Command options:", opts);
+  console.log("Command options:", JSON.stringify(opts));
 
   for (const opt of opts) {
     if (opt.value !== undefined) {

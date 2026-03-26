@@ -69,8 +69,8 @@ async function fetchOpengraphData(user: string, wideEvent: WideEvent): Promise<n
     if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram opengraph data";
-    addElement(wideEvent.extended.opengraph_errors, `${user}: ${message}`);
-    addElement(wideEvent.extended.used_backup_methods, user);
+    addElement(wideEvent.extended, "opengraph_errors", `${user}: ${message}`);
+    addElement(wideEvent.extended, "used_backup_methods", user);
 
     await testChan.send(`Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`);
     return fetchOpengraphDataBackup(user);
@@ -106,7 +106,7 @@ export async function checkInstagram() {
         postCountMap[username] = postCount;
       } catch (error) {
         postCountChanged = true;
-        addElement(wideEvent.extended.fetch_errors, username);
+        addElement(wideEvent.extended, "fetch_errors", username);
         await testChan.send(
           `Error fetching Instagram opengraph data for ${username}: ${error instanceof Error ? error.message : "Unknown error"}`,
         );

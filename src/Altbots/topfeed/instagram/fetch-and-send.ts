@@ -160,7 +160,7 @@ async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promi
     if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram embed data";
-    addElement(wideEvent.extended.fetch_errors, `fetch_${username}: ${message}`);
+    addElement(wideEvent.extended, "fetch_errors", `${username}: ${message}`);
     await testChan.send(`Error fetching Instagram embed data for ${username}: ${message}`);
     return [];
   }
@@ -176,11 +176,11 @@ export async function fetchInstagram(source: "scheduled" | "random", wideEvent: 
     const formattedPosts = await fetchIgForUsername(username, wideEvent);
     for (const post of formattedPosts) {
       if (post.author !== username) {
-        addElement(wideEvent.extended.posts_skipped, { code: post.code, author: post.author, reason: "authorMismatch" });
+        addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "authorMismatch" });
         continue;
       }
       if (addHours(new Date(post.postedAt), 3) < new Date()) {
-        addElement(wideEvent.extended.posts_skipped, { code: post.code, author: post.author, reason: "oldPost" });
+        addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "oldPost" });
         continue;
       }
       await sendInstagramPost(post, wideEvent);
@@ -193,7 +193,7 @@ async function sendInstagramPost(post: FormattedInstagramPost, wideEvent: WideEv
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   if (!usernamesToWatch.includes(post.author as (typeof usernamesToWatch)[number])) {
-    addElement(wideEvent.extended.posts_skipped, { code: post.code, author: post.author, reason: "notInWatchlist" });
+    addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "notInWatchlist" });
     return;
   }
 
@@ -206,7 +206,7 @@ async function sendInstagramPost(post: FormattedInstagramPost, wideEvent: WideEv
   });
 
   if (existing) {
-    addElement(wideEvent.extended.posts_skipped, { code: post.code, author: post.author, reason: "alreadyExists" });
+    addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "alreadyExists" });
     return;
   }
 
@@ -233,5 +233,5 @@ async function sendInstagramPost(post: FormattedInstagramPost, wideEvent: WideEv
   });
 
   if (m.crosspostable) await m.crosspost();
-  addElement(wideEvent.extended.posts_sent, { code: post.code, author: post.author });
+  addElement(wideEvent.extended, "posts_sent", { code: post.code, author: post.author });
 }

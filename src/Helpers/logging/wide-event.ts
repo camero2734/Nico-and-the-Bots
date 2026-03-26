@@ -158,10 +158,12 @@ export function emitWideEvent(wideEvent: WideEvent): void {
   console.info(JSON.stringify(wideEvent));
 }
 
-export function addElement(maybeArray: unknown, element: unknown): void {
-  if (Array.isArray(maybeArray)) {
-    maybeArray.push(element);
-  } else {
-    maybeArray = [element];
+export function addElement(extended: Record<string, unknown>, key: string, element: unknown): void {
+  if (!extended[key]) {
+    extended[key] = [];
+  }
+
+  if (Array.isArray(extended[key])) {
+    extended[key].push(element);
   }
 }

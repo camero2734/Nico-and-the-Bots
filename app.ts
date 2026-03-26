@@ -232,7 +232,6 @@ client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullUser = user.partial ? await user.fetch() : user;
 
   const wideEvent = createBackgroundEvent("reaction_added");
-  let hasError = false;
   for (const [name, handler] of ReactionHandlers.entries()) {
     const wasSuccessful = await handler(fullReaction, fullUser, async (promise) => {
       try {
@@ -240,7 +239,9 @@ client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
       } catch (e) {
         const m = await fullUser.createDM();
         await ErrorHandler(m, wideEvent, e instanceof Error ? e : new Error(String(e)));
-        hasError = true;
+        finalizeWideEvent(wideEvent, "error", e);
+        emitWideEvent(wideEvent);
+        return;
       }
     });
     if (wasSuccessful) {
@@ -249,10 +250,6 @@ client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
       emitWideEvent(wideEvent);
       return;
     }
-  }
-
-  if (hasError) {
-    emitWideEvent(wideEvent);
   }
 
   // No handler successful, just a reaction that doesn't trigger anything

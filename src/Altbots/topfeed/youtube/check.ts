@@ -83,6 +83,7 @@ export async function checkYoutube() {
     finalizeWideEvent(wideEvent, "success");
   } catch (error) {
     finalizeWideEvent(wideEvent, "error", error);
+    emitWideEvent(wideEvent);
     throw error;
   }
 

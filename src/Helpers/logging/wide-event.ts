@@ -63,13 +63,20 @@ function getComponentTypeName(componentType: ComponentType | undefined): string 
 
 function extractCommandOptions(interaction: ChatInputCommandInteraction): Record<string, unknown> | undefined {
   const options: Record<string, unknown> = {};
-  const opts = interaction.options.data;
+  const data = interaction.options.data;
 
-  console.log("Command options:", JSON.stringify(opts));
-
-  for (const opt of opts) {
-    if (opt.value !== undefined) {
-      options[opt.name] = opt.value;
+  for (const d of data) {
+    if (d.type === 1 && d.options) {
+      // Subcommand group
+      const subcommandOpts: Record<string, unknown> = {};
+      for (const subOption of d.options) {
+        if ("value" in subOption) {
+          subcommandOpts[subOption.name] = subOption.value;
+        }
+      }
+      options[d.name] = subcommandOpts;
+    } else if ("value" in d) {
+      options[d.name] = d.value;
     }
   }
 

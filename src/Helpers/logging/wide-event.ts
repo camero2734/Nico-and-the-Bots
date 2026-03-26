@@ -170,3 +170,11 @@ export function finalizeWideEvent(wideEvent: WideEvent, outcome: "success" | "er
 export function emitWideEvent(wideEvent: WideEvent): void {
   console.info(JSON.stringify(wideEvent));
 }
+
+export function addElement(maybeArray: unknown, element: unknown): void {
+  if (Array.isArray(maybeArray)) {
+    maybeArray.push(element);
+  } else {
+    maybeArray = [element];
+  }
+}

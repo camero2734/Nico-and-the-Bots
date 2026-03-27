@@ -39,19 +39,26 @@ const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) 
 export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
-  // Helper function to wrap tasks with error handling, timeout, and wide event logging
   const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs: number) => {
     return async () => {
       const wideEvent = createBackgroundEvent(`task.${taskName}`);
+      const startTime = Date.now();
+
+      // Set up a warning timer that fires if task takes longer than expected
+      const warningTimer = setTimeout(async () => {
+        await logErrorToDiscord(
+          guild,
+          `Task ${taskName} is taking longer than ${timeoutMs}ms (still running)`,
+          new Error(`Slow task warning: ${taskName} started at ${new Date(startTime).toISOString()}`),
+        );
+      }, timeoutMs);
 
       try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Task timed out after ${timeoutMs}ms`)), timeoutMs),
-        );
-
-        await Promise.race([taskFn(), timeoutPromise]);
+        await taskFn();
+        clearTimeout(warningTimer);
         finalizeWideEvent(wideEvent, "success");
       } catch (error) {
+        clearTimeout(warningTimer);
         finalizeWideEvent(wideEvent, "error", error);
         await logErrorToDiscord(guild, `Error in ${taskName}`, error);
       }
@@ -98,10 +105,18 @@ async function checkReminders(guild: Guild): Promise<void> {
     } catch (e) {
       if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
         sentReminderIds.push(rem.id);
-        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`, e);
+        await logErrorToDiscord(
+          guild,
+          `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`,
+          e,
+        );
       } else if (e instanceof DiscordAPIError && e.code.toString() === "10007") {
         sentReminderIds.push(rem.id);
-        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} because they are not in the guild. Will not retry.`, e);
+        await logErrorToDiscord(
+          guild,
+          `Unable to send reminder to user: ${rem.userId} because they are not in the guild. Will not retry.`,
+          e,
+        );
       } else {
         await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
       }

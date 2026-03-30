@@ -19,6 +19,7 @@ export const scoreJob = defineJob({
     connection,
   },
   async run({ data }, job) {
+    console.log("Running scoreJob with data:", data);
     const wideEvent = createBackgroundEvent("score_update");
 
     const queue = getQueueByName(job.queueName);

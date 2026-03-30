@@ -5,7 +5,7 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { Cron, type ProtectCallbackFn } from "croner";
-import { differenceInHours, subDays } from "date-fns";
+import { differenceInHours, subDays, subHours } from "date-fns";
 import {
   ChannelType,
   type Client,
@@ -21,6 +21,7 @@ import {
 import { channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
+import { queue } from "./jobs";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "./logging/wide-event";
 import { prisma } from "./prisma-init";
 
@@ -72,6 +73,7 @@ export default async function (client: Client): Promise<void> {
   const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45_000);
   const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 100_000);
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
+  const safeCheckLastFm = createSafeTask("checkLastFm", () => checkLastFm(), 15_000);
   const protect: ProtectCallbackFn = async (job) => {
     console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
   };
@@ -84,6 +86,10 @@ export default async function (client: Client): Promise<void> {
 
   Cron("0 */2 * * * *", { protect }, async () => {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
+  });
+
+  Cron("0 0 * * * *", { protect }, async () => {
+    await Promise.all([safeCheckLastFm()]);
   });
 }
 
@@ -236,4 +242,19 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
       await logErrorToDiscord(guild, `Unable to delete House of Gold message: ${toDelete.houseOfGoldMessageUrl}`, e);
     }
   }
+}
+
+export async function checkLastFm(): Promise<void> {
+  const usersToUpdate = await prisma.user.findMany({
+    select: { id: true },
+    where: {
+      lastFM: {
+        lastUpdated: { lt: subHours(new Date(), 23) },
+      },
+    },
+  });
+
+  await queue.lastFm.addBulk(
+    usersToUpdate.map((u) => ({ payload: { userId: u.id }, opts: { deduplication: { id: u.id } } })),
+  );
 }

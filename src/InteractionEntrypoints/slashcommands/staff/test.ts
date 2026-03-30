@@ -1,6 +1,8 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import { roles as roleIDs, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import { getQueueByName } from "../../../Helpers/jobs/helpers";
+import { checkLastFm } from "../../../Helpers/scheduler";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import {
   songBattleCron,
@@ -49,6 +51,15 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 433) {
     await ctx.deferReply();
     songBattleCron();
+  } else if (ctx.opts.num === 444) {
+    await ctx.deferReply();
+    await checkLastFm();
+    const queueSize = await getQueueByName("lastFM").count();
+    await ctx.editReply(`Scheduled jobs: ${queueSize}`);
+  } else if (ctx.opts.num === 555) {
+    await ctx.deferReply();
+    const queueSize = await getQueueByName("lastFm").count();
+    await ctx.editReply(`Queue size: ${queueSize}`);
   } else {
     throw new CommandError("Invalid number");
   }

@@ -1,8 +1,7 @@
-import { GlobalFonts } from "@napi-rs/canvas";
-import { createResultsChart } from "../src/InteractionEntrypoints/scheduled/songbattle.consts";
+import { fm } from "../src/InteractionEntrypoints/slashcommands/fm/_consts";
 
-GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");
+const res = await fm.user.getTopArtists({ username: 'pootusmaximus', limit: 1000 });
 
-const { buffer } = await createResultsChart(534);
+await Bun.file("test.json").write(JSON.stringify(res, null, 2));
 
-await Bun.write("./test.png", buffer);
+console.dir(res, { depth: null });

@@ -1,10 +1,12 @@
 import { createQueueClient } from '@falcondev-oss/queue';
+import { lastFmJob } from './lastfm';
 import { scoreJob } from './score';
 import { topfeedJob } from './topfeed';
 
 export const jobs = {
   topfeed: topfeedJob,
   score: scoreJob,
+  lastFm: lastFmJob,
 }
 
 const queue = createQueueClient<typeof jobs>();

@@ -112,7 +112,7 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-client.on(Discord.Events.ClientReady, async () => {
+client.once(Discord.Events.ClientReady, async () => {
   console.log("===================================");
   console.log("||                               ||");
   console.log("||      🚀 Nico logged in!       ||");

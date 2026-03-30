@@ -180,12 +180,14 @@ async function getReplyInteractionId(msg: Discord.Message) {
 }
 
 client.on(Discord.Events.MessageCreate, async (msg: Discord.Message) => {
+  console.log("Message created");
   const { replyId, repliedTo } = (await getReplyInteractionId(msg)) || {};
   if (replyId && repliedTo) {
     const replyListener = ReplyHandlers.get(replyId);
     if (replyListener) return await replyListener(msg, repliedTo);
   }
 
+  console.log("Calling updateUserScore")
   AutoReact(msg);
   updateUserScore(msg); // Add to score
 });

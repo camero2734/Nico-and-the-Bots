@@ -7,13 +7,15 @@ import { fetchWebsites } from "../../Altbots/topfeed/websites/orchestrator";
 import { checkYoutube } from "../../Altbots/topfeed/youtube/check";
 import { DiscordLogProvider } from "../effect";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
+import { connection } from "./helpers";
 
 export const topfeedJob = defineJob({
   schema: z.object({
     type: z.enum(["TWITTER", "INSTAGRAM", "YOUTUBE", "WEBSITES"]),
   }),
   workerOptions: {
-    concurrency: 4
+    concurrency: 4,
+    connection,
   },
   async run(payload) {
     const { type } = payload;

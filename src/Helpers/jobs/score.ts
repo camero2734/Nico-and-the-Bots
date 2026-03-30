@@ -4,7 +4,7 @@ import z from "zod/v4";
 import { NicoClient } from "../../../app";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
 import { updateUserScoreWorker } from "../score-manager";
-import { getQueueByName } from "./helpers";
+import { connection, getQueueByName } from "./helpers";
 
 export const scoreJob = defineJob({
   schema: z.object({
@@ -15,7 +15,8 @@ export const scoreJob = defineJob({
     }),
   }),
   workerOptions: {
-    concurrency: 5
+    concurrency: 5,
+    connection,
   },
   async run({ data }, job) {
     const wideEvent = createBackgroundEvent("score_update");

@@ -60,6 +60,11 @@ command.setHandler(async (ctx) => {
     await ctx.deferReply();
     const queueSize = await getQueueByName("lastFm").count();
     await ctx.editReply(`Queue size: ${queueSize}`);
+  } else if (ctx.opts.num === 666) {
+    await ctx.deferReply();
+    const queue = getQueueByName("lastFm");
+    await queue.drain();
+    await ctx.editReply("Queue cleared.");
   } else {
     throw new CommandError("Invalid number");
   }

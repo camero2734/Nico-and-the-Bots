@@ -19,12 +19,9 @@ export const scoreJob = defineJob({
     connection,
   },
   async run({ data }, job) {
-    console.log("Running scoreJob with data:", data);
     const wideEvent = createBackgroundEvent("score_update");
 
     const queue = getQueueByName(job.queueName);
-
-    console.log("Queue name:", job.queueName);
 
     try {
       const count = await queue.count();
@@ -34,8 +31,10 @@ export const scoreJob = defineJob({
       const channel = (await guild.channels.fetch(data.channelId)) as TextChannel;
       const msg = await channel.messages.fetch(data.messageId);
 
-      console.log("About to call updateUserScoreWorker for message");
       await updateUserScoreWorker(msg, wideEvent);
+
+      finalizeWideEvent(wideEvent, "success");
+      emitWideEvent(wideEvent);
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
       emitWideEvent(wideEvent);

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { channelIDs, roles } from "../../../Configuration/config";
 
 export const usernamesToWatch = ["camero_2734", "twentyonepilots", "blurryface", "tylerrjoseph", "joshuadun"] as const;

@@ -1,4 +1,3 @@
-import { type MessageCreateOptions, ComponentType, type TextChannel, MessageFlags } from "discord.js";
 import {
   ActionRowBuilder,
   EmbedBuilder,
@@ -7,7 +6,7 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } from "@discordjs/builders";
-import type { Writeable } from "zod";
+import { type MessageCreateOptions, type TextChannel, ComponentType, MessageFlags } from "discord.js";
 import { CommandError, NULL_CUSTOM_ID, NULL_CUSTOM_ID_PREFIX } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";
 import { prisma } from "../../Helpers/prisma-init";
@@ -100,7 +99,7 @@ const genId = ctxMenu.addInteractionListener("reportMessage", ["channelId", "mes
     const btn = actionRow.components.find((c) => c.customId?.startsWith(NULL_CUSTOM_ID_PREFIX));
     if (btn?.type !== ComponentType.Button) throw new Error("The button disappeared");
 
-    (btn as Writeable<typeof btn>).label = NUM_PEOPLE_TEXT(priorReports.length + 1);
+    (btn as any).label = NUM_PEOPLE_TEXT(priorReports.length + 1);
 
     const embed = new EmbedBuilder()
       .setDescription("A new report was added for this message")

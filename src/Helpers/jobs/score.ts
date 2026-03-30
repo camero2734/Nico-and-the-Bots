@@ -24,6 +24,8 @@ export const scoreJob = defineJob({
 
     const queue = getQueueByName(job.queueName);
 
+    console.log("Queue name:", job.queueName);
+
     try {
       const count = await queue.count();
       wideEvent.extended.queueSize = count;
@@ -32,6 +34,7 @@ export const scoreJob = defineJob({
       const channel = (await guild.channels.fetch(data.channelId)) as TextChannel;
       const msg = await channel.messages.fetch(data.messageId);
 
+      console.log("About to call updateUserScoreWorker for message");
       await updateUserScoreWorker(msg, wideEvent);
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);

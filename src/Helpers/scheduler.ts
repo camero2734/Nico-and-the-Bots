@@ -73,7 +73,7 @@ export default async function (client: Client): Promise<void> {
   const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45_000);
   const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 100_000);
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
-  const safeCheckLastFm = createSafeTask("checkLastFm", () => checkLastFm(), 15_000);
+  // const safeCheckLastFm = createSafeTask("checkLastFm", () => checkLastFm(), 15_000);
   const protect: ProtectCallbackFn = async (job) => {
     console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
   };
@@ -88,9 +88,9 @@ export default async function (client: Client): Promise<void> {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
   });
 
-  Cron("0 0 * * * *", { protect }, async () => {
-    await Promise.all([safeCheckLastFm()]);
-  });
+  // Cron("0 0 * * * *", { protect }, async () => {
+  //   await Promise.all([safeCheckLastFm()]);
+  // });
 }
 
 async function checkReminders(guild: Guild): Promise<void> {

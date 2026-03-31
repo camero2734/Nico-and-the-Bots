@@ -90,7 +90,7 @@ command.setHandler(async (ctx) => {
   const totalPages = Math.ceil(totalListeners / ITEMS_PER_PAGE);
 
   if (totalListeners === 0) {
-    throw new CommandError(`No one in this server has listened to **${artist.name}** (${artist.mbid}) yet.`);
+    throw new CommandError(`No one in this server has listened to **${artist.name}** yet.`);
   }
 
   if (page > totalPages) {
@@ -115,6 +115,48 @@ command.setHandler(async (ctx) => {
 
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
 
+  const currentUserFm = await prisma.userLastFM.findUnique({
+    where: { userId: ctx.member.id },
+  });
+
+  let currentUserRank: { rank: number; scrobbles: number; username: string } | null = null;
+  if (currentUserFm) {
+    const userScrobbles = await prisma.$queryRaw<{ scrobbles: bigint; rank: bigint }[]>`
+      SELECT COALESCE(
+        (ulf."topArtists"->> ${artist.mbid || artistNameLower})::bigint,
+        (ulf."topArtists"->> ${artistNameLower})::bigint
+      ) AS scrobbles,
+      (
+        SELECT COUNT(*) + 1
+        FROM "UserLastFM" ulf2
+        JOIN "User" u2 ON ulf2."userId" = u2.id
+        WHERE ulf2."topArtists" ?| ${possibleKeys}
+          AND u2."currentlyInServer" = true
+          AND COALESCE(
+            (ulf2."topArtists"->> ${artist.mbid || artistNameLower})::bigint,
+            (ulf2."topArtists"->> ${artistNameLower})::bigint
+          ) > COALESCE(
+            (ulf."topArtists"->> ${artist.mbid || artistNameLower})::bigint,
+            (ulf."topArtists"->> ${artistNameLower})::bigint
+          )
+      ) AS rank
+      FROM "UserLastFM" ulf
+      WHERE ulf."userId" = ${ctx.member.id}
+        AND ulf."topArtists" ?| ${possibleKeys}
+    `;
+
+    if (userScrobbles.length > 0 && userScrobbles[0].scrobbles !== null) {
+      currentUserRank = {
+        rank: Number(userScrobbles[0].rank),
+        scrobbles: Number(userScrobbles[0].scrobbles),
+        username: currentUserFm.username,
+      };
+    }
+  }
+
+  const pageUserIds = new Set(pageUsers.map((u) => u.userId));
+  const isCurrentUserOnPage = currentUserRank && pageUserIds.has(ctx.member.id);
+
   const container = new ContainerBuilder().setAccentColor(0xb90000);
 
   const headerSection = new SectionBuilder().addTextDisplayComponents(
@@ -133,8 +175,16 @@ command.setHandler(async (ctx) => {
     const rank = startIndex + index + 1;
     const scrobbles = Number(user.scrobbles);
     const formattedRank = ordinal(rank);
-    return `**${formattedRank}** ${userMention(user.userId)}\n-# [\`${user.username}\`](https://www.last.fm/user/${user.username}) · ${scrobbles.toLocaleString()} scrobble${scrobbles === 1 ? "" : "s"}`;
+    const isCurrentUser = user.userId === ctx.member.id;
+    const star = isCurrentUser ? " ⭐" : "";
+    return `**${formattedRank}**${star} ${userMention(user.userId)}\n-# [\`${user.username}\`](https://www.last.fm/user/${user.username}) · ${scrobbles.toLocaleString()} scrobble${scrobbles === 1 ? "" : "s"}`;
   });
+
+  if (currentUserRank && !isCurrentUserOnPage) {
+    const star = " ⭐";
+    const rankLine = `**${ordinal(currentUserRank.rank)}**${star} ${userMention(ctx.member.id)}\n-# [\`${currentUserRank.username}\`](https://www.last.fm/user/${currentUserRank.username}) · ${currentUserRank.scrobbles.toLocaleString()} scrobble${currentUserRank.scrobbles === 1 ? "" : "s"}`;
+    rankingLines.push(rankLine);
+  }
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(rankingLines.join("\n")));
 

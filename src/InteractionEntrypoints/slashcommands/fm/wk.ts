@@ -65,6 +65,11 @@ command.setHandler(async (ctx) => {
     `,
   ]);
 
+  console.log({
+    countResult,
+    pageUsers,
+  })
+
   const totalListeners = Number(countResult[0].count);
   const totalPages = Math.ceil(totalListeners / ITEMS_PER_PAGE);
 

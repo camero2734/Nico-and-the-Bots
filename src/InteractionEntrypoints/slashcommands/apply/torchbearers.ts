@@ -4,7 +4,7 @@ import {
   ModalBuilder,
   SectionBuilder,
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
+  StringSelectMenuOptionBuilder
 } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { addDays } from "date-fns";

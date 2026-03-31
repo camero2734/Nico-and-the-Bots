@@ -147,14 +147,10 @@ command.setHandler(async (ctx) => {
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(footerContent));
 
-  const m = await ctx.editReply({
+  await ctx.editReply({
     components: [container],
     flags: MessageFlags.IsComponentsV2 | MessageFlags.SuppressNotifications,
   });
-
-  await m.edit({
-    allowedMentions: { parse: [] },
-  })
 });
 
 export default command;

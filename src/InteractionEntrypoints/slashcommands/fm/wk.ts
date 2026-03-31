@@ -45,27 +45,34 @@ command.setHandler(async (ctx) => {
 
   const artist = searchResult.results.artistmatches.artist[0];
 
-  const canonicalName = artist.mbid || artist.name.toLowerCase();
+  const artistNameLower = artist.name.toLowerCase();
+  const possibleKeys = artist.mbid ? [artist.mbid, artistNameLower] : [artistNameLower];
 
-  const artistImage = await fm.artist.getInfo({
-    artist: artist.name,
-    mbid: artist.mbid,
-    username: "fjisdijgsd8gsdijidgos",
-  }).then(info => info.artist.image?.at(-1)?.["#text"]);
+  const artistImage = await fm.artist
+    .getInfo({
+      artist: artist.name,
+      mbid: artist.mbid,
+      username: "fjisdijgsd8gsdijidgos",
+    })
+    .then((info) => info.artist.image?.at(-1)?.["#text"]);
 
   const [countResult, pageUsers] = await prisma.$transaction([
     prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*) as count
       FROM "UserLastFM" ulf
       JOIN "User" u ON ulf."userId" = u.id
-      WHERE ulf."topArtists" ? ${canonicalName}
+      WHERE ulf."topArtists" ?| ${possibleKeys}
         AND u."currentlyInServer" = true
     `,
     prisma.$queryRaw<Array<{ username: string; userId: string; scrobbles: bigint }>>`
-      SELECT ulf.username, ulf."userId", (ulf."topArtists"->> ${canonicalName})::bigint AS scrobbles
+      SELECT ulf.username, ulf."userId", 
+        COALESCE(
+          (ulf."topArtists"->> ${artist.mbid || artistNameLower})::bigint,
+          (ulf."topArtists"->> ${artistNameLower})::bigint
+        ) AS scrobbles
       FROM "UserLastFM" ulf
       JOIN "User" u ON ulf."userId" = u.id
-      WHERE ulf."topArtists" ? ${canonicalName}
+      WHERE ulf."topArtists" ?| ${possibleKeys}
         AND u."currentlyInServer" = true
       ORDER BY scrobbles DESC
       LIMIT ${ITEMS_PER_PAGE}
@@ -74,6 +81,7 @@ command.setHandler(async (ctx) => {
   ]);
 
   console.log({
+    possibleKeys,
     countResult,
     pageUsers,
   });
@@ -92,10 +100,15 @@ command.setHandler(async (ctx) => {
   }
 
   const totalScrobblesResult = await prisma.$queryRaw<{ sum: bigint }[]>`
-    SELECT COALESCE(SUM((ulf."topArtists"->> ${canonicalName})::bigint), 0) as sum
+    SELECT COALESCE(SUM(
+      COALESCE(
+        (ulf."topArtists"->> ${artist.mbid || artistNameLower})::bigint,
+        (ulf."topArtists"->> ${artistNameLower})::bigint
+      )
+    ), 0) as sum
     FROM "UserLastFM" ulf
     JOIN "User" u ON ulf."userId" = u.id
-    WHERE ulf."topArtists" ? ${canonicalName}
+    WHERE ulf."topArtists" ?| ${possibleKeys}
       AND u."currentlyInServer" = true
   `;
   const totalScrobbles = Number(totalScrobblesResult[0].sum);

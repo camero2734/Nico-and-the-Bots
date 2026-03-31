@@ -82,7 +82,7 @@ command.setHandler(async (ctx) => {
   const totalPages = Math.ceil(totalListeners / ITEMS_PER_PAGE);
 
   if (totalListeners === 0) {
-    throw new CommandError(`No one in this server has listened to **${artist.name}** yet.`);
+    throw new CommandError(`No one in this server has listened to **${artist.name}** (${artist.mbid}) yet.`);
   }
 
   if (page > totalPages) {

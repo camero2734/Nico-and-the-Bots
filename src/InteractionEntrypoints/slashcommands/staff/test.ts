@@ -54,6 +54,7 @@ command.setHandler(async (ctx) => {
   } else if (ctx.opts.num === 444) {
     await ctx.deferReply();
     await checkLastFm();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const queueSize = await getQueueByName("lastFM").count();
     await ctx.editReply(`Scheduled jobs: ${queueSize}`);
   } else if (ctx.opts.num === 555) {

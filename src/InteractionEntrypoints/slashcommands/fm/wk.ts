@@ -43,7 +43,9 @@ command.setHandler(async (ctx) => {
     throw new CommandError(`No artist found matching "${artistQuery}".`);
   }
 
-  const canonicalName = searchResult.artists[0].name;
+  const artist = searchResult.artists[0];
+
+  const canonicalName = artist.mbid || artist.name.toLowerCase();
 
   console.log(`Looking up listeners for artist: ${canonicalName}`);
 
@@ -76,7 +78,7 @@ command.setHandler(async (ctx) => {
   const totalPages = Math.ceil(totalListeners / ITEMS_PER_PAGE);
 
   if (totalListeners === 0) {
-    throw new CommandError(`No one in this server has listened to **${canonicalName}** yet.`);
+    throw new CommandError(`No one in this server has listened to **${artist.name}** yet.`);
   }
 
   if (page > totalPages) {
@@ -99,7 +101,7 @@ command.setHandler(async (ctx) => {
   const container = new ContainerBuilder().setAccentColor(0xb90000);
 
   container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(`## ${canonicalName}\nWho knows this artist?`),
+    new TextDisplayBuilder().setContent(`## ${artist.name}\nWho knows this artist?`),
   );
 
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small));

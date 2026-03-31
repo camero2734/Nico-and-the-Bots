@@ -249,7 +249,7 @@ export async function checkLastFm(): Promise<void> {
     select: { id: true },
     where: {
       lastFM: {
-        lastUpdated: { lt: subHours(new Date(), 23) },
+        lastUpdated: { lt: subHours(new Date(), 0) },
       },
     },
   });

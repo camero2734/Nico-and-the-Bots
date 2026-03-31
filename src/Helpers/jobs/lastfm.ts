@@ -40,7 +40,7 @@ export const lastFmJob = defineJob({
 
       const artistMap: PrismaJson.LastFMTopArtists = {}
       topArtists.artists.forEach((artist) => {
-        artistMap[artist.name] = artist.scrobbles;
+        artistMap[artist.mbid || artist.name.toLowerCase()] = artist.scrobbles;
       });
 
       await prisma.userLastFM.update({

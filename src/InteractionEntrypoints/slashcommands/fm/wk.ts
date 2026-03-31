@@ -177,14 +177,16 @@ command.setHandler(async (ctx) => {
     const isCurrentUser = user.userId === ctx.member.id;
     const star = isCurrentUser ? " ⭐" : "";
     const memberName = ctx.guild.members.cache.get(user.userId)?.displayName || `<@${user.userId}>`;
+    const memberLink = `discord://-/users/${user.userId}`;
 
-    return `**${formattedRank}**${star} ${memberName}\n-# [\`${user.username}\`](https://www.last.fm/user/${user.username}) · ${scrobbles.toLocaleString()} scrobble${scrobbles === 1 ? "" : "s"}`;
+    return `**${formattedRank}**${star} [${memberName}](${memberLink})\n-# [\`${user.username}\`](https://www.last.fm/user/${user.username}) · ${scrobbles.toLocaleString()} scrobble${scrobbles === 1 ? "" : "s"}`;
   });
 
   if (currentUserRank && !isCurrentUserOnPage) {
     const star = " ⭐";
     const memberName = ctx.guild.members.cache.get(ctx.member.id)?.displayName || `<@${ctx.member.id}>`;
-    const rankLine = `**${ordinal(currentUserRank.rank)}**${star} ${memberName}\n-# [\`${currentUserRank.username}\`](https://www.last.fm/user/${currentUserRank.username}) · ${currentUserRank.scrobbles.toLocaleString()} scrobble${currentUserRank.scrobbles === 1 ? "" : "s"}`;
+    const memberLink = `discord://-/users/${ctx.member.id}`;
+    const rankLine = `**${ordinal(currentUserRank.rank)}**${star} [${memberName}](${memberLink})\n-# [\`${currentUserRank.username}\`](https://www.last.fm/user/${currentUserRank.username}) · ${currentUserRank.scrobbles.toLocaleString()} scrobble${currentUserRank.scrobbles === 1 ? "" : "s"}`;
     rankingLines.push(rankLine);
   }
 

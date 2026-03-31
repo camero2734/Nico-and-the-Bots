@@ -1,9 +1,11 @@
 import { fm } from "../src/InteractionEntrypoints/slashcommands/fm/_consts";
 
-const res = await fm.album.getInfo({
-  album: "Blurryface",
-  artist: "Twenty One Pilots",
-  username: "pootusmaximus",
-});
+const searchResult = await fm.artist.search({ artist: "twenty one pilots", limit: 1 });
 
-console.log(res, /RES/);
+const artist = searchResult.results.artistmatches.artist[0];
+const artistResult = await fm.artist.getInfo({
+  artist: artist.name,
+  mbid: artist.mbid,
+  username: "fjisdijgsd8gsdijidgos"
+});
+console.log(artistResult.artist.image);

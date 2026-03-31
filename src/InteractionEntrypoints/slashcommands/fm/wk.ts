@@ -47,7 +47,11 @@ command.setHandler(async (ctx) => {
 
   const canonicalName = artist.mbid || artist.name.toLowerCase();
 
-  console.log(`Looking up listeners for artist: ${canonicalName}`);
+  const artistImage = await fm.artist.getInfo({
+    artist: artist.name,
+    mbid: artist.mbid,
+    username: "fjisdijgsd8gsdijidgos",
+  }).then(info => info.artist.image?.at(-1)?.["#text"]);
 
   const [countResult, pageUsers] = await prisma.$transaction([
     prisma.$queryRaw<{ count: bigint }[]>`
@@ -97,8 +101,6 @@ command.setHandler(async (ctx) => {
   const totalScrobbles = Number(totalScrobblesResult[0].sum);
 
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
-
-  const artistImage = artist.image?.at(-1)?.["#text"];
 
   const container = new ContainerBuilder().setAccentColor(0xb90000);
 

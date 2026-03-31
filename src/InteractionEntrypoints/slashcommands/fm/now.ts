@@ -5,7 +5,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { GeniusClient } from "../../../Helpers/apis/genius";
 import { SpotifyClient } from "../../../Helpers/apis/spotify";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { fm, getFMUsername } from "./_consts";
+import { AlbumWithUserPlaycount, ArtistWithUserPlaycount, fm, getFMUsername, TrackInfoWithUserPlaycount } from "./_consts";
 
 const command = new SlashCommand({
   description: "Displays now playing on last.fm",
@@ -53,13 +53,13 @@ command.setHandler(async (ctx) => {
       track: track.name,
       artist: track.artist || "",
       username: username,
-    }),
-    fm.artist.getInfo({ artist: track.artist || "", username: username }),
+    }) as Promise<TrackInfoWithUserPlaycount>,
+    fm.artist.getInfo({ artist: track.artist || "", username: username }) as Promise<ArtistWithUserPlaycount>,
     fm.album.getInfo({
       album: track.album || "",
       artist: track.artist || "",
       username: username,
-    }),
+    }) as Promise<AlbumWithUserPlaycount>,
   ]);
   const trackPlay = trackRes.status === "fulfilled" ? trackRes.value : null;
   const artistPlay = artistRes.status === "fulfilled" ? artistRes.value : null;
@@ -72,17 +72,17 @@ command.setHandler(async (ctx) => {
   }
 
   const trackName = track.name || "No Title";
-  const trackCount = trackPlay?.track.playcount || 0;
+  const trackCount = trackPlay?.track.userplaycount || 0;
   const trackURL = trackPlay?.track.url || "https://www.last.fm";
   const trackField = `${trackName}\n[${trackCount} play${+trackCount === 1 ? "" : "s"}](${us_pl(trackURL)})`;
 
   const albumName = track.album || "No Album";
-  const albumCount = albumPlay?.album.playcount || 0;
+  const albumCount = albumPlay?.album.userplaycount || 0;
   const albumURL = albumPlay?.album.url || "https://www.last.fm";
   const albumField = `${albumName}\n[${albumCount} play${+albumCount === 1 ? "" : "s"}](${us_pl(albumURL)})`;
 
   const artistName = track.artist || "No Artist";
-  const artistCount = artistPlay?.artist.stats.playcount || 0;
+  const artistCount = artistPlay?.artist.stats.userplaycount || 0;
   const artistURL = artistPlay?.artist.url || "https://www.last.fm";
   const artistField = `${artistName}\n[${artistCount} play${+artistCount === 1 ? "" : "s"}](${us_pl(artistURL)})`;
 

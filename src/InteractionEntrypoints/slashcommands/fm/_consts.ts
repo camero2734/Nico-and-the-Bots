@@ -3,7 +3,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
 import { prisma } from "../../../Helpers/prisma-init";
 
-import { LastFMAlbum, LastFMArtist, LastFMChart, LastFMLibrary, LastFMTag, LastFMTrack, LastFMUser } from 'lastfm-ts-api';
+import { LastFMAlbum, LastFMAlbumGetInfoResponse, LastFMArtist, LastFMArtistGetInfoResponse, LastFMChart, LastFMLibrary, LastFMTag, LastFMTrack, LastFMTrackGetInfoResponse, LastFMUser } from 'lastfm-ts-api';
 
 const album = new LastFMAlbum(secrets.apis.lastfm);
 const artist = new LastFMArtist(secrets.apis.lastfm);
@@ -57,3 +57,7 @@ export const getFMUsername = async (
   }
   return fm.username;
 };
+
+export type TrackInfoWithUserPlaycount = LastFMTrackGetInfoResponse & { track: { userplaycount: string } };
+export type ArtistWithUserPlaycount = LastFMArtistGetInfoResponse & { artist: { stats: { userplaycount: string } } };
+export type AlbumWithUserPlaycount = LastFMAlbumGetInfoResponse & { album: { userplaycount: string } };

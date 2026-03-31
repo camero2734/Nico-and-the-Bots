@@ -39,11 +39,11 @@ command.setHandler(async (ctx) => {
 
   const searchResult = await fm.artist.search({ artist: artistQuery, limit: 1 });
 
-  if (!searchResult.artists || searchResult.artists.length === 0) {
+  if (!searchResult.results.artistmatches || searchResult.results.artistmatches.artist.length === 0) {
     throw new CommandError(`No artist found matching "${artistQuery}".`);
   }
 
-  const artist = searchResult.artists[0];
+  const artist = searchResult.results.artistmatches.artist[0];
 
   const canonicalName = artist.mbid || artist.name.toLowerCase();
 

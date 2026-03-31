@@ -1,12 +1,29 @@
-import SimpleFM from "@solely/simple-fm";
 import type { GuildMember } from "discord.js";
 import { CommandError } from "../../../Configuration/definitions";
 import secrets from "../../../Configuration/secrets";
 import { prisma } from "../../../Helpers/prisma-init";
 
-export type RankedAlbum = Awaited<ReturnType<SimpleFM["user"]["getTopAlbums"]>>["albums"][number];
+import { LastFMAlbum, LastFMArtist, LastFMChart, LastFMLibrary, LastFMTag, LastFMTrack, LastFMUser } from 'lastfm-ts-api';
 
-export const fm = new SimpleFM(secrets.apis.lastfm);
+const album = new LastFMAlbum(secrets.apis.lastfm);
+const artist = new LastFMArtist(secrets.apis.lastfm);
+const chart = new LastFMChart(secrets.apis.lastfm);
+const library = new LastFMLibrary(secrets.apis.lastfm);
+const tag = new LastFMTag(secrets.apis.lastfm);
+const track = new LastFMTrack(secrets.apis.lastfm);
+const user = new LastFMUser(secrets.apis.lastfm);
+
+export const fm = {
+  album,
+  artist,
+  chart,
+  library,
+  tag,
+  track,
+  user,
+};
+
+export type RankedAlbum = Awaited<ReturnType<typeof fm.user.getTopAlbums>>["topalbums"]["album"][number];
 
 export class Album {
   artist: string;
@@ -16,10 +33,10 @@ export class Album {
   constructor(album: RankedAlbum) {
     this.artist = album.artist.name;
     this.name = album.name;
-    this.playcount = +album.playCount;
+    this.playcount = +album.playcount;
 
     this.image =
-      album.image?.at(-1)?.url ||
+      album.image?.at(-1)?.["#text"] ||
       "http://orig14.deviantart.net/5162/f/2014/153/9/e/no_album_art__no_cover___placeholder_picture_by_cmdrobot-d7kpm65.jpg";
   }
 }

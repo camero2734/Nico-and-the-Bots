@@ -1,5 +1,4 @@
 import { ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "@discordjs/builders";
-import { userMention } from "@discordjs/formatters";
 import { ApplicationCommandOptionType, MessageFlags, SeparatorSpacingSize } from "discord.js";
 import ordinal from "ordinal";
 import { CommandError } from "../../../Configuration/definitions";
@@ -177,12 +176,15 @@ command.setHandler(async (ctx) => {
     const formattedRank = ordinal(rank);
     const isCurrentUser = user.userId === ctx.member.id;
     const star = isCurrentUser ? " ⭐" : "";
-    return `**${formattedRank}**${star} ${userMention(user.userId)}\n-# [\`${user.username}\`](https://www.last.fm/user/${user.username}) · ${scrobbles.toLocaleString()} scrobble${scrobbles === 1 ? "" : "s"}`;
+    const memberName = ctx.guild.members.cache.get(user.userId)?.displayName || `<@${user.userId}>`;
+
+    return `**${formattedRank}**${star} ${memberName}\n-# [\`${user.username}\`](https://www.last.fm/user/${user.username}) · ${scrobbles.toLocaleString()} scrobble${scrobbles === 1 ? "" : "s"}`;
   });
 
   if (currentUserRank && !isCurrentUserOnPage) {
     const star = " ⭐";
-    const rankLine = `**${ordinal(currentUserRank.rank)}**${star} ${userMention(ctx.member.id)}\n-# [\`${currentUserRank.username}\`](https://www.last.fm/user/${currentUserRank.username}) · ${currentUserRank.scrobbles.toLocaleString()} scrobble${currentUserRank.scrobbles === 1 ? "" : "s"}`;
+    const memberName = ctx.guild.members.cache.get(ctx.member.id)?.displayName || `<@${ctx.member.id}>`;
+    const rankLine = `**${ordinal(currentUserRank.rank)}**${star} ${memberName}\n-# [\`${currentUserRank.username}\`](https://www.last.fm/user/${currentUserRank.username}) · ${currentUserRank.scrobbles.toLocaleString()} scrobble${currentUserRank.scrobbles === 1 ? "" : "s"}`;
     rankingLines.push(rankLine);
   }
 

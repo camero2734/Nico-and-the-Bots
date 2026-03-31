@@ -149,7 +149,8 @@ command.setHandler(async (ctx) => {
 
   await ctx.editReply({
     components: [container],
-    flags: MessageFlags.IsComponentsV2 | MessageFlags.SuppressNotifications,
+    flags: MessageFlags.IsComponentsV2,
+    allowedMentions: { parse: [] },
   });
 });
 

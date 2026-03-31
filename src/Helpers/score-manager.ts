@@ -1,81 +1,31 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { startOfDay } from "date-fns";
 import {
-  type Message,
-  type MessageReference,
-  MessageReferenceType,
-  type Snowflake,
-  type TextChannel
+  type Message
 } from "discord.js";
 import type { User } from "../../generated/prisma/client";
 import { prisma } from "./prisma-init";
 
-import { Queue, Worker } from "bullmq";
-import { Redis } from "ioredis";
-import { NicoClient } from "../../app";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent, WideEvent } from "./logging/wide-event";
+import { queue } from "./jobs";
+import { WideEvent } from "./logging/wide-event";
 
-const QUEUE_NAME = "ScoreUpdate";
-
-const redisOpts = {
-  connection: new Redis(process.env.REDIS_URL as string, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    // biome-ignore lint/suspicious/noExplicitAny: Temporary issue with ioredis types
-  }) as any,
-};
-
-const scoreQueue = new Queue(QUEUE_NAME, {
-  ...redisOpts,
-  defaultJobOptions: {
-    removeOnComplete: true,
-  },
-});
 
 export const updateUserScore = (msg: Message): void => {
+  console.log("updateUserScore called");
   if (!msg.guild || !msg.channel) return;
-  const reference: MessageReference = {
-    type: MessageReferenceType.Default,
-    guildId: msg.guild.id,
-    channelId: msg.channel.id,
-    messageId: msg.id,
-  };
-  scoreQueue.add("score", reference);
+
+  console.log("Adding score update to queue");
+  queue.score.add({
+    data: {
+      messageId: msg.id,
+      channelId: msg.channel.id,
+      guildId: msg.guild.id,
+    }
+  });
 };
 
-new Worker(
-  QUEUE_NAME,
-  async (job) => {
-    if (job.name !== "score") return;
-
-    const wideEvent = createBackgroundEvent("score_update");
-
-    try {
-      const count = await scoreQueue.count();
-      wideEvent.extended.queueSize = count;
-
-      const msgRef = job.data as MessageReference;
-      if (!msgRef?.messageId) throw Error("no msg id");
-
-      // These should be cached via discord.js so lookup time is no issue
-      const guild = await NicoClient.guilds.fetch(msgRef.guildId as Snowflake);
-      const channel = (await guild.channels.fetch(msgRef.channelId)) as TextChannel;
-      const msg = await channel.messages.fetch(msgRef.messageId);
-
-      await updateUserScoreWorker(msg, wideEvent);
-    } catch (e) {
-      finalizeWideEvent(wideEvent, "error", e);
-      emitWideEvent(wideEvent);
-    }
-  },
-  {
-    ...redisOpts,
-    concurrency: 5,
-  },
-);
-
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
-const updateUserScoreWorker = async (msg: Message, wideEvent: WideEvent): Promise<void> => {
+export const updateUserScoreWorker = async (msg: Message, wideEvent: WideEvent): Promise<void> => {
   const dbUser = await prisma.user.upsert({
     where: { id: msg.author.id },
     update: {},

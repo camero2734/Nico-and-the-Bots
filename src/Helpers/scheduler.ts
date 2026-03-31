@@ -5,7 +5,7 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { Cron, type ProtectCallbackFn } from "croner";
-import { differenceInHours, subDays } from "date-fns";
+import { differenceInHours, subDays, subHours } from "date-fns";
 import {
   ChannelType,
   type Client,
@@ -21,6 +21,7 @@ import {
 import { channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
+import { queue } from "./jobs";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "./logging/wide-event";
 import { prisma } from "./prisma-init";
 
@@ -39,19 +40,26 @@ const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) 
 export default async function (client: Client): Promise<void> {
   const guild = await client.guilds.fetch(guildID);
 
-  // Helper function to wrap tasks with error handling, timeout, and wide event logging
   const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs: number) => {
     return async () => {
       const wideEvent = createBackgroundEvent(`task.${taskName}`);
+      const startTime = Date.now();
+
+      // Set up a warning timer that fires if task takes longer than expected
+      const warningTimer = setTimeout(async () => {
+        await logErrorToDiscord(
+          guild,
+          `Task ${taskName} is taking longer than ${timeoutMs}ms (still running)`,
+          new Error(`Slow task warning: ${taskName} started at ${new Date(startTime).toISOString()}`),
+        );
+      }, timeoutMs);
 
       try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Task timed out after ${timeoutMs}ms`)), timeoutMs),
-        );
-
-        await Promise.race([taskFn(), timeoutPromise]);
+        await taskFn();
+        clearTimeout(warningTimer);
         finalizeWideEvent(wideEvent, "success");
       } catch (error) {
+        clearTimeout(warningTimer);
         finalizeWideEvent(wideEvent, "error", error);
         await logErrorToDiscord(guild, `Error in ${taskName}`, error);
       }
@@ -65,6 +73,7 @@ export default async function (client: Client): Promise<void> {
   const safeCheckHouseOfGold = createSafeTask("checkHouseOfGold", () => checkHouseOfGold(guild), 45_000);
   const safeCheckMemberRoles = createSafeTask("checkMemberRoles", () => checkMemberRoles(guild), 100_000);
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
+  // const safeCheckLastFm = createSafeTask("checkLastFm", () => checkLastFm(), 15_000);
   const protect: ProtectCallbackFn = async (job) => {
     console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
   };
@@ -78,6 +87,10 @@ export default async function (client: Client): Promise<void> {
   Cron("0 */2 * * * *", { protect }, async () => {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
   });
+
+  // Cron("0 0 * * * *", { protect }, async () => {
+  //   await Promise.all([safeCheckLastFm()]);
+  // });
 }
 
 async function checkReminders(guild: Guild): Promise<void> {
@@ -98,10 +111,18 @@ async function checkReminders(guild: Guild): Promise<void> {
     } catch (e) {
       if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
         sentReminderIds.push(rem.id);
-        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`, e);
+        await logErrorToDiscord(
+          guild,
+          `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`,
+          e,
+        );
       } else if (e instanceof DiscordAPIError && e.code.toString() === "10007") {
         sentReminderIds.push(rem.id);
-        await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId} because they are not in the guild. Will not retry.`, e);
+        await logErrorToDiscord(
+          guild,
+          `Unable to send reminder to user: ${rem.userId} because they are not in the guild. Will not retry.`,
+          e,
+        );
       } else {
         await logErrorToDiscord(guild, `Unable to send reminder to user: ${rem.userId}`, e);
       }
@@ -221,4 +242,19 @@ async function checkHouseOfGold(guild: Guild): Promise<void> {
       await logErrorToDiscord(guild, `Unable to delete House of Gold message: ${toDelete.houseOfGoldMessageUrl}`, e);
     }
   }
+}
+
+export async function checkLastFm(): Promise<void> {
+  const usersToUpdate = await prisma.user.findMany({
+    select: { id: true },
+    where: {
+      lastFM: {
+        lastUpdated: { lt: subHours(new Date(), 0) },
+      },
+    },
+  });
+
+  await queue.lastFm.addBulk(
+    usersToUpdate.map((u) => ({ payload: { userId: u.id }, opts: { deduplication: { id: u.id } } })),
+  );
 }

@@ -1,8 +1,11 @@
-import { GlobalFonts } from "@napi-rs/canvas";
-import { createResultsChart } from "../src/InteractionEntrypoints/scheduled/songbattle.consts";
+import { fm } from "../src/InteractionEntrypoints/slashcommands/fm/_consts";
 
-GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");
+const searchResult = await fm.artist.search({ artist: "twenty one pilots", limit: 1 });
 
-const { buffer } = await createResultsChart(534);
-
-await Bun.write("./test.png", buffer);
+const artist = searchResult.results.artistmatches.artist[0];
+const artistResult = await fm.artist.getInfo({
+  artist: artist.name,
+  mbid: artist.mbid,
+  username: "fjisdijgsd8gsdijidgos"
+});
+console.log(artistResult.artist.image);

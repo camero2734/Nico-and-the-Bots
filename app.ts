@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "@discordjs/builders";
+import { startWorkers } from "@falcondev-oss/queue";
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
@@ -12,9 +13,10 @@ import { updateUserScore } from "./src/Helpers";
 import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
+import { jobs } from "./src/Helpers/jobs";
+import { connection } from "./src/Helpers/jobs/helpers";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import { createBackgroundEvent, createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext } from "./src/Helpers/logging/wide-event";
-import "./src/Helpers/message-updates/_queue";
 import { prisma } from "./src/Helpers/prisma-init";
 import Scheduler from "./src/Helpers/scheduler";
 import {
@@ -112,7 +114,7 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-client.on(Discord.Events.ClientReady, async () => {
+client.once(Discord.Events.ClientReady, async () => {
   console.log("===================================");
   console.log("||                               ||");
   console.log("||      🚀 Nico logged in!       ||");
@@ -153,6 +155,7 @@ client.on(Discord.Events.ClientReady, async () => {
   }
 
   await absurd.startWorker();
+  await startWorkers(jobs, { connection });
 
   startPingServer();
 });

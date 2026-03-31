@@ -64,7 +64,7 @@ command.setHandler(async (ctx) => {
     username,
     period: date,
   } as { username: typeof username });
-  const topAlbums = res.albums;
+  const topAlbums = res.topalbums.album;
 
   const collected = topAlbums.slice(0, num).map((a) => new Album(a));
 

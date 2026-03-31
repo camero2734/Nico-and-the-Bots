@@ -8,6 +8,10 @@ generator client {
   engineType = "client"
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 model DailyBox {
   tokens                Int       @default(0)
   steals                Int       @default(0)
@@ -218,6 +222,9 @@ model UserLastFM {
 
   user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
+
+  /// [LastFMTopArtists]
+  topArtists Json @default("{}")
 
   createdAt   DateTime @default(now())
   lastUpdated DateTime @updatedAt
@@ -473,9 +480,9 @@ model Concert {
 }
 
 model FeatureFlag {
-  name        String @id
-  enabled     Boolean @default(false)
+  name    String  @id
+  enabled Boolean @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

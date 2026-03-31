@@ -1,4 +1,4 @@
-import { ContainerBuilder, SeparatorBuilder, TextDisplayBuilder } from "@discordjs/builders";
+import { ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
 import { ApplicationCommandOptionType, MessageFlags, SeparatorSpacingSize } from "discord.js";
 import ordinal from "ordinal";
@@ -98,11 +98,19 @@ command.setHandler(async (ctx) => {
 
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
 
+  const artistImage = artist.image?.at(-1)?.["#text"];
+
   const container = new ContainerBuilder().setAccentColor(0xb90000);
 
-  container.addTextDisplayComponents(
+  const headerSection = new SectionBuilder().addTextDisplayComponents(
     new TextDisplayBuilder().setContent(`## ${artist.name}\nWho knows this artist?`),
   );
+
+  if (artistImage) {
+    headerSection.setThumbnailAccessory((builder) => builder.setURL(artistImage));
+  }
+
+  container.addSectionComponents(headerSection);
 
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small));
 

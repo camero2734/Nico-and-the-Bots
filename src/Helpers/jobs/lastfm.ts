@@ -1,4 +1,5 @@
 import { defineJob, UnrecoverableError } from "@falcondev-oss/queue";
+import { LastFMResponseError } from "lastfm-ts-api";
 import z from "zod/v4";
 import { fm } from "../../InteractionEntrypoints/slashcommands/fm/_consts";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
@@ -52,6 +53,11 @@ export const lastFmJob = defineJob({
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
       emitWideEvent(wideEvent);
+
+      if (e instanceof LastFMResponseError && e.message.includes("User not found")) {
+        throw new UnrecoverableError(`User with ID ${userId} not found on LastFM`);
+      }
+      throw e;
     }
   }
 });

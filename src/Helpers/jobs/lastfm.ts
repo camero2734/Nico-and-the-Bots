@@ -20,6 +20,7 @@ export const lastFmJob = defineJob({
   },
   async run({ userId }) {
     const wideEvent = createBackgroundEvent("last_fm");
+    wideEvent.extended.userId = userId;
 
     try {
       const user = await prisma.user.findUnique({
@@ -36,6 +37,8 @@ export const lastFmJob = defineJob({
       if (!user.lastFM) {
         throw new UnrecoverableError(`User with ID ${userId} does not have LastFM data`);
       }
+
+      wideEvent.extended.lastFMUsername = user.lastFM.username;
 
       const topArtists = await fm.user.getTopArtists({ username: user.lastFM.username, limit: 1000 });
 

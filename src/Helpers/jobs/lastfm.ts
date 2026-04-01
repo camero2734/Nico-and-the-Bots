@@ -18,7 +18,7 @@ export const lastFmJob = defineJob({
     }
   },
   async run({ userId }) {
-    const wideEvent = createBackgroundEvent("score_update");
+    const wideEvent = createBackgroundEvent("last_fm");
 
     try {
       const user = await prisma.user.findUnique({

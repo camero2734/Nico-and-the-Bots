@@ -1,5 +1,5 @@
-import { Client, type TextChannel } from "discord.js";
 import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
+import { Client, Events, type TextChannel } from "discord.js";
 import { NicoClient } from "../../app";
 import { channelIDs, guildID } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
@@ -29,10 +29,10 @@ export class KeonsBot {
     this.client.login(secrets.bots.keons);
 
     this.ready = new Promise((resolve) => {
-      this.client.on("ready", () => resolve());
+      this.client.on(Events.ClientReady, () => resolve());
     });
 
-    this.client.on("interactionCreate", (int) => {
+    this.client.on(Events.InteractionCreate, (int) => {
       NicoClient.emit("interactionCreate", int);
     });
   }

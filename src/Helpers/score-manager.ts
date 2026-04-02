@@ -11,10 +11,8 @@ import { WideEvent } from "./logging/wide-event";
 
 
 export const updateUserScore = (msg: Message): void => {
-  console.log("updateUserScore called");
   if (!msg.guild || !msg.channel) return;
 
-  console.log("Adding score update to queue");
   queue.score.add({
     data: {
       messageId: msg.id,

@@ -58,13 +58,10 @@ const setSectionAccessoryButton = (
 };
 
 export const GenColorBtnId = msgInt.addInteractionListener("shopColorsBtn", [], async (ctx) => {
-  console.log("Called color btn listener");
   await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
   const initialMsg = await generateMainMenuEmbed(ctx.member);
-  console.log("Generated main menu embed");
   await ctx.editReply(initialMsg);
-  console.log("Replied");
 });
 
 // Main Menu

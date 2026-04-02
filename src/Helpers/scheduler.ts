@@ -88,7 +88,7 @@ export default async function (client: Client): Promise<void> {
     await Promise.all([safeCheckMemberRoles(), safeCheckVCRoles()]);
   });
 
-  Cron("0 0 0 * * *", { protect }, async () => {
+  Cron("0 0 */12 * * *", { protect }, async () => {
     await Promise.all([safeCheckLastFm()]);
   });
 }

@@ -5,12 +5,13 @@ import secrets from "../Configuration/secrets";
 import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
 import { client as NicoClient } from "./nico";
-
 export class KeonsBot {
   client: Client;
   ready = Promise.withResolvers<void>();
-  constructor() {
-    this.client = new Client({
+
+  static async create(): Promise<KeonsBot> {
+    const bot = new KeonsBot();
+    bot.client = new Client({
       intents: [
         "Guilds",
         "DirectMessages",
@@ -28,24 +29,24 @@ export class KeonsBot {
     });
 
     // Temporary fix for fetchShardCount being called in discord.js
-    if (!(this.client.ws as any).fetchShardCount && typeof this.client.ws.getShardCount === "function") {
-      (this.client.ws as any).fetchShardCount = this.client.ws.getShardCount.bind(this.client.ws);
+    if (!(bot.client.ws as any).fetchShardCount && typeof bot.client.ws.getShardCount === "function") {
+      (bot.client.ws as any).fetchShardCount = bot.client.ws.getShardCount.bind(bot.client.ws);
     }
 
-    this.client.login(secrets.bots.keons).then(() => {
-      this.client.on(Events.InteractionCreate, (int) => {
-        console.log("[shop] InteractionCreate event fired");
-        NicoClient.emit("interactionCreate", int);
-      });
-      this.ready.resolve();
+    bot.client.on(Events.InteractionCreate, (interaction) => {
+      console.log("Interaction created:", interaction.type);
+      NicoClient.emit(Events.InteractionCreate, interaction);
     });
+
+    console.log("[shop] logging in");
+    await bot.client.login(secrets.bots.keons);
+    console.log("[shop] login attempted");
+    await new Promise((resolve) => bot.client.once(Events.ClientReady, resolve));
+    console.log("[shop] client ready");
+    return bot;
   }
 
   async setupShop(): Promise<void> {
-    console.log("[shop] waiting");
-    await this.ready.promise;
-    console.log("[shop] ready");
-
     const guild = await this.client.guilds.fetch(guildID);
     const chan = (await guild.channels.fetch(channelIDs.shop)) as TextChannel;
 

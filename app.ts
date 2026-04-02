@@ -44,7 +44,6 @@ if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "f
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }
 
-const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
 client.login(secrets.bots.nico);
@@ -116,7 +115,8 @@ client.once(Discord.Events.ClientReady, async () => {
 
   sacarverBot.beginWelcomingMembers();
   console.log("[shop] about to set up shop");
-  keonsBot.setupShop();
+  const keonsBot = await KeonsBot.create();
+  await keonsBot.setupShop();
   setup();
 
   // Send started message

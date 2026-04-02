@@ -1,8 +1,6 @@
 import { Client, Events, Guild, Partials } from "discord.js";
 import { guildID } from "../Configuration/config";
 
-export let guild: Guild;
-
 export const client = new Client({
   intents: [
     "Guilds",
@@ -22,6 +20,11 @@ export const client = new Client({
   partials: [Partials.Reaction, Partials.User, Partials.Message, Partials.Channel],
 });
 
+const readyPromise = Promise.withResolvers<Guild>();
+
 client.on(Events.ClientReady, async () => {
-  guild = await client.guilds.fetch({ force: true, guild: guildID });
+  const guild = await client.guilds.fetch({ force: true, guild: guildID });
+  readyPromise.resolve(guild);
 });
+
+export const guild = await readyPromise.promise;

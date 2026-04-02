@@ -101,61 +101,59 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-client.once(Discord.Events.ClientReady, async () => {
-  console.log("===================================");
-  console.log("||                               ||");
-  console.log("||      🚀 Nico logged in!       ||");
-  console.log("||                               ||");
-  console.log("===================================");
+console.log("===================================");
+console.log("||                               ||");
+console.log("||      🚀 Nico logged in!       ||");
+console.log("||                               ||");
+console.log("===================================");
 
-  const entrypoints = await entrypointsReady;
-  InteractionEntrypoint.registerAllCommands(guild);
+const entrypoints = await entrypointsReady;
+InteractionEntrypoint.registerAllCommands(guild);
 
-  sacarverBot.beginWelcomingMembers();
-  console.log("[shop] about to set up shop");
-  keonsBot.setupShop();
-  setup();
+sacarverBot.beginWelcomingMembers();
+console.log("[shop] about to set up shop");
+keonsBot.setupShop();
+setup();
 
-  // Send started message
-  const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
-  await botChan.send({
-    embeds: [
-      new EmbedBuilder({
-        description: "Bot is now running",
-        footer: { text: secrets.commitSha || "No commit associated" },
-      }),
-    ],
-  });
-  await guild.members.fetch();
-
-  await botChan.send({
-    embeds: [
-      new EmbedBuilder({
-        description: `Fetched all ${guild.members.cache.size} members`,
-      }),
-    ],
-  });
-
-  for (const [_path, entrypoint] of entrypoints) {
-    await entrypoint.runOnBotReady(guild, client);
-  }
-
-  await absurd.startWorker();
-  const workers = await startWorkers(jobs, {
-    connection: workerConnection,
-    hooks: {
-      error: (err) => {
-        console.error("[Worker] Error:", err);
-      },
-      failed: (job, err) => {
-        console.error(`[Worker] Job ${job?.id} failed:`, err);
-      },
-    },
-  });
-  console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
-
-  startPingServer();
+// Send started message
+const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
+await botChan.send({
+  embeds: [
+    new EmbedBuilder({
+      description: "Bot is now running",
+      footer: { text: secrets.commitSha || "No commit associated" },
+    }),
+  ],
 });
+await guild.members.fetch();
+
+await botChan.send({
+  embeds: [
+    new EmbedBuilder({
+      description: `Fetched all ${guild.members.cache.size} members`,
+    }),
+  ],
+});
+
+for (const [_path, entrypoint] of entrypoints) {
+  await entrypoint.runOnBotReady(guild, client);
+}
+
+await absurd.startWorker();
+const workers = await startWorkers(jobs, {
+  connection: workerConnection,
+  hooks: {
+    error: (err) => {
+      console.error("[Worker] Error:", err);
+    },
+    failed: (job, err) => {
+      console.error(`[Worker] Job ${job?.id} failed:`, err);
+    },
+  },
+});
+console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
+
+startPingServer();
 
 async function getReplyInteractionId(msg: Discord.Message) {
   if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;

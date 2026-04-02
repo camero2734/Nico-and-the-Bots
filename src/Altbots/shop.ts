@@ -27,18 +27,22 @@ export class KeonsBot {
       ],
     });
 
+    // Temporary fix for fetchShardCount being called in discord.js
+    if (!(this.client.ws as any).fetchShardCount && typeof this.client.ws.getShardCount === "function") {
+      (this.client.ws as any).fetchShardCount = this.client.ws.getShardCount.bind(this.client.ws);
+    }
+
     this.client.on(Events.InteractionCreate, (int) => {
       console.log("[shop] InteractionCreate event fired");
       NicoClient.emit("interactionCreate", int);
     });
 
-    this.client.login(secrets.bots.keons).then(() => {
-      console.log("[shop] KeonsBot login attempted");
+    this.client.on(Events.ClientReady, () => {
+      console.log("[shop] ClientReady event fired");
       this.ready.resolve();
-    }).catch((err) => {
-      console.error("[shop] KeonsBot login error:", err);
-      this.ready.reject(err);
     });
+
+    this.client.login(secrets.bots.keons);
   }
 
   async setupShop(): Promise<void> {

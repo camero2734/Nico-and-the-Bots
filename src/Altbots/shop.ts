@@ -26,19 +26,20 @@ export class KeonsBot {
         "GuildWebhooks",
       ],
     });
-    const loginPromise = this.client.login(secrets.bots.keons);
 
     this.ready = new Promise((resolve, reject) => {
-      this.client.on(Events.ClientReady, () => resolve());
+      this.client.once(Events.ClientReady, () => {
+        console.log("[shop] ClientReady event fired");
+        resolve();
+      });
       this.client.on(Events.Error, (err: Error) => {
         console.error("[shop] Keons bot error:", err);
         reject(err);
       });
-      // Reject if login fails
-      loginPromise.catch((err) => {
-        console.error("[shop] Keons bot login failed:", err);
-        reject(err);
-      });
+    });
+
+    this.client.login(secrets.bots.keons).catch((err) => {
+      console.error("[shop] Keons bot login failed:", err);
     });
 
     this.client.on(Events.InteractionCreate, (int) => {

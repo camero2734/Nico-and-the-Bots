@@ -37,7 +37,7 @@ export class KeonsBot {
       NicoClient.emit("interactionCreate", int);
     });
 
-    this.client.on(Events.ClientReady, () => {
+    this.client.once(Events.ClientReady, () => {
       console.log("[shop] ClientReady event fired");
       this.ready.resolve();
     });

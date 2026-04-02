@@ -19,6 +19,11 @@ const client = new Client({
   ],
 });
 
+// Temporary fix for fetchShardCount being called in discord.js
+if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
+  (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
+}
+
 await client.login(secrets.bots.keons);
 await new Promise((resolve) => client.once(Events.ClientReady, resolve));
 

@@ -7,7 +7,6 @@ import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shop
 import { client as NicoClient } from "./nico";
 export class KeonsBot {
   client: Client;
-  ready = Promise.withResolvers<void>();
 
   static async create(): Promise<KeonsBot> {
     const bot = new KeonsBot();

@@ -14,7 +14,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 import { jobs } from "./src/Helpers/jobs";
-import { connection } from "./src/Helpers/jobs/helpers";
+import { workerConnection } from "./src/Helpers/jobs/helpers";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import {
   createBackgroundEvent,
@@ -162,7 +162,7 @@ client.once(Discord.Events.ClientReady, async () => {
 
   await absurd.startWorker();
   await startWorkers(jobs, {
-    connection,
+    connection: workerConnection,
     hooks: {
       error: (err) => {
         console.error("[Worker] Error:", err);

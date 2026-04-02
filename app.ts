@@ -1,9 +1,9 @@
-import { absurd } from "Tasks/absurd";
 import { EmbedBuilder } from "@discordjs/builders";
 import { startWorkers } from "@falcondev-oss/queue";
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
+import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
@@ -133,6 +133,7 @@ client.once(Discord.Events.ClientReady, async () => {
   InteractionEntrypoint.registerAllCommands(guild);
 
   sacarverBot.beginWelcomingMembers();
+  console.log("[shop] about to set up shop");
   keonsBot.setupShop();
   setup();
 

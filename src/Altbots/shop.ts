@@ -38,12 +38,16 @@ export class KeonsBot {
   }
 
   async setupShop(): Promise<void> {
+    console.log("[shop] waiting");
     await this.ready; // Ensure the bot is ready before trying to set up the shop
+    console.log("[shop] ready");
 
     const guild = await this.client.guilds.fetch(guildID);
     const chan = (await guild.channels.fetch(channelIDs.shop)) as TextChannel;
 
     await chan.bulkDelete(100); // Delete all messages
+
+    console.log("[shop] setting up welcome message");
 
     const welcomeEmbed = new EmbedBuilder()
       .setAuthor({
@@ -96,6 +100,8 @@ export class KeonsBot {
 
     const actionRow = new ActionRowBuilder().addComponents(colorRolesBtn, songRolesBtn);
 
+    console.log("[shop] sending welcome message");
     await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });
+    console.log("[shop] welcome message sent");
   }
 }

@@ -26,10 +26,19 @@ export class KeonsBot {
         "GuildWebhooks",
       ],
     });
-    this.client.login(secrets.bots.keons);
+    const loginPromise = this.client.login(secrets.bots.keons);
 
-    this.ready = new Promise((resolve) => {
+    this.ready = new Promise((resolve, reject) => {
       this.client.on(Events.ClientReady, () => resolve());
+      this.client.on(Events.Error, (err: Error) => {
+        console.error("[shop] Keons bot error:", err);
+        reject(err);
+      });
+      // Reject if login fails
+      loginPromise.catch((err) => {
+        console.error("[shop] Keons bot login failed:", err);
+        reject(err);
+      });
     });
 
     this.client.on(Events.InteractionCreate, (int) => {
@@ -39,7 +48,7 @@ export class KeonsBot {
 
   async setupShop(): Promise<void> {
     console.log("[shop] waiting");
-    await this.ready; // Ensure the bot is ready before trying to set up the shop
+    await this.ready;
     console.log("[shop] ready");
 
     const guild = await this.client.guilds.fetch(guildID);
@@ -90,13 +99,9 @@ export class KeonsBot {
         text: "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited.",
       });
 
-    const colorRolesBtn = new PrimaryButtonBuilder()
-      .setLabel("Color Roles")
-      .setCustomId(GenColorBtnId({}));
+    const colorRolesBtn = new PrimaryButtonBuilder().setLabel("Color Roles").setCustomId(GenColorBtnId({}));
 
-    const songRolesBtn = new PrimaryButtonBuilder()
-      .setLabel("Song Roles")
-      .setCustomId(GenSongBtnId({}));
+    const songRolesBtn = new PrimaryButtonBuilder().setLabel("Song Roles").setCustomId(GenSongBtnId({}));
 
     const actionRow = new ActionRowBuilder().addComponents(colorRolesBtn, songRolesBtn);
 

@@ -1,9 +1,9 @@
+import { absurd } from "Tasks/absurd";
 import { EmbedBuilder } from "@discordjs/builders";
 import { startWorkers } from "@falcondev-oss/queue";
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
-import { absurd } from "Tasks/absurd";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
@@ -16,7 +16,13 @@ import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearer
 import { jobs } from "./src/Helpers/jobs";
 import { connection } from "./src/Helpers/jobs/helpers";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
-import { createBackgroundEvent, createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext } from "./src/Helpers/logging/wide-event";
+import {
+  createBackgroundEvent,
+  createWideEvent,
+  emitWideEvent,
+  finalizeWideEvent,
+  setBotContext,
+} from "./src/Helpers/logging/wide-event";
 import { prisma } from "./src/Helpers/prisma-init";
 import Scheduler from "./src/Helpers/scheduler";
 import {
@@ -155,7 +161,17 @@ client.once(Discord.Events.ClientReady, async () => {
   }
 
   await absurd.startWorker();
-  await startWorkers(jobs, { connection });
+  await startWorkers(jobs, {
+    connection,
+    hooks: {
+      error: (err) => {
+        console.error("[Worker] Error:", err);
+      },
+      failed: (job, err) => {
+        console.error(`[Worker] Job ${job?.id} failed:`, err);
+      },
+    },
+  });
 
   startPingServer();
 });
@@ -289,7 +305,13 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
       finalizeWideEvent(wideEvent, "success");
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
-      await ErrorHandler(interaction, wideEvent, e instanceof Error ? e : new Error(String(e)), interactionHandler.name, receivedInteractionAt);
+      await ErrorHandler(
+        interaction,
+        wideEvent,
+        e instanceof Error ? e : new Error(String(e)),
+        interactionHandler.name,
+        receivedInteractionAt,
+      );
     }
 
     emitWideEvent(wideEvent);

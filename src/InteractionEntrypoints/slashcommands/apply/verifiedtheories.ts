@@ -22,7 +22,7 @@ import {
   type TextChannel,
   TextInputStyle,
 } from "discord.js";
-import { guild } from "../../../Altbots/nico";
+import { guild } from "../../../../app";
 import { channelIDs, guildID, roles } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import F from "../../../Helpers/funcs";

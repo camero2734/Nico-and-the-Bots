@@ -3,7 +3,7 @@ import { channelIDs } from "Configuration/config";
 import { Colors } from "discord.js";
 import { prisma } from "Helpers/prisma-init";
 import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/migratecolorroles/_consts";
-import { guild } from "../../Altbots/nico";
+import { guild } from "../../../app";
 import { registerTask } from "../absurd";
 
 type NotifiableChange = Exclude<Change, { type: "add" | "noChange" }>;

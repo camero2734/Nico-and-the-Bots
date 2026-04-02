@@ -1,7 +1,7 @@
 import { channelIDs } from "Configuration/config";
 import { prisma } from "Helpers/prisma-init";
 import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/migratecolorroles/_consts";
-import { guild } from "../../Altbots/nico";
+import { guild } from "../../../app";
 import { registerTask } from "../absurd";
 import { notifyChange } from "./notify";
 

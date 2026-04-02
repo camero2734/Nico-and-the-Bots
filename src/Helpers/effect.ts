@@ -8,10 +8,10 @@ import {
   MessageFlags,
 } from "discord.js";
 import { Effect, HashMap, LogLevel, Logger, Option } from "effect";
+import { guild as nicoGuild } from "../../app";
 import { keonsGuild } from "../../src/Altbots/topfeed/topfeed";
 import { channelIDs, userIDs } from "../../src/Configuration/config";
 import F from "../../src/Helpers/funcs";
-import { guild as nicoGuild } from "../Altbots/nico";
 
 interface LogInfo {
   level: string;

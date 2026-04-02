@@ -13,7 +13,7 @@ import {
   type TextBasedChannel,
   type TextChannel,
 } from "discord.js";
-import { guild } from "../Altbots/nico";
+import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";

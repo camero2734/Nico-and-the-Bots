@@ -14,7 +14,7 @@ import { userMention } from "@discordjs/formatters";
 import Cron from "croner";
 import { addDays } from "date-fns";
 import { MessageFlags, type Message, type Snowflake, type TextChannel } from "discord.js";
-import { guild } from "../../Altbots/nico";
+import { guild } from "../../../app";
 import { channelIDs, emojiIDs, roles, userIDs } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import F from "../../Helpers/funcs";

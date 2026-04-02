@@ -4,10 +4,10 @@ import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
 import { absurd } from "Tasks/absurd";
-import { client, guild } from "./src/Altbots/nico";
+import { client } from "./src/Altbots/nico";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
-import { channelIDs, roles } from "./src/Configuration/config";
+import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
@@ -52,6 +52,7 @@ client.login(secrets.bots.nico);
 console.log("Logging in...");
 
 const entrypointsReady = registerAllEntrypoints();
+export let guild: Discord.Guild;
 
 Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   if (!guild) return;
@@ -101,59 +102,63 @@ Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   });
 });
 
-console.log("===================================");
-console.log("||                               ||");
-console.log("||      🚀 Nico logged in!       ||");
-console.log("||                               ||");
-console.log("===================================");
+client.once(Discord.Events.ClientReady, async () => {
+  console.log("===================================");
+  console.log("||                               ||");
+  console.log("||      🚀 Nico logged in!       ||");
+  console.log("||                               ||");
+  console.log("===================================");
 
-const entrypoints = await entrypointsReady;
-InteractionEntrypoint.registerAllCommands(guild);
+  guild = await client.guilds.fetch({ force: true, guild: guildID });
 
-sacarverBot.beginWelcomingMembers();
-console.log("[shop] about to set up shop");
-keonsBot.setupShop();
-setup();
+  const entrypoints = await entrypointsReady;
+  InteractionEntrypoint.registerAllCommands(guild);
 
-// Send started message
-const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
-await botChan.send({
-  embeds: [
-    new EmbedBuilder({
-      description: "Bot is now running",
-      footer: { text: secrets.commitSha || "No commit associated" },
-    }),
-  ],
-});
-await guild.members.fetch();
+  sacarverBot.beginWelcomingMembers();
+  console.log("[shop] about to set up shop");
+  keonsBot.setupShop();
+  setup();
 
-await botChan.send({
-  embeds: [
-    new EmbedBuilder({
-      description: `Fetched all ${guild.members.cache.size} members`,
-    }),
-  ],
-});
+  // Send started message
+  const botChan = (await guild.channels.fetch(channelIDs.bottest)) as Discord.TextChannel;
+  await botChan.send({
+    embeds: [
+      new EmbedBuilder({
+        description: "Bot is now running",
+        footer: { text: secrets.commitSha || "No commit associated" },
+      }),
+    ],
+  });
+  await guild.members.fetch();
 
-for (const [_path, entrypoint] of entrypoints) {
-  await entrypoint.runOnBotReady(guild, client);
-}
+  await botChan.send({
+    embeds: [
+      new EmbedBuilder({
+        description: `Fetched all ${guild.members.cache.size} members`,
+      }),
+    ],
+  });
 
-await absurd.startWorker();
-const workers = await startWorkers(jobs, {
-  connection: workerConnection,
-  hooks: {
-    error: (err) => {
-      console.error("[Worker] Error:", err);
+  for (const [_path, entrypoint] of entrypoints) {
+    await entrypoint.runOnBotReady(guild, client);
+  }
+
+  await absurd.startWorker();
+  const workers = await startWorkers(jobs, {
+    connection: workerConnection,
+    hooks: {
+      error: (err) => {
+        console.error("[Worker] Error:", err);
+      },
+      failed: (job, err) => {
+        console.error(`[Worker] Job ${job?.id} failed:`, err);
+      },
     },
-    failed: (job, err) => {
-      console.error(`[Worker] Job ${job?.id} failed:`, err);
-    },
-  },
-});
-console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
+  });
+  console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
 
-startPingServer();
+  startPingServer();
+});
 
 async function getReplyInteractionId(msg: Discord.Message) {
   if (!msg.reference || msg.reference.type !== Discord.MessageReferenceType.Default) return;

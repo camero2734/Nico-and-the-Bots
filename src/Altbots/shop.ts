@@ -32,12 +32,13 @@ export class KeonsBot {
       (this.client.ws as any).fetchShardCount = this.client.ws.getShardCount.bind(this.client.ws);
     }
 
-    this.client.on(Events.InteractionCreate, (int) => {
-      console.log("[shop] InteractionCreate event fired");
-      NicoClient.emit("interactionCreate", int);
+    this.client.login(secrets.bots.keons).then(() => {
+      this.client.on(Events.InteractionCreate, (int) => {
+        console.log("[shop] InteractionCreate event fired");
+        NicoClient.emit("interactionCreate", int);
+      });
+      this.ready.resolve();
     });
-
-    this.client.login(secrets.bots.keons).then(() => this.ready.resolve());
   }
 
   async setupShop(): Promise<void> {

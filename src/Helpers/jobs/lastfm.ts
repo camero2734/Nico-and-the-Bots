@@ -4,7 +4,6 @@ import z from "zod/v4";
 import { fm } from "../../InteractionEntrypoints/slashcommands/fm/_consts";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
 import { prisma } from "../prisma-init";
-import { connection } from "./helpers";
 
 export const lastFmJob = defineJob({
   schema: z.object({
@@ -12,11 +11,18 @@ export const lastFmJob = defineJob({
   }),
   workerOptions: {
     concurrency: 2,
-    connection,
     limiter: {
       max: 5,
       duration: 2_000,
-    }
+    },
+    hooks: {
+      error: (err) => {
+        console.error("[lastFm Worker] Error:", err);
+      },
+      failed: (job, err) => {
+        console.error(`[lastFm Worker] Job ${job?.id} failed:`, err);
+      },
+    },
   },
   async run({ userId }) {
     const wideEvent = createBackgroundEvent("last_fm");
@@ -27,7 +33,7 @@ export const lastFmJob = defineJob({
         where: { id: userId },
         include: {
           lastFM: true,
-        }
+        },
       });
 
       if (!user) {
@@ -42,7 +48,7 @@ export const lastFmJob = defineJob({
 
       const topArtists = await fm.user.getTopArtists({ username: user.lastFM.username, limit: 1000 });
 
-      const artistMap: PrismaJson.LastFMTopArtists = {}
+      const artistMap: PrismaJson.LastFMTopArtists = {};
       topArtists.topartists.artist.forEach((artist) => {
         if (artist.playcount) artistMap[artist.mbid || artist.name.toLowerCase()] = +artist.playcount;
       });
@@ -51,7 +57,7 @@ export const lastFmJob = defineJob({
         where: { userId },
         data: {
           topArtists: artistMap,
-        }
+        },
       });
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
@@ -62,5 +68,5 @@ export const lastFmJob = defineJob({
       }
       throw e;
     }
-  }
+  },
 });

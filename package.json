@@ -21,7 +21,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1014.0",
     "@aws-sdk/s3-request-presigner": "^3.1014.0",
-    "@discordjs/builders": "2.0.0-dev.1773446773-2a067216c",
+    "@discordjs/builders": "2.0.0-dev.1774959152-339b8b565",
     "@faker-js/faker": "^8.4.1",
     "@falcondev-oss/queue": "^0.7.1",
     "@googleapis/youtube": "^25.1.0",
@@ -39,7 +39,7 @@
     "croner": "^8.1.2",
     "date-fns": "2.28.0",
     "diff": "^5.2.2",
-    "discord.js": "15.0.0-dev.1773446773-2a067216c",
+    "discord.js": "15.0.0-dev.1774959152-339b8b565",
     "effect": "^3.21.0",
     "emittery": "^0.9.2",
     "emoji-regex": "10.0.0",

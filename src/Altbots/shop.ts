@@ -28,21 +28,13 @@ export class KeonsBot {
     });
 
     this.client.on(Events.InteractionCreate, (int) => {
+      console.log("[shop] InteractionCreate event fired");
       NicoClient.emit("interactionCreate", int);
-    });
-
-    this.client.once(Events.ClientReady, () => {
-      console.log("[shop] KeonsBot ready");
-      this.ready.resolve();
-    });
-
-    this.client.on(Events.Error, (err: Error) => {
-      console.error("[shop] KeonsBot error:", err);
-      this.ready.reject(err);
     });
 
     this.client.login(secrets.bots.keons).then(() => {
       console.log("[shop] KeonsBot login attempted");
+      this.ready.resolve();
     }).catch((err) => {
       console.error("[shop] KeonsBot login error:", err);
       this.ready.reject(err);

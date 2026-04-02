@@ -46,7 +46,10 @@ export const lastFmJob = defineJob({
 
       wideEvent.extended.lastFMUsername = user.lastFM.username;
 
-      const topArtists = await fm.user.getTopArtists({ username: user.lastFM.username, limit: 1000 });
+      const topArtists = await Promise.race([
+        fm.user.getTopArtists({ username: user.lastFM.username, limit: 1000 }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("LastFM API timeout")), 30000)),
+      ]);
 
       const artistMap: PrismaJson.LastFMTopArtists = {};
       topArtists.topartists.artist.forEach((artist) => {

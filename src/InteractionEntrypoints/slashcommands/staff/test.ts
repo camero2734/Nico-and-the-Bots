@@ -18,7 +18,7 @@ const command = new SlashCommand({
       description: "Command number",
       required: false,
       type: ApplicationCommandOptionType.Integer,
-    }
+    },
   ],
 });
 
@@ -66,6 +66,19 @@ command.setHandler(async (ctx) => {
     const queue = getQueueByName("lastFm");
     await queue.drain();
     await ctx.editReply("Queue cleared.");
+  } else if (ctx.opts.num === 777) {
+    await ctx.deferReply();
+    const queue = getQueueByName("lastFm");
+    const [waiting, active, completed, failed, delayed] = await Promise.all([
+      queue.getWaitingCount(),
+      queue.getActiveCount(),
+      queue.getCompletedCount(),
+      queue.getFailedCount(),
+      queue.getDelayedCount(),
+    ]);
+    await ctx.editReply(
+      `Queue stats:\n- Waiting: ${waiting}\n- Active: ${active}\n- Completed: ${completed}\n- Failed: ${failed}\n- Delayed: ${delayed}`,
+    );
   } else {
     throw new CommandError("Invalid number");
   }

@@ -161,7 +161,7 @@ client.once(Discord.Events.ClientReady, async () => {
   }
 
   await absurd.startWorker();
-  await startWorkers(jobs, {
+  const workers = await startWorkers(jobs, {
     connection: workerConnection,
     hooks: {
       error: (err) => {
@@ -172,6 +172,7 @@ client.once(Discord.Events.ClientReady, async () => {
       },
     },
   });
+  console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
 
   startPingServer();
 });

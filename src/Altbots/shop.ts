@@ -4,11 +4,11 @@ import { channelIDs, guildID } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
-import { client } from "./nico";
+import { client as NicoClient } from "./nico";
 
 export class KeonsBot {
   client: Client;
-  ready: Promise<void>;
+  ready = Promise.withResolvers<void>();
   constructor() {
     this.client = new Client({
       intents: [
@@ -28,31 +28,30 @@ export class KeonsBot {
     });
 
     this.client.on(Events.InteractionCreate, (int) => {
-      client.emit("interactionCreate", int);
+      NicoClient.emit("interactionCreate", int);
     });
 
-    this.ready = new Promise((resolve, reject) => {
-      this.client.once(Events.ClientReady, () => {
-        console.log("[shop] ClientReady event fired");
-        resolve();
-      });
-      this.client.on(Events.Error, (err: Error) => {
-        console.error("[shop] Keons bot error:", err);
-        reject(err);
-      });
+    this.client.once(Events.ClientReady, () => {
+      console.log("[shop] KeonsBot ready");
+      this.ready.resolve();
+    });
 
-      this.client.login(secrets.bots.keons).catch((err) => {
-        console.error("[shop] Keons bot login failed:", err);
-        reject(err);
-      }).then(() => {
-        console.log("[shop] Keons bot login attempted");
-      })
+    this.client.on(Events.Error, (err: Error) => {
+      console.error("[shop] KeonsBot error:", err);
+      this.ready.reject(err);
+    });
+
+    this.client.login(secrets.bots.keons).then(() => {
+      console.log("[shop] KeonsBot login attempted");
+    }).catch((err) => {
+      console.error("[shop] KeonsBot login error:", err);
+      this.ready.reject(err);
     });
   }
 
   async setupShop(): Promise<void> {
     console.log("[shop] waiting");
-    await this.ready;
+    await this.ready.promise;
     console.log("[shop] ready");
 
     const guild = await this.client.guilds.fetch(guildID);

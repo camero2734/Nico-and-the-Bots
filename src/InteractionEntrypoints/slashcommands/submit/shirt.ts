@@ -1,4 +1,3 @@
-import { Colors, DiscordAPIError, type Message, MessageFlags } from "discord.js";
 import {
   ActionRowBuilder,
   DangerButtonBuilder,
@@ -6,7 +5,8 @@ import {
   LinkButtonBuilder,
   SuccessButtonBuilder,
 } from "@discordjs/builders";
-import { guild } from "../../../../app";
+import { Colors, DiscordAPIError, type Message, MessageFlags } from "discord.js";
+import { guild } from "../../../Altbots/nico";
 import { channelIDs } from "../../../Configuration/config";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 

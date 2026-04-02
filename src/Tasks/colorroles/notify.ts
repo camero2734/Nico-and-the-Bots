@@ -1,10 +1,10 @@
+import { EmbedBuilder } from "@discordjs/builders";
 import { channelIDs } from "Configuration/config";
+import { Colors } from "discord.js";
 import { prisma } from "Helpers/prisma-init";
 import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/migratecolorroles/_consts";
-import { EmbedBuilder } from "@discordjs/builders";
-import { guild } from "../../../app";
+import { guild } from "../../Altbots/nico";
 import { registerTask } from "../absurd";
-import { Colors } from "discord.js";
 
 type NotifiableChange = Exclude<Change, { type: "add" | "noChange" }>;
 

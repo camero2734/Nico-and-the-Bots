@@ -4,9 +4,10 @@ import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
 import { absurd } from "Tasks/absurd";
+import { client, guild } from "./src/Altbots/nico";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
-import { channelIDs, guildID, roles } from "./src/Configuration/config";
+import { channelIDs, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
@@ -38,25 +39,6 @@ import { ErrorHandler } from "./src/Structures/Errors";
 import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 
-export const client = new Discord.Client({
-  intents: [
-    "Guilds",
-    "DirectMessages",
-    "DirectMessageReactions",
-    "GuildMessageReactions",
-    "GuildBans",
-    "GuildEmojisAndStickers",
-    "GuildMembers",
-    "GuildMessages",
-    "GuildIntegrations",
-    "GuildInvites",
-    "GuildPresences",
-    "GuildVoiceStates",
-    "GuildWebhooks",
-  ],
-  partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
-});
-
 // Temporary fix for fetchShardCount being called in discord.js
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
@@ -70,7 +52,6 @@ client.login(secrets.bots.nico);
 console.log("Logging in...");
 
 const entrypointsReady = registerAllEntrypoints();
-export let guild: Discord.Guild;
 
 Cron("0 0 * * *", { timezone: "Europe/Amsterdam" }, async () => {
   if (!guild) return;
@@ -126,8 +107,6 @@ client.once(Discord.Events.ClientReady, async () => {
   console.log("||      🚀 Nico logged in!       ||");
   console.log("||                               ||");
   console.log("===================================");
-
-  guild = await client.guilds.fetch({ force: true, guild: guildID });
 
   const entrypoints = await entrypointsReady;
   InteractionEntrypoint.registerAllCommands(guild);
@@ -418,5 +397,3 @@ process.on("SIGTERM", async () => {
   console.log("Shutdown complete, exiting.");
   process.exit(0);
 });
-
-export const NicoClient = client;

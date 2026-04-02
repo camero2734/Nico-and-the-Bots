@@ -1,3 +1,5 @@
+import { ContainerBuilder } from "@discordjs/builders";
+import { userMention } from "@discordjs/formatters";
 import {
   type APIComponentInContainer,
   Colors,
@@ -5,13 +7,11 @@ import {
   type Guild,
   MessageFlags,
 } from "discord.js";
-import { ContainerBuilder } from "@discordjs/builders";
-import { userMention } from "@discordjs/formatters";
 import { Effect, HashMap, LogLevel, Logger, Option } from "effect";
-import { guild as nicoGuild } from "../../app";
 import { keonsGuild } from "../../src/Altbots/topfeed/topfeed";
 import { channelIDs, userIDs } from "../../src/Configuration/config";
 import F from "../../src/Helpers/funcs";
+import { guild as nicoGuild } from "../Altbots/nico";
 
 interface LogInfo {
   level: string;

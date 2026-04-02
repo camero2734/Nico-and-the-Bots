@@ -1,6 +1,6 @@
 import { channelIDs } from "Configuration/config";
 import type { Change } from "InteractionEntrypoints/slashcommands/superstaff/migratecolorroles/_consts";
-import { guild } from "../../../app";
+import { guild } from "../../Altbots/nico";
 import { registerTask } from "../absurd";
 
 export const addColorRole = registerTask(

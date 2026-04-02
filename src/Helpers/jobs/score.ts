@@ -1,7 +1,7 @@
 import { defineJob } from "@falcondev-oss/queue";
 import type { Snowflake, TextChannel } from "discord.js";
 import z from "zod/v4";
-import { NicoClient } from "../../../app";
+import { client } from "../../Altbots/nico";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
 import { updateUserScoreWorker } from "../score-manager";
 import { getQueueByName } from "./helpers";
@@ -26,7 +26,7 @@ export const scoreJob = defineJob({
       const count = await queue.count();
       wideEvent.extended.queueSize = count;
 
-      const guild = await NicoClient.guilds.fetch(data.guildId as Snowflake);
+      const guild = await client.guilds.fetch(data.guildId as Snowflake);
       const channel = (await guild.channels.fetch(data.channelId)) as TextChannel;
       const msg = await channel.messages.fetch(data.messageId);
 

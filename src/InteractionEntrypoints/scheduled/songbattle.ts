@@ -9,7 +9,7 @@ import {
   MessageFlags,
   ThreadAutoArchiveDuration,
 } from "discord.js";
-import { guild } from "../../../app";
+import { guild } from "../../Altbots/nico";
 import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import { invalidateCache, withCache } from "../../Helpers/cache";

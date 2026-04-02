@@ -1,10 +1,10 @@
 import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
 import { Client, Events, type TextChannel } from "discord.js";
-import { NicoClient } from "../../app";
 import { channelIDs, guildID } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
+import { client } from "./nico";
 
 export class KeonsBot {
   client: Client;
@@ -27,6 +27,10 @@ export class KeonsBot {
       ],
     });
 
+    this.client.on(Events.InteractionCreate, (int) => {
+      client.emit("interactionCreate", int);
+    });
+
     this.ready = new Promise((resolve, reject) => {
       this.client.once(Events.ClientReady, () => {
         console.log("[shop] ClientReady event fired");
@@ -36,14 +40,13 @@ export class KeonsBot {
         console.error("[shop] Keons bot error:", err);
         reject(err);
       });
-    });
 
-    this.client.login(secrets.bots.keons).catch((err) => {
-      console.error("[shop] Keons bot login failed:", err);
-    });
-
-    this.client.on(Events.InteractionCreate, (int) => {
-      NicoClient.emit("interactionCreate", int);
+      this.client.login(secrets.bots.keons).catch((err) => {
+        console.error("[shop] Keons bot login failed:", err);
+        reject(err);
+      }).then(() => {
+        console.log("[shop] Keons bot login attempted");
+      })
     });
   }
 

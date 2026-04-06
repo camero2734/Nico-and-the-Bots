@@ -31,17 +31,19 @@ command.setHandler(async (ctx) => {
   const { user, action } = ctx.opts;
 
   if (action === "BAN") {
-    await prisma.verifiedQuiz.update({
+    await prisma.verifiedQuiz.upsert({
       where: { userId: user },
-      data: { lastTaken: addYears(new Date(), 100) },
+      update: { lastTaken: addYears(new Date(), 100) },
+      create: { userId: user, lastTaken: addYears(new Date(), 100) },
     });
     await ctx.editReply({
       content: "User can no longer retake the verified quiz.",
     });
   } else if (action === "RESET_TIMER") {
-    await prisma.verifiedQuiz.update({
+    await prisma.verifiedQuiz.upsert({
       where: { userId: user },
-      data: { lastTaken: new Date(0) },
+      update: { lastTaken: new Date(0) },
+      create: { userId: user, lastTaken: new Date(0) },
     });
     await ctx.editReply({
       content: "User's verified quiz timer has been reset.",

@@ -1,4 +1,5 @@
 import SpotifyAPI from "spotify-web-api-node";
+import { log } from "../../Helpers/logging/evlog";
 import secrets from "../../Configuration/secrets";
 
 export const SpotifyClient = new SpotifyAPI({
@@ -11,6 +12,6 @@ export const SpotifyClient = new SpotifyAPI({
     const res = await SpotifyClient.clientCredentialsGrant();
     SpotifyClient.setAccessToken(res.body.access_token);
   } catch (err) {
-    console.error("SpotifyClientError: ", err);
+    log.error({ message: "SpotifyClientError", ...{ error: String(err) } });
   }
 })();

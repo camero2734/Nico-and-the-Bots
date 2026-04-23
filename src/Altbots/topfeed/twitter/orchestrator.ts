@@ -1,7 +1,7 @@
 import { subMinutes } from "date-fns";
 import { MessageFlags } from "discord.js";
 import { Data, Duration, Effect, pipe, Schedule } from "effect";
-import type { WideEvent } from "../../../Helpers/logging/wide-event";
+import type { BotLogger } from "../../../Helpers/logging/evlog";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
 import { fetchTwitterOfficialApi, TwitterApiClient } from "./api/official";
@@ -9,9 +9,9 @@ import { fetchTwitterUnofficialApi } from "./api/unofficial";
 import { tweetToComponents } from "./components";
 import { type Response, usernameData, usernamesToWatch } from "./constants";
 
-class TwitterNoNewTweetsFound extends Data.TaggedError("TwitterNoNewTweetsFound") { }
+class TwitterNoNewTweetsFound extends Data.TaggedError("TwitterNoNewTweetsFound") {}
 
-export const handleTwitterResponse = (response: Response, wideEvent: WideEvent) =>
+export const handleTwitterResponse = (response: Response, log: BotLogger) =>
   Effect.gen(function* () {
     const { fetchedAt, parsedResult } = response;
 
@@ -22,7 +22,7 @@ export const handleTwitterResponse = (response: Response, wideEvent: WideEvent) 
     );
 
     let foundNewTweets = false;
-    wideEvent.extended.tweets_found = parsedResult.tweets.length;
+    log.set({ tweets_found: parsedResult.tweets.length });
     const postsProcessed: string[] = [];
     const postsSkipped: { tweetId: string; reason: string }[] = [];
 
@@ -51,7 +51,6 @@ export const handleTwitterResponse = (response: Response, wideEvent: WideEvent) 
       }
 
       foundNewTweets = true;
-
 
       const { roleId, channelId } = usernameData[tweetName];
       const components = yield* Effect.tryPromise(() => tweetToComponents(tweet, roleId));
@@ -91,13 +90,13 @@ export const handleTwitterResponse = (response: Response, wideEvent: WideEvent) 
       postsProcessed.push(tweet.id);
 
       yield* Effect.logWarning(
-        `Processed tweet ${tweet.id} from ${tweetName} in <#${channelId}>. Was delayed by: ${fetchedAt - new Date(tweet.createdAt).getTime()
+        `Processed tweet ${tweet.id} from ${tweetName} in <#${channelId}>. Was delayed by: ${
+          fetchedAt - new Date(tweet.createdAt).getTime()
         }ms`,
       );
     }
 
-    wideEvent.extended.posts_processed = postsProcessed;
-    wideEvent.extended.posts_skipped = postsSkipped;
+    log.set({ posts_processed: postsProcessed, posts_skipped: postsSkipped });
 
     return yield* Effect.succeed(foundNewTweets);
   });
@@ -105,21 +104,19 @@ export const handleTwitterResponse = (response: Response, wideEvent: WideEvent) 
 const expSchedule = (initialRun: boolean) =>
   Schedule.intersect(Schedule.exponential(Duration.millis(200), 2), Schedule.recurs(initialRun ? 0 : 4));
 
-export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs: number | undefined, wideEvent: WideEvent) =>
+export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs: number | undefined, log: BotLogger) =>
   Effect.gen(function* () {
     const initialRun = _sinceTs === undefined;
     const sinceTs = _sinceTs || Math.floor(subMinutes(new Date(), 5).getTime() / 1000);
     const queryUsernames = usernamesToWatch.map((username) => `from:${username}`).join(" OR ");
     const query = `(${queryUsernames}) since_time:${sinceTs}`;
 
-    wideEvent.extended.query = query;
-    wideEvent.extended.since_ts = sinceTs;
-    wideEvent.extended.initial_run = initialRun;
+    log.set({ query, since_ts: sinceTs, initial_run: initialRun });
 
     yield* Effect.race(
       pipe(
         fetchTwitterOfficialApi(query),
-        Effect.andThen((response) => handleTwitterResponse(response, wideEvent)),
+        Effect.andThen((response) => handleTwitterResponse(response, log)),
         Effect.tapError(Effect.logError),
         Effect.filterOrFail(
           (newTweets) => newTweets,
@@ -130,7 +127,7 @@ export const fetchTwitter = (source: "scheduled" | "webhook", _sinceTs: number |
       ),
       pipe(
         fetchTwitterUnofficialApi(query),
-        Effect.andThen((response) => handleTwitterResponse(response, wideEvent)),
+        Effect.andThen((response) => handleTwitterResponse(response, log)),
         Effect.tapError(Effect.logError),
         Effect.filterOrFail(
           (newTweets) => newTweets,

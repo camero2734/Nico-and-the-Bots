@@ -1,9 +1,9 @@
 import chalk from "chalk";
-import consola from "consola";
 import { startOfDay, subWeeks } from "date-fns";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { type Prisma, PrismaClient } from "../../generated/prisma/client";
+import { log } from "./logging/evlog";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 
@@ -34,7 +34,7 @@ prisma.$on("query", (e) => {
   const prefix = chalk.red("Query");
   const time = chalk.yellow(`${e.duration}ms`);
   const query = chalk.gray(e.query);
-  consola.debug(`${prefix} [${time}]: ${query}`);
+  log.debug({ duration: e.duration, query , message: `${prefix} [${time}]: ${query}`});
 });
 
 export const queries = {
@@ -56,7 +56,7 @@ export const queries = {
       }));
       return sorted;
     } catch (e) {
-      consola.error("Failed to fetch monthlyStats", e);
+      log.error({ message: "Failed to fetch monthlyStats", ...{ error: String(e) } });
       return [];
     }
   },

@@ -16,14 +16,7 @@ import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 import { jobs } from "./src/Helpers/jobs";
 import { workerConnection } from "./src/Helpers/jobs/helpers";
-import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
-import {
-  createBackgroundEvent,
-  createWideEvent,
-  emitWideEvent,
-  finalizeWideEvent,
-  setBotContext,
-} from "./src/Helpers/logging/wide-event";
+import { createInteractionLogger, createJobLogger, log } from "./src/Helpers/logging/evlog";
 import { prisma } from "./src/Helpers/prisma-init";
 import Scheduler from "./src/Helpers/scheduler";
 import {
@@ -48,7 +41,7 @@ const sacarverBot = new SacarverBot();
 
 client.login(secrets.bots.nico);
 
-console.log("Logging in...");
+log.info({ stage: "startup", message: "Logging in..." });
 
 const entrypointsReady = registerAllEntrypoints();
 export let guild: Discord.Guild;
@@ -114,7 +107,7 @@ client.once(Discord.Events.ClientReady, async () => {
   InteractionEntrypoint.registerAllCommands(guild);
 
   sacarverBot.beginWelcomingMembers();
-  console.log("[shop] about to set up shop");
+  log.info({ component: "shop", message: "about to set up shop" });
   const keonsBot = await KeonsBot.create();
   await keonsBot.setupShop();
   setup();
@@ -148,14 +141,14 @@ client.once(Discord.Events.ClientReady, async () => {
     connection: workerConnection,
     hooks: {
       error: (err) => {
-        console.error("[Worker] Error:", err);
+        log.error({ message: String(err), error: String(err), ...{ worker: true } });
       },
       failed: (job, err) => {
-        console.error(`[Worker] Job ${job?.id} failed:`, err);
+        log.error({ message: String(err), error: String(err), ...{ worker: true, jobId: job?.id } });
       },
     },
   });
-  console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
+  log.info({ workers: Array.from(workers.keys()), message: `Started ${workers.size} workers` });
 
   startPingServer();
 });
@@ -165,7 +158,7 @@ async function getReplyInteractionId(msg: Discord.Message) {
   const repliedTo = await msg.fetchReference();
   if (repliedTo?.author.id !== client.user?.id) return;
 
-  console.log("Potential reply interaction ID found");
+  log.info({ source: "message_reply", message: "Potential reply interaction ID found" });
 
   for (const component of repliedTo.components) {
     if (component.type !== Discord.ComponentType.ActionRow) continue;
@@ -208,7 +201,7 @@ client.on(Discord.Events.VoiceStateUpdate, async (oldState, newState) => {
 // Pending member updates => give roles
 client.on(Discord.Events.GuildMemberUpdate, async (oldMem, mem) => {
   if (!oldMem || oldMem.partial) {
-    console.log("Old member was partial");
+    log.info({ event: "GuildMemberUpdate", message: "Old member was partial" });
     return;
   }
   const noLongerPending = oldMem.pending && !mem.pending;
@@ -234,23 +227,22 @@ client.on(Discord.Events.MessageReactionAdd, async (reaction, user) => {
   const fullReaction = reaction.partial ? await reaction.fetch() : reaction;
   const fullUser = user.partial ? await user.fetch() : user;
 
-  const wideEvent = createBackgroundEvent("reaction_added");
+  const reactionLog = createJobLogger("reaction_handler");
   for (const [name, handler] of ReactionHandlers.entries()) {
     const wasSuccessful = await handler(fullReaction, fullUser, async (promise) => {
       try {
         await promise;
       } catch (e) {
         const m = await fullUser.createDM();
-        await ErrorHandler(m, wideEvent, e instanceof Error ? e : new Error(String(e)));
-        finalizeWideEvent(wideEvent, "error", e);
-        emitWideEvent(wideEvent);
+        await ErrorHandler(m, reactionLog, e instanceof Error ? e : new Error(String(e)));
+        reactionLog.error(e instanceof Error ? e : new Error(String(e)));
+        reactionLog.emit({ outcome: "error" });
         return;
       }
     });
     if (wasSuccessful) {
-      wideEvent.extended.handledVia = name;
-      finalizeWideEvent(wideEvent, "success");
-      emitWideEvent(wideEvent);
+      reactionLog.set({ handledVia: name });
+      reactionLog.emit({ outcome: "success" });
       return;
     }
   }
@@ -263,7 +255,10 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
     const command = SlashCommands.get(commandIdentifier);
-    if (!command) return console.log(`Failed to find command ${commandIdentifier}`);
+    if (!command) {
+      log.warn({ command: commandIdentifier, message: "Failed to find command" });
+      return;
+    }
 
     command.run(interaction, undefined);
   } else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
@@ -278,45 +273,53 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
     if ("webhookId" in interaction) await interaction.message?.fetchWebhook();
     if ("messageId" in interaction) await interaction.message?.fetch();
 
-    const wideEvent = createWideEvent(interaction);
-    setBotContext(wideEvent, "InteractionListener", interactionHandler.name);
+    const interactionLog = createInteractionLogger(interaction);
+    interactionLog.set({ bot: { entrypoint: "InteractionListener", identifier: interactionHandler.name } });
 
     const ctx = interaction as ListenerInteraction;
-    ctx.wideEvent = wideEvent;
+    ctx.log = interactionLog;
 
     try {
       await interactionHandler.handler(ctx, interactionHandler.pattern.toDict(interaction.customId));
-      finalizeWideEvent(wideEvent, "success");
+      interactionLog.emit({ outcome: "success" });
     } catch (e) {
-      finalizeWideEvent(wideEvent, "error", e);
+      interactionLog.error(e instanceof Error ? e : new Error(String(e)));
+      interactionLog.emit({ outcome: "error" });
       await ErrorHandler(
         interaction,
-        wideEvent,
+        interactionLog,
         e instanceof Error ? e : new Error(String(e)),
         interactionHandler.name,
         receivedInteractionAt,
       );
     }
-
-    emitWideEvent(wideEvent);
   } else if (interaction.isAutocomplete()) {
     const commandIdentifier = SlashCommand.getIdentifierFromInteraction(interaction);
     const optionIdentifier = interaction.options.getFocused()?.name;
 
     const slashcommand = SlashCommands.get(commandIdentifier);
-    if (!slashcommand) return console.log(`Failed to find command ${commandIdentifier} for autocomplete`);
+    if (!slashcommand) {
+      log.warn({ command: commandIdentifier, message: "Failed to find command for autocomplete" });
+      return;
+    }
 
     const autocomplete = slashcommand.autocompleteListeners.get(
       optionIdentifier,
       // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     ) as AutocompleteListener<any, any> | undefined;
-    if (!autocomplete) return console.log(`Failed to find autocomplete ${commandIdentifier}::${optionIdentifier}`);
+    if (!autocomplete) {
+      log.warn({ command: commandIdentifier, option: optionIdentifier, message: "Failed to find autocomplete" });
+      return;
+    }
 
     autocomplete(transformAutocompleteInteraction(interaction));
   } else if (interaction.isContextMenuCommand()) {
     const ctxMenuName = interaction.commandName;
     const contextMenu = ContextMenus.get(ctxMenuName);
-    if (!contextMenu) return console.log(`Failed to find context menu ${ctxMenuName}`);
+    if (!contextMenu) {
+      log.warn({ contextMenu: ctxMenuName, message: "Failed to find context menu" });
+      return;
+    }
 
     contextMenu.run(interaction);
   }
@@ -330,12 +333,9 @@ async function setup() {
   GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
   GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
 
-  console.log({
-    "Registered fonts": GlobalFonts.families.map((f) => f.family).join(", "),
-  });
+  log.info({ fonts: GlobalFonts.families.map((f) => f.family), message: "Fonts registered" });
 
   Scheduler(client);
-  logEntrypointEvents();
 }
 
 function startPingServer() {
@@ -357,26 +357,26 @@ async function forwardMessageToErrorChannel(msg: string) {
 
     await channel.send({ embeds: [embed] });
   } catch (e) {
-    console.error("Unable to forward error to channel", msg);
-    console.error(e);
+    log.error({ message: "Unable to forward error to channel", channel: channelIDs.bottest, originalMessage: msg });
+    log.error({ message: e instanceof Error ? e.message : String(e), error: e instanceof Error ? e.message : String(e) });
   }
 }
 
 process.on("unhandledRejection", (reason, promise) => {
   const stack = reason instanceof Error ? reason.stack : undefined;
-  console.error("Unhandled Rejection at:", promise, "reason:", reason, stack);
+  log.error({ message: "Unhandled Rejection", ...{ promise: String(promise), reason: String(reason), stack } });
   forwardMessageToErrorChannel(
     `Unhandled rejection:\n\nPromise:\n${promise}\n\nReason:\n${reason}\n\nStack:\n${stack}`,
   );
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception thrown", err);
+  log.error({ message: err.message, error: err.message, stack: err.stack, ...{ uncaughtException: true } });
   forwardMessageToErrorChannel(`Uncaught exception:\n\n${err}\n\n${err.stack}`);
 });
 
 process.on("SIGTERM", async () => {
-  console.log("Received SIGTERM, shutting down gracefully...");
+  log.info({ signal: "SIGTERM", message: "Shutting down gracefully..." });
 
   try {
     const botChan = await guild.channels.fetch(channelIDs.bottest);
@@ -394,9 +394,9 @@ process.on("SIGTERM", async () => {
     await prisma.$disconnect();
     await client.destroy();
   } catch (e) {
-    console.error(e);
+    log.error({ message: e instanceof Error ? e.message : String(e), error: e instanceof Error ? e.message : String(e) });
   }
 
-  console.log("Shutdown complete, exiting.");
+  log.info({ stage: "shutdown", message: "Shutdown complete, exiting." });
   process.exit(0);
 });

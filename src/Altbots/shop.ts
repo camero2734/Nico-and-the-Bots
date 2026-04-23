@@ -4,6 +4,7 @@ import { channelIDs, guildID } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
+import { log } from "../Helpers/logging/evlog";
 import { client as NicoClient } from "./nico";
 export class KeonsBot {
   client: Client;
@@ -33,15 +34,15 @@ export class KeonsBot {
     }
 
     bot.client.on(Events.InteractionCreate, (interaction) => {
-      console.log("Interaction created:", interaction.type);
+      log.info({ interactionType: interaction.type, source: "shop" , message: "Interaction created"});
       NicoClient.emit(Events.InteractionCreate, interaction);
     });
 
-    console.log("[shop] logging in");
+    log.info({ source: "shop" , message: "logging in"});
     await bot.client.login(secrets.bots.keons);
-    console.log("[shop] login attempted");
+    log.info({ source: "shop" , message: "login attempted"});
     await new Promise((resolve) => bot.client.once(Events.ClientReady, resolve));
-    console.log("[shop] client ready");
+    log.info({ source: "shop" , message: "client ready"});
     return bot;
   }
 
@@ -51,7 +52,7 @@ export class KeonsBot {
 
     await chan.bulkDelete(100); // Delete all messages
 
-    console.log("[shop] setting up welcome message");
+    log.info({ source: "shop" , message: "setting up welcome message"});
 
     const welcomeEmbed = new EmbedBuilder()
       .setAuthor({
@@ -100,8 +101,8 @@ export class KeonsBot {
 
     const actionRow = new ActionRowBuilder().addComponents(colorRolesBtn, songRolesBtn);
 
-    console.log("[shop] sending welcome message");
+    log.info({ source: "shop" , message: "sending welcome message"});
     await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });
-    console.log("[shop] welcome message sent");
+    log.info({ source: "shop" , message: "welcome message sent"});
   }
 }

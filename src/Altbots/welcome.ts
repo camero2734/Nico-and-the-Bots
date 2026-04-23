@@ -11,7 +11,7 @@ import {
 import { channelIDs, roles } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import F from "../Helpers/funcs";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../Helpers/logging/wide-event";
+import { createJobLogger } from "../Helpers/logging/evlog";
 import { queries } from "../Helpers/prisma-init";
 
 const ANNOUNCEMENTS_ID = "?announcements";
@@ -63,19 +63,18 @@ export class SacarverBot {
   }
 
   async welcomeMember(member: GuildMember): Promise<void> {
-    const wideEvent = createBackgroundEvent("welcome_member");
+    const log = createJobLogger("welcome_member");
 
     try {
       const welcomeChan = await member.guild.channels.fetch(channelIDs.welcome);
       if (!welcomeChan?.isTextBased()) {
-        finalizeWideEvent(wideEvent, "error", "Welcome channel not found or not text-based");
-        emitWideEvent(wideEvent);
+        log.error("Welcome channel not found or not text-based");
+        log.emit({ outcome: "error" });
         return;
       }
 
       const memberNum = await this.getMemberNumber(member);
-      wideEvent.extended.member_number = memberNum;
-      wideEvent.extended.user_id = member.id;
+      log.set({ member_number: memberNum, user_id: member.id });
 
       const attachment = await SacarverBot.generateWelcomeImage({
         avatarUrl: member.user.displayAvatarURL({ extension: "png" }),
@@ -153,12 +152,11 @@ export class SacarverBot {
         components: [actionRow],
       });
 
-      finalizeWideEvent(wideEvent, "success");
+      log.emit({ outcome: "success" });
     } catch (error) {
-      finalizeWideEvent(wideEvent, "error", error);
+      log.error(error instanceof Error ? error : new Error(String(error)));
+      log.emit({ outcome: "error" });
     }
-
-    emitWideEvent(wideEvent);
   }
 
   async giveAnnouncementsRole(interaction: MessageComponentInteraction): Promise<void> {

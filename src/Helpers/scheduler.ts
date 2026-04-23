@@ -22,7 +22,7 @@ import { channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
 import { queue } from "./jobs";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "./logging/wide-event";
+import { createJobLogger } from "./logging/evlog";
 import { prisma } from "./prisma-init";
 
 // Helper function to log errors to Discord
@@ -42,7 +42,7 @@ export default async function (client: Client): Promise<void> {
 
   const createSafeTask = (taskName: string, taskFn: () => Promise<void>, timeoutMs: number) => {
     return async () => {
-      const wideEvent = createBackgroundEvent(`task.${taskName}`);
+      const log = createJobLogger(`task.${taskName}`);
       const startTime = Date.now();
 
       // Set up a warning timer that fires if task takes longer than expected
@@ -57,14 +57,13 @@ export default async function (client: Client): Promise<void> {
       try {
         await taskFn();
         clearTimeout(warningTimer);
-        finalizeWideEvent(wideEvent, "success");
+        log.emit({ outcome: "success" });
       } catch (error) {
         clearTimeout(warningTimer);
-        finalizeWideEvent(wideEvent, "error", error);
+        log.error(error instanceof Error ? error : new Error(String(error)));
+        log.emit({ outcome: "error" });
         await logErrorToDiscord(guild, `Error in ${taskName}`, error);
       }
-
-      emitWideEvent(wideEvent);
     };
   };
 
@@ -75,7 +74,7 @@ export default async function (client: Client): Promise<void> {
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
   const safeCheckLastFm = createSafeTask("checkLastFm", () => checkLastFm(), 15_000);
   const protect: ProtectCallbackFn = async (job) => {
-    console.log(`[Scheduler] Not run due to protection: ${job.getPattern()}`);
+    createJobLogger("scheduler").warn("Not run due to protection", { pattern: job.getPattern() });
   };
 
   Cron("*/5 * * * * *", { protect }, safeCheckReminders);
@@ -136,7 +135,7 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
   const allMembers = await guild.members.fetch().catch((e) => {
     if (e instanceof GatewayRateLimitError) {
-      console.warn("Rate limited while fetching members for checkMemberRoles, skipping this run");
+      createJobLogger("scheduler").warn("Rate limited while fetching members, skipping", { task: "checkMemberRoles" });
     } else throw e;
   });
 

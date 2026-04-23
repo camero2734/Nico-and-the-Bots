@@ -1,9 +1,10 @@
-import { absurd } from "Tasks/absurd";
 import { EmbedBuilder } from "@discordjs/builders";
 import { startWorkers } from "@falcondev-oss/queue";
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
+import { absurd } from "Tasks/absurd";
+import { client } from "./src/Altbots/nico";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
 import { channelIDs, guildID, roles } from "./src/Configuration/config";
@@ -14,7 +15,7 @@ import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 import { jobs } from "./src/Helpers/jobs";
-import { connection } from "./src/Helpers/jobs/helpers";
+import { workerConnection } from "./src/Helpers/jobs/helpers";
 import { logEntrypointEvents } from "./src/Helpers/logging/entrypoint-events";
 import {
   createBackgroundEvent,
@@ -38,31 +39,11 @@ import { ErrorHandler } from "./src/Structures/Errors";
 import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 
-export const client = new Discord.Client({
-  intents: [
-    "Guilds",
-    "DirectMessages",
-    "DirectMessageReactions",
-    "GuildMessageReactions",
-    "GuildBans",
-    "GuildEmojisAndStickers",
-    "GuildMembers",
-    "GuildMessages",
-    "GuildIntegrations",
-    "GuildInvites",
-    "GuildPresences",
-    "GuildVoiceStates",
-    "GuildWebhooks",
-  ],
-  partials: [Discord.Partials.Reaction, Discord.Partials.User, Discord.Partials.Message, Discord.Partials.Channel],
-});
-
 // Temporary fix for fetchShardCount being called in discord.js
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }
 
-const keonsBot = new KeonsBot();
 const sacarverBot = new SacarverBot();
 
 client.login(secrets.bots.nico);
@@ -133,7 +114,9 @@ client.once(Discord.Events.ClientReady, async () => {
   InteractionEntrypoint.registerAllCommands(guild);
 
   sacarverBot.beginWelcomingMembers();
-  keonsBot.setupShop();
+  console.log("[shop] about to set up shop");
+  const keonsBot = await KeonsBot.create();
+  await keonsBot.setupShop();
   setup();
 
   // Send started message
@@ -161,8 +144,8 @@ client.once(Discord.Events.ClientReady, async () => {
   }
 
   await absurd.startWorker();
-  await startWorkers(jobs, {
-    connection,
+  const workers = await startWorkers(jobs, {
+    connection: workerConnection,
     hooks: {
       error: (err) => {
         console.error("[Worker] Error:", err);
@@ -172,6 +155,7 @@ client.once(Discord.Events.ClientReady, async () => {
       },
     },
   });
+  console.log(`[Workers] Started ${workers.size} workers: ${Array.from(workers.keys()).join(", ")}`);
 
   startPingServer();
 });
@@ -416,5 +400,3 @@ process.on("SIGTERM", async () => {
   console.log("Shutdown complete, exiting.");
   process.exit(0);
 });
-
-export const NicoClient = client;

@@ -19,7 +19,14 @@ const client = new Client({
   ],
 });
 
-await client.login(secrets.bots.keons);
-await new Promise((resolve) => client.once(Events.ClientReady, resolve));
+// Temporary fix for fetchShardCount being called in discord.js
+if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
+  (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
+}
 
+console.log("[topfeed] logging in");
+await client.login(secrets.bots.keons);
+console.log("[topfeed] login attempted");
+await new Promise((resolve) => client.once(Events.ClientReady, resolve));
+console.log("[topfeed] client ready");
 export const keonsGuild = await client.guilds.fetch(guildID);

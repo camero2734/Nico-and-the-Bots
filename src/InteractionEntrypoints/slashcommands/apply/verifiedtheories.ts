@@ -438,10 +438,9 @@ async function sendFinalEmbed(
     .setTitle(`${correct}/${questionList.length} correct`)
     .setColor(passed ? 0x88ff88 : 0xff8888)
     .setDescription(
-      `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${
-        passed
-          ? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
-          : `You may apply again in ${hours} hours.`
+      `You ${passed ? "passed" : "failed"} the verified theories quiz${passed ? "!" : "."}\n\n${passed
+        ? "**:warning: Before gaining access to the channel**, please read the following rules and select the correct answers to ensure you fully understand them."
+        : `You may apply again in ${hours} hours.`
       }`,
     );
 

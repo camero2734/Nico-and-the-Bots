@@ -7,7 +7,6 @@ import { fetchWebsites } from "../../Altbots/topfeed/websites/orchestrator";
 import { checkYoutube } from "../../Altbots/topfeed/youtube/check";
 import { DiscordLogProvider } from "../effect";
 import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
-import { connection } from "./helpers";
 
 export const topfeedJob = defineJob({
   schema: z.object({
@@ -15,7 +14,6 @@ export const topfeedJob = defineJob({
   }),
   workerOptions: {
     concurrency: 4,
-    connection,
   },
   async run(payload) {
     const { type } = payload;
@@ -39,4 +37,4 @@ export const topfeedJob = defineJob({
 
     emitWideEvent(wideEvent);
   },
-})
+});

@@ -1,16 +1,16 @@
-import { Client, type TextChannel } from "discord.js";
 import { ActionRowBuilder, EmbedBuilder, PrimaryButtonBuilder } from "@discordjs/builders";
-import { NicoClient } from "../../app";
+import { Client, Events, type TextChannel } from "discord.js";
 import { channelIDs, guildID } from "../Configuration/config";
 import secrets from "../Configuration/secrets";
 import { GenColorBtnId } from "../InteractionEntrypoints/messageinteractions/shopColors";
 import { GenSongBtnId } from "../InteractionEntrypoints/messageinteractions/shopSongs";
-
+import { client as NicoClient } from "./nico";
 export class KeonsBot {
   client: Client;
-  ready: Promise<void>;
-  constructor() {
-    this.client = new Client({
+
+  static async create(): Promise<KeonsBot> {
+    const bot = new KeonsBot();
+    bot.client = new Client({
       intents: [
         "Guilds",
         "DirectMessages",
@@ -26,24 +26,32 @@ export class KeonsBot {
         "GuildWebhooks",
       ],
     });
-    this.client.login(secrets.bots.keons);
 
-    this.ready = new Promise((resolve) => {
-      this.client.on("ready", () => resolve());
+    // Temporary fix for fetchShardCount being called in discord.js
+    if (!(bot.client.ws as any).fetchShardCount && typeof bot.client.ws.getShardCount === "function") {
+      (bot.client.ws as any).fetchShardCount = bot.client.ws.getShardCount.bind(bot.client.ws);
+    }
+
+    bot.client.on(Events.InteractionCreate, (interaction) => {
+      console.log("Interaction created:", interaction.type);
+      NicoClient.emit(Events.InteractionCreate, interaction);
     });
 
-    this.client.on("interactionCreate", (int) => {
-      NicoClient.emit("interactionCreate", int);
-    });
+    console.log("[shop] logging in");
+    await bot.client.login(secrets.bots.keons);
+    console.log("[shop] login attempted");
+    await new Promise((resolve) => bot.client.once(Events.ClientReady, resolve));
+    console.log("[shop] client ready");
+    return bot;
   }
 
   async setupShop(): Promise<void> {
-    await this.ready; // Ensure the bot is ready before trying to set up the shop
-
     const guild = await this.client.guilds.fetch(guildID);
     const chan = (await guild.channels.fetch(channelIDs.shop)) as TextChannel;
 
     await chan.bulkDelete(100); // Delete all messages
+
+    console.log("[shop] setting up welcome message");
 
     const welcomeEmbed = new EmbedBuilder()
       .setAuthor({
@@ -86,16 +94,14 @@ export class KeonsBot {
         text: "Notice: This shop and all related media is run solely by the Discord Clique and has no affiliation with or sponsorship from the band. Good Day Dema® and DMA ORG® are registered trademarks of The Sacred Municipality of Dema. Restrictions may apply. Void where prohibited.",
       });
 
-    const colorRolesBtn = new PrimaryButtonBuilder()
-      .setLabel("Color Roles")
-      .setCustomId(GenColorBtnId({}));
+    const colorRolesBtn = new PrimaryButtonBuilder().setLabel("Color Roles").setCustomId(GenColorBtnId({}));
 
-    const songRolesBtn = new PrimaryButtonBuilder()
-      .setLabel("Song Roles")
-      .setCustomId(GenSongBtnId({}));
+    const songRolesBtn = new PrimaryButtonBuilder().setLabel("Song Roles").setCustomId(GenSongBtnId({}));
 
     const actionRow = new ActionRowBuilder().addComponents(colorRolesBtn, songRolesBtn);
 
+    console.log("[shop] sending welcome message");
     await chan.send({ embeds: [welcomeEmbed], components: [actionRow] });
+    console.log("[shop] welcome message sent");
   }
 }

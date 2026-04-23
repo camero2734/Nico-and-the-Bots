@@ -316,7 +316,7 @@ const genVeriquizId = command.addInteractionListener(
     const member = await guild.members.fetch(ctx.user.id);
 
     if (!member) {
-      ctx.wideEvent.extended.error = "Member does not exist";
+      ctx.log.set({ error: "Member does not exist" });
       return;
     }
 
@@ -328,7 +328,7 @@ const genVeriquizId = command.addInteractionListener(
     answerEncode.markAnswer(questionList[currentIndex], chosenAnswer);
 
     if (!questionList || questionList.length === 0) {
-      ctx.wideEvent.extended.error = "Invalid question list";
+      ctx.log.set({ error: "Invalid question list" });
       return;
     }
 

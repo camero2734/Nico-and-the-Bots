@@ -2,15 +2,11 @@ import { ContainerBuilder } from "@discordjs/builders";
 import { roleMention, userMention } from "@discordjs/formatters";
 import { youtube_v3 } from "@googleapis/youtube";
 import { addHours } from "date-fns";
-import {
-  type APIComponentInContainer,
-  ComponentType,
-  MessageFlags,
-} from "discord.js";
+import { type APIComponentInContainer, ComponentType, MessageFlags } from "discord.js";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import secrets from "../../../Configuration/secrets";
 import F from "../../../Helpers/funcs";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../../Helpers/logging/wide-event";
+import { createJobLogger } from "../../../Helpers/logging/evlog";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
 
@@ -35,8 +31,8 @@ export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUser
   JoshuaDun: {
     roleId: roles.topfeed.selectable.josh,
     channelId: channelIDs.topfeed.josh,
-    youtubeChannelId: "UCzP4Y0ePukTJFW7-obgrMxg"
-  }
+    youtubeChannelId: "UCzP4Y0ePukTJFW7-obgrMxg",
+  },
 };
 
 export const youtube = new youtube_v3.Youtube({ auth: secrets.apis.google.youtube });
@@ -129,15 +125,21 @@ export async function fetchYoutube({
   username,
   authorThumbnail,
   source,
-}: { username: keyof typeof usernameData; authorThumbnail: string; source: "scheduled" }) {
-  const wideEvent = createBackgroundEvent("fetch_youtube");
+}: {
+  username: keyof typeof usernameData;
+  authorThumbnail: string;
+  source: "scheduled";
+}) {
+  const log = createJobLogger("fetch_youtube");
 
   const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
   const roleId = usernameData[username as keyof typeof usernameData]?.roleId;
   if (!roleId) {
-    await testChan.send(`${userMention(userIDs.me)} No role ID found for username: ${username}`).catch(console.error);
+    await testChan
+      .send(`${userMention(userIDs.me)} No role ID found for username: ${username}`)
+      .catch(log.error);
     return;
   }
 
@@ -151,13 +153,14 @@ export async function fetchYoutube({
   if (!uploadsPlaylistId) {
     await testChan
       .send(`${userMention(userIDs.me)} No uploads playlist ID found for username: ${username}`)
-      .catch(console.error);
+      .catch(log.error);
     return;
   }
 
-  wideEvent.extended.username = username;
-  wideEvent.extended.source = source;
-  await testChan.send(`[${source}] Fetching recent YouTube posts for ${username}`).catch(console.error);
+  log.set({ username, source });
+  await testChan
+    .send(`[${source}] Fetching recent YouTube posts for ${username}`)
+    .catch(log.error);
 
   const uploads = await youtube.playlistItems.list({
     part: ["id", "snippet", "contentDetails"],
@@ -166,8 +169,8 @@ export async function fetchYoutube({
   });
 
   if (!uploads.data.items || uploads.data.items.length === 0) {
-    finalizeWideEvent(wideEvent, "error", "No uploads found or failed to fetch uploads");
-    emitWideEvent(wideEvent);
+    log.error("No uploads found or failed to fetch uploads");
+    log.emit({ outcome: "error" });
     return;
   }
 
@@ -202,7 +205,7 @@ export async function fetchYoutube({
     if (addHours(new Date(formattedPost.postedAt), 3) < new Date()) {
       await testChan
         .send(`Skipping YT post ${formattedPost.url} from ${formattedPost.author} as it is old.`)
-        .catch(console.error);
+        .catch(log.error);
       continue;
     }
 

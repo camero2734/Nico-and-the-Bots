@@ -1,6 +1,6 @@
 import { userMention } from "@discordjs/formatters";
 import { channelIDs, userIDs } from "../../../Configuration/config";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../../Helpers/logging/wide-event";
+import { createJobLogger } from "../../../Helpers/logging/evlog";
 import { keonsGuild } from "../topfeed";
 import { fetchYoutube, usernameData, type usernamesToWatch, youtube } from "./fetch-and-send";
 
@@ -11,7 +11,7 @@ const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
 };
 
 export async function checkYoutube() {
-  const wideEvent = createBackgroundEvent("youtube_check");
+  const log = createJobLogger("youtube_check");
 
   try {
     const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
@@ -24,13 +24,12 @@ export async function checkYoutube() {
     });
 
     if (!response.data.items || response.data.items.length === 0) {
-      wideEvent.extended.channels_found = 0;
-      finalizeWideEvent(wideEvent, "success");
-      emitWideEvent(wideEvent);
+      log.set({ channels_found: 0 });
+      log.emit({ outcome: "success" });
       return;
     }
 
-    wideEvent.extended.channels_found = response.data.items.length;
+    log.set({ channels_found: response.data.items.length });
     const channelsProcessed: string[] = [];
     const channelsUpdated: string[] = [];
 
@@ -78,14 +77,11 @@ export async function checkYoutube() {
       }
     }
 
-    wideEvent.extended.channels_processed = channelsProcessed;
-    wideEvent.extended.channels_updated = channelsUpdated;
-    finalizeWideEvent(wideEvent, "success");
+    log.set({ channels_processed: channelsProcessed, channels_updated: channelsUpdated });
+    log.emit({ outcome: "success" });
   } catch (error) {
-    finalizeWideEvent(wideEvent, "error", error);
-    emitWideEvent(wideEvent);
+    log.error(error instanceof Error ? error : new Error(String(error)));
+    log.emit({ outcome: "error" });
     throw error;
   }
-
-  emitWideEvent(wideEvent);
 }

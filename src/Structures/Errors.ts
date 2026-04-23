@@ -17,14 +17,14 @@ import { guild } from "../../app";
 import { channelIDs } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import F from "../Helpers/funcs";
-import { WideEvent } from "../Helpers/logging/wide-event";
+import type { BotLogger } from "../Helpers/logging/evlog";
 
 const getReplyMethod = async (ctx: CommandInteraction | ModalSubmitInteraction) => {
   if (!ctx.isRepliable()) {
     if (ctx.channel?.isSendable()) {
       return ctx.channel.send;
     }
-    return () => { };
+    return () => {};
   }
 
   if (ctx.isModalSubmit()) {
@@ -39,7 +39,7 @@ const getReplyMethod = async (ctx: CommandInteraction | ModalSubmitInteraction) 
     if (ctx.channel?.isSendable()) {
       return ctx.channel.send;
     }
-    return () => { };
+    return () => {};
   }
 
   if (!ctx.deferred && !ctx.replied) {
@@ -77,13 +77,14 @@ const getCommandString = (ctx: ChatInputCommandInteraction): string | null => {
 };
 
 export const ErrorHandler = async (
-  ctx: TextChannel | DMChannel | Interaction & { wideEvent?: WideEvent },
-  wideEvent: WideEvent,
+  ctx: TextChannel | DMChannel | (Interaction & { log?: BotLogger }),
+  log: BotLogger,
   error: Error,
   handler?: string,
   receivedInteractionAt?: Date,
 ) => {
-  const errorId = wideEvent.event_id;
+  const context = log.getContext();
+  const errorId = (context.event_id as string) ?? "unknown";
   const errorDelta = receivedInteractionAt ? Date.now() - receivedInteractionAt.getTime() : null;
 
   let sentInErrorChannel = false;

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, LinkButtonBuilder } from "@discordjs/builders";
 import { ChannelType, type ForumChannel, type Guild } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent, type WideEvent } from "../../Helpers/logging/wide-event";
+import { createJobLogger, type BotLogger } from "../../Helpers/logging/evlog";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONCERT_URL, ConcertChannel, type ConcertEntry } from "./concert-channels.consts";
@@ -10,13 +10,13 @@ const entrypoint = new ManualEntrypoint();
 
 class ConcertChannelManager {
   public concertChannels: ConcertChannel[] = [];
-  private wideEvent: WideEvent | null = null;
-  constructor(private guild: Guild) { }
+  private log: BotLogger | null = null;
+  constructor(private guild: Guild) {}
 
   #forumChannel: ForumChannel | undefined;
 
   async initialize(): Promise<boolean> {
-    this.wideEvent = createBackgroundEvent("concert_channels_init");
+    this.log = createJobLogger("concert_channels_init");
     const channel = await this.guild.channels.fetch(channelIDs.concertsForum);
     if (channel?.type === ChannelType.GuildForum) this.#forumChannel = channel;
 
@@ -28,8 +28,7 @@ class ConcertChannelManager {
 
       const chans = json.toReversed().map((c) => new ConcertChannel(c));
       if (chans.length === 0) {
-        finalizeWideEvent(this.wideEvent, "success");
-        emitWideEvent(this.wideEvent);
+        this.log.emit({ outcome: "success" });
         return false;
       }
 
@@ -49,20 +48,19 @@ class ConcertChannelManager {
       noDupes.push(lastChannel);
 
       this.concertChannels = noDupes;
-      this.wideEvent.extended.channels_fetched = noDupes.length;
+      this.log.set({ channels_fetched: noDupes.length });
 
-      finalizeWideEvent(this.wideEvent, "success");
-      emitWideEvent(this.wideEvent);
+      this.log.emit({ outcome: "success" });
       return true;
     } catch (e) {
-      finalizeWideEvent(this.wideEvent, "error", e);
-      emitWideEvent(this.wideEvent);
+      this.log.error(e instanceof Error ? e.message : String(e));
+      this.log.emit({ outcome: "error" });
       return false;
     }
   }
 
   async checkChannels() {
-    this.wideEvent = createBackgroundEvent("concert_channels_check");
+    this.log = createJobLogger("concert_channels_check");
     try {
       // Channels in JSON list that don't have a channel
       const existingChannelIds = await prisma.concert.findMany({
@@ -71,7 +69,7 @@ class ConcertChannelManager {
 
       const toAdd = this.concertChannels.filter((c) => !existingChannelIds.some((c2) => c2.id === c.id));
 
-      this.wideEvent.extended.channels_to_add = toAdd.length;
+      this.log.set({ channels_to_add: toAdd.length });
 
       const added: string[] = [];
       const failed: string[] = [];
@@ -85,15 +83,13 @@ class ConcertChannelManager {
         }
       }
 
-      this.wideEvent.extended.channels_added = added;
-      this.wideEvent.extended.channels_failed = failed.length > 0 ? failed : undefined;
+      this.log.set({ channels_added: added, channels_failed: failed.length > 0 ? failed : undefined });
 
-      finalizeWideEvent(this.wideEvent, "success");
-      emitWideEvent(this.wideEvent);
+      this.log.emit({ outcome: "success" });
       return toAdd;
     } catch (e) {
-      finalizeWideEvent(this.wideEvent, "error", e);
-      emitWideEvent(this.wideEvent);
+      this.log.error(e instanceof Error ? e.message : String(e));
+      this.log.emit({ outcome: "error" });
       return [];
     }
   }

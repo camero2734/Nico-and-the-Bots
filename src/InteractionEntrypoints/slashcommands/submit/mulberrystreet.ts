@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
   if (!fileType) throw new CommandError("An error occurred while parsing your file");
 
   if (!["audio", "video", "image"].some((mime) => fileType.mime.startsWith(mime))) {
-    ctx.wideEvent.extended.invalid_file_type = fileType.mime;
+    ctx.log.set({ invalid_file_type: fileType.mime });
     throw new CommandError("Invalid file type. Must be a url to an image, video, or audio file.");
   }
 

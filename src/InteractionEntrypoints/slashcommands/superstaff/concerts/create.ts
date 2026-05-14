@@ -11,8 +11,6 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   await ctx.deferReply();
 
-  if (ctx.user.id !== userIDs.me) throw new CommandError("You cannot use this command");
-
   const concertChannelManager = getConcertChannelManager(ctx.guild);
   await concertChannelManager.initialize();
 

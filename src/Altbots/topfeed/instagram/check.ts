@@ -1,11 +1,5 @@
 import { channelIDs } from "../../../Configuration/config";
-import {
-  addElement,
-  createBackgroundEvent,
-  emitWideEvent,
-  finalizeWideEvent,
-  type WideEvent,
-} from "../../../Helpers/logging/wide-event";
+import { createJobLogger } from "../../../Helpers/logging/evlog";
 import { keonsGuild } from "../topfeed";
 import { fetchInstagram, usernamesToWatch } from "./fetch-and-send";
 
@@ -35,7 +29,10 @@ async function fetchOpengraphDataBackup(user: string) {
 }
 
 let lastWrittenAt = 0;
-async function fetchOpengraphData(user: string, wideEvent: WideEvent): Promise<number> {
+async function fetchOpengraphData(
+  user: string,
+  log: import("../../../Helpers/logging/evlog").BotLogger,
+): Promise<number> {
   let text: string | undefined;
   try {
     const data = await fetch(`https://www.instagram.com/${user}/embed`, {
@@ -69,8 +66,14 @@ async function fetchOpengraphData(user: string, wideEvent: WideEvent): Promise<n
     if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram opengraph data";
-    addElement(wideEvent.extended, "opengraph_errors", `${user}: ${message}`);
-    addElement(wideEvent.extended, "used_backup_methods", user);
+    const existingOpengraphErrors =
+      ((log.getContext() as Record<string, unknown>).opengraph_errors as string[] | undefined) || [];
+    const existingBackupMethods =
+      ((log.getContext() as Record<string, unknown>).used_backup_methods as string[] | undefined) || [];
+    log.set({
+      opengraph_errors: [...existingOpengraphErrors, `${user}: ${message}`],
+      used_backup_methods: [...existingBackupMethods, user],
+    });
 
     await testChan.send(`Error fetching Instagram opengraph data for ${user}: ${message}, trying backup method...`);
     return fetchOpengraphDataBackup(user);
@@ -84,7 +87,7 @@ const postCountMap: Record<(typeof usernamesToWatch)[number], number> = {
 };
 
 export async function checkInstagram() {
-  const wideEvent = createBackgroundEvent("instagram_check");
+  const log = createJobLogger("instagram_check");
 
   try {
     const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
@@ -95,43 +98,42 @@ export async function checkInstagram() {
 
     for (const username of usernamesToWatch) {
       try {
-        const postCount = await fetchOpengraphData(username, wideEvent);
+        const postCount = await fetchOpengraphData(username, log);
         postCounts[username] = postCount;
         if (postCountMap[username] !== postCount) {
           postCountChanged = true;
           if (postCountMap[username] !== 0) {
-            await testChan.send(`Post count for ${username} changed to ${postCount}`).catch(() => { });
+            await testChan.send(`Post count for ${username} changed to ${postCount}`).catch(() => {});
           }
         }
         postCountMap[username] = postCount;
       } catch (error) {
         postCountChanged = true;
-        addElement(wideEvent.extended, "fetch_errors", username);
+        const existingErrors =
+          ((log.getContext() as Record<string, unknown>).fetch_errors as string[] | undefined) || [];
+        log.set({ fetch_errors: [...existingErrors, username] });
         await testChan.send(
           `Error fetching Instagram opengraph data for ${username}: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
       }
     }
 
-    wideEvent.extended.post_counts = postCounts;
-    wideEvent.extended.post_count_changed = postCountChanged;
+    log.set({ post_counts: postCounts, post_count_changed: postCountChanged });
 
     if (!postCountChanged && Math.random() < 0.05) {
-      wideEvent.extended.random_check = true;
+      log.set({ random_check: true });
     }
 
     if (!postCountChanged) {
-      finalizeWideEvent(wideEvent, "success");
-      emitWideEvent(wideEvent);
+      log.emit({ outcome: "success" });
       return;
     }
 
-    await fetchInstagram(postCountChanged ? "scheduled" : "random", wideEvent);
-    finalizeWideEvent(wideEvent, "success");
+    await fetchInstagram(postCountChanged ? "scheduled" : "random", log);
+    log.emit({ outcome: "success" });
   } catch (error) {
-    finalizeWideEvent(wideEvent, "error", error);
+    log.error(error instanceof Error ? error : new Error(String(error)));
+    log.emit({ outcome: "error" });
     throw error;
   }
-
-  emitWideEvent(wideEvent);
 }

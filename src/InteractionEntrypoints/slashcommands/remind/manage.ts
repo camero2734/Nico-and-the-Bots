@@ -90,7 +90,7 @@ const genActionId = command.addInteractionListener("remindManage", genArgs, asyn
   const actionType = +args.actionType;
   ctx.deferred = true;
 
-  ctx.wideEvent.extended.action_type = ActionTypes[actionType];
+  ctx.log.set({ action_type: ActionTypes[actionType] });
 
   if (actionType === ActionTypes.ShowList) {
     const [embed, actionRow] = await generateReminderList(ctx.member);

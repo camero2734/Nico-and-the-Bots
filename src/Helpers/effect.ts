@@ -1,17 +1,12 @@
 import { ContainerBuilder } from "@discordjs/builders";
 import { userMention } from "@discordjs/formatters";
-import {
-  type APIComponentInContainer,
-  Colors,
-  ComponentType,
-  type Guild,
-  MessageFlags,
-} from "discord.js";
+import { type APIComponentInContainer, Colors, ComponentType, type Guild, MessageFlags } from "discord.js";
 import { Effect, HashMap, LogLevel, Logger, Option } from "effect";
 import { guild as nicoGuild } from "../../app";
 import { keonsGuild } from "../../src/Altbots/topfeed/topfeed";
 import { channelIDs, userIDs } from "../../src/Configuration/config";
 import F from "../../src/Helpers/funcs";
+import { log } from "../../src/Helpers/logging/evlog";
 
 interface LogInfo {
   level: string;
@@ -21,14 +16,14 @@ interface LogInfo {
   cause: string;
 }
 
-async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
+async function sendToDiscordChannel(guild: Guild, info: LogInfo) {
   const channel = await guild.channels.fetch(channelIDs.bottest);
   if (!channel || !channel.isTextBased()) {
-    console.error("Channel not found or is not text-based");
+    log.error({ message: "Channel not found or is not text-based" });
     return;
   }
 
-  const { level, isSevere, message, annotations, cause } = log;
+  const { level, isSevere, message, annotations, cause } = info;
 
   // Determine accent color based on severity
   const accentColor = isSevere ? Colors.Red : Colors.Blurple;
@@ -38,12 +33,12 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   // Optional mention section for severe logs
   const mentionSection: APIComponentInContainer[] = isSevere
     ? [
-      {
-        type: ComponentType.TextDisplay,
-        content: `-# ${userMention(userIDs.me)}`,
-      },
-      { type: ComponentType.Separator, divider: false, spacing: 1 },
-    ]
+        {
+          type: ComponentType.TextDisplay,
+          content: `-# ${userMention(userIDs.me)}`,
+        },
+        { type: ComponentType.Separator, divider: false, spacing: 1 },
+      ]
     : [];
 
   // Main log information
@@ -61,26 +56,26 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   // Section for the cause, if provided
   const causeSection: APIComponentInContainer[] = cause
     ? [
-      { type: ComponentType.Separator, divider: true, spacing: 1 },
-      {
-        type: ComponentType.TextDisplay,
-        content: `**Cause:** ${cause}`,
-      },
-    ]
+        { type: ComponentType.Separator, divider: true, spacing: 1 },
+        {
+          type: ComponentType.TextDisplay,
+          content: `**Cause:** ${cause}`,
+        },
+      ]
     : [];
 
   // Section for annotations, if provided
   const annotationsSection: APIComponentInContainer[] =
     annotations.length > 0
       ? [
-        { type: ComponentType.Separator, divider: true, spacing: 1 },
-        {
-          type: ComponentType.TextDisplay,
-          content: `**Annotations:** ${annotations
-            .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-            .join(" ")}`,
-        },
-      ]
+          { type: ComponentType.Separator, divider: true, spacing: 1 },
+          {
+            type: ComponentType.TextDisplay,
+            content: `**Annotations:** ${annotations
+              .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+              .join(" ")}`,
+          },
+        ]
       : [];
 
   // Footer with a timestamp
@@ -104,8 +99,8 @@ async function sendToDiscordChannel(guild: Guild, log: LogInfo) {
   });
 }
 
-const discordOnlyLogger = Logger.make((log) => {
-  const { annotations, logLevel } = log;
+const discordOnlyLogger = Logger.make((logEntry) => {
+  const { annotations, logLevel } = logEntry;
   if (!LogLevel.greaterThanEqual(logLevel, LogLevel.Warning)) return;
 
   const botToLog = Option.getOrUndefined(HashMap.get(annotations, "bot"));
@@ -115,12 +110,14 @@ const discordOnlyLogger = Logger.make((log) => {
   const info: LogInfo = {
     level: logLevel.label,
     isSevere: LogLevel.greaterThan(logLevel, LogLevel.Warning),
-    message: Array.isArray(log.message) ? log.message.map((x) => JSON.stringify(x)) : [JSON.stringify(log.message)],
-    cause: log.cause.toString(),
+    message: Array.isArray(logEntry.message)
+      ? logEntry.message.map((x) => JSON.stringify(x))
+      : [JSON.stringify(logEntry.message)],
+    cause: logEntry.cause.toString(),
     annotations: HashMap.toEntries(annotations),
   };
 
-  sendToDiscordChannel(guild, info).catch(console.error);
+  sendToDiscordChannel(guild, info).catch((e) => log.error({ message: e instanceof Error ? e.message : String(e), error: e instanceof Error ? e.message : String(e) }));
 });
 
 export const DiscordLogProvider = Effect.provide(

@@ -2,7 +2,7 @@ import { defineJob } from "@falcondev-oss/queue";
 import type { Snowflake, TextChannel } from "discord.js";
 import z from "zod/v4";
 import { client } from "../../Altbots/nico";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
+import { createJobLogger } from "../logging/evlog";
 import { updateUserScoreWorker } from "../score-manager";
 import { getQueueByName } from "./helpers";
 
@@ -18,25 +18,24 @@ export const scoreJob = defineJob({
     concurrency: 5,
   },
   async run({ data }, job) {
-    const wideEvent = createBackgroundEvent("score_update");
+    const log = createJobLogger("score_update");
 
     const queue = getQueueByName(job.queueName);
 
     try {
       const count = await queue.count();
-      wideEvent.extended.queueSize = count;
+      log.set({ queueSize: count });
 
       const guild = await client.guilds.fetch(data.guildId as Snowflake);
       const channel = (await guild.channels.fetch(data.channelId)) as TextChannel;
       const msg = await channel.messages.fetch(data.messageId);
 
-      await updateUserScoreWorker(msg, wideEvent);
+      await updateUserScoreWorker(msg, log);
 
-      finalizeWideEvent(wideEvent, "success");
-      emitWideEvent(wideEvent);
+      log.emit({ outcome: "success" });
     } catch (e) {
-      finalizeWideEvent(wideEvent, "error", e);
-      emitWideEvent(wideEvent);
+      log.error(e instanceof Error ? e.message : String(e));
+      log.emit({ outcome: "error" });
     }
   },
 });

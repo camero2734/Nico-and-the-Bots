@@ -59,8 +59,8 @@ command.setHandler(async (ctx) => {
     }
   }
 
-  ctx.wideEvent.extended.last_date = lastDate?.toISOString();
-  ctx.wideEvent.extended.users_found = usersWithRole.size;
+  ctx.log.set({ last_date: lastDate?.toISOString() });
+  ctx.log.set({ users_found: usersWithRole.size });
 
   const dbUsersWithRole = await prisma.badge.findMany({ where: { type: "BFX" }, select: { userId: true } });
 
@@ -80,8 +80,8 @@ command.setHandler(async (ctx) => {
         update: {},
       });
     } catch (error) {
-      ctx.wideEvent.extended.failed_user_id = userId;
-      ctx.wideEvent.extended.error_message = error instanceof Error ? error.message : "Unknown error";
+      ctx.log.set({ failed_user_id: userId });
+      ctx.log.set({ error_message: error instanceof Error ? error.message : "Unknown error" });
       await ctx.editReply({
         content: `Failed to give badge to user <@${userId}>: ${error instanceof Error ? error.message : "Unknown error"}`,
       });

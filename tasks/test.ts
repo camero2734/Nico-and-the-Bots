@@ -1,10 +1,11 @@
 import { KeonsBot } from "../src/Altbots/shop";
+import { log } from "../src/Helpers/logging/evlog";
 
 const b = new KeonsBot();
 
 await b.setupShop();
 
-console.log("Done");
+log.info({ task: "test" , message: "Done"});
 
 // const client = new Client({
 //   intents: [
@@ -33,4 +34,3 @@ console.log("Done");
 
 // await client.login(secrets.bots.keons);
 // console.log("Login attempted");
-

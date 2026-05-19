@@ -9,10 +9,9 @@ import {
 } from "discord.js";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
-import { createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext, type WideEvent } from "../Helpers/logging/wide-event";
+import { createInteractionLogger, type BotLogger } from "../Helpers/logging/evlog";
 import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
-import { EntrypointEvents } from "./Events";
 import {
   createInteractionListener,
   type InteractionListener,
@@ -67,12 +66,12 @@ export abstract class InteractionEntrypoint<
     return actionRow;
   }
 
-  abstract _run(ctx: Interaction, wideEvent: WideEvent, ...HandlerArgs: HandlerArgs): Promise<unknown>;
+  abstract _run(ctx: Interaction, log: BotLogger, ...HandlerArgs: HandlerArgs): Promise<unknown>;
 
   // Wraps the _run function to catch errors and ensure the handler has been registered
   async run(ctx: Interaction, ...HandlerArgs: HandlerArgs): Promise<void> {
-    const wideEvent = createWideEvent(ctx);
-    setBotContext(wideEvent, this.constructor.name, this.identifier ?? "Unknown");
+    const log = createInteractionLogger(ctx);
+    log.set({ bot: { entrypoint: this.constructor.name, identifier: this.identifier ?? "Unknown" } });
 
     try {
       if (!this.handler) throw new Error(`Handler not registered for ${this.constructor.name}`);
@@ -85,17 +84,13 @@ export abstract class InteractionEntrypoint<
         throw new CommandError("You don't have permission to use this command!");
       }
 
-      EntrypointEvents.emit("entrypointStarted", { entrypoint: this, ctx, wideEvent });
-      await this._run(ctx, wideEvent, ...HandlerArgs);
-      finalizeWideEvent(wideEvent, "success");
-      EntrypointEvents.emit("entrypointFinished", { entrypoint: this, ctx, wideEvent });
+      await this._run(ctx, log, ...HandlerArgs);
+      log.emit({ outcome: "success" });
     } catch (e) {
-      finalizeWideEvent(wideEvent, "error", e);
-      EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx, wideEvent, error: e });
-      ErrorHandler(ctx, wideEvent, e instanceof Error ? e : new Error(String(e)), this.identifier);
+      log.error(e instanceof Error ? e.message : String(e));
+      log.emit({ outcome: "error" });
+      ErrorHandler(ctx, log, e instanceof Error ? e : new Error(String(e)), this.identifier);
     }
-
-    emitWideEvent(wideEvent);
   }
 
   async onBotReady(func: OnBotReadyFunc): Promise<void> {

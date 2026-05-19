@@ -1,6 +1,7 @@
 import { Client, Events } from "discord.js";
 import { guildID } from "../../Configuration/config";
 import secrets from "../../Configuration/secrets";
+import { log } from "../../Helpers/logging/evlog";
 
 const client = new Client({
   intents: [
@@ -24,9 +25,9 @@ if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "f
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
 }
 
-console.log("[topfeed] logging in");
+log.info({ source: "topfeed" , message: "logging in"});
 await client.login(secrets.bots.keons);
-console.log("[topfeed] login attempted");
+log.info({ source: "topfeed" , message: "login attempted"});
 await new Promise((resolve) => client.once(Events.ClientReady, resolve));
-console.log("[topfeed] client ready");
+log.info({ source: "topfeed" , message: "client ready"});
 export const keonsGuild = await client.guilds.fetch(guildID);

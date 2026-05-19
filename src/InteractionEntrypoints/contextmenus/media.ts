@@ -92,7 +92,7 @@ ctxMenu.setHandler(async (ctx, msg) => {
 
   const m = await msg.forward(dm);
 
-  ctx.wideEvent.extended.media_urls_count = urls.size;
+  ctx.log.set({ media_urls_count: urls.size });
 
   await m.reply({
     components: [

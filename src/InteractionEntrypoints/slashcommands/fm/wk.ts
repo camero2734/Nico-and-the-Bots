@@ -2,6 +2,7 @@ import { ContainerBuilder, SectionBuilder, SeparatorBuilder, TextDisplayBuilder 
 import { ApplicationCommandOptionType, MessageFlags, SeparatorSpacingSize } from "discord.js";
 import ordinal from "ordinal";
 import { CommandError } from "../../../Configuration/definitions";
+import { log } from "../../../Helpers/logging/evlog";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { fm } from "./_consts";
@@ -79,11 +80,7 @@ command.setHandler(async (ctx) => {
     `,
   ]);
 
-  console.log({
-    possibleKeys,
-    countResult,
-    pageUsers,
-  });
+  log.info({ possibleKeys, countResult: Number(countResult[0].count), pageUsers: pageUsers.length , message: "wk command query result",});
 
   const totalListeners = Number(countResult[0].count);
   const totalPages = Math.ceil(totalListeners / ITEMS_PER_PAGE);

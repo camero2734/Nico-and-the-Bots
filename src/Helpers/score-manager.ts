@@ -1,14 +1,11 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { startOfDay } from "date-fns";
-import {
-  type Message
-} from "discord.js";
+import { type Message } from "discord.js";
 import type { User } from "../../generated/prisma/client";
 import { prisma } from "./prisma-init";
 
 import { queue } from "./jobs";
-import { WideEvent } from "./logging/wide-event";
-
+import type { BotLogger } from "./logging/evlog";
 
 export const updateUserScore = (msg: Message): void => {
   if (!msg.guild || !msg.channel) return;
@@ -18,19 +15,19 @@ export const updateUserScore = (msg: Message): void => {
       messageId: msg.id,
       channelId: msg.channel.id,
       guildId: msg.guild.id,
-    }
+    },
   });
 };
 
 const IDEAL_TIME_MS = 12 * 1000; // The ideal time between each message to award a point for
-export const updateUserScoreWorker = async (msg: Message, wideEvent: WideEvent): Promise<void> => {
+export const updateUserScoreWorker = async (msg: Message, log: BotLogger): Promise<void> => {
   const dbUser = await prisma.user.upsert({
     where: { id: msg.author.id },
     update: {},
     create: { id: msg.author.id, dailyBox: { create: {} } },
   });
 
-  wideEvent.extended.user_id = msg.author.id;
+  log.set({ user_id: msg.author.id });
 
   const now = Date.now();
   const timeSince = Math.max(now - dbUser.lastMessageSent.getTime(), 0);
@@ -74,11 +71,11 @@ export const updateUserScoreWorker = async (msg: Message, wideEvent: WideEvent):
     },
   };
 
-  wideEvent.extended.earnedPoint = earnedPoint;
+  log.set({ earnedPoint });
 
   if (earnedPoint) {
     const userUpdateData = await onEarnPoint(msg, dbUser);
-    wideEvent.extended.update_data = userUpdateData.data;
+    log.set({ update_data: userUpdateData.data });
 
     await prisma.messageHistory.upsert(upsertData);
     await prisma.user.update(userUpdateData);

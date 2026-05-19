@@ -6,7 +6,7 @@ import { checkTwitter } from "../../Altbots/topfeed/twitter/check";
 import { fetchWebsites } from "../../Altbots/topfeed/websites/orchestrator";
 import { checkYoutube } from "../../Altbots/topfeed/youtube/check";
 import { DiscordLogProvider } from "../effect";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../logging/wide-event";
+import { createJobLogger } from "../logging/evlog";
 
 export const topfeedJob = defineJob({
   schema: z.object({
@@ -18,7 +18,7 @@ export const topfeedJob = defineJob({
   async run(payload) {
     const { type } = payload;
 
-    const wideEvent = createBackgroundEvent(`topfeed_${type.toLowerCase()}`);
+    const log = createJobLogger(`topfeed_${type.toLowerCase()}`);
 
     try {
       if (type === "TWITTER") {
@@ -30,11 +30,10 @@ export const topfeedJob = defineJob({
       } else if (type === "WEBSITES") {
         await Effect.runPromise(fetchWebsites.pipe(DiscordLogProvider));
       }
-      finalizeWideEvent(wideEvent, "success");
+      log.emit({ outcome: "success" });
     } catch (error) {
-      finalizeWideEvent(wideEvent, "error", error);
+      log.error(error instanceof Error ? error : new Error(String(error)));
+      log.emit({ outcome: "error" });
     }
-
-    emitWideEvent(wideEvent);
   },
 });

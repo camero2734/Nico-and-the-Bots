@@ -1,7 +1,5 @@
-import { userIDs } from "../../../../Configuration/config";
-import { CommandError } from "../../../../Configuration/definitions";
-import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 import { getConcertChannelManager } from "../../../../InteractionEntrypoints/scheduled/concert-channels";
+import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
   description: "Creates/updates concert channels",

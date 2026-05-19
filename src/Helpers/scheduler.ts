@@ -109,18 +109,22 @@ async function checkReminders(guild: Guild): Promise<void> {
       await dm.send({ embeds: [embed] });
       sentReminderIds.push(rem.id);
     } catch (e) {
-      if (e instanceof DiscordAPIError && e.code.toString() === "50007") {
+      if (
+        e instanceof DiscordAPIError &&
+        ["50007", "10007", "50001", "50278"].includes(e.code.toString())
+      ) {
         sentReminderIds.push(rem.id);
+        const reason =
+          e.code === 50007
+            ? "DMs are disabled"
+            : e.code === 10007
+              ? "they are not in the guild"
+              : e.code === 50001
+                ? "bot lacks access (likely blocked)"
+                : "no mutual guilds";
         await logErrorToDiscord(
           guild,
-          `Unable to send reminder to user: ${rem.userId} due to DMs being disabled. Will not retry.`,
-          e,
-        );
-      } else if (e instanceof DiscordAPIError && e.code.toString() === "10007") {
-        sentReminderIds.push(rem.id);
-        await logErrorToDiscord(
-          guild,
-          `Unable to send reminder to user: ${rem.userId} because they are not in the guild. Will not retry.`,
+          `Unable to send reminder to user: ${rem.userId} (${reason}). Will not retry.`,
           e,
         );
       } else {

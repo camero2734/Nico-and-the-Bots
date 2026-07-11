@@ -103,7 +103,7 @@ command.setHandler(async (ctx) => {
   const nextBountiedAvailable = otherDBUser.lastBountiedAt?.toTemporalInstant()?.add(BOUNTY_RECEIVE_COOLDOWN);
 
 
-  if (nextBountyAvailable && Temporal.Instant.compare(now, nextBountyAvailable) < 0 && ctx.member.id !== userIDs.me) {
+  if (nextBountyAvailable && Temporal.Instant.compare(now, nextBountyAvailable) < 0) {
     const timestamp = F.discordTimestamp(nextBountyAvailable, "relative");
     throw new CommandError(`You have recently issued a bounty. You can do another ${timestamp}.`);
   }

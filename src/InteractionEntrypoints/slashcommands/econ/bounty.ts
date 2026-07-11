@@ -1,6 +1,6 @@
-import type { BishopType } from "../../../../generated/prisma/client";
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import type { BishopType } from "../../../../generated/prisma/client";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
@@ -103,7 +103,7 @@ command.setHandler(async (ctx) => {
         value: `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}`,
       },
     ])
-    .setImage("https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
+    .setImage("https://web.archive.org/web/20230720112840if_/https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
 
   await ctx.send({ embeds: [waitEmbed.toJSON()] });
 

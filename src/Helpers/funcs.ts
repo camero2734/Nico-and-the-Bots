@@ -129,9 +129,10 @@ const F = {
     return `${text.substring(0, len - 3)}...`;
   },
   discordTimestamp<T extends keyof typeof timestampTypes = "shortDateTime">(
-    d: Date,
+    dateOrTemporal: Date | Temporal.Instant,
     format: T = "shortDateTime" as T,
   ): `<t:${bigint}:${(typeof timestampTypes)[T]}>` {
+    const d = dateOrTemporal instanceof Date ? dateOrTemporal : new Date(dateOrTemporal.epochMilliseconds);
     const time = Math.floor(d.getTime() / 1000).toString() as `${bigint}`;
     return `<t:${time}:${timestampTypes[format]}>`;
   },

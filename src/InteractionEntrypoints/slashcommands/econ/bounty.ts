@@ -1,5 +1,4 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { addHours, differenceInHours, millisecondsToSeconds } from "date-fns";
 import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import type { BishopType } from "../../../../generated/prisma/client";
 import { userIDs } from "../../../Configuration/config";
@@ -11,10 +10,10 @@ import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 import { districts } from "./_consts";
 
-const BOUNTY_USE_COOLDOWN_HOURS = 12;
-const BOUNTY_VICTIM_PROTECTION_HOURS = 24;
+const BOUNTY_USE_COOLDOWN = Temporal.Duration.from({ hours: 12 });
+const BOUNTY_RECEIVE_COOLDOWN = Temporal.Duration.from({ hours: 24 });
+const BOUNTY_FAILURE_MUTE = Temporal.Duration.from({ seconds: 30 });
 const BOUNTY_FAILURE_PENALTY = 50;
-const BOUNTY_FAILURE_MUTE_MS = 30_000;
 
 const command = new SlashCommand({
   description: "Reap a bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
@@ -31,6 +30,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   const user = ctx.opts.user;
   const isInventoryCmd = !user;
+  const now = Temporal.Now.instant();
 
   if (ctx.opts.user === ctx.member.id) {
     throw new CommandError(
@@ -99,18 +99,17 @@ command.setHandler(async (ctx) => {
   }
   const otherDailyBox = otherDBUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: member.id } }));
 
-  const { lastBountyUsedAt } = dbUser;
-  const { lastBountiedAt } = otherDBUser;
+  const nextBountyAvailable = dbUser.lastBountyUsedAt?.toTemporalInstant()?.add(BOUNTY_USE_COOLDOWN);
+  const nextBountiedAvailable = otherDBUser.lastBountiedAt?.toTemporalInstant()?.add(BOUNTY_RECEIVE_COOLDOWN);
 
-  if (lastBountyUsedAt && differenceInHours(new Date(), lastBountyUsedAt) < BOUNTY_USE_COOLDOWN_HOURS) {
-    const nextAvailable = addHours(lastBountyUsedAt, BOUNTY_USE_COOLDOWN_HOURS);
-    const timestamp = F.discordTimestamp(nextAvailable, "relative");
+
+  if (nextBountyAvailable && Temporal.Instant.compare(now, nextBountyAvailable) < 0) {
+    const timestamp = F.discordTimestamp(nextBountyAvailable, "relative");
     throw new CommandError(`You have recently issued a bounty. You can do another ${timestamp}.`);
   }
 
-  if (lastBountiedAt && differenceInHours(new Date(), lastBountiedAt) < BOUNTY_VICTIM_PROTECTION_HOURS) {
-    const nextAvailable = addHours(lastBountiedAt, BOUNTY_VICTIM_PROTECTION_HOURS);
-    const timestamp = F.discordTimestamp(nextAvailable, "relative");
+  if (nextBountiedAvailable && Temporal.Instant.compare(now, nextBountiedAvailable) < 0) {
+    const timestamp = F.discordTimestamp(nextBountiedAvailable, "relative");
     throw new CommandError(
       `The Dema Council has recently investigated <@${user}>. They can be bountied again ${timestamp}.`,
     );
@@ -162,13 +161,13 @@ command.setHandler(async (ctx) => {
     ]);
 
     const failedEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
-      `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed. For false reporting, the Dema Council has issued you a **${BOUNTY_FAILURE_PENALTY} credit** penalty and silenced you for ${millisecondsToSeconds(BOUNTY_FAILURE_MUTE_MS)} seconds.`,
+      `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed. For false reporting, the Dema Council has issued you a **${BOUNTY_FAILURE_PENALTY} credit** penalty and silenced you for ${BOUNTY_FAILURE_MUTE.total("seconds")} seconds.`,
     );
 
     await ctx.editReply({ embeds: [failedEmbed] });
 
     try {
-      await ctx.member.timeout(BOUNTY_FAILURE_MUTE_MS, "Failed bounty attempt");
+      await ctx.member.timeout(BOUNTY_FAILURE_MUTE.total("seconds"), "Failed bounty attempt");
     } catch {
       ctx.wideEvent.extended.timeoutError = "Failed to timeout user after failed bounty attempt.";
     }

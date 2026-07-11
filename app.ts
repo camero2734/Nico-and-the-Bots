@@ -11,7 +11,6 @@ import { channelIDs, guildID, roles } from "./src/Configuration/config";
 import { NULL_CUSTOM_ID_PREFIX } from "./src/Configuration/definitions";
 import secrets from "./src/Configuration/secrets";
 import { updateUserScore } from "./src/Helpers";
-import AutoReact from "./src/Helpers/auto-react";
 import { registerAllEntrypoints } from "./src/Helpers/entrypoint-loader";
 import { listenForTorchbearers } from "./src/Helpers/event-listeners/torchbearers";
 import { jobs } from "./src/Helpers/jobs";
@@ -186,7 +185,6 @@ client.on(Discord.Events.MessageCreate, async (msg: Discord.Message) => {
     if (replyListener) return await replyListener(msg, repliedTo);
   }
 
-  AutoReact(msg);
   updateUserScore(msg); // Add to score
 });
 

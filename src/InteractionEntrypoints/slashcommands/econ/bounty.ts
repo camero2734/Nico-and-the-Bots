@@ -4,6 +4,7 @@ import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import type { BishopType } from "../../../../generated/prisma/client";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import { MessageTools } from "../../../Helpers";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
@@ -80,9 +81,7 @@ command.setHandler(async (ctx) => {
     throw new CommandError("You have no bounties to use. Try to get some by using `/econ resupply`.");
 
   if (dbUser.level < 10) {
-    throw new CommandError(
-      `You must be at least level 10 to enact a bounty.`,
-    );
+    throw new CommandError(`You must be at least level 10 to enact a bounty.`);
   }
 
   const member = await ctx.member.guild.members.fetch(user);
@@ -168,6 +167,18 @@ command.setHandler(async (ctx) => {
 
     await ctx.member.timeout(BOUNTY_FAILURE_MUTE_MS, "Failed bounty attempt");
     await ctx.editReply({ embeds: [failedEmbed] });
+
+    await MessageTools.safeDM(member, {
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("Jumpsuit Activated")
+          .setDescription(
+            `A bounty was enacted against you by <@${ctx.member.id}>, but your Jumpsuit successfully prevented the Bishops from finding you.\n\n` +
+              `You have **${otherDailyBox.blocks - 1}** Jumpsuit${F.plural(otherDailyBox.blocks - 1)} remaining.`,
+          )
+          .setColor(0x00ff00),
+      ],
+    });
   } else {
     const stolenCredits = Math.floor(Math.min(3000, 0.01 * otherDBUser.credits));
 
@@ -197,6 +208,18 @@ command.setHandler(async (ctx) => {
     });
 
     await ctx.editReply({ embeds: [winEmbed.toJSON()] });
+
+    await MessageTools.safeDM(member, {
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("Bounty Successful")
+          .setDescription(
+            `A bounty was enacted against you by <@${ctx.member.id}> and the Bishops have found you.\n\n` +
+              `**${stolenCredits}** credits were taken as penance. You are now under a 24-hour protection period during which no further bounties can be enacted against you.`,
+          )
+          .setColor(0xff0000),
+      ],
+    });
   }
 });
 

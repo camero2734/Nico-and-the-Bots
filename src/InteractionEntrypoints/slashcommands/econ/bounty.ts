@@ -7,10 +7,10 @@ import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
+import { districts } from "./_consts";
 
 const command = new SlashCommand({
-  description: "Reaps bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
+  description: "Reap a bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
   options: [
     {
       name: "user",
@@ -57,7 +57,7 @@ command.setHandler(async (ctx) => {
         },
         {
           name: "Current bounty value",
-          value: `${BOUNTY_NUM_CREDITS} credits`,
+          value: `1% of the target's credits, up to 3000 credits`,
         },
       ])
       .setFooter({
@@ -81,6 +81,10 @@ command.setHandler(async (ctx) => {
     dailyBox: true,
   });
   const otherDailyBox = otherDBUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: member.id } }));
+
+  if (otherDBUser.level < 10) {
+    throw new CommandError(`As <@${user}> is below level 10, the Dema Council has no interest in expending resources to investigate them. Case closed.`);
+  }
 
   // Template embed
   const embed = new EmbedBuilder()
@@ -106,12 +110,16 @@ command.setHandler(async (ctx) => {
     .setImage("https://web.archive.org/web/20230720112840if_/https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
 
   await ctx.send({ embeds: [waitEmbed.toJSON()] });
-
   await F.wait(10000);
 
-  // If the other user has a block item, the steal/bounty is voided
   if (otherDailyBox.blocks > 0) {
+    // Bounty fails
     await prisma.$transaction([
+      prisma.$executeRaw`
+        UPDATE "User"
+        SET credits = GREATEST(credits - 500, 0)
+        WHERE id = ${ctx.member.id}
+      `,
       prisma.dailyBox.update({
         where: { userId: ctx.member.id },
         data: { steals: { decrement: 1 } },
@@ -123,21 +131,33 @@ command.setHandler(async (ctx) => {
     ]);
 
     const failedEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
-      `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed.`,
+      `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed. For false reporting, the Dema Council has issued you a **500 credit** penalty and silenced you for 30 seconds.`,
     );
 
+    await ctx.member.timeout(30_000, "Failed bounty attempt");
     await ctx.editReply({ embeds: [failedEmbed] });
   } else {
-    await prisma.user.update({
-      where: { id: ctx.member.id },
-      data: {
-        credits: { increment: BOUNTY_NUM_CREDITS },
-        dailyBox: { update: { steals: { decrement: 1 } } },
-      },
-    });
+    // Bounty succeeds
+    const stolenCredits = Math.floor(Math.min(3000, 0.01 * otherDBUser.credits));
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: ctx.member.id },
+        data: {
+          credits: { increment: stolenCredits },
+          dailyBox: { update: { steals: { decrement: 1 } } },
+        },
+      }),
+      prisma.user.update({
+        where: { id: member.id },
+        data: {
+          credits: { decrement: stolenCredits },
+        },
+      }),
+    ]);
 
     const winEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
-      `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${BOUNTY_NUM_CREDITS}\` credits.`,
+      `<@${user}> was found by the Bishops and has been issued a violation order and has paid ${stolenCredits} credits as penance.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${stolenCredits}\` credits.`,
     );
 
     sendViolationNotice(member, {

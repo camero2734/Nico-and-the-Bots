@@ -5,8 +5,6 @@ import R from "ramda";
 import { roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
 
-export const BOUNTY_NUM_CREDITS = 1000;
-
 export const districtOrder = <const>[
   "Andre",
   "Lisden",
@@ -63,7 +61,7 @@ export class District {
     return `${Number.parseFloat((100 * percent).toFixed(2))}%`;
   }
 
-  constructor(public idx: number) {}
+  constructor(public idx: number) { }
   setDifficulty(diff: string): this {
     this.difficulty = diff;
     return this;

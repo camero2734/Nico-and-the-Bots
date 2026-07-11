@@ -4,9 +4,9 @@
   "description": "Main bot for Discord Clique server",
   "main": "app.ts",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "BUN_JSC_useTemporal=1 nodemon",
     "dev:debug": "set DEBUG=consola && bun dev",
-    "start": "bun run app.ts",
+    "start": "BUN_JSC_useTemporal=1 bun run app.ts",
     "update": "npm-check -u",
     "deploy": "fish ./deploy.fish",
     "prepare": "husky install",

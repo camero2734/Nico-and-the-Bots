@@ -36,6 +36,8 @@ model User {
   // Timers
   lastMessageSent    DateTime  @default(now())
   lastCreationUpload DateTime?
+  lastBountyUsedAt   DateTime?
+  lastBountiedAt     DateTime?
 
   currentlyInServer Boolean @default(true)
 

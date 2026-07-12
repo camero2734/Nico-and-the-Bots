@@ -37,5 +37,6 @@ RUN echo $CRYPT64 | base64 -d >> gc_temp.key && \
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=$COMMIT_SHA
+ENV BUN_JSC_useTemporal=1
 
 CMD [ "bash", ".docker/entrypoint.sh" ]

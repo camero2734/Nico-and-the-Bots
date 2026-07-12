@@ -39,6 +39,15 @@ import { ErrorHandler } from "./src/Structures/Errors";
 import { type AutocompleteListener, transformAutocompleteInteraction } from "./src/Structures/ListenerAutocomplete";
 import type { ListenerInteraction } from "./src/Structures/ListenerInteraction";
 
+GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");
+GlobalFonts.registerFromPath("./src/Assets/fonts/FiraCode/Regular.ttf", "FiraCode");
+GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
+GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
+
+console.log({
+  "Registered fonts": GlobalFonts.families.map((f) => f.family).join(", "),
+});
+
 // Temporary fix for fetchShardCount being called in discord.js
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
   (client.ws as any).fetchShardCount = client.ws.getShardCount.bind(client.ws);
@@ -325,15 +334,6 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
 listenForTorchbearers(client);
 
 async function setup() {
-  GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");
-  GlobalFonts.registerFromPath("./src/Assets/fonts/FiraCode/Regular.ttf", "FiraCode");
-  GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
-  GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
-
-  console.log({
-    "Registered fonts": GlobalFonts.families.map((f) => f.family).join(", "),
-  });
-
   Scheduler(client);
   logEntrypointEvents();
 }

@@ -286,6 +286,10 @@ export const roles = <const>{
     holographics: {
       "The Contrast": "1442148489772662786",
       "Sky Away": "1442148522756669451",
+      "Leaf the City": "1512146836817969313",
+      "Copperwood": "1516228128135970926",
+      "Devil's Iris": "1511855648726585417",
+      "Daisies Lie Dormant": "1512168736348438578"
     },
   },
   songs: {

@@ -1,16 +1,22 @@
-import type { BishopType } from "../../../../generated/prisma/client";
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import type { BishopType } from "../../../../generated/prisma/client";
 import { userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
+import { MessageTools } from "../../../Helpers";
 import { sendViolationNotice } from "../../../Helpers/dema-notice";
 import F from "../../../Helpers/funcs";
 import { prisma, queries } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
-import { BOUNTY_NUM_CREDITS, districts } from "./_consts";
+import { districts } from "./_consts";
+
+const BOUNTY_USE_COOLDOWN = Temporal.Duration.from({ hours: 12 });
+const BOUNTY_RECEIVE_COOLDOWN = Temporal.Duration.from({ hours: 24 });
+const BOUNTY_FAILURE_MUTE = Temporal.Duration.from({ seconds: 30 });
+const BOUNTY_FAILURE_PENALTY = 50;
 
 const command = new SlashCommand({
-  description: "Reaps bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
+  description: "Reap a bounty by reporting a user to the Dema Council. Displays inventory if no user specified.",
   options: [
     {
       name: "user",
@@ -24,6 +30,7 @@ const command = new SlashCommand({
 command.setHandler(async (ctx) => {
   const user = ctx.opts.user;
   const isInventoryCmd = !user;
+  const now = Temporal.Now.instant();
 
   if (ctx.opts.user === ctx.member.id) {
     throw new CommandError(
@@ -57,7 +64,7 @@ command.setHandler(async (ctx) => {
         },
         {
           name: "Current bounty value",
-          value: `${BOUNTY_NUM_CREDITS} credits`,
+          value: `1% of the target's credits, up to 3000 credits`,
         },
       ])
       .setFooter({
@@ -73,6 +80,10 @@ command.setHandler(async (ctx) => {
   if (dailyBox.steals < 1)
     throw new CommandError("You have no bounties to use. Try to get some by using `/econ resupply`.");
 
+  if (dbUser.level < 10) {
+    throw new CommandError(`You must be at least level 10 to enact a bounty.`);
+  }
+
   const member = await ctx.member.guild.members.fetch(user);
   if (!member || member.user.bot)
     throw new CommandError(`${member.displayName} investigated himself and found no wrong-doing. Case closed.`);
@@ -80,7 +91,29 @@ command.setHandler(async (ctx) => {
   const otherDBUser = await queries.findOrCreateUser(member.id, {
     dailyBox: true,
   });
+
+  if (otherDBUser.level < 10) {
+    throw new CommandError(
+      `As <@${user}> is below level 10, the Dema Council has no interest in expending resources to investigate them.`,
+    );
+  }
   const otherDailyBox = otherDBUser.dailyBox ?? (await prisma.dailyBox.create({ data: { userId: member.id } }));
+
+  const nextBountyAvailable = dbUser.lastBountyUsedAt?.toTemporalInstant()?.add(BOUNTY_USE_COOLDOWN);
+  const nextBountiedAvailable = otherDBUser.lastBountiedAt?.toTemporalInstant()?.add(BOUNTY_RECEIVE_COOLDOWN);
+
+
+  if (nextBountyAvailable && Temporal.Instant.compare(now, nextBountyAvailable) < 0 && ctx.member.id !== userIDs.me) {
+    const timestamp = F.discordTimestamp(nextBountyAvailable, "relative");
+    throw new CommandError(`You have recently issued a bounty. You can do another ${timestamp}.`);
+  }
+
+  if (nextBountiedAvailable && Temporal.Instant.compare(now, nextBountiedAvailable) < 0) {
+    const timestamp = F.discordTimestamp(nextBountiedAvailable, "relative");
+    throw new CommandError(
+      `The Dema Council has recently investigated <@${user}>. They can be bountied again ${timestamp}.`,
+    );
+  }
 
   // Template embed
   const embed = new EmbedBuilder()
@@ -103,15 +136,20 @@ command.setHandler(async (ctx) => {
         value: `<:emoji:${assignedBishop.emoji}> ${assignedBishop.bishop}`,
       },
     ])
-    .setImage("https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif");
+    .setImage(
+      "https://web.archive.org/web/20230720112840if_/https://thumbs.gfycat.com/ConcernedFrightenedArrowworm-max-1mb.gif",
+    );
 
   await ctx.send({ embeds: [waitEmbed.toJSON()] });
-
   await F.wait(10000);
 
-  // If the other user has a block item, the steal/bounty is voided
   if (otherDailyBox.blocks > 0) {
     await prisma.$transaction([
+      prisma.$executeRaw`
+        UPDATE "User"
+        SET credits = GREATEST(credits - ${BOUNTY_FAILURE_PENALTY}, 0), "lastBountyUsedAt" = NOW()
+        WHERE id = ${ctx.member.id}
+      `,
       prisma.dailyBox.update({
         where: { userId: ctx.member.id },
         data: { steals: { decrement: 1 } },
@@ -123,29 +161,69 @@ command.setHandler(async (ctx) => {
     ]);
 
     const failedEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
-      `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed.`,
+      `<@${user}>'s Jumpsuit successfully prevented the Bishops from finding them. Your bounty failed. For false reporting, the Dema Council has issued you a **${BOUNTY_FAILURE_PENALTY} credit** penalty and silenced you for ${BOUNTY_FAILURE_MUTE.total("seconds")} seconds.`,
     );
 
     await ctx.editReply({ embeds: [failedEmbed] });
-  } else {
-    await prisma.user.update({
-      where: { id: ctx.member.id },
-      data: {
-        credits: { increment: BOUNTY_NUM_CREDITS },
-        dailyBox: { update: { steals: { decrement: 1 } } },
-      },
+
+    try {
+      await ctx.member.timeout(BOUNTY_FAILURE_MUTE.total("seconds"), "Failed bounty attempt");
+    } catch {
+      ctx.wideEvent.extended.timeoutError = "Failed to timeout user after failed bounty attempt.";
+    }
+
+    await MessageTools.safeDM(member, {
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("Jumpsuit Activated")
+          .setDescription(
+            `A bounty was enacted against you by <@${ctx.member.id}>, but your Jumpsuit successfully prevented the Bishops from finding you.\n\n` +
+            `You have **${otherDailyBox.blocks - 1}** Jumpsuit${F.plural(otherDailyBox.blocks - 1)} remaining.`,
+          )
+          .setColor(0x00ff00),
+      ],
     });
+  } else {
+    const stolenCredits = Math.floor(Math.min(3000, 0.01 * otherDBUser.credits));
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: ctx.member.id },
+        data: { credits: { increment: stolenCredits }, lastBountyUsedAt: new Date() },
+      }),
+      prisma.$executeRaw`
+        UPDATE "User"
+        SET credits = GREATEST(credits - ${stolenCredits}, 0), "lastBountiedAt" = NOW()
+        WHERE id = ${member.id}
+      `,
+      prisma.dailyBox.update({
+        where: { userId: ctx.member.id },
+        data: { steals: { decrement: 1 } },
+      }),
+    ]);
 
     const winEmbed = new EmbedBuilder(embed.toJSON()).setDescription(
-      `<@${user}> was found by the Bishops and has been issued a violation order.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${BOUNTY_NUM_CREDITS}\` credits.`,
+      `<@${user}> was found by the Bishops and has been issued a violation order and has paid ${stolenCredits} credits as penance.\n\nIn reward for your service to The Sacred Municipality of Dema and your undying loyalty to Vialism, you have been rewarded \`${stolenCredits}\` credits.`,
     );
 
     sendViolationNotice(member, {
       violation: "FailedPerimeterEscape",
       issuingBishop: F.capitalize(assignedBishop.bishop) as BishopType,
-    });
+    }).catch(() => { });
 
     await ctx.editReply({ embeds: [winEmbed.toJSON()] });
+
+    await MessageTools.safeDM(member, {
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("Bounty Successful")
+          .setDescription(
+            `A bounty was enacted against you by <@${ctx.member.id}> and the Bishops have found you.\n\n` +
+            `**${stolenCredits}** credits were taken as penance. You are now under a 24-hour protection period during which no further bounties can be enacted against you.`,
+          )
+          .setColor(0xff0000),
+      ],
+    });
   }
 });
 

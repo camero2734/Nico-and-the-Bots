@@ -161,7 +161,7 @@ command.setHandler(async (ctx) => {
   })();
 
   const facts = [
-    "Keep engaging with our community and become a Torchbearer to enjoy special server perks! Use `/apply torchbearers` to apply for the role after reaching Level 40 in the server.”
+    `Keep engaging with our community and become a Torchbearer to enjoy special server perks! Use \`/apply torchbearers\` to apply for the role after reaching Level 40 in the server.`,
     `You can buy color roles from <#${channelIDs.shop}>! To view and equip your color roles, use the \`/roles colors\` command.`,
     "The `/tags create` command can be used to add a snippet of text that you can later make the bot send with the `/tags use` command!",
     `You can submit an interview to <#${channelIDs.interviews}> with the \`/submit interview\` command.`,

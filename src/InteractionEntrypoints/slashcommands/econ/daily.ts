@@ -161,7 +161,7 @@ command.setHandler(async (ctx) => {
   })();
 
   const facts = [
-    "If you're going to a concert, there are concert channels! Use the `/roles concert` command to find yours.",
+    "Keep engaging with our community and become a Torchbearer to enjoy special server perks! Use `/apply torchbearers` to apply for the role after reaching Level 40 in the server.”
     `You can buy color roles from <#${channelIDs.shop}>! To view and equip your color roles, use the \`/roles colors\` command.`,
     "The `/tags create` command can be used to add a snippet of text that you can later make the bot send with the `/tags use` command!",
     `You can submit an interview to <#${channelIDs.interviews}> with the \`/submit interview\` command.`,
@@ -171,6 +171,8 @@ command.setHandler(async (ctx) => {
     `Check out <#${channelIDs.creations}> and <#${channelIDs.bestcreations}> to see user-submitted art!`,
     `Check out <#${channelIDs.positivity}> for cute pets and words of encouragement!`,
     `Check out <#${channelIDs.polls}> to vote on polls created by staff members!`,
+    `Check out <#${channelIDs.foodandcooking}> for tasty food pics, recipes and cooking discussions! `
+    `Check out <#${channelIDs.tvfilmliterature}> to chat about your favorite TV shows, books, movies and everything in between! `
     `Head over to <#${channelIDs.suggestions}> to submit a suggestion about the server!`,
     `Find a message really funny, or a piece of art really amazing? Right click the message and select "Gold Message" under Apps. \n\nTheir message will show up in <#${channelIDs.houseofgold}>!`,
   ];

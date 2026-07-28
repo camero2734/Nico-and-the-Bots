@@ -110,13 +110,15 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   return container;
 }
 
+const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\);/;
+
 // The profile embed omits video_url for carousel videos, but the post's own embed page has them
 async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<string, string>> {
   const videoUrls = new Map<string, string>();
 
   try {
     const responseText = await fetch(`https://www.instagram.com/p/${shortcode}/embed/`).then((res) => res.text());
-    const match = /s\.handle\(\s*(\{[\s\S]*?\})\s*\);/g.exec(responseText);
+    const match = getSHandleRegex.exec(responseText);
     if (!match) throw new Error("Failed to parse the Instagram post embed data.");
     // @ts-expect-error i ain't gonna type this whole thing
     const contextJSON = JSON.parse(match[1]).require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
@@ -136,7 +138,6 @@ async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<strin
 export async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promise<FormattedInstagramPost[]> {
   try {
     const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
-    const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\)/g;
     const match = getSHandleRegex.exec(responseText);
     if (!match) throw new Error("Failed to parse the Instagram embed data.");
     // @ts-expect-error i ain't gonna type this whole thing

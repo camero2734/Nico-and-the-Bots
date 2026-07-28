@@ -39,7 +39,7 @@ export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUser
   },
 };
 
-const instagramEmojiId = "1380283905416106064";
+const instagramEmojiId = "1531753335437132030";
 export async function instaPostToComponents(post: FormattedInstagramPost, roleId: string) {
   // Compose author line
   const authorLine = `<:instagram:${instagramEmojiId}> **[${post.author}](https://instagram.com/${post.author})**`;

@@ -348,12 +348,12 @@ function startPingServer() {
   });
 }
 
-async function forwardMessageToErrorChannel(msg: string) {
+export async function forwardMessageToErrorChannel(msg: string) {
   try {
     const channel = await guild.channels.fetch(channelIDs.bottest);
     if (!channel?.isSendable()) return;
 
-    const embed = new EmbedBuilder().setDescription(msg).setColor(Discord.Colors.Red);
+    const embed = new EmbedBuilder().setDescription(msg.slice(0, 4000)).setColor(Discord.Colors.Red);
 
     await channel.send({ embeds: [embed] });
   } catch (e) {

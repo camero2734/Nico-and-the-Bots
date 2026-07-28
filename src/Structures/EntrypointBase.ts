@@ -7,6 +7,7 @@ import {
   type GuildMember,
   type Interaction,
 } from "discord.js";
+import { forwardMessageToErrorChannel } from "../../app";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
 import { createWideEvent, emitWideEvent, finalizeWideEvent, setBotContext, type WideEvent } from "../Helpers/logging/wide-event";
@@ -92,7 +93,14 @@ export abstract class InteractionEntrypoint<
     } catch (e) {
       finalizeWideEvent(wideEvent, "error", e);
       EntrypointEvents.emit("entrypointErrored", { entrypoint: this, ctx, wideEvent, error: e });
-      ErrorHandler(ctx, wideEvent, e instanceof Error ? e : new Error(String(e)), this.identifier);
+      await ErrorHandler(ctx, wideEvent, e instanceof Error ? e : new Error(String(e)), this.identifier).catch(
+        (handlerError) => {
+          console.error("ErrorHandler failed", handlerError);
+          forwardMessageToErrorChannel(
+            `ErrorHandler failed while reporting error ID ${wideEvent.event_id}.\nOriginal error: ${e}\nHandler error: ${handlerError}`,
+          );
+        },
+      );
     }
 
     emitWideEvent(wideEvent);

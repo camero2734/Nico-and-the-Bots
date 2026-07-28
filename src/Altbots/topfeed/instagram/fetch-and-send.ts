@@ -64,7 +64,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
         },
         {
           type: ComponentType.TextDisplay,
-          content: post.caption,
+          content: post.caption || "*No caption*",
         },
         {
           type: ComponentType.TextDisplay,

@@ -66,7 +66,7 @@ command.setHandler(async (ctx) => {
     const { container, file, unchanged } = await debugWebsite(url);
     await ctx.channel.send({ components: [container], files: [file], flags: MessageFlags.IsComponentsV2 });
     await ctx.editReply(
-      `Sent the website debug preview below. Nothing was written to the database.${unchanged ? " Note: the fetched content is identical to the last saved version, so the diff is empty." : ""
+      `Sent the website debug preview below. ${unchanged ? " Note: the fetched content is identical to the last saved version, so the diff is empty." : ""
       }`,
     );
     return;

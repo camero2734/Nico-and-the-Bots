@@ -9,7 +9,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
 
 type InstagramMedia = { url: string; type: "image" | "video" };
-interface FormattedInstagramPost {
+export interface FormattedInstagramPost {
   code: string;
   url: string;
   caption: string;
@@ -24,7 +24,7 @@ type DataForUsername = {
 };
 
 export const usernamesToWatch = ["twentyonepilots", "tylerrjoseph", "joshuadun"] as const;
-const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
+export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
   twentyonepilots: {
     roleId: roles.topfeed.selectable.band,
     channelId: channelIDs.topfeed.band,
@@ -110,7 +110,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   return container;
 }
 
-async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promise<FormattedInstagramPost[]> {
+export async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promise<FormattedInstagramPost[]> {
   try {
     const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
     const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\)/g;

@@ -41,7 +41,7 @@ export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUser
 
 export const youtube = new youtube_v3.Youtube({ auth: secrets.apis.google.youtube });
 
-interface FormattedYoutubePost {
+export interface FormattedYoutubePost {
   title: string;
   description: string;
   url: string;

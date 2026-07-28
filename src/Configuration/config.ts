@@ -42,6 +42,8 @@ export const channelIDs = <const>{
   laxstaff: "1309644276795310110",
   staff: "1309892177723133983",
   positivity: "470451678294835200",
+  foodandcooking: "940431526699630663",
+  tvfilmliterature: "641087479293935642",
   bottest: "470406597860917249",
   errorlog: "604458274141765633",
   houseofgold: "470339161967165440",

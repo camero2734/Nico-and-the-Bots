@@ -171,8 +171,8 @@ command.setHandler(async (ctx) => {
     `Check out <#${channelIDs.creations}> and <#${channelIDs.bestcreations}> to see user-submitted art!`,
     `Check out <#${channelIDs.positivity}> for cute pets and words of encouragement!`,
     `Check out <#${channelIDs.polls}> to vote on polls created by staff members!`,
-    `Check out <#${channelIDs.foodandcooking}> for tasty food pics, recipes and cooking discussions! `
-    `Check out <#${channelIDs.tvfilmliterature}> to chat about your favorite TV shows, books, movies and everything in between! `
+    `Check out <#${channelIDs.foodandcooking}> for tasty food pics, recipes and cooking discussions!`,
+    `Check out <#${channelIDs.tvfilmliterature}> to chat about your favorite TV shows, books, movies and everything in between! `,
     `Head over to <#${channelIDs.suggestions}> to submit a suggestion about the server!`,
     `Find a message really funny, or a piece of art really amazing? Right click the message and select "Gold Message" under Apps. \n\nTheir message will show up in <#${channelIDs.houseofgold}>!`,
   ];

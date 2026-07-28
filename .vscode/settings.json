@@ -7,5 +7,6 @@
   "typescript.preferences.importModuleSpecifier": "relative",
   "explorer.compactFolders": false,
   "editor.tabSize": 2,
-  "typescript.experimental.useTsgo": true
+  "typescript.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }

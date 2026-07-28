@@ -41,7 +41,7 @@ export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUser
 
 export const youtube = new youtube_v3.Youtube({ auth: secrets.apis.google.youtube });
 
-interface FormattedYoutubePost {
+export interface FormattedYoutubePost {
   title: string;
   description: string;
   url: string;
@@ -56,6 +56,9 @@ const youtubeEmojiId = "1380283728332587089";
 export async function youtubeVideoToComponents(post: FormattedYoutubePost, roleId: string) {
   // Compose author line
   const authorLine = `**<:youtube:${youtubeEmojiId}> [${post.author}](https://www.youtube.com/@${post.author})**`;
+
+  const bodyText = `**${post.title}**\n\n${post.description}`;
+  const fittedBodyText = bodyText.length > 4000 ? `${bodyText.slice(0, 3997)}...` : bodyText;
 
   const role = await keonsGuild.roles.fetch(roleId);
   if (!role) throw new Error(`Role with ID ${roleId} not found`);
@@ -77,7 +80,7 @@ export async function youtubeVideoToComponents(post: FormattedYoutubePost, roleI
         },
         {
           type: ComponentType.TextDisplay,
-          content: `**${post.title}**\n\n${post.description}`,
+          content: fittedBodyText,
         },
         {
           type: ComponentType.TextDisplay,

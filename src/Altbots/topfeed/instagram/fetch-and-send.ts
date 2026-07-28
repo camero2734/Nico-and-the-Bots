@@ -9,7 +9,7 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
 
 type InstagramMedia = { url: string; type: "image" | "video" };
-interface FormattedInstagramPost {
+export interface FormattedInstagramPost {
   code: string;
   url: string;
   caption: string;
@@ -24,7 +24,7 @@ type DataForUsername = {
 };
 
 export const usernamesToWatch = ["twentyonepilots", "tylerrjoseph", "joshuadun"] as const;
-const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
+export const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> = {
   twentyonepilots: {
     roleId: roles.topfeed.selectable.band,
     channelId: channelIDs.topfeed.band,
@@ -39,7 +39,7 @@ const usernameData: Record<(typeof usernamesToWatch)[number], DataForUsername> =
   },
 };
 
-const instagramEmojiId = "1380283905416106064";
+const instagramEmojiId = "1531753335437132030";
 export async function instaPostToComponents(post: FormattedInstagramPost, roleId: string) {
   // Compose author line
   const authorLine = `<:instagram:${instagramEmojiId}> **[${post.author}](https://instagram.com/${post.author})**`;
@@ -64,7 +64,7 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
         },
         {
           type: ComponentType.TextDisplay,
-          content: post.caption,
+          content: post.caption || "*No caption*",
         },
         {
           type: ComponentType.TextDisplay,
@@ -110,10 +110,34 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   return container;
 }
 
-async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promise<FormattedInstagramPost[]> {
+const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\);/;
+
+// The profile embed omits video_url for carousel videos, but the post's own embed page has them
+async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<string, string>> {
+  const videoUrls = new Map<string, string>();
+
+  try {
+    const responseText = await fetch(`https://www.instagram.com/p/${shortcode}/embed/`).then((res) => res.text());
+    const match = getSHandleRegex.exec(responseText);
+    if (!match) throw new Error("Failed to parse the Instagram post embed data.");
+    // @ts-expect-error i ain't gonna type this whole thing
+    const contextJSON = JSON.parse(match[1]).require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
+    const shortcodeMedia = JSON.parse(contextJSON).gql_data?.shortcode_media;
+
+    if (shortcodeMedia?.video_url) videoUrls.set(shortcodeMedia.shortcode, shortcodeMedia.video_url);
+    for (const edge of shortcodeMedia?.edge_sidecar_to_children?.edges ?? []) {
+      if (edge.node?.video_url) videoUrls.set(edge.node.shortcode, edge.node.video_url);
+    }
+  } catch {
+    // rip
+  }
+
+  return videoUrls;
+}
+
+export async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promise<FormattedInstagramPost[]> {
   try {
     const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
-    const getSHandleRegex = /s\.handle\(\s*(\{[\s\S]*?\})\s*\)/g;
     const match = getSHandleRegex.exec(responseText);
     if (!match) throw new Error("Failed to parse the Instagram embed data.");
     // @ts-expect-error i ain't gonna type this whole thing
@@ -125,19 +149,37 @@ async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promi
 
     for (const media of mediaData) {
       const shortcodeMedia = media.shortcode_media;
+
+      const videoNodes: { video_url?: string; shortcode: string }[] = [];
+      if (shortcodeMedia.__typename === "GraphVideo") {
+        videoNodes.push(shortcodeMedia);
+      } else if (shortcodeMedia.__typename === "GraphSidecar") {
+        for (const edge of shortcodeMedia.edge_sidecar_to_children.edges) {
+          if (edge.node.__typename === "GraphVideo") videoNodes.push(edge.node);
+        }
+      }
+
+      let videoUrls = new Map<string, string>();
+      if (videoNodes.some((node) => !node.video_url)) {
+        videoUrls = await fetchVideoUrlsFromPostEmbed(shortcodeMedia.shortcode);
+        addElement(wideEvent.extended, "video_url_fallback", shortcodeMedia.shortcode);
+      }
+
       const formattedMedia: InstagramMedia[] = [];
 
       if (shortcodeMedia.__typename === "GraphImage") {
         formattedMedia.push({ url: shortcodeMedia.display_url, type: "image" });
       } else if (shortcodeMedia.__typename === "GraphVideo") {
-        formattedMedia.push({ url: shortcodeMedia.video_url, type: "video" });
+        const url = shortcodeMedia.video_url || videoUrls.get(shortcodeMedia.shortcode) || shortcodeMedia.display_url;
+        formattedMedia.push({ url, type: "video" });
       } else if (shortcodeMedia.__typename === "GraphSidecar") {
         for (const edge of shortcodeMedia.edge_sidecar_to_children.edges) {
           const child = edge.node;
           if (child.__typename === "GraphImage") {
             formattedMedia.push({ url: child.display_url, type: "image" });
           } else if (child.__typename === "GraphVideo") {
-            formattedMedia.push({ url: child.video_url, type: "video" });
+            const url = child.video_url || videoUrls.get(child.shortcode) || child.display_url;
+            formattedMedia.push({ url, type: "video" });
           } else {
             throw new Error(`Unknown child media type: ${child.__typename}`);
           }
@@ -150,7 +192,8 @@ async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promi
         caption: shortcodeMedia.edge_media_to_caption.edges[0]?.node.text || "",
         author: shortcodeMedia.owner.username,
         authorImage: shortcodeMedia.owner.profile_pic_url,
-        media: formattedMedia.slice(0, 10), // Discord only supports up to 10 media items
+        // Discord only supports up to 10 media items
+        media: formattedMedia.filter((m) => m.url).slice(0, 10),
         postedAt: new Date(shortcodeMedia.taken_at_timestamp * 1000),
       });
     }

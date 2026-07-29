@@ -12,7 +12,6 @@ export const client = new Client({
     "GuildMessages",
     "GuildIntegrations",
     "GuildInvites",
-    "GuildPresences",
     "GuildVoiceStates",
     "GuildWebhooks",
   ],

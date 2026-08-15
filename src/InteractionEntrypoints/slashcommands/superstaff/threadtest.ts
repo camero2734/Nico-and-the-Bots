@@ -4,7 +4,7 @@ import { CommandError } from "../../../Configuration/definitions";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-  description: "Create a private thread here and try to add the given user to it",
+  description: "Creates a private thread to test perms",
   options: [
     {
       name: "user",

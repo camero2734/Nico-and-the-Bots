@@ -138,9 +138,12 @@ export const ErrorHandler = async (
       return lines.join("\n");
     };
 
+    const stackText = (error instanceof Error ? formatStack(error) : String(error)) || "Unknown error";
+    const truncatedStack = stackText.length > 1000 ? `${stackText.slice(0, 1000)}…` : stackText;
+
     embed.addFields({
       name: "Error",
-      value: `\`\`\`js\n${error instanceof Error ? formatStack(error) : error}\`\`\``,
+      value: `\`\`\`js\n${truncatedStack}\`\`\``,
     });
     await errorChannel.send({ embeds: [embed] });
     sentInErrorChannel = true;

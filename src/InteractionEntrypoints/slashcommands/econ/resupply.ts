@@ -279,11 +279,11 @@ async function memberWon(
       if (prize.item === "BOUNTY") {
         dbUserWithBox.dailyBox.steals++;
         prizeDescription =
-          "A `Bounty` may be used against another member of the server to report them to the Bishops. If they do not have a `Jumpsuit`, they will receive a violation notice and you will receive 1000 credits as the bounty reward";
+          "A `Bounty` can be used against another member of the server to report them to the Bishops. If the target does not have a `Jumpsuit`, you will reap a small percentage of their credits as a reward and they will receive a violation notice.";
       } else if (prize.item === "JUMPSUIT") {
         dbUserWithBox.dailyBox.blocks++;
         prizeDescription =
-          "A `Jumpsuit` will protect you if another member sends the Bishops after you with a `Bounty`. It will prevent the Bishops from finding you, effectively cancelling their `Bounty`.";
+          "A `Jumpsuit` will protect you if another member sends the Bishops after you with a `Bounty`. It will prevent the Bishops from finding you, effectively cancelling their `Bounty` and keeping you safe from further reports for 24 hours.";
       }
       break;
     }

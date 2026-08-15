@@ -11,6 +11,11 @@ import { keonsGuild } from "../topfeed";
 
 import { type Tweet, twitterEmojiId } from "./constants";
 
+const fitTextDisplay = (text: string | null | undefined, fallback = "*No text*") => {
+  if (!text) return fallback;
+  return text.length > 4000 ? `${text.slice(0, 3997)}...` : text;
+};
+
 export async function tweetToComponents(tweet: Tweet, roleId: string) {
   const media = tweet.extendedEntities?.media || [];
 
@@ -70,7 +75,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
           },
           {
             type: ComponentType.TextDisplay,
-            content: tweet.quoted_tweet.text || "",
+            content: fitTextDisplay(tweet.quoted_tweet.text),
           },
         ],
       },
@@ -97,7 +102,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
           },
           {
             type: ComponentType.TextDisplay,
-            content: tweet.retweeted_tweet.text || "",
+            content: fitTextDisplay(tweet.retweeted_tweet.text),
           },
         ],
       },
@@ -123,7 +128,7 @@ export async function tweetToComponents(tweet: Tweet, roleId: string) {
         },
         {
           type: ComponentType.TextDisplay,
-          content: tweet.text,
+          content: fitTextDisplay(tweet.text),
         },
         {
           type: ComponentType.TextDisplay,

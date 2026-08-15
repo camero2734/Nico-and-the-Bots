@@ -120,8 +120,10 @@ async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<strin
     const responseText = await fetch(`https://www.instagram.com/p/${shortcode}/embed/`).then((res) => res.text());
     const match = getSHandleRegex.exec(responseText);
     if (!match) throw new Error("Failed to parse the Instagram post embed data.");
-    // @ts-expect-error i ain't gonna type this whole thing
-    const contextJSON = JSON.parse(match[1]).require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
+    const contextJSON = JSON.parse(match[1])
+      // biome-ignore lint/suspicious/noExplicitAny: Instagram embed payload is untyped
+      .require.find((x: any) => x[0] === "PolarisEmbedSimple")
+      .at(-1)[0].contextJSON;
     const shortcodeMedia = JSON.parse(contextJSON).gql_data?.shortcode_media;
 
     if (shortcodeMedia?.video_url) videoUrls.set(shortcodeMedia.shortcode, shortcodeMedia.video_url);
@@ -135,7 +137,7 @@ async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<strin
   return videoUrls;
 }
 
-async function fetchIgForUsername(username: string, log: BotLogger): Promise<FormattedInstagramPost[]> {
+export async function fetchIgForUsername(username: string, log: BotLogger): Promise<FormattedInstagramPost[]> {
   try {
     const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
     const match = getSHandleRegex.exec(responseText);
@@ -162,7 +164,7 @@ async function fetchIgForUsername(username: string, log: BotLogger): Promise<For
       let videoUrls = new Map<string, string>();
       if (videoNodes.some((node) => !node.video_url)) {
         videoUrls = await fetchVideoUrlsFromPostEmbed(shortcodeMedia.shortcode);
-        addElement(wideEvent.extended, "video_url_fallback", shortcodeMedia.shortcode);
+        log.set({ video_url_fallback: shortcodeMedia.shortcode });
       }
 
       const formattedMedia: InstagramMedia[] = [];

@@ -17,10 +17,14 @@ export const lastFmJob = defineJob({
     },
     hooks: {
       error: (err) => {
-        createJobLogger("last_fm_worker").error(new Error(String(err)), { worker: true });
+        const log = createJobLogger("last_fm_worker");
+        log.error(new Error(String(err)), { worker: true });
+        log.emit({ outcome: "error" });
       },
       failed: (job, err) => {
-        createJobLogger("last_fm_worker").error(new Error(String(err)), { worker: true, jobId: job?.id });
+        const log = createJobLogger("last_fm_worker");
+        log.error(new Error(String(err)), { worker: true, jobId: job?.id });
+        log.emit({ outcome: "error" });
       },
     },
   },
@@ -62,8 +66,9 @@ export const lastFmJob = defineJob({
           topArtists: artistMap,
         },
       });
+      log.emit({ outcome: "success" });
     } catch (e) {
-      log.error(e instanceof Error ? e.message : String(e));
+      log.error(e instanceof Error ? e : new Error(String(e)));
       log.emit({ outcome: "error" });
 
       if (e instanceof LastFMResponseError && e.message.includes("User not found")) {

@@ -102,7 +102,6 @@ command.setHandler(async (ctx) => {
   const nextBountyAvailable = dbUser.lastBountyUsedAt?.toTemporalInstant()?.add(BOUNTY_USE_COOLDOWN);
   const nextBountiedAvailable = otherDBUser.lastBountiedAt?.toTemporalInstant()?.add(BOUNTY_RECEIVE_COOLDOWN);
 
-
   if (nextBountyAvailable && Temporal.Instant.compare(now, nextBountyAvailable) < 0 && ctx.member.id !== userIDs.me) {
     const timestamp = F.discordTimestamp(nextBountyAvailable, "relative");
     throw new CommandError(`You have recently issued a bounty. You can do another ${timestamp}.`);
@@ -169,7 +168,7 @@ command.setHandler(async (ctx) => {
     try {
       await ctx.member.timeout(BOUNTY_FAILURE_MUTE.total("seconds"), "Failed bounty attempt");
     } catch {
-      ctx.wideEvent.extended.timeoutError = "Failed to timeout user after failed bounty attempt.";
+      ctx.log.set({ timeoutError: "Failed to timeout user after failed bounty attempt." });
     }
 
     await MessageTools.safeDM(member, {
@@ -178,7 +177,7 @@ command.setHandler(async (ctx) => {
           .setTitle("Jumpsuit Activated")
           .setDescription(
             `A bounty was enacted against you by <@${ctx.member.id}>, but your Jumpsuit successfully prevented the Bishops from finding you.\n\n` +
-            `You have **${otherDailyBox.blocks - 1}** Jumpsuit${F.plural(otherDailyBox.blocks - 1)} remaining.`,
+              `You have **${otherDailyBox.blocks - 1}** Jumpsuit${F.plural(otherDailyBox.blocks - 1)} remaining.`,
           )
           .setColor(0x00ff00),
       ],
@@ -209,7 +208,7 @@ command.setHandler(async (ctx) => {
     sendViolationNotice(member, {
       violation: "FailedPerimeterEscape",
       issuingBishop: F.capitalize(assignedBishop.bishop) as BishopType,
-    }).catch(() => { });
+    }).catch(() => {});
 
     await ctx.editReply({ embeds: [winEmbed.toJSON()] });
 
@@ -219,7 +218,7 @@ command.setHandler(async (ctx) => {
           .setTitle("Bounty Successful")
           .setDescription(
             `A bounty was enacted against you by <@${ctx.member.id}> and the Bishops have found you.\n\n` +
-            `**${stolenCredits}** credits were taken as penance. You are now under a 24-hour protection period during which no further bounties can be enacted against you.`,
+              `**${stolenCredits}** credits were taken as penance. You are now under a 24-hour protection period during which no further bounties can be enacted against you.`,
           )
           .setColor(0xff0000),
       ],

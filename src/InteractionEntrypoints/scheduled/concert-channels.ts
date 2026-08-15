@@ -1,7 +1,7 @@
 import { ActionRowBuilder, LinkButtonBuilder } from "@discordjs/builders";
 import { ChannelType, type ForumChannel, type Guild } from "discord.js";
 import { channelIDs } from "../../Configuration/config";
-import { createJobLogger, type BotLogger } from "../../Helpers/logging/evlog";
+import { type BotLogger, createJobLogger } from "../../Helpers/logging/evlog";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import { CONCERT_URL, ConcertChannel, type ConcertEntry } from "./concert-channels.consts";
@@ -53,7 +53,7 @@ class ConcertChannelManager {
       this.log.emit({ outcome: "success" });
       return true;
     } catch (e) {
-      this.log.error(e instanceof Error ? e.message : String(e));
+      this.log.error(e instanceof Error ? e : new Error(String(e)));
       this.log.emit({ outcome: "error" });
       return false;
     }
@@ -78,7 +78,7 @@ class ConcertChannelManager {
         try {
           await this.#registerConcert(t);
           added.push(t.venueId);
-        } catch (e) {
+        } catch {
           failed.push(t.venueId);
         }
       }
@@ -88,7 +88,7 @@ class ConcertChannelManager {
       this.log.emit({ outcome: "success" });
       return toAdd;
     } catch (e) {
-      this.log.error(e instanceof Error ? e.message : String(e));
+      this.log.error(e instanceof Error ? e : new Error(String(e)));
       this.log.emit({ outcome: "error" });
       return [];
     }

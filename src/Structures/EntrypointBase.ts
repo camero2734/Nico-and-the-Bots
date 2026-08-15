@@ -10,7 +10,7 @@ import {
 import { forwardMessageToErrorChannel } from "../../app";
 import { roles } from "../Configuration/config";
 import { CommandError } from "../Configuration/definitions";
-import { createInteractionLogger, type BotLogger } from "../Helpers/logging/evlog";
+import { type BotLogger, createInteractionLogger } from "../Helpers/logging/evlog";
 import { ApplicationData, InteractionHandlers, ReactionHandlers, ReplyHandlers } from "./data";
 import { ErrorHandler } from "./Errors";
 import {
@@ -92,7 +92,7 @@ export abstract class InteractionEntrypoint<
       log.error(error);
       log.emit({ outcome: "error" });
       await ErrorHandler(ctx, log, error, this.identifier).catch((handlerError) => {
-        log.error({ message: "ErrorHandler failed", error: String(handlerError) });
+        log.error(new Error("ErrorHandler failed"), { error: String(handlerError) });
         forwardMessageToErrorChannel(
           `ErrorHandler failed while reporting error ID ${log.getContext().event_id}.\nOriginal error: ${e}\nHandler error: ${handlerError}`,
         );

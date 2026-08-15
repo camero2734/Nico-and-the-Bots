@@ -1,9 +1,9 @@
+import { absurd } from "Tasks/absurd";
 import { EmbedBuilder } from "@discordjs/builders";
 import { startWorkers } from "@falcondev-oss/queue";
 import { GlobalFonts } from "@napi-rs/canvas";
 import Cron from "croner";
 import * as Discord from "discord.js";
-import { absurd } from "Tasks/absurd";
 import { client } from "./src/Altbots/nico";
 import { KeonsBot } from "./src/Altbots/shop";
 import { SacarverBot } from "./src/Altbots/welcome";
@@ -36,9 +36,7 @@ GlobalFonts.registerFromPath("./src/Assets/fonts/FiraCode/Regular.ttf", "FiraCod
 GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
 GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
 
-console.log({
-  "Registered fonts": GlobalFonts.families.map((f) => f.family).join(", "),
-});
+log.info({ fonts: GlobalFonts.families.map((f) => f.family), message: "Fonts registered" });
 
 // Temporary fix for fetchShardCount being called in discord.js
 if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "function") {
@@ -335,13 +333,6 @@ client.on(Discord.Events.InteractionCreate, async (interaction) => {
 listenForTorchbearers(client);
 
 async function setup() {
-  GlobalFonts.registerFromPath("./src/Assets/fonts/f.ttf", "Futura");
-  GlobalFonts.registerFromPath("./src/Assets/fonts/FiraCode/Regular.ttf", "FiraCode");
-  GlobalFonts.registerFromPath("./src/Assets/fonts/ArialNarrow/Regular.ttf", "'Arial Narrow'");
-  GlobalFonts.registerFromPath("./src/Assets/fonts/clancy.otf", "Clancy");
-
-  log.info({ fonts: GlobalFonts.families.map((f) => f.family), message: "Fonts registered" });
-
   Scheduler(client);
 }
 
@@ -365,7 +356,10 @@ export async function forwardMessageToErrorChannel(msg: string) {
     await channel.send({ embeds: [embed] });
   } catch (e) {
     log.error({ message: "Unable to forward error to channel", channel: channelIDs.bottest, originalMessage: msg });
-    log.error({ message: e instanceof Error ? e.message : String(e), error: e instanceof Error ? e.message : String(e) });
+    log.error({
+      message: e instanceof Error ? e.message : String(e),
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 }
 
@@ -401,7 +395,10 @@ process.on("SIGTERM", async () => {
     await prisma.$disconnect();
     await client.destroy();
   } catch (e) {
-    log.error({ message: e instanceof Error ? e.message : String(e), error: e instanceof Error ? e.message : String(e) });
+    log.error({
+      message: e instanceof Error ? e.message : String(e),
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 
   log.info({ stage: "shutdown", message: "Shutdown complete, exiting." });

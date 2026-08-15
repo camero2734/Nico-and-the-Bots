@@ -34,7 +34,7 @@ export const scoreJob = defineJob({
 
       log.emit({ outcome: "success" });
     } catch (e) {
-      log.error(e instanceof Error ? e.message : String(e));
+      log.error(e instanceof Error ? e : new Error(String(e)));
       log.emit({ outcome: "error" });
     }
   },

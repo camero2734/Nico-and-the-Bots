@@ -22,7 +22,7 @@ import { channelIDs, guildID, roles, userIDs } from "../Configuration/config";
 import { NUM_DAYS_FOR_CERTIFICATION, NUM_GOLDS_FOR_CERTIFICATION } from "../InteractionEntrypoints/contextmenus/gold";
 import F from "./funcs";
 import { queue } from "./jobs";
-import { createJobLogger } from "./logging/evlog";
+import { createJobLogger, log } from "./logging/evlog";
 import { prisma } from "./prisma-init";
 
 // Helper function to log errors to Discord
@@ -32,7 +32,7 @@ const logErrorToDiscord = async (guild: Guild, message: string, error: unknown) 
     if (testChannel?.isTextBased()) {
       await testChannel.send(`🚨 **Scheduler Error**: ${message}\n\`\`\`${String(error)}\`\`\``);
     }
-  } catch (discordError) {
+  } catch {
     // Failed to send to Discord, error will be in wide event
   }
 };
@@ -74,7 +74,7 @@ export default async function (client: Client): Promise<void> {
   const safeCheckVCRoles = createSafeTask("checkVCRoles", () => checkVCRoles(guild), 75_000);
   const safeCheckLastFm = createSafeTask("checkLastFm", () => checkLastFm(), 15_000);
   const protect: ProtectCallbackFn = async (job) => {
-    createJobLogger("scheduler").warn("Not run due to protection", { pattern: job.getPattern() });
+    log.warn({ job: "scheduler", message: "Not run due to protection", pattern: job.getPattern() });
   };
 
   Cron("*/5 * * * * *", { protect }, safeCheckReminders);
@@ -108,10 +108,7 @@ async function checkReminders(guild: Guild): Promise<void> {
       await dm.send({ embeds: [embed] });
       sentReminderIds.push(rem.id);
     } catch (e) {
-      if (
-        e instanceof DiscordAPIError &&
-        ["50007", "10007", "50001", "50278"].includes(e.code.toString())
-      ) {
+      if (e instanceof DiscordAPIError && ["50007", "10007", "50001", "50278"].includes(e.code.toString())) {
         sentReminderIds.push(rem.id);
         const reason =
           e.code === 50007
@@ -139,7 +136,11 @@ async function checkMemberRoles(guild: Guild): Promise<void> {
   // Add banditos/new to members who pass membership screening
   const allMembers = await guild.members.fetch().catch((e) => {
     if (e instanceof GatewayRateLimitError) {
-      createJobLogger("scheduler").warn("Rate limited while fetching members, skipping", { task: "checkMemberRoles" });
+      log.warn({
+        job: "scheduler",
+        message: "Rate limited while fetching members, skipping",
+        task: "checkMemberRoles",
+      });
     } else throw e;
   });
 

@@ -1,7 +1,7 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { ComponentType, type GuildMember, type Interaction } from "discord.js";
 import type { RequestLogger } from "evlog";
-import { createRequestLogger, initLogger, log } from "evlog";
+import { createLogger, createRequestLogger, initLogger, log } from "evlog";
 import { prisma } from "../prisma-init";
 
 export type BotLogger = RequestLogger;
@@ -113,9 +113,9 @@ export function createInteractionLogger(interaction: Interaction): BotLogger {
 }
 
 export function createJobLogger(jobName: string): BotLogger {
-  const requestLogger = createRequestLogger({
+  return createLogger({
     requestId: Bun.randomUUIDv7(),
+    timestamp: new Date().toISOString(),
+    bot: { job_name: jobName },
   });
-  requestLogger.set({ timestamp: new Date().toISOString(), bot: { job_name: jobName } });
-  return requestLogger;
 }

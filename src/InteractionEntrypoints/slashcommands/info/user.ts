@@ -39,7 +39,7 @@ command.setHandler(async (ctx) => {
     .addFields([{ name: "Golds", value: `${golds}`, inline: true }])
     .addFields([{ name: "Daily count", value: `${dbUser.dailyBox?.dailyCount || 0}` }])
     .setFooter({
-      text: `${ordinal(joinedNum)} member | Use the /submit joindate command if your join date is incorrect`,
+      text: `${ordinal(joinedNum)} member`,
     });
   await ctx.send({ embeds: [embed.toJSON()] });
 });

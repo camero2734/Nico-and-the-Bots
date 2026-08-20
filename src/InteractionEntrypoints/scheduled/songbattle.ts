@@ -14,7 +14,7 @@ import { channelIDs, roles } from "../../Configuration/config";
 import { CommandError } from "../../Configuration/definitions";
 import { invalidateCache, withCache } from "../../Helpers/cache";
 import F from "../../Helpers/funcs";
-import { createBackgroundEvent, emitWideEvent, finalizeWideEvent } from "../../Helpers/logging/wide-event";
+import { createJobLogger } from "../../Helpers/logging/evlog";
 import { prisma } from "../../Helpers/prisma-init";
 import { ManualEntrypoint } from "../../Structures/EntrypointManual";
 import {
@@ -85,13 +85,12 @@ Cron("30 17 * * *", { timezone: "Europe/Amsterdam" }, async () => {
 });
 
 export async function songBattleCron() {
-  const wideEvent = createBackgroundEvent("songbattle_cron");
+  const log = createJobLogger("songbattle_cron");
 
   try {
     if (!CRON_ENABLED) {
-      wideEvent.extended.enabled = false;
-      finalizeWideEvent(wideEvent, "success");
-      emitWideEvent(wideEvent);
+      log.set({ enabled: false });
+      log.emit({ outcome: "success" });
       return;
     }
 
@@ -191,13 +190,12 @@ export async function songBattleCron() {
       )}`,
     );
 
-    finalizeWideEvent(wideEvent, "success");
+    log.emit({ outcome: "success" });
   } catch (error) {
-    finalizeWideEvent(wideEvent, "error", error);
+    log.error(error instanceof Error ? error : new Error(String(error)));
+    log.emit({ outcome: "error" });
     throw error;
   }
-
-  emitWideEvent(wideEvent);
 }
 
 export async function updatePreviousSongBattleMessage(skip = 0) {

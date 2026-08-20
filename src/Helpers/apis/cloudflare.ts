@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { log } from "../../Helpers/logging/evlog";
 import secrets from "../../Configuration/secrets";
 
 const CloudflareR2 = new S3Client({
@@ -20,7 +21,7 @@ export async function uploadImageToCloudflareStorage(fileName: string, buffer: B
 
   // If the file exists and the new file is the same, don't reupload
   if (existing?.ETag?.includes(await calculateEtag(buffer))) {
-    console.log(existing, /EXISTING/);
+    log.info({ fileName, status: "existing" , message: "Image already exists in R2"});
   } else {
     const result = await CloudflareR2.send(
       new PutObjectCommand({
@@ -32,7 +33,7 @@ export async function uploadImageToCloudflareStorage(fileName: string, buffer: B
 
     if (result.$metadata.httpStatusCode !== 200) throw new Error("Failed to upload image");
 
-    console.log(result, /UPLOADED/);
+    log.info({ fileName, status: "uploaded" , message: "Image uploaded to R2"});
   }
 
   const url = await getSignedUrl(CloudflareR2, new GetObjectCommand({ Bucket: BUCKET, Key: fileName }), {

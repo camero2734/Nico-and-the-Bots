@@ -8,7 +8,7 @@ import {
   type UserContextMenuCommandInteraction,
 } from "discord.js";
 import { CommandError } from "../Configuration/definitions";
-import type { WideEvent } from "../Helpers/logging/wide-event";
+import type { BotLogger } from "../Helpers/logging/evlog";
 import { ApplicationData, ContextMenus } from "./data";
 import { InteractionEntrypoint } from "./EntrypointBase";
 
@@ -18,7 +18,7 @@ export type TargetTypes = {
 };
 
 export type ContextMenuInteraction = (MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction) & {
-  wideEvent: WideEvent;
+  log: BotLogger;
 };
 
 export type ContextMenuHandler<T extends keyof TargetTypes> = (
@@ -42,11 +42,11 @@ export abstract class ContextMenu<T extends keyof TargetTypes> extends Interacti
     ctx: MessageContextMenuCommandInteraction | UserContextMenuCommandInteraction,
   ): TargetTypes[T];
 
-  async _run(ctx: Interaction, wideEvent: WideEvent): Promise<void> {
+  async _run(ctx: Interaction, log: BotLogger): Promise<void> {
     if (!ctx.isContextMenuCommand()) throw new CommandError("Not a context menu");
 
     const contextCtx = ctx as ContextMenuInteraction;
-    contextCtx.wideEvent = wideEvent;
+    contextCtx.log = log;
     const target = this.getTarget(ctx);
     await this.handler(contextCtx, target);
   }

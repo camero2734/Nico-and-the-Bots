@@ -76,8 +76,8 @@ command.setHandler(async (ctx) => {
 
   const imageSize = size < 15 ? "/300x300/" : "/34s/";
 
-  ctx.wideEvent.extended.album_count = collected.length;
-  ctx.wideEvent.extended.grid_size = size;
+  ctx.log.set({ album_count: collected.length });
+  ctx.log.set({ grid_size: size });
 
   const images = await Promise.allSettled(
     collected.map((c) => loadImage(c.image?.replace("/300x300/", imageSize) || "")),

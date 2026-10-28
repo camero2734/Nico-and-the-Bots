@@ -6,11 +6,17 @@ import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
 const command = new SlashCommand({
-  description: "Chooses a song role that you own",
+  description: "Chooses up to two song roles that you own",
   options: [
     {
-      name: "role",
-      description: "The role you wish to equip/unequip",
+      name: "role1",
+      description: "The first role you wish to equip/unequip",
+      type: ApplicationCommandOptionType.Role,
+      required: false,
+    },
+    {
+      name: "role2",
+      description: "The second role you wish to equip/unequip",
       type: ApplicationCommandOptionType.Role,
       required: false,
     },
@@ -18,7 +24,8 @@ const command = new SlashCommand({
 });
 
 command.setHandler(async (ctx) => {
-  const role = ctx.opts.role;
+  const role1 = ctx.opts.role1;
+  const role2 = ctx.opts.role2;
 
   await ctx.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -45,46 +52,48 @@ command.setHandler(async (ctx) => {
     throw new CommandError(`You don't have any song roles!`);
   }
 
-  if (!role) {
+  if (!role1 && !role2) {
     const embed = new EmbedBuilder()
       .setTitle("Your Song Roles")
       .setDescription(roleIDs.map((r) => `<@&${r}>`).join("\n"))
       .addFields([
         {
-          name: "How do I choose one?",
-          value: `To equip one of the roles you own, mention the role in the optional parameter of this command. For example, you can say:\n\n/roles song <@&${roleIDs[0]}>`,
+          name: "How do I choose a song role?",
+          value: `You can equip up to two song roles that you own by mentioning the roles in the optional parameters of this command. For example, you can say:\n\n/roles songs <@&${roleIDs[0]}>`,
         },
       ]);
 
     return ctx.editReply({ embeds: [embed] });
   }
 
-  // User has valid roles and requested one
+  // Confirms if the roles informed belong to the user
+  const requestedRoles = [role1, role2].filter(Boolean) as string[];
 
-  // Not a valid role
-  if (!roleIDs.includes(role)) {
-    throw new CommandError(`You don't own this song role (or it is not a song role)`);
+  for (const rId of requestedRoles) {
+    if (!roleIDs.includes(rId)) {
+      throw new CommandError(`You don't own the role <@&${rId}> (or it is not a song role)!`);
+    }
   }
 
-  // All good - remove any current song roles and add the requested one
-  const currentlyEquippedRoles = [...ctx.member.roles.cache.values()]
-    .filter((r) => roleIDs.includes(r.id))
-    .map((r) => r.id);
+  const actionsTaken: string[] = [];
 
-  // Remove all song roles
-  for (const id of currentlyEquippedRoles) {
-    await ctx.member.roles.remove(id);
+  // Verifies each role individually (removes if the user already has it, adds if they don't)
+  for (const rId of requestedRoles) {
+    const hasRole = ctx.member.roles.cache.has(rId);
+
+    if (hasRole) {
+      await ctx.member.roles.remove(rId);
+      actionsTaken.push(`The <@&${rId}> role was removed from your roles.`);
+    } else {
+      await ctx.member.roles.add(rId);
+      actionsTaken.push(`The <@&${rId}> role was added to your roles.`);
+    }
   }
 
-  // If they requested a role they already had, leave them with no song roles
-  if (currentlyEquippedRoles.includes(role)) {
-    const embed = new EmbedBuilder().setTitle("Success!").setDescription("Removed your song role");
-    return ctx.editReply({ embeds: [embed] });
-  }
+  const embed = new EmbedBuilder()
+    .setTitle("Success!")
+    .setDescription(actionsTaken.join("\n"));
 
-  // Otherwise add the role they requested
-  await ctx.member.roles.add(role);
-  const embed = new EmbedBuilder().setTitle("Success!").setDescription(`You now have the <@&${role}> song role!`);
   return ctx.editReply({ embeds: [embed] });
 });
 

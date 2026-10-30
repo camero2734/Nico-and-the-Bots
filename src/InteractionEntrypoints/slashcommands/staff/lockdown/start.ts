@@ -1,10 +1,13 @@
-import { MessageFlags } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { MessageFlags } from "discord.js";
 import { roles } from "../../../../Configuration/config";
 import { CommandError } from "../../../../Configuration/definitions";
 import F from "../../../../Helpers/funcs";
 import { prisma } from "../../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../../Structures/EntrypointSlashCommand";
+
+const intermissionVideo = Bun.file("src/Assets/videos/intermission.mp4")
+  .arrayBuffer().then(Buffer.from);
 
 const command = new SlashCommand({
   description: "Starts a lockdown in the channel",
@@ -55,7 +58,10 @@ command.setHandler(async (ctx) => {
       },
     ]);
 
-  await ctx.followUp({ embeds: [lockEmbed], content: "https://cdn.discordapp.com/attachments/1504206165083557918/1562290978189222020/intermission_v2.mp4?ex=6adf631b&is=6ade119b&hm=490260cd9179981badcbda8d65115d8a03118e03117c9a141a04b5596d72a076&" });
+  await ctx.followUp({
+    embeds: [lockEmbed],
+    files: [{ attachment: await intermissionVideo, name: "intermission.mp4" }],
+  });
 });
 
 export default command;

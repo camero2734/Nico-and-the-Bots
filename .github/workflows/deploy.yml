@@ -119,4 +119,4 @@ jobs:
 
           curl --header "Authorization: Bearer ${COOLIFY_TOKEN}" \
                --fail --show-error --silent \
-               --request GET "${COOLIFY_WEBHOOK}"
+               --request POST "${COOLIFY_WEBHOOK}"

@@ -55,7 +55,7 @@ command.setHandler(async (ctx) => {
       },
     ]);
 
-  await ctx.followUp({ embeds: [lockEmbed] });
+  await ctx.followUp({ embeds: [lockEmbed], content: "https://cdn.discordapp.com/attachments/1504206165083557918/1562290978189222020/intermission_v2.mp4?ex=6adf631b&is=6ade119b&hm=490260cd9179981badcbda8d65115d8a03118e03117c9a141a04b5596d72a076&" });
 });
 
 export default command;

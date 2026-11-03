@@ -90,9 +90,9 @@ command.setHandler(async (ctx) => {
     track.image?.replace("/34s/", "/300x300/") ||
     "http://orig14.deviantart.net/5162/f/2014/153/9/e/no_album_art__no_cover___placeholder_picture_by_cmdrobot-d7kpm65.jpg";
 
-  ctx.wideEvent.extended.track_name = trackName;
-  ctx.wideEvent.extended.artist_name = artistName;
-  ctx.wideEvent.extended.username = username;
+  ctx.log.set({ track_name: trackName });
+  ctx.log.set({ artist_name: artistName });
+  ctx.log.set({ username: username });
 
   const embed = new EmbedBuilder()
     .setColor(0xff0000)

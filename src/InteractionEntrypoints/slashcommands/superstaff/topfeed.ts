@@ -28,7 +28,7 @@ import {
 } from "../../../Altbots/topfeed/youtube/fetch-and-send";
 import { channelIDs, roles, userIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
-import type { WideEvent } from "../../../Helpers/logging/wide-event";
+import type { BotLogger } from "../../../Helpers/logging/evlog";
 import { prisma } from "../../../Helpers/prisma-init";
 import { SlashCommand } from "../../../Structures/EntrypointSlashCommand";
 
@@ -60,13 +60,14 @@ command.setHandler(async (ctx) => {
 
   const { type, url } = ctx.opts;
 
-  ctx.wideEvent.extended.topfeed_debug = { type, url };
+  ctx.log.set({ topfeed_debug: { type, url } });
 
   if (type === "website") {
     const { container, file, unchanged } = await debugWebsite(url);
     await ctx.channel.send({ components: [container], files: [file], flags: MessageFlags.IsComponentsV2 });
     await ctx.editReply(
-      `Sent the website debug preview below. ${unchanged ? " Note: the fetched content is identical to the last saved version, so the diff is empty." : ""
+      `Sent the website debug preview below. ${
+        unchanged ? " Note: the fetched content is identical to the last saved version, so the diff is empty." : ""
       }`,
     );
     return;
@@ -74,7 +75,7 @@ command.setHandler(async (ctx) => {
 
   const components =
     type === "instagram"
-      ? await debugInstagram(url, ctx.wideEvent)
+      ? await debugInstagram(url, ctx.log)
       : type === "twitter"
         ? await debugTwitter(url)
         : await debugYoutube(url);
@@ -93,7 +94,7 @@ function parseInstagramUrl(url: string): { username?: string; shortcode?: string
   return {};
 }
 
-async function debugInstagram(url: string, wideEvent: WideEvent) {
+async function debugInstagram(url: string, log: BotLogger) {
   const { username, shortcode } = parseInstagramUrl(url);
   if (!username && !shortcode) throw new CommandError("Couldn't parse that Instagram URL");
 
@@ -101,7 +102,7 @@ async function debugInstagram(url: string, wideEvent: WideEvent) {
 
   let post: FormattedInstagramPost | undefined;
   for (const name of usernamesToTry) {
-    const posts = await fetchIgForUsername(name, wideEvent);
+    const posts = await fetchIgForUsername(name, log);
     post = shortcode ? posts.find((p) => p.code === shortcode) : posts.find((p) => p.author === name);
     if (post) break;
   }
@@ -161,8 +162,8 @@ async function debugTwitter(url: string) {
   if (!tweet) {
     throw new CommandError(
       `Couldn't find tweet \`${tweetId}\`` +
-      `${errors.length ? `\nErrors: ${errors.join(" | ")}` : ""}` +
-      `${seenIds.length ? `\nSeen IDs: ${seenIds.join(", ")}` : ""}`,
+        `${errors.length ? `\nErrors: ${errors.join(" | ")}` : ""}` +
+        `${seenIds.length ? `\nSeen IDs: ${seenIds.join(", ")}` : ""}`,
     );
   }
 
@@ -240,7 +241,7 @@ async function debugWebsite(url: string) {
     url,
     displayName: watched?.displayName ?? hostname,
     roleId: watched?.roleId ?? roles.topfeed.selectable.dmaorg,
-    channelId: watched?.channelId ?? channelIDs.bottest
+    channelId: watched?.channelId ?? channelIDs.bottest,
   };
 
   let content: string;
@@ -276,4 +277,3 @@ async function debugWebsite(url: string) {
 }
 
 export default command;
-

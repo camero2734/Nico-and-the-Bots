@@ -54,6 +54,12 @@ if (!(client.ws as any).fetchShardCount && typeof client.ws.getShardCount === "f
 
 const sacarverBot = new SacarverBot();
 
+client.on(Discord.Events.GuildMemberAdd, (member) => {
+  sacarverBot.welcomeMember(member).catch((error) => {
+    console.error(`Failed to welcome new member ${member.id}`, error);
+  });
+});
+
 client.login(secrets.bots.nico);
 
 console.log("Logging in...");
@@ -121,7 +127,6 @@ client.once(Discord.Events.ClientReady, async () => {
   const entrypoints = await entrypointsReady;
   InteractionEntrypoint.registerAllCommands(guild);
 
-  sacarverBot.beginWelcomingMembers();
   console.log("[shop] about to set up shop");
   const keonsBot = await KeonsBot.create();
   await keonsBot.setupShop();

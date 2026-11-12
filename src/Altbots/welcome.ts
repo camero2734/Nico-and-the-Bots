@@ -27,7 +27,6 @@ export class SacarverBot {
         "DirectMessageReactions",
         "GuildBans",
         "GuildEmojisAndStickers",
-        "GuildMembers",
         "GuildIntegrations",
         "GuildInvites",
         "GuildVoiceStates",
@@ -35,8 +34,6 @@ export class SacarverBot {
       ],
     });
     this.client.login(secrets.bots.sacarver);
-
-    this.client.on(Events.GuildMemberAdd, (member) => this.welcomeMember(member));
 
     this.client.on(Events.InteractionCreate, (interaction) => {
       if (!interaction.isMessageComponent()) return;
@@ -50,10 +47,6 @@ export class SacarverBot {
     });
   }
 
-  async beginWelcomingMembers(): Promise<void> {
-    await this.ready;
-  }
-
   async getMemberNumber(member: GuildMember): Promise<number> {
     const dbUser = await queries.findOrCreateUser(member.id);
 
@@ -64,7 +57,11 @@ export class SacarverBot {
     const wideEvent = createBackgroundEvent("welcome_member");
 
     try {
-      const welcomeChan = await member.guild.channels.fetch(channelIDs.welcome);
+      await this.ready;
+
+      // temporary workaround b/c sacarver lost members intent lol
+      const guild = await this.client.guilds.fetch(member.guild.id);
+      const welcomeChan = await guild.channels.fetch(channelIDs.welcome);
       if (!welcomeChan?.isTextBased()) {
         finalizeWideEvent(wideEvent, "error", "Welcome channel not found or not text-based");
         emitWideEvent(wideEvent);

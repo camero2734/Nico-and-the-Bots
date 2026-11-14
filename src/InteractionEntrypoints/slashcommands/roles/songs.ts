@@ -1,5 +1,6 @@
-import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
 import { EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, MessageFlags } from "discord.js";
+import { channelIDs } from "../../../Configuration/config";
 import { CommandError } from "../../../Configuration/definitions";
 import { withCache } from "../../../Helpers/cache";
 import { prisma } from "../../../Helpers/prisma-init";
@@ -10,13 +11,13 @@ const command = new SlashCommand({
   options: [
     {
       name: "role1",
-      description: "The first role you wish to equip/unequip",
+      description: "The first role you wish to equip",
       type: ApplicationCommandOptionType.Role,
       required: false,
     },
     {
       name: "role2",
-      description: "The second role you wish to equip/unequip",
+      description: "The second role you wish to equip",
       type: ApplicationCommandOptionType.Role,
       required: false,
     },
@@ -69,30 +70,30 @@ command.setHandler(async (ctx) => {
   // Confirms if the roles informed belong to the user
   const requestedRoles = [role1, role2].filter(Boolean) as string[];
 
-  for (const rId of requestedRoles) {
-    if (!roleIDs.includes(rId)) {
-      throw new CommandError(`You don't own the role <@&${rId}> (or it is not a song role)!`);
+  for (const id of requestedRoles) {
+    if (!roleIDs.includes(id)) {
+      throw new CommandError(`You don't own the role <@&${id}> (or it is not a song role)! Visit <#${channelIDs.shop}> to purchase song roles.`);
     }
   }
 
-  const actionsTaken: string[] = [];
+  const mem = await ctx.member.fetch(true);
+  const currentlyEquippedRoles = mem.roles.cache
+    .filter((r) => roleIDs.includes(r.id))
+    .map((r) => r.id);
 
-  // Verifies each role individually (removes if the user already has it, adds if they don't)
-  for (const rId of requestedRoles) {
-    const hasRole = ctx.member.roles.cache.has(rId);
+  // Remove current roles
+  for (const id of currentlyEquippedRoles) {
+    await mem.roles.remove(id);
+  }
 
-    if (hasRole) {
-      await ctx.member.roles.remove(rId);
-      actionsTaken.push(`The <@&${rId}> role was removed from your roles.`);
-    } else {
-      await ctx.member.roles.add(rId);
-      actionsTaken.push(`The <@&${rId}> role was added to your roles.`);
-    }
+  // Add requested roles
+  for (const id of requestedRoles) {
+    await mem.roles.add(id);
   }
 
   const embed = new EmbedBuilder()
-    .setTitle("Success!")
-    .setDescription(actionsTaken.join("\n"));
+    .setTitle("Success! Your song role(s) were replaced with:")
+    .setDescription(requestedRoles.map((r) => `<@&${r}>`).join("\n"));
 
   return ctx.editReply({ embeds: [embed] });
 });

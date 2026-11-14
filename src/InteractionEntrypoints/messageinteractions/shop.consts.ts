@@ -152,6 +152,10 @@ export function getSongRoleCategories(roleManager: RoleManager) {
     credits: 12_500,
     level: 15,
   });
+  const breach = new ShopCategory(tierToRoles(songRoles.breach), {
+    credits: 12_500,
+    level: 15,
+  });
 
   return {
     "Twenty One Pilots": {
@@ -187,6 +191,11 @@ export function getSongRoleCategories(roleManager: RoleManager) {
     Clancy: {
       id: "Clancy",
       data: clancy,
+      description: "The album that set the stage for the final chapter.",
+    },
+    Breach: {
+      id: "Breach",
+      data: breach,
       description: "The album that's the end of an era.",
     },
   };

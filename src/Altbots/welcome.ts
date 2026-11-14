@@ -27,7 +27,6 @@ export class SacarverBot {
         "DirectMessageReactions",
         "GuildBans",
         "GuildEmojisAndStickers",
-        "GuildMembers",
         "GuildIntegrations",
         "GuildInvites",
         "GuildVoiceStates",

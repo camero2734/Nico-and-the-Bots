@@ -4,7 +4,7 @@ import { addHours } from "date-fns";
 import { type APIComponentInContainer, ComponentType, MessageFlags } from "discord.js";
 import { channelIDs, roles } from "../../../Configuration/config";
 import F from "../../../Helpers/funcs";
-import { addElement, type WideEvent } from "../../../Helpers/logging/wide-event";
+import type { BotLogger } from "../../../Helpers/logging/evlog";
 import { prisma } from "../../../Helpers/prisma-init";
 import { keonsGuild } from "../topfeed";
 
@@ -78,20 +78,20 @@ export async function instaPostToComponents(post: FormattedInstagramPost, roleId
   const mediaSection: APIComponentInContainer[] =
     post.media.length > 0
       ? [
-        {
-          type: ComponentType.Separator,
-          divider: false,
-          spacing: 1,
-        },
-        {
-          type: ComponentType.MediaGallery,
-          items: post.media
-            .map((mediaItem) => ({
-              media: { url: mediaItem.url },
-            }))
-            .slice(0, 10), // Limit to 10 items
-        },
-      ]
+          {
+            type: ComponentType.Separator,
+            divider: false,
+            spacing: 1,
+          },
+          {
+            type: ComponentType.MediaGallery,
+            items: post.media
+              .map((mediaItem) => ({
+                media: { url: mediaItem.url },
+              }))
+              .slice(0, 10), // Limit to 10 items
+          },
+        ]
       : [];
 
   const footerSection: APIComponentInContainer[] = [
@@ -120,8 +120,10 @@ async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<strin
     const responseText = await fetch(`https://www.instagram.com/p/${shortcode}/embed/`).then((res) => res.text());
     const match = getSHandleRegex.exec(responseText);
     if (!match) throw new Error("Failed to parse the Instagram post embed data.");
-    // @ts-expect-error i ain't gonna type this whole thing
-    const contextJSON = JSON.parse(match[1]).require.find((x) => x[0] === "PolarisEmbedSimple").at(-1)[0].contextJSON;
+    const contextJSON = JSON.parse(match[1])
+      // biome-ignore lint/suspicious/noExplicitAny: Instagram embed payload is untyped
+      .require.find((x: any) => x[0] === "PolarisEmbedSimple")
+      .at(-1)[0].contextJSON;
     const shortcodeMedia = JSON.parse(contextJSON).gql_data?.shortcode_media;
 
     if (shortcodeMedia?.video_url) videoUrls.set(shortcodeMedia.shortcode, shortcodeMedia.video_url);
@@ -135,7 +137,7 @@ async function fetchVideoUrlsFromPostEmbed(shortcode: string): Promise<Map<strin
   return videoUrls;
 }
 
-export async function fetchIgForUsername(username: string, wideEvent: WideEvent): Promise<FormattedInstagramPost[]> {
+export async function fetchIgForUsername(username: string, log: BotLogger): Promise<FormattedInstagramPost[]> {
   try {
     const responseText = await fetch(`https://www.instagram.com/${username}/embed/`).then((res) => res.text());
     const match = getSHandleRegex.exec(responseText);
@@ -162,7 +164,7 @@ export async function fetchIgForUsername(username: string, wideEvent: WideEvent)
       let videoUrls = new Map<string, string>();
       if (videoNodes.some((node) => !node.video_url)) {
         videoUrls = await fetchVideoUrlsFromPostEmbed(shortcodeMedia.shortcode);
-        addElement(wideEvent.extended, "video_url_fallback", shortcodeMedia.shortcode);
+        log.set({ video_url_fallback: shortcodeMedia.shortcode });
       }
 
       const formattedMedia: InstagramMedia[] = [];
@@ -203,41 +205,51 @@ export async function fetchIgForUsername(username: string, wideEvent: WideEvent)
     if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
     const message = error instanceof Error ? error.message : "Unknown error fetching Instagram embed data";
-    addElement(wideEvent.extended, "fetch_errors", `${username}: ${message}`);
+    const existingErrors = ((log.getContext() as Record<string, unknown>).fetch_errors as string[] | undefined) || [];
+    log.set({ fetch_errors: [...existingErrors, `${username}: ${message}`] });
     await testChan.send(`Error fetching Instagram embed data for ${username}: ${message}`);
     return [];
   }
 }
 
-export async function fetchInstagram(source: "scheduled" | "random", wideEvent: WideEvent) {
+export async function fetchInstagram(source: "scheduled" | "random", log: BotLogger) {
   const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
-  wideEvent.extended.fetch_source = source;
+  log.set({ fetch_source: source });
+
+  const postsSkipped: { code: string; author: string; reason: string }[] = [];
 
   for (const username of usernamesToWatch) {
-    const formattedPosts = await fetchIgForUsername(username, wideEvent);
+    const formattedPosts = await fetchIgForUsername(username, log);
     for (const post of formattedPosts) {
       if (post.author !== username) {
-        addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "authorMismatch" });
+        postsSkipped.push({ code: post.code, author: post.author, reason: "authorMismatch" });
         continue;
       }
       if (addHours(new Date(post.postedAt), 3) < new Date()) {
-        addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "oldPost" });
+        postsSkipped.push({ code: post.code, author: post.author, reason: "oldPost" });
         continue;
       }
-      await sendInstagramPost(post, wideEvent);
+      await sendInstagramPost(post, log);
     }
+  }
+
+  if (postsSkipped.length > 0) {
+    const existing =
+      ((log.getContext() as Record<string, unknown>).posts_skipped as typeof postsSkipped | undefined) || [];
+    log.set({ posts_skipped: [...existing, ...postsSkipped] });
   }
 }
 
-async function sendInstagramPost(post: FormattedInstagramPost, wideEvent: WideEvent) {
+async function sendInstagramPost(post: FormattedInstagramPost, log: BotLogger) {
   const testChan = await keonsGuild.channels.fetch(channelIDs.bottest);
   if (!testChan || !testChan.isTextBased()) throw new Error("Test channel not found or is not text-based");
 
+  const postsSkipped: { code: string; author: string; reason: string }[] = [];
+
   if (!usernamesToWatch.includes(post.author as (typeof usernamesToWatch)[number])) {
-    addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "notInWatchlist" });
-    return;
+    postsSkipped.push({ code: post.code, author: post.author, reason: "notInWatchlist" });
   }
 
   const existing = await prisma.topfeedPost.findFirst({
@@ -249,7 +261,13 @@ async function sendInstagramPost(post: FormattedInstagramPost, wideEvent: WideEv
   });
 
   if (existing) {
-    addElement(wideEvent.extended, "posts_skipped", { code: post.code, author: post.author, reason: "alreadyExists" });
+    postsSkipped.push({ code: post.code, author: post.author, reason: "alreadyExists" });
+  }
+
+  if (postsSkipped.length > 0) {
+    const existingSkipped =
+      ((log.getContext() as Record<string, unknown>).posts_skipped as typeof postsSkipped | undefined) || [];
+    log.set({ posts_skipped: [...existingSkipped, ...postsSkipped] });
     return;
   }
 
@@ -276,5 +294,7 @@ async function sendInstagramPost(post: FormattedInstagramPost, wideEvent: WideEv
   });
 
   if (m.crosspostable) await m.crosspost();
-  addElement(wideEvent.extended, "posts_sent", { code: post.code, author: post.author });
+  const existingSent =
+    ((log.getContext() as Record<string, unknown>).posts_sent as { code: string; author: string }[] | undefined) || [];
+  log.set({ posts_sent: [...existingSent, { code: post.code, author: post.author }] });
 }

@@ -178,12 +178,12 @@ const genModalId = command.addInteractionListener("tbSubmitModal", ["application
 
   const messageUrl = await sendToStaff(ctx, applicationId, data);
   if (!messageUrl) {
-    ctx.wideEvent.extended.success = false;
-    ctx.wideEvent.extended.error = "Failed to send application to staff";
+    ctx.log.set({ success: false });
+    ctx.log.set({ error: "Failed to send application to staff" });
     throw new CommandError("Failed to send application to staff. Please contact an administrator.");
   }
 
-  ctx.wideEvent.extended.application_id = applicationId;
+  ctx.log.set({ application_id: applicationId });
 
   await prisma.firebreatherApplication.update({
     where: { applicationId },
@@ -341,12 +341,12 @@ export async function sendToStaff(
       await m.react(emojiIDs.upvote);
       await m.react(emojiIDs.downvote);
     } catch (e) {
-      ctx.wideEvent.extended.failed_to_create_thread = true;
+      ctx.log.set({ failed_to_create_thread: true });
     }
 
     return m.url;
   } catch (e) {
-    ctx.wideEvent.extended.failed_to_send_to_staff = true;
+    ctx.log.set({ failed_to_send_to_staff: true });
   }
 }
 
@@ -415,10 +415,10 @@ const genId = command.addInteractionListener("staffTBAppRes", ["applicationId", 
   const member = await ctx.guild.members.fetch(application.userId);
   if (!member) throw new CommandError("This member appears to have left the server");
 
-  ctx.wideEvent.extended.application_id = applicationId;
-  ctx.wideEvent.extended.action = action === ActionTypes.Accept ? "accepted" : "denied";
-  ctx.wideEvent.extended.target_user_id = application.userId;
-  ctx.wideEvent.extended.reason = reason || null;
+  ctx.log.set({ application_id: applicationId });
+  ctx.log.set({ action: action === ActionTypes.Accept ? "accepted" : "denied" });
+  ctx.log.set({ target_user_id: application.userId });
+  ctx.log.set({ reason: reason || null });
 
   await prisma.firebreatherApplication.update({
     where: { applicationId },

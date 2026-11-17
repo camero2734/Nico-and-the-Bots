@@ -1,6 +1,7 @@
 import path from "node:path";
 import { promisify } from "node:util";
 import { glob as g } from "glob";
+import { log } from "../Helpers/logging/evlog";
 import type { InteractionEntrypoint } from "../Structures/EntrypointBase";
 import { ContextMenu, type TargetTypes } from "../Structures/EntrypointContextMenu";
 import { ManualEntrypoint } from "../Structures/EntrypointManual";
@@ -37,7 +38,7 @@ async function getAllSlashCommands(): Promise<[Path, SlashCommand][]> {
 
           return [path, slashCommand];
         } catch (e) {
-          console.log(e, /ENTRYPOINT_LOAD_ERR/);
+          log.error({ message: "ENTRYPOINT_LOAD_ERR", ...{ error: String(e) } });
           return null;
         }
       }),

@@ -29,7 +29,7 @@ command.setHandler(async (ctx) => {
   if (member?.user?.bot)
     throw new CommandError("Bots scores are confidential. Please provide an access card to Area 51 to continue.");
 
-  ctx.wideEvent.extended.target_user_id = userID;
+  ctx.log.set({ target_user_id: userID });
 
   const buffer = await generateScoreCard(member);
   await ctx.editReply({

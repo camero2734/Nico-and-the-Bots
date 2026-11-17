@@ -132,7 +132,7 @@ async function autoJailCheck(ctx: (typeof command)["ContextType"], member: Guild
     where: { warnedUserId: member.id, createdAt: { gt: oneYearAgo } },
   });
 
-  ctx.wideEvent.extended.warn_count = recentWarns;
+  ctx.log.set({ warn_count: recentWarns });
 
   if (recentWarns < 3) {
     const embed = new EmbedBuilder();
@@ -143,7 +143,7 @@ async function autoJailCheck(ctx: (typeof command)["ContextType"], member: Guild
     return await ctx.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
   }
 
-  ctx.wideEvent.extended.auto_jailed = true;
+  ctx.log.set({ auto_jailed: true });
 
   // Automatically run the jail command on the user
   JailCommand.run(ctx, {

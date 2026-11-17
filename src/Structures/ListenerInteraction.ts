@@ -8,7 +8,7 @@ import type {
   TextChannel,
 } from "discord.js";
 import F from "../Helpers/funcs";
-import type { WideEvent } from "../Helpers/logging/wide-event";
+import type { BotLogger } from "../Helpers/logging/evlog";
 
 type RequiredDiscordValues = {
   member: GuildMember;
@@ -18,7 +18,7 @@ type RequiredDiscordValues = {
 };
 
 export type ListenerInteraction = (MessageComponentInteraction | ModalSubmitInteraction) &
-  RequiredDiscordValues & { message: Message; wideEvent: WideEvent };
+  RequiredDiscordValues & { message: Message; log: BotLogger };
 
 export type ListenerCustomIdGenerator<T extends Readonly<string[]> = []> = (
   ctx: ListenerInteraction,
@@ -32,7 +32,7 @@ export class CustomIDPattern<T extends Readonly<string[]>> {
   constructor(
     public args: T,
     public delimiter = ":",
-  ) { }
+  ) {}
   toDict(input: string): { [K in T[number]]: string } {
     const [_name, ...parts] = input.split(this.delimiter);
     const dict = {} as { [K in T[number]]: string };

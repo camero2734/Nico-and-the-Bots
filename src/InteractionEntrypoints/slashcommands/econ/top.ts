@@ -96,7 +96,7 @@ async function getAlltimeScores(
     skip: startAt,
     take: 10,
   });
-  ctx.wideEvent.extended.db_query_ms = Date.now() - start2;
+  ctx.log.set({ db_query_ms: Date.now() - start2 });
 
   return await Promise.all(
     paginatedUsers.map(async (u) => {

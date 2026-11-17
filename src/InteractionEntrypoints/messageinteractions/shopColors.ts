@@ -236,8 +236,8 @@ const genItemId = msgInt.addInteractionListener("shopColorItem", ["itemId", "act
       dm.send({ components: [container], flags: MessageFlags.IsComponentsV2 });
       sent = true;
     } catch (e) {
-      ctx.wideEvent.extended.dm_failed = true;
-      ctx.wideEvent.extended.dm_error = e instanceof Error ? e.message : "Unknown error";
+      ctx.log.set({ dm_failed: true });
+      ctx.log.set({ dm_error: e instanceof Error ? e.message : "Unknown error" });
     } finally {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
